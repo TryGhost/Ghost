@@ -1,6 +1,7 @@
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
+import {mockApiHook, mockDataFactories, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {
     useNewsletterBasicStatsWithRange, 
@@ -58,148 +59,29 @@ describe('Newsletter Stats Hooks', () => {
         mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
         
         // Apply the mocks to the actual imported modules with default return values
-        mockUseNewsletterStats.mockReturnValue({
-            data: {
-                stats: [], 
-                meta: {
-                    pagination: {
-                        page: 1,
-                        limit: 15,
-                        pages: 1,
-                        total: 0,
-                        next: null,
-                        prev: null
-                    }
-                }
-            },
-            isLoading: false,
-            error: null,
-            isError: false,
-            isLoadingError: false,
-            isRefetchError: false,
-            isSuccess: true,
-            isFetching: false,
-            isStale: false,
-            refetch: vi.fn(),
-            dataUpdatedAt: 0,
-            errorUpdatedAt: 0,
-            failureCount: 0,
-            failureReason: null,
-            fetchStatus: 'idle' as const,
-            isRefetching: false,
-            status: 'success' as const
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        mockSuccess(mockUseNewsletterStats, mockDataFactories.statsResponse([]));
         
-        mockUseSubscriberCount.mockReturnValue({
-            data: {stats: []},
-            isLoading: false,
-            error: null,
-            isError: false,
-            isLoadingError: false,
-            isRefetchError: false,
-            isSuccess: true,
-            isFetching: false,
-            isStale: false,
-            refetch: vi.fn(),
-            dataUpdatedAt: 0,
-            errorUpdatedAt: 0,
-            failureCount: 0,
-            failureReason: null,
-            fetchStatus: 'idle' as const,
-            isRefetching: false,
-            status: 'success' as const
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        mockSuccess(mockUseSubscriberCount, {stats: []});
 
-        mockUseNewsletterBasicStats.mockReturnValue({
-            data: {
-                stats: [], 
-                meta: {
-                    pagination: {
-                        page: 1,
-                        limit: 15,
-                        pages: 1,
-                        total: 0,
-                        next: null,
-                        prev: null
-                    }
-                }
-            },
-            isLoading: false,
-            error: null,
-            isError: false,
-            isLoadingError: false,
-            isRefetchError: false,
-            isSuccess: true,
-            isFetching: false,
-            isStale: false,
-            refetch: vi.fn(),
-            dataUpdatedAt: 0,
-            errorUpdatedAt: 0,
-            failureCount: 0,
-            failureReason: null,
-            fetchStatus: 'idle' as const,
-            isRefetching: false,
-            status: 'success' as const
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        mockSuccess(mockUseNewsletterBasicStats, mockDataFactories.statsResponse([]));
 
-        mockUseNewsletterClickStats.mockReturnValue({
-            data: {stats: []},
-            isLoading: false,
-            error: null,
-            isError: false,
-            isLoadingError: false,
-            isRefetchError: false,
-            isSuccess: true,
-            isFetching: false,
-            isStale: false,
-            refetch: vi.fn(),
-            dataUpdatedAt: 0,
-            errorUpdatedAt: 0,
-            failureCount: 0,
-            failureReason: null,
-            fetchStatus: 'idle' as const,
-            isRefetching: false,
-            status: 'success' as const
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any);
+        mockSuccess(mockUseNewsletterClickStats, {stats: []});
 
+        const newsletterPagesData = {
+            pages: [{
+                newsletters: [], 
+                isEnd: true,
+                meta: mockDataFactories.apiResponse({}, {
+                    pagination: mockDataFactories.pagination({
+                        limit: 50,
+                        total: 0
+                    })
+                }).meta
+            }],
+            pageParams: []
+        };
         mockUseBrowseNewsletters.mockReturnValue({
-            data: {
-                pages: [{
-                    newsletters: [], 
-                    isEnd: true,
-                    meta: {
-                        pagination: {
-                            page: 1,
-                            limit: 50,
-                            pages: 1,
-                            total: 0,
-                            next: null,
-                            prev: null
-                        }
-                    }
-                }],
-                pageParams: []
-            },
-            isLoading: false,
-            error: null,
-            isError: false,
-            isLoadingError: false,
-            isRefetchError: false,
-            isSuccess: true,
-            isFetching: false,
-            isStale: false,
-            refetch: vi.fn(),
-            dataUpdatedAt: 0,
-            errorUpdatedAt: 0,
-            failureCount: 0,
-            failureReason: null,
-            fetchStatus: 'idle' as const,
-            isRefetching: false,
-            status: 'success' as const,
+            ...mockApiHook(mockUseBrowseNewsletters, newsletterPagesData),
             fetchNextPage: vi.fn(),
             fetchPreviousPage: vi.fn(),
             hasNextPage: false,

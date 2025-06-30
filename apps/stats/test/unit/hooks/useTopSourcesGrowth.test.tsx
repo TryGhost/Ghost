@@ -1,8 +1,7 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createMockApiReturn} from '@tryghost/admin-x-framework/test/hook-testing-utils';
+import {mockError, mockLoading, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
-import type {ReferrerHistoryResponseType} from '@tryghost/admin-x-framework/api/referrers';
 
 // Mock external dependencies
 vi.mock('@tryghost/shade', () => ({
@@ -47,14 +46,12 @@ describe('useTopSourcesGrowth', () => {
         
         mockUseGlobalData.mockReturnValue({
             audience: 'all-members'
-        } as {audience: string});
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
         
         mockGetAudienceQueryParam.mockReturnValue('all');
         
-        mockUseTopSourcesGrowthAPI.mockReturnValue(createMockApiReturn<ReferrerHistoryResponseType>(
-            {stats: []},
-            false
-        ));
+        mockSuccess(mockUseTopSourcesGrowthAPI, {stats: []});
     });
 
     it('calls useTopSourcesGrowthAPI with correct default parameters', () => {
@@ -90,7 +87,8 @@ describe('useTopSourcesGrowth', () => {
     it('handles different audience types', () => {
         mockUseGlobalData.mockReturnValue({
             audience: 2 // Represents paid members (binary representation)
-        } as {audience: number});
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        } as any);
         mockGetAudienceQueryParam.mockReturnValue('paid');
 
         renderHook(() => useTopSourcesGrowth(30));
@@ -167,25 +165,17 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('returns the result from useTopSourcesGrowthAPI', () => {
-        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
-            {stats: [{source: 'Google', signups: 100, date: '2024-01-01', paid_conversions: 10, mrr: 1000}]},
-            false
+        mockSuccess(mockUseTopSourcesGrowthAPI, 
+            {stats: [{source: 'Google', signups: 100, date: '2024-01-01', paid_conversions: 10, mrr: 1000}]}
         );
-        
-        mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
 
         const {result} = renderHook(() => useTopSourcesGrowth(30));
 
-        expect(result.current).toBe(mockResult);
+        expect(result.current.data?.stats).toHaveLength(1);
     });
 
     it('handles loading state', () => {
-        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
-            undefined,
-            true
-        );
-        
-        mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
+        mockLoading(mockUseTopSourcesGrowthAPI);
 
         const {result} = renderHook(() => useTopSourcesGrowth(30));
 
@@ -193,18 +183,12 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('handles error state', () => {
-        const mockError = new Error('API Error');
-        const mockResult = createMockApiReturn<ReferrerHistoryResponseType>(
-            undefined,
-            false,
-            mockError
-        );
-        
-        mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
+        const apiError = new Error('API Error');
+        mockError(mockUseTopSourcesGrowthAPI, apiError);
 
         const {result} = renderHook(() => useTopSourcesGrowth(30));
 
-        expect(result.current.error).toBe(mockError);
+        expect(result.current.error).toBe(apiError);
     });
 
     it('handles various order by values', () => {

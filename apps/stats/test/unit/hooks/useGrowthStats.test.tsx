@@ -1,5 +1,6 @@
 import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 
@@ -68,31 +69,22 @@ describe('useGrowthStats', () => {
         });
         
         // Default successful responses
-        mockedUseMemberCountHistory.mockReturnValue({
-            data: {
-                stats: mockMemberData,
-                meta: {
-                    totals: {paid: 55, free: 110, comped: 5}
-                }
-            },
-            isLoading: false
+        mockSuccess(mockedUseMemberCountHistory, {
+            stats: mockMemberData,
+            meta: {
+                totals: {paid: 55, free: 110, comped: 5}
+            }
         });
 
-        mockedUseMrrHistory.mockReturnValue({
-            data: {
-                stats: mockMrrData,
-                meta: {
-                    totals: [{mrr: 5500, currency: 'usd'}]
-                }
-            },
-            isLoading: false
+        mockSuccess(mockedUseMrrHistory, {
+            stats: mockMrrData,
+            meta: {
+                totals: [{mrr: 5500, currency: 'usd'}]
+            }
         });
 
-        mockedUseSubscriptionStats.mockReturnValue({
-            data: {
-                stats: mockSubscriptionData
-            },
-            isLoading: false
+        mockSuccess(mockedUseSubscriptionStats, {
+            stats: mockSubscriptionData
         });
 
         mockedGetSymbol.mockReturnValue('$');
@@ -100,18 +92,9 @@ describe('useGrowthStats', () => {
 
     describe('hook basic functionality', () => {
         it('returns initial loading state', () => {
-            mockedUseMemberCountHistory.mockReturnValue({
-                data: null,
-                isLoading: true
-            });
-            mockedUseMrrHistory.mockReturnValue({
-                data: null,
-                isLoading: true
-            });
-            mockedUseSubscriptionStats.mockReturnValue({
-                data: null,
-                isLoading: true
-            });
+            mockLoading(mockedUseMemberCountHistory);
+            mockLoading(mockedUseMrrHistory);
+            mockLoading(mockedUseSubscriptionStats);
 
             const {result} = renderHook(() => useGrowthStats(30));
 
@@ -158,12 +141,9 @@ describe('useGrowthStats', () => {
 
     describe('data processing', () => {
         it('handles empty member data response', async () => {
-            mockedUseMemberCountHistory.mockReturnValue({
-                data: {
-                    stats: [],
-                    meta: {totals: {paid: 0, free: 0, comped: 0}}
-                },
-                isLoading: false
+            mockSuccess(mockedUseMemberCountHistory, {
+                stats: [],
+                meta: {totals: {paid: 0, free: 0, comped: 0}}
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -176,10 +156,9 @@ describe('useGrowthStats', () => {
         });
 
         it('handles array response format', async () => {
-            mockedUseMemberCountHistory.mockReturnValue({
-                data: mockMemberData, // Direct array instead of stats object
-                isLoading: false
-            });
+            mockSuccess(mockedUseMemberCountHistory, 
+                mockMemberData // Direct array instead of stats object
+            );
 
             const {result} = renderHook(() => useGrowthStats(30));
 
@@ -200,17 +179,14 @@ describe('useGrowthStats', () => {
                 {date: '2024-06-27', mrr: 1200, currency: 'eur'}
             ];
 
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: mockMultiCurrencyMrrData,
-                    meta: {
-                        totals: [
-                            {mrr: 5500, currency: 'usd'},
-                            {mrr: 1200, currency: 'eur'}
-                        ]
-                    }
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: mockMultiCurrencyMrrData,
+                meta: {
+                    totals: [
+                        {mrr: 5500, currency: 'usd'},
+                        {mrr: 1200, currency: 'eur'}
+                    ]
+                }
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -235,11 +211,8 @@ describe('useGrowthStats', () => {
                 {date: yesterday, signups: 4, cancellations: 2}
             ];
 
-            mockedUseSubscriptionStats.mockReturnValue({
-                data: {
-                    stats: duplicateSubscriptionData
-                },
-                isLoading: false
+            mockSuccess(mockedUseSubscriptionStats, {
+                stats: duplicateSubscriptionData
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -266,11 +239,8 @@ describe('useGrowthStats', () => {
                 {date: today, signups: 4, cancellations: 2} // In range
             ];
 
-            mockedUseSubscriptionStats.mockReturnValue({
-                data: {
-                    stats: outOfRangeData
-                },
-                isLoading: false
+            mockSuccess(mockedUseSubscriptionStats, {
+                stats: outOfRangeData
             });
 
             const {result} = renderHook(() => useGrowthStats(7));
@@ -292,14 +262,11 @@ describe('useGrowthStats', () => {
                 {date: '2024-06-27', mrr: 5500, currency: 'usd'}
             ];
 
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: earlierMrrData,
-                    meta: {
-                        totals: [{mrr: 5500, currency: 'usd'}]
-                    }
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: earlierMrrData,
+                meta: {
+                    totals: [{mrr: 5500, currency: 'usd'}]
+                }
             });
 
             const {result} = renderHook(() => useGrowthStats(7));
@@ -328,14 +295,11 @@ describe('useGrowthStats', () => {
         it('gets currency symbol correctly', async () => {
             mockedGetSymbol.mockReturnValue('€');
             
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: [{date: '2024-06-27', mrr: 5000, currency: 'eur'}],
-                    meta: {
-                        totals: [{mrr: 5000, currency: 'eur'}]
-                    }
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: [{date: '2024-06-27', mrr: 5000, currency: 'eur'}],
+                meta: {
+                    totals: [{mrr: 5000, currency: 'eur'}]
+                }
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -382,12 +346,9 @@ describe('useGrowthStats', () => {
         });
 
         it('handles missing MRR data in chart formatting', async () => {
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: [],
-                    meta: {totals: []}
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: [],
+                meta: {totals: []}
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -404,10 +365,7 @@ describe('useGrowthStats', () => {
 
     describe('error handling', () => {
         it('handles API errors gracefully', async () => {
-            mockedUseMemberCountHistory.mockReturnValue({
-                data: null,
-                isLoading: false
-            });
+            mockNull(mockedUseMemberCountHistory);
 
             const {result} = renderHook(() => useGrowthStats(30));
 
@@ -420,10 +378,7 @@ describe('useGrowthStats', () => {
         });
 
         it('handles malformed subscription data', async () => {
-            mockedUseSubscriptionStats.mockReturnValue({
-                data: null,
-                isLoading: false
-            });
+            mockNull(mockedUseSubscriptionStats);
 
             const {result} = renderHook(() => useGrowthStats(30));
 
@@ -437,12 +392,9 @@ describe('useGrowthStats', () => {
 
     describe('edge cases', () => {
         it('handles empty MRR data', async () => {
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: [],
-                    meta: {totals: []}
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: [],
+                meta: {totals: []}
             });
 
             const {result} = renderHook(() => useGrowthStats(30));
@@ -456,12 +408,9 @@ describe('useGrowthStats', () => {
         });
 
         it('handles missing MRR meta totals', async () => {
-            mockedUseMrrHistory.mockReturnValue({
-                data: {
-                    stats: mockMrrData,
-                    meta: {totals: []}
-                },
-                isLoading: false
+            mockSuccess(mockedUseMrrHistory, {
+                stats: mockMrrData,
+                meta: {totals: []}
             });
 
             const {result} = renderHook(() => useGrowthStats(30));

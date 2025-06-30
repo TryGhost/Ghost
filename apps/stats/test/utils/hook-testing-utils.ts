@@ -1,5 +1,6 @@
 import {MockInstance, vi} from 'vitest';
 import {expectApiCallWithDateRange} from './date-testing-utils';
+import {renderHook} from '@testing-library/react';
 
 /**
  * Common patterns and utilities for hook testing
@@ -295,20 +296,50 @@ export const expectDataTransformation = <TInput, TOutput>(
 };
 
 /**
- * Utility for testing memoization
+ * Utility for testing memoization - for hooks with parameters
+ * Tests that hook results are properly memoized based on dependency changes
  */
-export const expectMemoization = (hookFunction: Function, deps: any[]) => {
-    const {result, rerender} = hookFunction();
+export const expectMemoization = <T extends any[], R>(
+    hookFunction: (...args: T) => R,
+    initialDeps: T,
+    changedDeps: T[]
+) => {
+    // Initial render with initial dependencies
+    const {result, rerender} = renderHook(
+        ({deps}) => hookFunction(...deps),
+        {initialProps: {deps: initialDeps}}
+    );
     const firstResult = result.current;
     
-    // Rerender without changing dependencies
+    // Rerender with same dependencies - should return same reference
+    rerender({deps: initialDeps});
+    expect(result.current).toBe(firstResult);
+    
+    // Test each changed dependency set
+    changedDeps.forEach((newDeps) => {
+        rerender({deps: newDeps});
+        expect(result.current).not.toBe(firstResult);
+    });
+};
+
+/**
+ * Utility for testing memoization - for hooks without parameters
+ * Tests that hook results are properly memoized when dependencies change
+ */
+export const expectMemoizationWithoutParams = <R>(
+    hookFunction: () => R,
+    setupChangedDependencies: () => void
+) => {
+    // Initial render
+    const {result, rerender} = renderHook(() => hookFunction());
+    const firstResult = result.current;
+    
+    // Rerender without changing dependencies - should return same reference
     rerender();
     expect(result.current).toBe(firstResult);
     
-    // Rerender with changed dependencies
-    deps.forEach((dep) => {
-        // Modify dependency
-        rerender(dep);
-        expect(result.current).not.toBe(firstResult);
-    });
+    // Change dependencies and rerender - should return different reference
+    setupChangedDependencies();
+    rerender();
+    expect(result.current).not.toBe(firstResult);
 };

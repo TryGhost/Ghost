@@ -1,5 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createMockApiReturn} from '@tryghost/admin-x-framework/test/hook-testing-utils';
+import {expectMemoizationWithoutParams} from '../../utils/hook-testing-utils';
+import {mockApiHook, mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
 import type {PostStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
@@ -58,15 +59,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches latest post with correct parameters', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
         
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
         renderHook(() => useLatestPostStats());
 
@@ -81,10 +76,7 @@ describe('useLatestPostStats', () => {
     });
 
     it('does not fetch stats when no post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: []} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
 
         renderHook(() => useLatestPostStats());
 
@@ -94,15 +86,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('fetches stats when post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
         renderHook(() => useLatestPostStats());
 
@@ -112,15 +98,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns combined post and stats data', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -160,15 +140,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats are not available', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -208,15 +182,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns post with default stats when stats array is empty', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            {stats: []} as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, {stats: []} as PostStatsResponseType);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -229,15 +197,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns null when no post is available', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: []} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -245,15 +207,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('handles posts data being undefined', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUseBrowsePosts);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -270,15 +226,9 @@ describe('useLatestPostStats', () => {
             url: ''
         };
 
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [minimalPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [minimalPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -311,15 +261,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns correct loading state when posts are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: []} as PostsResponseType,
-            true
-        ));
+        mockLoading(mockUseBrowsePosts);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -327,15 +271,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns correct loading state when stats are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            true
-        ));
+        mockLoading(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -343,15 +281,9 @@ describe('useLatestPostStats', () => {
     });
 
     it('returns false loading when posts loaded but no post ID (stats not fetched)', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: []} as PostsResponseType,
-            false
-        ));
+        mockSuccess(mockUseBrowsePosts, {posts: []} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            false
-        ));
+        mockNull(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
@@ -359,78 +291,34 @@ describe('useLatestPostStats', () => {
     });
 
     it('handles stats loading when both posts and stats are loading', () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            true
-        ));
+        mockApiHook(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType, true);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            undefined,
-            true
-        ));
+        mockLoading(mockUsePostStats);
 
         const {result} = renderHook(() => useLatestPostStats());
 
         expect(result.current.isLoading).toBe(true);
     });
 
-    it('memoizes result correctly', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
+    it('memoizes result correctly', () => {
+        // Setup initial state
+        mockSuccess(mockUseBrowsePosts, {posts: [mockPost]} as PostsResponseType);
 
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
+        mockSuccess(mockUsePostStats, mockStatsData as PostStatsResponseType);
 
-        const {result, rerender} = renderHook(() => useLatestPostStats());
+        expectMemoizationWithoutParams(
+            () => useLatestPostStats().data,
+            () => {
+                // Change the stats data to trigger dependency change
+                const newStatsData = {
+                    stats: [{
+                        ...mockStatsData.stats[0],
+                        member_delta: 10
+                    }]
+                };
 
-        const firstResult = result.current.data;
-        
-        // Trigger re-render
-        rerender();
-        
-        const secondResult = result.current.data;
-
-        // Should be the same object reference due to useMemo
-        expect(firstResult).toBe(secondResult);
-    });
-
-    it('updates memoized result when dependencies change', async () => {
-        mockUseBrowsePosts.mockReturnValue(createMockApiReturn<PostsResponseType>(
-            {posts: [mockPost]} as PostsResponseType,
-            false
-        ));
-
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            mockStatsData as PostStatsResponseType,
-            false
-        ));
-
-        const {result, rerender} = renderHook(() => useLatestPostStats());
-
-        const firstResult = result.current.data;
-
-        // Change the stats data
-        const newStatsData = {
-            stats: [{
-                ...mockStatsData.stats[0],
-                member_delta: 10
-            }]
-        };
-
-        mockUsePostStats.mockReturnValue(createMockApiReturn<PostStatsResponseType>(
-            newStatsData as PostStatsResponseType,
-            false
-        ));
-
-        rerender();
-
-        await waitFor(() => {
-            expect(result.current.data?.member_delta).toBe(10);
-            expect(result.current.data).not.toBe(firstResult);
-        });
+                mockSuccess(mockUsePostStats, newStatsData as PostStatsResponseType);
+            }
+        );
     });
 });
