@@ -334,7 +334,6 @@ async function initServices() {
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
-    const mailEvents = require('./server/services/mail-events');
     const donationService = require('./server/services/donations');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
@@ -376,7 +375,6 @@ async function initServices() {
         emailSuppressionList.init(),
         slackNotifications.init(),
         mediaInliner.init(),
-        mailEvents.init(),
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
