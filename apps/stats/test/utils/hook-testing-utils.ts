@@ -81,7 +81,7 @@ export const setupCommonHookMocks = (): HookMockSetup => {
  */
 export const generateParameterTests = (
     hookName: string,
-    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    hookFunction: (range?: number, order?: string, id?: string, shouldFetch?: boolean) => unknown,
     mockApiCall: MockInstance,
     options: {
         hasRange?: boolean;
@@ -151,7 +151,13 @@ export const generateParameterTests = (
  */
 export const generateShouldFetchTests = (
     hookName: string,
-    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    hookFunction: (range?: number, order?: string, id?: string, shouldFetch?: boolean) => {
+        data?: unknown;
+        isLoading?: boolean;
+        error?: unknown;
+        isError?: boolean;
+        refetch?: () => void;
+    },
     mockApiCall: MockInstance
 ) => [
     {
@@ -194,7 +200,11 @@ export const generateShouldFetchTests = (
  */
 export const generateStateTests = (
     hookName: string,
-    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    hookFunction: () => {
+        isLoading?: boolean;
+        error?: unknown;
+        isError?: boolean;
+    },
     mockApiCall: MockInstance
 ) => [
     {
@@ -236,7 +246,13 @@ export const generateStateTests = (
  */
 export const createStandardHookTestSuite = (
     hookName: string,
-    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
+    hookFunction: (range?: number, order?: string, id?: string, shouldFetch?: boolean) => {
+        data?: unknown;
+        isLoading?: boolean;
+        error?: unknown;
+        isError?: boolean;
+        refetch?: () => void;
+    },
     mockApiCall: MockInstance,
     options: {
         hasRange?: boolean;
@@ -299,7 +315,7 @@ export const expectDataTransformation = <TInput, TOutput>(
  * Utility for testing memoization - for hooks with parameters
  * Tests that hook results are properly memoized based on dependency changes
  */
-export const expectMemoization = <T extends any[], R>( // eslint-disable-line @typescript-eslint/no-explicit-any
+export const expectMemoization = <T extends readonly unknown[], R>(
     hookFunction: (...args: T) => R,
     initialDeps: T,
     changedDeps: T[]
