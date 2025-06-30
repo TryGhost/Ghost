@@ -14,6 +14,7 @@ const _ = require('lodash');
 
 /**
  * @typedef {Object} PublicSettingsCache
+ * @property {string|null} site_uuid - The blog's site UUID
  * @property {string|null} title - The blog's title
  * @property {string|null} description - The blog's description
  * @property {string|null} logo - URL to the blog's logo
