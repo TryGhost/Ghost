@@ -6,21 +6,20 @@ test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            ...limitRequests,
             browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
             installTheme: {method: 'POST', path: /^\/themes\/install\/\?/, response: {
                 themes: [{
-                    name: 'headline',
+                    name: 'edition',
                     package: {},
                     active: false,
                     templates: []
                 }]
             }},
-            activateTheme: {method: 'PUT', path: '/themes/headline/activate/', response: {
+            activateTheme: {method: 'PUT', path: '/themes/casper/activate/', response: {
                 themes: [{
-                    name: 'headline',
-                    package: {},
-                    active: true,
-                    templates: []
+                    ...responseFixtures.themes.themes.find(theme => theme.name === 'casper')!,
+                    active: true
                 }]
             }},
             activeTheme: {
@@ -28,7 +27,7 @@ test.describe('Theme settings', async () => {
                 path: '/themes/active/',
                 response: {
                     themes: [{
-                        name: 'casper',
+                        name: 'edition',
                         package: {},
                         active: true,
                         templates: []
@@ -41,33 +40,54 @@ test.describe('Theme settings', async () => {
 
         const themeSection = page.getByTestId('theme');
 
+        // Edition is the active theme
+        await expect(themeSection).toHaveText(/edition/i);
+
         await themeSection.getByRole('button', {name: 'Change theme'}).click();
 
         const modal = page.getByTestId('theme-modal');
 
-        // The default theme is always considered "installed"
-
+        // 1. Activate Casper (Edition is currently active)
         await modal.getByRole('button', {name: /Casper/}).click();
-
         await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
-        await expect(page.locator('iframe[title="Theme preview"]')).toHaveAttribute('src', 'https://demo.ghost.io/');
+        await modal.getByRole('button', {name: 'Activate Casper'}).click();
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/activate/);
+        await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Activate'}).click();
+        await expect(page.getByTestId('toast-success')).toHaveText(/casper is now your active theme/);
 
+        // 2. Go back to themes list
         await modal.getByRole('button', {name: 'Change theme'}).click();
 
-        // Try installing another theme
+        // 3. Try to update Edition (which is already installed, should trigger overwrite)
+        await modal.getByRole('button', {name: /Edition/}).click();
+        await modal.getByRole('button', {name: 'Update Edition'}).click();
 
-        await modal.getByRole('button', {name: /Headline/}).click();
+        // Should show overwrite confirmation
+        const overwriteModal = page.getByTestId('confirmation-modal');
+        await expect(overwriteModal).toBeVisible();
+        await expect(overwriteModal).toHaveText(/overwrite/i);
 
-        await modal.getByRole('button', {name: 'Install Headline'}).click();
+        // Test Cancel button behavior
+        await overwriteModal.getByRole('button', {name: 'Cancel'}).click();
 
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/installed/);
+        // Verify the overwrite modal is closed
+        await expect(overwriteModal).not.toBeVisible();
 
-        await page.getByRole('button', {name: 'Activate'}).click();
+        // Verify the theme modal is still open
+        await expect(modal).toBeVisible();
 
-        await expect(page.getByTestId('toast-success')).toHaveText(/headline is now your active theme/);
+        // Verify we're still on the Edition theme preview
+        await expect(modal).toHaveText(/Edition/);
+        await expect(modal.getByRole('button', {name: 'Update Edition'})).toBeVisible();
 
-        expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FHeadline/);
+        // Install Edition again and overwrite it
+        await modal.getByRole('button', {name: 'Update Edition'}).click();
+        await overwriteModal.getByRole('button', {name: 'Overwrite'}).click();
+
+        // Verify that Casper activation was called
+        expect(lastApiRequests.activateTheme?.url).toMatch(/\/themes\/casper\/activate/);
+        expect(lastApiRequests.installTheme?.url).toMatch(/\?source=github&ref=TryGhost%2FEdition/);
     });
 
     test('Managing installed themes', async ({page}) => {
