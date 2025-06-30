@@ -11,7 +11,7 @@ import {renderHook} from '@testing-library/react';
  * Standard API mock setup with comprehensive properties
  * This eliminates the verbose mock setup in individual tests
  */
-export const createStandardApiMock = <T>(data: T = null as any): MockInstance => {
+export const createStandardApiMock = <T>(data: T = null as T): MockInstance => {
     return vi.fn().mockReturnValue({
         data,
         isLoading: false,
@@ -81,13 +81,13 @@ export const setupCommonHookMocks = (): HookMockSetup => {
  */
 export const generateParameterTests = (
     hookName: string,
-    hookFunction: Function,
+    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
     mockApiCall: MockInstance,
     options: {
         hasRange?: boolean;
         hasOrder?: boolean;
         hasId?: boolean;
-        hasCustomParams?: Record<string, any>;
+        hasCustomParams?: Record<string, unknown>;
     } = {}
 ) => {
     const tests = [];
@@ -151,7 +151,7 @@ export const generateParameterTests = (
  */
 export const generateShouldFetchTests = (
     hookName: string,
-    hookFunction: Function,
+    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
     mockApiCall: MockInstance
 ) => [
     {
@@ -194,7 +194,7 @@ export const generateShouldFetchTests = (
  */
 export const generateStateTests = (
     hookName: string,
-    hookFunction: Function,
+    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
     mockApiCall: MockInstance
 ) => [
     {
@@ -236,14 +236,14 @@ export const generateStateTests = (
  */
 export const createStandardHookTestSuite = (
     hookName: string,
-    hookFunction: Function,
+    hookFunction: (...args: any[]) => any, // eslint-disable-line @typescript-eslint/no-explicit-any
     mockApiCall: MockInstance,
     options: {
         hasRange?: boolean;
         hasOrder?: boolean;
         hasId?: boolean;
         hasShouldFetch?: boolean;
-        customParams?: Record<string, any>;
+        customParams?: Record<string, unknown>;
         additionalTests?: Array<{name: string; test: () => void}>;
     } = {}
 ) => {
@@ -276,8 +276,8 @@ export const createStandardHookTestSuite = (
 export const expectCombinedApiCalls = (
     basicMock: MockInstance,
     clickMock: MockInstance,
-    expectedBasicParams: any,
-    expectedClickParams: any
+    expectedBasicParams: unknown,
+    expectedClickParams: unknown
 ) => {
     expect(basicMock).toHaveBeenCalledWith(expectedBasicParams);
     expect(clickMock).toHaveBeenCalledWith(expectedClickParams);
@@ -287,11 +287,11 @@ export const expectCombinedApiCalls = (
  * Test data transformation utilities
  */
 export const expectDataTransformation = <TInput, TOutput>(
-    input: TInput,
+    inputData: TInput,
     output: TOutput,
     transformFunction: (input: TInput) => TOutput
 ) => {
-    const result = transformFunction(input);
+    const result = transformFunction(inputData);
     expect(result).toEqual(output);
 };
 
@@ -299,7 +299,7 @@ export const expectDataTransformation = <TInput, TOutput>(
  * Utility for testing memoization - for hooks with parameters
  * Tests that hook results are properly memoized based on dependency changes
  */
-export const expectMemoization = <T extends any[], R>(
+export const expectMemoization = <T extends any[], R>( // eslint-disable-line @typescript-eslint/no-explicit-any
     hookFunction: (...args: T) => R,
     initialDeps: T,
     changedDeps: T[]

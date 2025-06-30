@@ -5,7 +5,7 @@ import {
     getContentTitle,
     getGrowthContentDescription
 } from '@src/utils/content-helpers';
-import {describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 describe('content-helpers', () => {
     describe('CONTENT_TYPES constants', () => {
@@ -53,10 +53,10 @@ describe('content-helpers', () => {
     });
 
     describe('getContentDescription', () => {
-        const mockGetPeriodText = vi.fn();
+        let mockGetPeriodText: ReturnType<typeof vi.fn>;
 
         beforeEach(function () {
-            mockGetPeriodText.mockClear();
+            mockGetPeriodText = vi.fn();
         });
 
         it('returns correct description for posts', () => {
@@ -109,10 +109,10 @@ describe('content-helpers', () => {
     });
 
     describe('getGrowthContentDescription', () => {
-        const mockGetPeriodText = vi.fn();
+        let mockGetPeriodText: ReturnType<typeof vi.fn>;
 
         beforeEach(function () {
-            mockGetPeriodText.mockClear();
+            mockGetPeriodText = vi.fn();
         });
 
         it('returns correct growth description for posts', () => {
@@ -167,7 +167,7 @@ describe('content-helpers', () => {
     describe('edge cases', () => {
         it('handles null/undefined getPeriodText function gracefully', () => {
             expect(() => {
-                getContentDescription(CONTENT_TYPES.POSTS, 30, null as any);
+                getContentDescription(CONTENT_TYPES.POSTS, 30, null as unknown as () => string);
             }).toThrow();
         });
 

@@ -74,12 +74,12 @@ describe('url-helpers', () => {
         });
 
         it('returns empty string for null attribution URL', () => {
-            const result = getFrontendUrl(null as any, 'https://example.com');
+            const result = getFrontendUrl(null as unknown as string, 'https://example.com');
             expect(result).toBe('');
         });
 
         it('returns empty string for undefined attribution URL', () => {
-            const result = getFrontendUrl(undefined as any, 'https://example.com');
+            const result = getFrontendUrl(undefined as unknown as string, 'https://example.com');
             expect(result).toBe('');
         });
 
@@ -89,12 +89,12 @@ describe('url-helpers', () => {
         });
 
         it('returns empty string for null site URL', () => {
-            const result = getFrontendUrl('/my-post/', null as any);
+            const result = getFrontendUrl('/my-post/', null as unknown as string);
             expect(result).toBe('');
         });
 
         it('returns empty string for undefined site URL', () => {
-            const result = getFrontendUrl('/my-post/', undefined as any);
+            const result = getFrontendUrl('/my-post/', undefined as unknown as string);
             expect(result).toBe('');
         });
 
@@ -160,11 +160,11 @@ describe('url-helpers', () => {
         });
 
         it('handles null path', () => {
-            expect(generateTitleFromPath(null as any)).toBe('Unknown');
+            expect(generateTitleFromPath(null as unknown as string)).toBe('Unknown');
         });
 
         it('handles undefined path', () => {
-            expect(generateTitleFromPath(undefined as any)).toBe('Unknown');
+            expect(generateTitleFromPath(undefined as unknown as string)).toBe('Unknown');
         });
 
         it('handles paths with special characters', () => {
@@ -191,11 +191,11 @@ describe('url-helpers', () => {
         });
 
         it('returns false for null attribution URL', () => {
-            expect(shouldMakeClickable(null as any)).toBe(false);
+            expect(shouldMakeClickable(null as unknown as string)).toBe(false);
         });
 
         it('returns false for undefined attribution URL', () => {
-            expect(shouldMakeClickable(undefined as any)).toBe(false);
+            expect(shouldMakeClickable(undefined as unknown as string)).toBe(false);
         });
 
         it('uses urlExists when provided as true', () => {
@@ -211,7 +211,7 @@ describe('url-helpers', () => {
         });
 
         it('returns true for valid attribution URL when urlExists is not boolean', () => {
-            expect(shouldMakeClickable('/my-post/', 'not-boolean' as any)).toBe(true);
+            expect(shouldMakeClickable('/my-post/', 'not-boolean' as unknown as boolean)).toBe(true);
         });
 
         it('handles various valid attribution URLs', () => {
@@ -222,10 +222,10 @@ describe('url-helpers', () => {
     });
 
     describe('getClickHandler', () => {
-        const mockNavigate = vi.fn();
+        let mockNavigate: ReturnType<typeof vi.fn>;
 
         beforeEach(() => {
-            mockNavigate.mockClear();
+            mockNavigate = vi.fn();
             mockWindowOpen.mockClear();
         });
 
