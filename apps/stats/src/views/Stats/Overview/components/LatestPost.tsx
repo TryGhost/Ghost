@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -214,10 +214,14 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         </div>
                     </>
                 ) : !isLoading && (
-                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
-                        <LucideIcon.FileText size={32} strokeWidth={1.5} />
-                        <div>No published posts yet</div>
-                    </div>
+
+                    <EmptyIndicator
+                        className='w-full pb-10'
+                        description='Create your first post to see your latest post performance'
+                        title='No published posts yet'
+                    >
+                        <LucideIcon.FileText strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
         </Card>
