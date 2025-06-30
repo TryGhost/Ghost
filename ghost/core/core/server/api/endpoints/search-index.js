@@ -60,6 +60,24 @@ const controller = {
 
             return models.Tag.findPage(options);
         }
+    },
+    fetchUsers: {
+        headers: {
+            cacheInvalidate: false
+        },
+        permissions: {
+            docName: 'users',
+            method: 'browse'
+        },
+        query() {
+            const options = {
+                limit: '10000',
+                order: 'updated_at DESC',
+                columns: ['id', 'slug', 'url', 'name', 'profile_image']
+            };
+
+            return models.User.findPage(options);
+        }
     }
 };
 
