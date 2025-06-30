@@ -1462,7 +1462,7 @@ Object {
   "errors": Array [
     Object {
       "code": null,
-      "context": StringMatching /\\.\\*post_revisions\\\\\\.feature_image_alt\\] exceeds maximum length of 191 characters\\.\\*/,
+      "context": StringMatching /\\.\\*post_revisions\\\\\\.feature_image_alt\\] exceeds maximum length of 2000 characters\\.\\*/,
       "details": null,
       "ghostErrorCode": null,
       "help": null,
