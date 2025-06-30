@@ -310,7 +310,7 @@ export const useGrowthStats = (range: number) => {
             return {mrrData: finalResult, selectedCurrency: useCurrency};
         }
         return {mrrData: [], selectedCurrency: 'usd'};
-    }, [mrrHistoryResponse, dateFrom]);
+    }, [mrrHistoryResponse, dateFrom, range]);
 
     // Calculate totals
     const totalsData = useMemo(() => calculateTotals(memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals), [memberData, mrrData, dateFrom, memberCountResponse?.meta?.totals]);
