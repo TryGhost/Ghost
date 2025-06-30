@@ -9,14 +9,14 @@ module.exports = createNonTransactionalMigration(
             return;
         }
         
-        logging.info('Changing posts_meta.feature_image_alt column from VARCHAR(191) to VARCHAR(300)');
+        logging.info('Changing posts_meta.feature_image_alt column from VARCHAR(191) to VARCHAR(2000)');
         await knex.schema.alterTable('posts_meta', function (table) {
-            table.string('feature_image_alt', 300).alter();
+            table.string('feature_image_alt', 2000).alter();
         });
 
-        logging.info('Changing post_revisions.feature_image_alt column from VARCHAR(191) to VARCHAR(300)');
+        logging.info('Changing post_revisions.feature_image_alt column from VARCHAR(191) to VARCHAR(2000)');
         await knex.schema.alterTable('post_revisions', function (table) {
-            table.string('feature_image_alt', 300).alter();
+            table.string('feature_image_alt', 2000).alter();
         });
     },
     async function down() {
