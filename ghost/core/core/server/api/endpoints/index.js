@@ -217,6 +217,10 @@ module.exports = {
         return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
     },
 
+    get searchIndex() {
+        return apiFramework.pipeline(require('./search-index'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -269,7 +273,7 @@ module.exports = {
         return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
     },
 
-    get searchIndex() {
+    get searchIndexPublic() {
         return apiFramework.pipeline(require('./search-index-public'), localUtils, 'content');
     }
 };

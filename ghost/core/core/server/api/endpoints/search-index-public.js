@@ -9,7 +9,12 @@ const controller = {
         },
         permissions: true,
         query() {
-            return searchIndexService.fetchPosts();
+            const options = {
+                limit: '10000',
+                order: 'updated_at DESC',
+                columns: ['id', 'slug', 'title', 'excerpt', 'url', 'created_at', 'updated_at', 'published_at', 'visibility']
+            };
+            return searchIndexService.fetchPosts(options);
         }
     },
     fetchAuthors: {

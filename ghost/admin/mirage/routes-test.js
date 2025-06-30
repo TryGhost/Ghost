@@ -15,6 +15,7 @@ import mockOffers from './config/offers';
 import mockPages from './config/pages';
 import mockPosts from './config/posts';
 import mockRoles from './config/roles';
+import mockSearchIndex from './config/search-index';
 import mockSettings from './config/settings';
 import mockSite from './config/site';
 import mockSlugs from './config/slugs';
@@ -45,6 +46,7 @@ export default function () {
     mockPages(this);
     mockPosts(this);
     mockRoles(this);
+    mockSearchIndex(this);
     mockSettings(this);
     mockSite(this);
     mockSlugs(this);
