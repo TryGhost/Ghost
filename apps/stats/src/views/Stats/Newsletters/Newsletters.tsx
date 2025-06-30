@@ -117,7 +117,7 @@ const NewsletterTableRows: React.FC<{
                     <TableCell className='text-center group-hover:!bg-transparent' colSpan={5}>
                         <EmptyIndicator
                             className='size-full py-20'
-                            title={`No newsletters found ${getPeriodText(range)}`}
+                            title={`No newsletters ${getPeriodText(range)}`}
                         >
                             <LucideIcon.Mail strokeWidth={1.5} />
                         </EmptyIndicator>
