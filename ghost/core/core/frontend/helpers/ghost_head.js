@@ -163,7 +163,6 @@ function getTinybirdTrackerScript(dataRoot) {
     const localEnabled = localConfig?.enabled ?? false;
 
     const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
-    const token = localEnabled ? localConfig.token : statsConfig.token;
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
     const tbParams = _.map({
@@ -174,7 +173,7 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${tbParams}></script>`;
 }
 
 /**

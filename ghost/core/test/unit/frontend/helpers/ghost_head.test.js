@@ -1418,12 +1418,10 @@ describe('{{ghost_head}} helper', function () {
                 tinybird: {
                     tracker: {
                         endpoint: 'https://e.ghost.org/tb/web_analytics',
-                        token: 'tinybird_token',
                         datasource: 'analytics_events',
                         local: {
                             enabled: false,
                             endpoint: 'http://localhost:7181/v0/events',
-                            token: 'tinybird_local_token',
                             datasource: 'analytics_events'
                         }
                     }
