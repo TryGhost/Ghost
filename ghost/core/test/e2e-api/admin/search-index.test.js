@@ -72,4 +72,25 @@ describe('Search Index API', function () {
             assert.equal(page.plaintext, undefined);
         });
     });
+
+    describe('fetchTags', function () {
+        const searchIndexTagMatcher = {
+            id: anyString,
+            slug: anyString,
+            name: anyString,
+            url: anyString
+        };
+
+        it('should return a list of tags', async function () {
+            await agent.get('/search-index/tags')
+                .expectStatus(200)
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                })
+                .matchBodySnapshot({
+                    tags: new Array(6).fill(searchIndexTagMatcher)
+                });
+        });
+    });
 });
