@@ -1,6 +1,7 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {List} from '@tryghost/admin-x-design-system';
 
 const features = [{
@@ -10,11 +11,13 @@ const features = [{
 }, {
     title: 'Traffic Analytics (private beta)',
     description: 'Enables traffic analytics',
-    flag: 'trafficAnalytics'
+    flag: 'trafficAnalytics',
+    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
 }, {
     title: 'Traffic Analytics (alpha)',
     description: 'Enables alpha stage analytics features',
-    flag: 'trafficAnalyticsAlpha'
+    flag: 'trafficAnalyticsAlpha',
+    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
 }, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
@@ -34,9 +37,37 @@ const features = [{
 }];
 
 const AlphaFeatures: React.FC = () => {
+    const limiter = useLimiter();
+    const [allowedFeatures, setAllowedFeatures] = useState<typeof features>([]);
+
+    useEffect(() => {
+        const filterFeatures = async () => {
+            const filtered = [];
+            // Remove all features that are limited according to the subscribed plan
+            for (const feature of features) {
+                if (feature.limitName && limiter?.isLimited(feature.limitName)) {
+                    try {
+                        await limiter.errorIfWouldGoOverLimit(feature.limitName);
+                        filtered.push(feature);
+                    } catch (error) {
+                        if (!(error instanceof HostLimitError)) {
+                            filtered.push(feature);
+                        }
+                    }
+                } else {
+                    filtered.push(feature);
+                }
+            }
+            setAllowedFeatures(filtered);
+        };
+        if (limiter) {
+            filterFeatures();
+        }
+    }, [limiter]);
+
     return (
         <List titleSeparator={false}>
-            {features.map(feature => (
+            {allowedFeatures.map(feature => (
                 <LabItem
                     action={<FeatureToggle flag={feature.flag} label={feature.title} />}
                     detail={feature.description}
