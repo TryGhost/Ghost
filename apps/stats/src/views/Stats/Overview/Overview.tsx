@@ -105,7 +105,24 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
-    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: GhAreaChartDataItem) => item.value) || [0]))];
+    const visitorsYRange: [number, number] = useMemo(() => {
+        const defaultRange = [0, 1];
+        if (!visitorsChartData || visitorsChartData.length === 0) {
+            return defaultRange; // Default range when no data
+        }
+
+        // Extract values and filter out negative values
+        const values = visitorsChartData
+            .map((item: GhAreaChartDataItem) => item.value)
+            .filter((value: number) => value >= 0); // Only keep non-negative values
+
+        if (values.length === 0) {
+            return defaultRange; // Default range if no valid values
+        }
+
+        const maxValue = Math.max(...values);
+        return [0, maxValue || defaultRange[1]]; // Use 10 as minimum if maxValue is 0
+    }, [visitorsChartData]);
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -174,6 +191,9 @@ const Overview: React.FC = () => {
     }, [visitorsData]);
 
     const isPageLoading = isConfigLoading;
+
+    console.log('visitorsChartData', visitorsChartData);
+    console.log('visitorsYRange', visitorsYRange);
 
     return (
         <StatsLayout>
