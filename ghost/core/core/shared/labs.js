@@ -45,7 +45,6 @@ const PRIVATE_FEATURES = [
     'trafficAnalytics',
     'importMemberTier',
     'urlCache',
-    'mailEvents',
     'lexicalIndicators',
     'ui60',
     'contentVisibilityAlpha',

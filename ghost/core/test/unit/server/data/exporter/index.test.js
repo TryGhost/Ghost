@@ -214,7 +214,7 @@ describe('Exporter', function () {
             const nonSchemaTables = ['migrations', 'migrations_lock'];
             const requiredTables = schemaTables.concat(nonSchemaTables);
             // NOTE: You should not add tables to this list unless they are temporary
-            const ignoredTables = ['temp_member_analytic_events', 'temp_mail_events'];
+            const ignoredTables = ['temp_member_analytic_events'];
 
             const expectedTables = requiredTables.filter(table => !ignoredTables.includes(table)).sort();
             const actualTables = BACKUP_TABLES.concat(TABLES_ALLOWLIST).sort();

@@ -93,7 +93,6 @@ describe('Exporter', function () {
                 'subscriptions',
                 'suppressions',
                 'tags',
-                'temp_mail_events',
                 'tokens',
                 'users',
                 'webhooks'
@@ -124,8 +123,7 @@ describe('Exporter', function () {
                 'members_email_change_events',
                 'members_status_events',
                 'members_paid_subscription_events',
-                'members_subscribe_events',
-                'temp_mail_events'
+                'members_subscribe_events'
             ];
 
             excludedTables.forEach((tableName) => {
