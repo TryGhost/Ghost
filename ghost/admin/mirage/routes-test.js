@@ -80,7 +80,10 @@ export default function () {
     }, 204);
 
     /* limit=all blocker ---------------------------------------------------- */
+    const originalHandledRequest = this.pretender.handledRequest;
     this.pretender.handledRequest = function (verb, path, request) {
+        originalHandledRequest.call(this, verb, path, request);
+
         const url = new URL(request.url, window.location.origin);
         const limit = url.searchParams.get('limit');
 
