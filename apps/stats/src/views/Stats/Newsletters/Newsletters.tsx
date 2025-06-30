@@ -299,14 +299,14 @@ const Newsletters: React.FC = () => {
         }
 
         const deltas = subscriberStatsData.stats[0].deltas;
-        
+
         // If we only have one data point, create two points spanning the range
         if (deltas.length === 1) {
             const singlePoint = deltas[0];
             const now = new Date();
             const rangeInDays = range;
             const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
-            
+
             return [
                 {
                     ...singlePoint,
