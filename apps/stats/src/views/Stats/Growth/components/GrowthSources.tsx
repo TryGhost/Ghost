@@ -141,7 +141,8 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             const iconSrc = faviconDomain
                 ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
                 : defaultSourceIconUrl;
-            const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
+            // Don't link Direct sources since they represent direct traffic to the site
+            const linkUrl = (faviconDomain && source !== 'Direct') ? `https://${faviconDomain}` : undefined;
 
             return {
                 source,
