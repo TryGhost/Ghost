@@ -9,7 +9,7 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, isPublishedOnly, useNavigate} from '@tryghost/admin-x-framework';
+import {getStatEndpointUrl, hasBeenEmailed, isPublishedOnly, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
@@ -17,7 +17,7 @@ import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId, tinybirdToken} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
@@ -76,13 +76,13 @@ const Overview: React.FC = () => {
 
     const {data, loading: tbLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 
     const {data: chartData, loading: chartLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: chartParams
     });
 
@@ -112,7 +112,7 @@ const Overview: React.FC = () => {
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useQuery({
         endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+        token: tinybirdToken,
         params: params
     });
 

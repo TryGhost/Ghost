@@ -49,6 +49,7 @@ export default class SearchProviderFlexService extends Service {
     @service ajax;
     @service notifications;
     @service store;
+    @service ghostPaths;
 
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
@@ -119,8 +120,15 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
-        const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const query = {fields: searchable.fields, limit: 10000, order: searchable.order};
+        let url;
+        let query;
+        if (searchable.model === 'post' || searchable.model === 'page') {
+            url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
+            query = {};
+        } else {
+            url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
+            query = {fields: searchable.fields, limit: 10000, order: searchable.order};
+        }
 
         try {
             const response = await this.ajax.request(url, {data: query});

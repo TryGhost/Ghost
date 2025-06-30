@@ -341,6 +341,7 @@ describe('ghost-stats.js', function () {
             expect(innerPayload.locale).to.be.a('string');
             expect(innerPayload.location).to.be.a('string');
             expect(innerPayload.site_uuid).to.be.a('string');
+            expect(innerPayload.event_id).to.be.a('string');
         });
     });
 
@@ -478,6 +479,20 @@ describe('ghost-stats.js', function () {
             // Test the global API works
             mockWindow.Tinybird.trackEvent('test', {data: 'value'});
             expect(mockFetch.calledOnce).to.be.true;
+        });
+    });
+
+    describe('GhostStats UUID Generation', function () {
+        it('should generate a valid UUID', function () {
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        });
+
+        it('should generate a valid UUID with fallback', function () {
+            mockWindow.crypto = undefined;
+
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
     });
 });
