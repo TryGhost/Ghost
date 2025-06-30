@@ -69,7 +69,7 @@ const SelectContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof SelectPrimitive.Content>
 >(({className, children, position = 'popper', ...props}, ref) => (
     <SelectPrimitive.Portal>
-        <div className='shade shade-activitypub shade-stats'>
+        <div className='shade shade-activitypub shade-stats shade-posts'>
             <SelectPrimitive.Content
                 ref={ref}
                 className={cn(

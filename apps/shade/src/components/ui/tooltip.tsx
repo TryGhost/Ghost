@@ -14,7 +14,7 @@ const TooltipContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({className, sideOffset = 4, ...props}, ref) => (
     <TooltipPrimitive.Portal>
-        <div className='shade shade-activitypub shade-stats'>
+        <div className='shade shade-activitypub shade-stats shade-posts'>
             <TooltipPrimitive.Content
                 ref={ref}
                 className={cn(

@@ -39,7 +39,7 @@ const ToasterPortal = () => {
 
     return mounted
         ? createPortal(
-            <div className='shade shade-activitypub shade-stats'>
+            <div className='shade shade-activitypub shade-stats shade-posts'>
                 <Toaster
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,

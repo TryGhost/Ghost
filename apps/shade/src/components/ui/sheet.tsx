@@ -59,7 +59,7 @@ const SheetContent = React.forwardRef<
     SheetContentProps
 >(({side = 'right', className, children, ...props}, ref) => (
     <SheetPortal>
-        <div className='shade shade-activitypub shade-stats'>
+        <div className='shade shade-activitypub shade-stats shade-posts'>
             <SheetOverlay />
             <SheetPrimitive.Content
                 ref={ref}
