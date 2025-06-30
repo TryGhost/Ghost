@@ -122,7 +122,7 @@ export default class SearchProviderFlexService extends Service {
     async #loadSearchable(searchable) {
         let url;
         let query;
-        if (searchable.model === 'post' || searchable.model === 'page') {
+        if (searchable.model === 'post' || searchable.model === 'page' || searchable.model === 'tag') {
             url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
             query = {};
         } else {
