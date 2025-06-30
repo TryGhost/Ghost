@@ -38,10 +38,8 @@ exports[`Search Index Content API fetchPosts should return a list of posts 1: [b
 Object {
   "posts": Array [
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -49,10 +47,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -60,10 +56,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -71,10 +65,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -82,10 +74,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -93,10 +83,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -104,10 +92,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -115,10 +101,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -126,10 +110,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -137,10 +119,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -148,10 +128,8 @@ Object {
       "visibility": Any<String>,
     },
     Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "excerpt": Any<String>,
       "id": Any<String>,
-      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
       "slug": Any<String>,
       "title": Any<String>,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
@@ -166,7 +144,7 @@ exports[`Search Index Content API fetchPosts should return a list of posts 2: [h
 Object {
   "access-control-allow-origin": "*",
   "cache-control": "public, max-age=0",
-  "content-length": "5399",
+  "content-length": "4387",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
