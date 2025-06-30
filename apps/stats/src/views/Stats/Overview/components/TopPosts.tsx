@@ -30,7 +30,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
                 <div className="flex flex-col gap-1.5">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
-                            <div className="flex items-center gap-1 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                                 {metric.icon}
                                 {metric.label}
                             </div>
@@ -82,7 +82,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
-                                    <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent' onClick={() => {
+                                    <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent' onClick={() => {
                                         navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                     }}>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]'>

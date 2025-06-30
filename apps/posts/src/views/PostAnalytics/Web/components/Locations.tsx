@@ -114,7 +114,7 @@ const Locations:React.FC<LocationsProps> = ({data, isLoading}) => {
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                         <SheetTitle>Top locations</SheetTitle>
                                         <SheetDescription>Where are the readers of this post</SheetDescription>
                                     </SheetHeader>
