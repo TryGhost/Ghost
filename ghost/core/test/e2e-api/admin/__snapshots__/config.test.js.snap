@@ -22,7 +22,6 @@ Object {
       "i18n": true,
       "importMemberTier": true,
       "lexicalIndicators": true,
-      "mailEvents": true,
       "members": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
