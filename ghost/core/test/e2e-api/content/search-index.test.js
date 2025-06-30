@@ -21,10 +21,8 @@ describe('Search Index Content API', function () {
             title: anyString,
             excerpt: anyString,
             url: anyString,
-            visibility: anyString,
-            published_at: anyISODateTimeWithTZ,
-            created_at: anyISODateTimeWithTZ,
-            updated_at: anyISODateTimeWithTZ
+            updated_at: anyISODateTimeWithTZ,
+            visibility: anyString
         };
 
         it('should return a list of posts', async function () {

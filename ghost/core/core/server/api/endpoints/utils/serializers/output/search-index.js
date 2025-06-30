@@ -1,25 +1,36 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:search-index');
-const mappers = require('./mappers');
 const _ = require('lodash');
+
+const mappers = require('./mappers');
+const utils = require('../../index');
 
 module.exports = {
     async fetchPosts(models, apiConfig, frame) {
         debug('fetchPosts');
 
         let posts = [];
+        let keys = [];
 
-        const keys = [
-            'id',
-            'slug',
-            'title',
-            'excerpt',
-            'url',
-            'status',
-            'created_at',
-            'updated_at',
-            'published_at',
-            'visibility'
-        ];
+        if (utils.isContentAPI(frame)) {
+            keys.push(
+                'id',
+                'slug',
+                'title',
+                'excerpt',
+                'url',
+                'updated_at',
+                'visibility'
+            );
+        } else {
+            keys.push(
+                'id',
+                'url',
+                'title',
+                'status',
+                'published_at',
+                'visibility'
+            );
+        }
 
         for (let model of models.data) {
             let post = await mappers.posts(model, frame, {});
