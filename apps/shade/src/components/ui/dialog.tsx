@@ -31,7 +31,7 @@ const DialogContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({className, children, ...props}, ref) => (
     <DialogPortal>
-        <div className='shade'>
+        <div className='shade shade-activitypub shade-stats'>
             <DialogOverlay />
             <DialogPrimitive.Content
                 ref={ref}
