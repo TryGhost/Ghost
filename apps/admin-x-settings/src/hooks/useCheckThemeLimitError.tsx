@@ -46,7 +46,7 @@ export const useCheckThemeLimitError = (): UseCheckThemeLimitErrorReturn => {
     return {
         checkThemeLimitError: checkError,
         isThemeLimited: limiter?.isLimited('customThemes') || false,
-        isThemeLimitCheckReady: true, // Always ready - if limiter is undefined, there are no limits
+        isThemeLimitCheckReady: limiter !== undefined,
         allowedThemesList,
         noThemeChangesAllowed
     };

@@ -12,8 +12,9 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
     const [themeChangeError, setThemeChangeError] = useState<string|null>(null);
     const [isCheckingLimit, setIsCheckingLimit] = useState(false);
     const [isCheckingInstallation, setIsCheckingInstallation] = useState(false);
-    const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited, allowedThemesList} = useCheckThemeLimitError();
+    const {checkThemeLimitError, isThemeLimitCheckReady, noThemeChangesAllowed, isThemeLimited} = useCheckThemeLimitError();
     const [installationAllowed, setInstallationAllowed] = useState<boolean | null>(null);
+    const [hasCheckedInstallation, setHasCheckedInstallation] = useState(false);
 
     useEffect(() => {
         const checkIfThemeChangeAllowed = async () => {
@@ -48,6 +49,15 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         }
     }, [checkThemeLimitError, isThemeLimitCheckReady, pathName, modal, updateRoute, noThemeChangesAllowed]);
 
+    // Reset states when pathName changes
+    useEffect(() => {
+        if (pathName !== 'theme/install') {
+            setHasCheckedInstallation(false);
+            setInstallationAllowed(null);
+            setIsCheckingInstallation(false);
+        }
+    }, [pathName]);
+
     // Check theme installation limits
     useEffect(() => {
         // Helper to extract theme ref from URL
@@ -55,17 +65,20 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             const url = window.location.href;
             const fragment = url.split('#')[1];
             const queryParams = fragment?.split('?')[1];
-            
+
             if (!queryParams) {
                 return null;
             }
-            
+
             const searchParams = new URLSearchParams(queryParams);
             return searchParams.get('ref');
         };
 
         // Helper to handle theme limit error
         const handleThemeLimitError = (error: string) => {
+            // Immediately prevent any installation attempts
+            setInstallationAllowed(false);
+
             const limitModalConfig = {
                 prompt: error,
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
@@ -74,16 +87,17 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             if (noThemeChangesAllowed) {
                 // Single theme - show limit modal and redirect to /theme
                 NiceModal.show(LimitModal, limitModalConfig);
+                // Clear URL parameters
+                window.history.replaceState({}, '', window.location.pathname + window.location.hash.split('?')[0]);
                 modal.remove();
                 updateRoute('theme');
             } else {
-                // Multiple themes allowed - redirect to change-theme and show limit modal there
+                // Multiple themes allowed - show limit modal and then redirect
+                NiceModal.show(LimitModal, limitModalConfig);
                 modal.remove();
-                updateRoute('design/change-theme');
-                // Show the limit modal after a small delay to ensure the route change happens first
-                setTimeout(() => {
-                    NiceModal.show(LimitModal, limitModalConfig);
-                }, 100);
+                // Don't redirect to change-theme modal - just stay on current route
+                // This prevents both modals from being visible at the same time
+                updateRoute('theme');
             }
         };
 
@@ -94,16 +108,26 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
                 return;
             }
 
+            // Mark that we've started checking
+            setHasCheckedInstallation(true);
+
             // Still loading limit check
             if (!isThemeLimitCheckReady) {
                 setIsCheckingInstallation(true);
                 return;
             }
-            
+
+            // If there are no theme limits at all, allow installation
+            if (!isThemeLimited) {
+                setInstallationAllowed(true);
+                setIsCheckingInstallation(false);
+                return;
+            }
+
             setIsCheckingInstallation(true);
-            
+
             const ref = getThemeRefFromUrl();
-            
+
             if (!ref) {
                 // Invalid URL - no ref param
                 setInstallationAllowed(false);
@@ -112,15 +136,26 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             }
 
             const themeName = ref.split('/')[1]?.toLowerCase();
+
             const error = await checkThemeLimitError(themeName);
-            
-            if (error) {
-                setInstallationAllowed(false);
-                handleThemeLimitError(error);
-            } else {
-                setInstallationAllowed(true);
+
+            // Double-check again after async operation
+            if (pathName !== 'theme/install') {
+                setIsCheckingInstallation(false);
+                return;
             }
-            
+
+            if (error) {
+                // Immediately set these to prevent any rendering
+                setInstallationAllowed(false);
+                setIsCheckingInstallation(false);
+                handleThemeLimitError(error);
+                // Don't continue after showing limit modal
+                // This prevents the race condition
+                return;
+            }
+
+            setInstallationAllowed(true);
             setIsCheckingInstallation(false);
         };
 
@@ -135,15 +170,22 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
         if (isCheckingLimit || themeChangeError) {
             return null;
         }
-        
+
         return <ChangeThemeModal />;
     } else if (pathName === 'theme/install') {
-        // Don't render the modal if limits aren't ready yet
-        if (!isThemeLimitCheckReady) {
+        // Always wait for the installation check to complete
+        // This prevents any race conditions
+        if (!hasCheckedInstallation || !isThemeLimitCheckReady || isCheckingInstallation || installationAllowed === null) {
             return null;
         }
 
-        // Parse URL params inline since we need them immediately
+        // If installation is not allowed, don't render anything
+        // The limit modal has already been shown and we're redirecting
+        if (!installationAllowed) {
+            return null;
+        }
+
+        // Parse URL params only after we know installation is allowed
         const url = window.location.href;
         const fragment = url.split('#')[1];
         const queryParams = fragment?.split('?')[1];
@@ -154,28 +196,6 @@ const DesignAndThemeModal: React.FC<RoutingModalProps> = ({pathName}) => {
             const searchParams = new URLSearchParams(queryParams);
             ref = searchParams.get('ref');
             source = searchParams.get('source');
-        }
-
-        // Check if the theme installation will be blocked
-        // This prevents the modal from being created before the useEffect runs
-        if (ref && allowedThemesList) {
-            const themeName = ref.split('/')[1]?.toLowerCase();
-            const isThemeInstallationBlocked = noThemeChangesAllowed || !allowedThemesList.includes(themeName);
-            
-            if (isThemeInstallationBlocked) {
-                // The useEffect will handle showing the limit modal and redirecting
-                return null;
-            }
-        }
-
-        // Don't render if we're still checking or if we haven't determined if installation is allowed yet
-        if (isCheckingInstallation || installationAllowed === null) {
-            return null;
-        }
-
-        // If installation is not allowed, we've already shown the limit modal
-        if (!installationAllowed) {
-            return null;
         }
 
         // Installation is allowed, render the ChangeThemeModal with the source and ref

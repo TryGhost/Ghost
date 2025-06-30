@@ -5,7 +5,6 @@ import OfficialThemes from './theme/OfficialThemes';
 import React, {useEffect, useState} from 'react';
 import ThemeInstalledModal from './theme/ThemeInstalledModal';
 import ThemePreview from './theme/ThemePreview';
-import useQueryParams from '../../../hooks/useQueryParams';
 import {Button, ConfirmationModal, FileUpload, LimitModal, Modal, PageHeader, TabView, showToast} from '@tryghost/admin-x-design-system';
 import {InstalledTheme, Theme, ThemesInstallResponseType, isDefaultOrLegacyTheme, useActivateTheme, useBrowseThemes, useInstallTheme, useUploadTheme} from '@tryghost/admin-x-framework/api/themes';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
@@ -306,8 +305,8 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
     const [previewMode, setPreviewMode] = useState('desktop');
     const [isInstalling, setInstalling] = useState(false);
     const [installedFromMarketplace, setInstalledFromMarketplace] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
     const {updateRoute} = useRouting();
-    const refParam = useQueryParams().getParam('ref');
 
     const modal = useModal();
     const {data: {themes} = {}} = useBrowseThemes();
@@ -320,13 +319,31 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         setSelectedTheme(theme);
     };
 
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
     // probably not the best place to handle the logic here, something for cleanup.
     useEffect(() => {
         const handleUrlInstallation = async () => {
             // this grabs the theme ref from the url and installs it
             // Only show confirmation if we have explicit source and themeRef props (not from URL params after redirect)
-            if (source && themeRef && !installedFromMarketplace) {
+            // Important: This should only run when ChangeThemeModal is explicitly given these props,
+            // not when it's rendered for the regular change-theme route
+            // Also wait for component to be mounted to avoid race conditions
+            if (source && themeRef && !installedFromMarketplace && isMounted) {
                 const themeName = themeRef.split('/')[1];
+
+                // Check theme limit before showing installation modal
+                const limitError = await checkThemeLimitError(themeName);
+                if (limitError) {
+                    // Don't show installation modal if there's a limit error
+                    // The parent component should handle this
+                    // Also close the current modal to prevent any issues
+                    modal.remove();
+                    return;
+                }
+
                 let titleText = 'Install Theme';
                 const existingThemeNames = themes?.map(t => t.name) || [];
                 let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
@@ -338,7 +355,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     <>
                         <br/>
                         <br/>
-                        This will overwrite your existing version of <strong>Liebling</strong>{themeToOverwrite?.active ? ' which is your active theme' : ''}. All custom changes will be lost.
+                        This will overwrite your existing version of <strong>{themeName}</strong>{themeToOverwrite?.active ? ' which is your active theme' : ''}. All custom changes will be lost.
                     </>
                     }
                 </>;
@@ -381,7 +398,7 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
         };
 
         handleUrlInstallation();
-    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, refParam]);
+    }, [themeRef, source, installTheme, handleError, activateTheme, updateRoute, themes, installedFromMarketplace, checkThemeLimitError, modal, isMounted]);
 
     if (!themes) {
         return;

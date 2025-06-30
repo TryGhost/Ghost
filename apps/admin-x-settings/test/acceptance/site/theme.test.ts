@@ -336,10 +336,12 @@ test.describe('Theme settings', async () => {
         // Wait for the theme section to be ready
         await expect(themeSection).toBeVisible();
 
-        // Give the component time to check limits
-        await page.waitForTimeout(1000);
+        // Wait for the Change theme button to be ready (component needs to check limits first)
+        const changeThemeButton = themeSection.getByRole('button', {name: 'Change theme'});
+        await expect(changeThemeButton).toBeVisible();
+        await expect(changeThemeButton).toBeEnabled();
 
-        await themeSection.getByRole('button', {name: 'Change theme'}).click();
+        await changeThemeButton.click();
 
         // Should show limit modal instead of theme modal
         // Wait for the limit modal to appear (async limit check needs time)
@@ -439,6 +441,7 @@ test.describe('Theme settings', async () => {
     test('Theme install route works without limits', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
+            ...limitRequests,
             browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
             browseConfig: {
                 ...globalDataRequests.browseConfig,
@@ -485,7 +488,15 @@ test.describe('Theme settings', async () => {
         await expect(confirmation).toHaveText(/By clicking below, Taste will automatically be activated as the theme for your site/);
 
         // Can proceed with installation
-        await confirmation.getByRole('button', {name: 'Install'}).click();
+        const installButton = confirmation.getByRole('button', {name: 'Install'});
+        await expect(installButton).toBeVisible();
+        await expect(installButton).toBeEnabled();
+        
+        await installButton.click();
+        
+        // Wait for the confirmation modal to close
+        await expect(confirmation).not.toBeVisible();
+        
         await expect(page.getByTestId('toast-success')).toHaveText(/taste is now your active theme/);
     });
 
@@ -567,27 +578,22 @@ test.describe('Theme settings', async () => {
 
         await page.goto('/#/settings/theme/install?source=github&ref=TryGhost/Taste');
 
-        // Should be redirected to design/change-theme
-        await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
+        // Should be redirected to /theme (not change-theme to avoid modal conflicts)
+        await expect(page).toHaveURL(/#\/settings\/theme/);
 
         // Should show limit modal because 'taste' is not in the allowlist
         await expect(page.getByTestId('limit-modal')).toBeVisible();
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use more themes/);
 
-        // Theme modal should be visible (behind the limit modal) but NO confirmation modal
-        await expect(page.getByTestId('theme-modal')).toBeVisible();
+        // Theme modal should NOT be visible
+        await expect(page.getByTestId('theme-modal')).not.toBeVisible();
         await expect(page.getByTestId('confirmation-modal')).not.toBeVisible();
 
-        // Wait for the limit modal to be fully interactive before clicking
-        const limitModalCancelButton = page.getByTestId('limit-modal').getByRole('button', {name: 'Cancel'});
-        await expect(limitModalCancelButton).toBeEnabled();
-        
-        // Close the limit modal - be more specific to avoid clicking through to theme modal
-        await limitModalCancelButton.click();
+        // Close the limit modal
+        await page.getByTestId('limit-modal').getByRole('button', {name: 'Cancel'}).click();
 
-        // Should stay on design/change-theme with the change theme modal visible
-        await expect(page).toHaveURL(/#\/settings\/design\/change-theme/);
-        await expect(page.getByTestId('theme-modal')).toBeVisible();
+        // Should stay on /theme
+        await expect(page).toHaveURL(/#\/settings\/theme/);
     });
 
     test('Theme install route blocks installation with single-theme allowlist', async ({page}) => {
