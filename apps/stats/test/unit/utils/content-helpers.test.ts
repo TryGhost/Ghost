@@ -53,10 +53,10 @@ describe('content-helpers', () => {
     });
 
     describe('getContentDescription', () => {
-        let mockGetPeriodText: ReturnType<typeof vi.fn>;
+        let mockGetPeriodText: ReturnType<typeof vi.fn<[number], string>>;
 
         beforeEach(function () {
-            mockGetPeriodText = vi.fn();
+            mockGetPeriodText = vi.fn<[number], string>();
         });
 
         it('returns correct description for posts', () => {
@@ -109,10 +109,10 @@ describe('content-helpers', () => {
     });
 
     describe('getGrowthContentDescription', () => {
-        let mockGetPeriodText: ReturnType<typeof vi.fn>;
+        let mockGetPeriodText: ReturnType<typeof vi.fn<[number], string>>;
 
         beforeEach(function () {
-            mockGetPeriodText = vi.fn();
+            mockGetPeriodText = vi.fn<[number], string>();
         });
 
         it('returns correct growth description for posts', () => {
