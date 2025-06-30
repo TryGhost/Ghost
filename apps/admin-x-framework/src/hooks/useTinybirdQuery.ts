@@ -24,5 +24,10 @@ export const useTinybirdQuery = (options: UseTinybirdQueryOptions) => {
         params: params
     });
 
-    return {data, meta, loading: tokenQuery.isLoading || loading, error};
+    return {
+        data, 
+        meta, 
+        loading: tokenQuery.isLoading || loading, 
+        error: error ?? tokenQuery.error
+    };
 };

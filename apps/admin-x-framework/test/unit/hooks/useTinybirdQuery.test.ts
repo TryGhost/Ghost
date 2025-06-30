@@ -180,4 +180,22 @@ describe('useTinybirdQuery', () => {
 
         expect(result.current.error).toBe(mockError);
     });
+
+    it('should return the error from useQuery if the token query has an error', () => {
+        const mockError = new Error('Token error');
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: false,
+            error: mockError,
+            refetch: vi.fn()
+        });
+
+        const {result} = renderHook(() => useTinybirdQuery({
+            statsConfig: {id: '123'},
+            endpoint: 'test',
+            params: {}
+        }), {wrapper});
+
+        expect(result.current.error).toBe(mockError);
+    });
 });
