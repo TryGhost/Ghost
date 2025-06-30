@@ -3,7 +3,7 @@ import {useTinybirdToken} from './useTinybirdToken';
 import {StatsConfig} from '../providers/FrameworkProvider';
 import {getStatEndpointUrl} from '../utils/stats-config';
 
-interface UseTinybirdQueryOptions {
+export interface UseTinybirdQueryOptions {
     statsConfig: StatsConfig;
     endpoint: string;
     params: Record<string, string>;

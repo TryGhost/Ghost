@@ -14,6 +14,8 @@ export {default as useHandleError} from './hooks/useHandleError';
 export {default as useFilterableApi} from './hooks/useFilterableApi';
 export {useTinybirdToken} from './hooks/useTinybirdToken';
 export type {UseTinybirdTokenResult} from './hooks/useTinybirdToken';
+export {useTinybirdQuery} from './hooks/useTinybirdQuery';
+export type {UseTinybirdQueryOptions} from './hooks/useTinybirdQuery';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
