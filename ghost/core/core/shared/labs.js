@@ -46,7 +46,6 @@ const PRIVATE_FEATURES = [
     'trafficAnalyticsTracking',
     'importMemberTier',
     'urlCache',
-    'mailEvents',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
     'updatedMainNav',
