@@ -1625,6 +1625,19 @@ describe('{{ghost_head}} helper', function () {
 
             rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
+
+        it('does not include tracker token when it is not set', async function () {
+            configUtils.set('tinybird:tracker:token', undefined);
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/data-token=/);
+        });
     });
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
