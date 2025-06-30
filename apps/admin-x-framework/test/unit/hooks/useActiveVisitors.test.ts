@@ -1,7 +1,6 @@
 import {renderHook, act} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useActiveVisitors} from '../../../src/hooks/useActiveVisitors';
-import {withMockFetch} from '../../utils/mockFetch';
 import React from 'react';
 
 // Mock the @tinybirdco/charts module
@@ -519,7 +518,7 @@ describe('useActiveVisitors', () => {
         expect(setIntervalSpy).toHaveBeenCalledTimes(2);
     });
 
-    it('should not call useQuery when token is undefined', () => {
+    it('should call useQuery with undefined endpoint when token is loading (preventing HTTP requests)', () => {
         // Mock useTinybirdToken to return undefined token (still loading)
         mockUseTinybirdToken.mockReturnValue({
             token: undefined,
@@ -534,9 +533,14 @@ describe('useActiveVisitors', () => {
         // Render the hook
         renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
-        // EXPECTED: useQuery should not be called when token is undefined/loading
-        // This test should FAIL with current implementation and PASS after fix
-        expect(mockUseQuery).not.toHaveBeenCalled();
+        // EXPECTED: useQuery should be called with undefined endpoint when token is loading
+        // This prevents HTTP requests by disabling the SWR query entirely
+        expect(mockUseQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                endpoint: undefined,
+                token: undefined
+            })
+        );
     });
 
     it('calls useQuery with token when token is available', () => {
