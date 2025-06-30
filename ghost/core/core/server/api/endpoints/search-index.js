@@ -1,4 +1,5 @@
-const searchIndexService = require('../../services/search-index');
+const getPostServiceInstance = require('../../services/posts/posts-service');
+const postsService = getPostServiceInstance();
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -17,7 +18,8 @@ const controller = {
                 order: 'updated_at DESC',
                 columns: ['id', 'url', 'title', 'status', 'published_at', 'visibility']
             };
-            return searchIndexService.fetchPosts(options);
+
+            return postsService.browsePosts(options);
         }
     }
 };
