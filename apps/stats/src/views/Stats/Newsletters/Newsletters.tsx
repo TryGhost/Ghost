@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -49,34 +49,18 @@ const NewsletterTableRows: React.FC<{
     // Data is already sorted by the API based on sortBy
     const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
 
+    const colSpan = emailTrackOpensEnabled && emailTrackClicksEnabled ? 5 : emailTrackOpensEnabled ? 4 : emailTrackClicksEnabled ? 4 : 3;
+
     // Memoize loading rows to prevent recreation on every render
     const loadingRows = useMemo(() => (
         <>
-            {Array.from({length: 5}, (_, index) => (
-                <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
-                    <TableCell className="font-medium">
-                        <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">
-                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    {emailTrackOpensEnabled &&
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    }
-                    {emailTrackClicksEnabled &&
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    }
-                </TableRow>
-            ))}
+            <TableRow className='last:border-none [&>td]:py-2.5'>
+                <TableCell className="font-medium" colSpan={colSpan}>
+                    <SkeletonTable className='mt-5' />
+                </TableCell>
+            </TableRow>
         </>
-    ), [emailTrackOpensEnabled, emailTrackClicksEnabled]);
+    ), [colSpan]);
 
     // Memoize the data rows based on the actual data and loading states
     const dataRows = useMemo(() => {
@@ -129,8 +113,8 @@ const NewsletterTableRows: React.FC<{
                     ))}
                 </>
                 :
-                <TableRow className='hover:bg-transparent'>
-                    <TableCell className='text-center hover:bg-transparent' colSpan={5}>
+                <TableRow className='border-none hover:bg-transparent'>
+                    <TableCell className='text-center group-hover:!bg-transparent' colSpan={5}>
                         <EmptyIndicator
                             className='size-full py-20'
                             title={`No newsletters found ${getPeriodText(range)}`}
@@ -238,7 +222,6 @@ const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
-    const navigate = useNavigate();
 
     // Get the initial tab from URL search parameters
     const initialTab = searchParams.get('tab') || 'total-subscribers';
@@ -371,10 +354,10 @@ const Newsletters: React.FC = () => {
     }, [newsletterStatsData]);
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isClicksLoading;
+    const isKPIsLoading = isSubscriberStatsLoading || isClicksLoading || isNewsletterStatsLoading;
 
     // Show data only if there are actual newsletters sent in the time period
-    const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
+    // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
     // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
@@ -389,39 +372,26 @@ const Newsletters: React.FC = () => {
                 <NewsletterSelect newsletters={newslettersData?.newsletters} />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView isLoading={isNewsletterStatsLoading} loadingComponent={<></>}>
-                {hasNewslettersInPeriod ? (
-                    <>
-                        <Card>
-                            <CardContent>
-                                <NewsletterKPIs
-                                    avgsData={avgsData}
-                                    initialTab={initialTab}
-                                    isAvgsLoading={false}
-                                    isLoading={isKPIsLoading}
-                                    subscribersData={subscribersData}
-                                    totals={totals}
-                                />
-                            </CardContent>
-                        </Card>
-                        <TopNewslettersTable
-                            range={range}
-                            selectedNewsletterId={selectedNewsletterId}
-                            shouldFetchStats={!!shouldFetchStats}
-                        />
-                    </>
-                ) : (
-                    <EmptyIndicator
-                        actions={<Button variant='outline' onClick={() => {
-                            navigate('/editor/post', {crossApp: true});
-                        }}>
-                            Create newsletter</Button>}
-                        className='size-full py-20'
-                        title={`No newsletters found ${getPeriodText(range)}`}
-                    >
-                        <LucideIcon.Mail strokeWidth={1.5} />
-                    </EmptyIndicator>
-                )}
+            <StatsView isLoading={false} loadingComponent={<></>}>
+                <>
+                    <Card>
+                        <CardContent>
+                            <NewsletterKPIs
+                                avgsData={avgsData}
+                                initialTab={initialTab}
+                                isAvgsLoading={false}
+                                isLoading={isKPIsLoading}
+                                subscribersData={subscribersData}
+                                totals={totals}
+                            />
+                        </CardContent>
+                    </Card>
+                    <TopNewslettersTable
+                        range={range}
+                        selectedNewsletterId={selectedNewsletterId}
+                        shouldFetchStats={!!shouldFetchStats}
+                    />
+                </>
             </StatsView>
         </StatsLayout>
     );

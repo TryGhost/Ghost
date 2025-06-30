@@ -7,7 +7,7 @@ import StatsView from '../layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
@@ -209,7 +209,7 @@ const Locations:React.FC = () => {
                 <AudienceSelect />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView data={data} isLoading={false}>
+            <StatsView isLoading={false}>
                 <Card className='p-0'>
                     <CardHeader className='border-b'>
                         <CardTitle>Top Locations</CardTitle>
@@ -245,68 +245,70 @@ const Locations:React.FC = () => {
                                 )}
                             </div>
                             <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6'>
-                                {isLoading
-                                    ?
-                                    <DataList>
-                                        <DataListHeader className='py-4'>
-                                            <DataListHead>Country</DataListHead>
-                                            <DataListHead>Visitors</DataListHead>
-                                        </DataListHeader>
+                                <DataList className='grow'>
+                                    <DataListHeader className='py-4'>
+                                        <DataListHead>Country</DataListHead>
+                                        <DataListHead>Visitors</DataListHead>
+                                    </DataListHeader>
+                                    {isLoading
+                                        ?
                                         <SkeletonTable className='mt-5' />
-                                    </DataList>
-                                    :
-                                    <>
-                                        <DataList>
-                                            <DataListHeader className='py-4'>
-                                                <DataListHead>Country</DataListHead>
-                                                <DataListHead>Visitors</DataListHead>
-                                            </DataListHeader>
-                                            <DataListBody>
-                                                {tableData?.map((row) => {
-                                                    const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                                    return (
-                                                        <DataListRow key={row.location || 'unknown'}>
-                                                            <DataListBar style={{
-                                                                width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                                                            }}/>
-                                                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
-                                                                <div className='flex items-center space-x-3 overflow-hidden'>
-                                                                    <Flag
-                                                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
-                                                                        data-testid='country-flag'
-                                                                        fallback={
-                                                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                                <Icon.SkullAndBones className='size-3' />
-                                                                            </span>
-                                                                        }
-                                                                    />
-                                                                    <div className='truncate font-medium' data-testid='country-name'>{countryName}</div>
-                                                                </div>
-                                                            </DataListItemContent>
-                                                            <DataListItemValue>
-                                                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                                <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
-                                                            </DataListItemValue>
-                                                        </DataListRow>
-                                                    );
-                                                })}
-                                            </DataListBody>
-                                        </DataList>
-                                        <SimplePagination className='mt-5'>
-                                            <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
-                                            <SimplePaginationNavigation>
-                                                <SimplePaginationPreviousButton
-                                                    disabled={!hasPreviousPage}
-                                                    onClick={previousPage}
-                                                />
-                                                <SimplePaginationNextButton
-                                                    disabled={!hasNextPage}
-                                                    onClick={nextPage}
-                                                />
-                                            </SimplePaginationNavigation>
-                                        </SimplePagination>
-                                    </>
-                                }
+                                        :
+                                        tableData && tableData.length > 0 ?
+                                            <>
+                                                <DataListBody>
+                                                    {tableData.map((row) => {
+                                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                                        return (
+                                                            <DataListRow key={row.location || 'unknown'}>
+                                                                <DataListBar style={{
+                                                                    width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
+                                                                }}/>
+                                                                <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                                                                    <div className='flex items-center space-x-3 overflow-hidden'>
+                                                                        <Flag
+                                                                            countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                            data-testid='country-flag'
+                                                                            fallback={
+                                                                                <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                                                    <Icon.SkullAndBones className='size-3' />
+                                                                                </span>
+                                                                            }
+                                                                        />
+                                                                        <div className='truncate font-medium' data-testid='country-name'>{countryName}</div>
+                                                                    </div>
+                                                                </DataListItemContent>
+                                                                <DataListItemValue>
+                                                                    <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                                    <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
+                                                                </DataListItemValue>
+                                                            </DataListRow>
+                                                        );
+                                                    })}
+                                                </DataListBody>
+                                                <SimplePagination className='mt-5'>
+                                                    <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
+                                                    <SimplePaginationNavigation>
+                                                        <SimplePaginationPreviousButton
+                                                            disabled={!hasPreviousPage}
+                                                            onClick={previousPage}
+                                                        />
+                                                        <SimplePaginationNextButton
+                                                            disabled={!hasNextPage}
+                                                            onClick={nextPage}
+                                                        />
+                                                    </SimplePaginationNavigation>
+                                                </SimplePagination>
+                                            </>
+                                            :
+                                            <EmptyIndicator
+                                                className='size-full py-20'
+                                                title={`No locations found ${getPeriodText(range)}`}
+                                            >
+                                                <LucideIcon.MapPin strokeWidth={1.5} />
+                                            </EmptyIndicator>
+                                    }
+                                </DataList>
                             </div>
 
                         </div>
