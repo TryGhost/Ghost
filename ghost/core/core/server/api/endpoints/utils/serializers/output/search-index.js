@@ -68,6 +68,29 @@ module.exports = {
         };
     },
 
+    async fetchTags(models, apiConfig, frame) {
+        debug('fetchTags');
+
+        let tags = [];
+
+        const keys = [
+            'id',
+            'slug',
+            'name',
+            'url'
+        ];
+
+        for (let model of models.data) {
+            let tag = await mappers.tags(model, frame);
+            tag = _.pick(tag, keys);
+            tags.push(tag);
+        }
+
+        frame.response = {
+            tags
+        };
+    },
+
     async fetchAuthors(models, apiConfig, frame) {
         debug('fetchAuthors');
 
@@ -92,26 +115,27 @@ module.exports = {
         };
     },
 
-    async fetchTags(models, apiConfig, frame) {
-        debug('fetchTags');
+    async fetchUsers(models, apiConfig, frame) {
+        debug('fetchUsers');
 
-        let tags = [];
+        let users = [];
 
         const keys = [
             'id',
             'slug',
             'name',
-            'url'
+            'url',
+            'profile_image'
         ];
 
         for (let model of models.data) {
-            let tag = await mappers.tags(model, frame);
-            tag = _.pick(tag, keys);
-            tags.push(tag);
+            let user = await mappers.users(model, frame);
+            user = _.pick(user, keys);
+            users.push(user);
         }
 
         frame.response = {
-            tags
+            users
         };
     }
 };
