@@ -88,6 +88,41 @@ export const createErrorMock = <T>(mockFn: any, error: Error): UseQueryResult<T>
 export const createSuccessMock = <T>(mockFn: any, data: T): UseQueryResult<T> => mockApiHook<T>(mockFn, data, false, null);
 
 /**
+ * Simplified mock utilities for common API hook states
+ * These provide cleaner, more readable alternatives to mockApiHook for standard scenarios
+ */
+
+/**
+ * Mock an API hook in loading state
+ * @param mockFn The mock function to configure
+ * @returns The configured mock result
+ */
+export const mockLoading = <T>(mockFn: any): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, true);
+
+/**
+ * Mock an API hook in success state with data
+ * @param mockFn The mock function to configure  
+ * @param data The data to return
+ * @returns The configured mock result
+ */
+export const mockSuccess = <T>(mockFn: any, data: T): UseQueryResult<T> => mockApiHook<T>(mockFn, data, false);
+
+/**
+ * Mock an API hook in error state
+ * @param mockFn The mock function to configure
+ * @param error The error to return
+ * @returns The configured mock result
+ */
+export const mockError = <T>(mockFn: any, error: Error): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, false, error);
+
+/**
+ * Mock an API hook with null/undefined data (successful but empty)
+ * @param mockFn The mock function to configure
+ * @returns The configured mock result
+ */
+export const mockNull = <T>(mockFn: any): UseQueryResult<T> => mockApiHook<T>(mockFn, undefined, false);
+
+/**
  * Common mock data patterns for Ghost entities
  */
 export const mockDataFactories = {
