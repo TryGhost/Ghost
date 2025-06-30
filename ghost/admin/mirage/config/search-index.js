@@ -36,4 +36,21 @@ export default function mockSearchIndex(server) {
             pages: searchPages
         };
     });
+
+    server.get('/search-index/tags', function ({tags}) {
+        const searchTags = tags.all().models.map((tag) => {
+            const url = `http://localhost:4200/tag/${tag.slug}/`;
+
+            return {
+                id: tag.id,
+                slug: tag.slug,
+                name: tag.name,
+                url: url
+            };
+        });
+
+        return {
+            tags: searchTags
+        };
+    });
 }
