@@ -36,6 +36,17 @@ const notImplemented = function notImplemented(req, res, next) {
         return next();
     }
 
+    // Ensure ghost-backup can both backup and export
+    if (req.api_key?.related('integration')?.get('slug') === 'ghost-backup') {
+        // export
+        const isExport = req.path.startsWith('/db/') && req.method === 'GET';
+        const isBackup = req.path.startsWith('/db/backup') && req.method === 'POST';
+
+        if (isExport || isBackup) {
+            return next();
+        }
+    }
+
     // CASE: god mode is enabled & we're in development, skip to permission system
     if (req.query.god_mode && process.env.NODE_ENV === 'development') {
         return next();
