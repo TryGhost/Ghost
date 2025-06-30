@@ -1,4 +1,4 @@
-import {vi, MockInstance} from 'vitest';
+import {MockInstance, vi} from 'vitest';
 
 /**
  * Date testing utilities to provide consistent, reliable date mocking
@@ -63,7 +63,7 @@ export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, ba
  * Mock the getRangeDates function from @tryghost/shade
  * Provides consistent date ranges for testing
  */
-export const mockGetRangeDates = (mockFn: MockInstance) => {
+export const mockGetRangeDates = () => {
     return (range: number) => {
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
         return {
@@ -78,7 +78,7 @@ export const mockGetRangeDates = (mockFn: MockInstance) => {
  * Mock the formatQueryDate function from @tryghost/shade
  * Provides consistent date formatting
  */
-export const mockFormatQueryDate = (mockFn: MockInstance) => {
+export const mockFormatQueryDate = () => {
     return (date: Date) => date.toISOString().split('T')[0];
 };
 
@@ -86,11 +86,11 @@ export const mockFormatQueryDate = (mockFn: MockInstance) => {
  * Common date test scenarios
  */
 export const DATE_TEST_SCENARIOS = {
-    today: { range: 1, description: 'today' },
-    lastWeek: { range: 7, description: 'last 7 days' },
-    lastMonth: { range: 30, description: 'last 30 days' },
-    last3Months: { range: 90, description: 'last 3 months' },
-    yearToDate: { range: -1, description: 'year to date' }
+    today: {range: 1, description: 'today'},
+    lastWeek: {range: 7, description: 'last 7 days'},
+    lastMonth: {range: 30, description: 'last 30 days'},
+    last3Months: {range: 90, description: 'last 3 months'},
+    yearToDate: {range: -1, description: 'year to date'}
 } as const;
 
 /**
@@ -102,11 +102,11 @@ export const setupDateMocking = () => {
     
     // Mock external date functions
     vi.mock('@tryghost/shade', async () => {
-        const actual = await vi.importActual('@tryghost/shade') as any;
+        const actual = await vi.importActual('@tryghost/shade') as Record<string, unknown>;
         return {
             ...actual,
-            getRangeDates: vi.fn().mockImplementation(mockGetRangeDates(vi.fn())),
-            formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate(vi.fn()))
+            getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),
+            formatQueryDate: vi.fn().mockImplementation(mockFormatQueryDate())
         };
     });
     
@@ -123,7 +123,7 @@ export const setupDateMocking = () => {
 export const expectApiCallWithDateRange = (
     mockApiCall: MockInstance,
     range: number,
-    additionalParams: Record<string, any> = {}
+    additionalParams: Record<string, unknown> = {}
 ) => {
     const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
     

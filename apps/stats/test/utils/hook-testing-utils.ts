@@ -1,4 +1,4 @@
-import {vi, MockInstance} from 'vitest';
+import {MockInstance, vi} from 'vitest';
 import {expectApiCallWithDateRange} from './date-testing-utils';
 
 /**
@@ -306,7 +306,7 @@ export const expectMemoization = (hookFunction: Function, deps: any[]) => {
     expect(result.current).toBe(firstResult);
     
     // Rerender with changed dependencies
-    deps.forEach(dep => {
+    deps.forEach((dep) => {
         // Modify dependency
         rerender(dep);
         expect(result.current).not.toBe(firstResult);

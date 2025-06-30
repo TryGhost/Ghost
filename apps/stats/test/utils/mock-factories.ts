@@ -1,4 +1,5 @@
 import {vi} from 'vitest';
+import type {UseQueryResult} from '@tanstack/react-query';
 
 /**
  * Mock data factories for consistent test data generation
@@ -44,7 +45,7 @@ interface MockStatsData {
 interface MockApiResponse<T> {
     data: T;
     isLoading: boolean;
-    error: any;
+    error: Error | null;
     isError: boolean;
     refetch: ReturnType<typeof vi.fn>;
 }
@@ -217,14 +218,14 @@ export class MockApiResponseBuilder<T> {
 
     loading(): MockApiResponseBuilder<T> {
         this.response.isLoading = true;
-        this.response.data = null as any;
+        this.response.data = null as unknown as T;
         return this;
     }
 
     withError(error: Error): MockApiResponseBuilder<T> {
         this.response.error = error;
         this.response.isError = true;
-        this.response.data = null as any;
+        this.response.data = null as unknown as T;
         return this;
     }
 
@@ -238,31 +239,63 @@ export class MockApiResponseBuilder<T> {
  */
 
 // Quick post factories
-export const createMockPost = (overrides: Partial<MockPost> = {}) => 
-    new MockPostBuilder().build();
+export const createMockPost = () => new MockPostBuilder().build();
 
-export const createMinimalPost = () => 
-    new MockPostBuilder().minimal().build();
+export const createMinimalPost = () => new MockPostBuilder().minimal().build();
 
-export const createPostWithoutEmail = () => 
-    new MockPostBuilder().withoutEmail().build();
+export const createPostWithoutEmail = () => new MockPostBuilder().withoutEmail().build();
 
 // Quick stats factories  
-export const createMockStats = (overrides: Partial<MockStatsData> = {}) => 
-    new MockStatsBuilder().build();
+export const createMockStats = () => new MockStatsBuilder().build();
 
-export const createStatsWithNulls = () => 
-    new MockStatsBuilder().withNullValues().build();
+export const createStatsWithNulls = () => new MockStatsBuilder().withNullValues().build();
 
 // API response factories
-export const createSuccessResponse = <T>(data: T) => 
-    new MockApiResponseBuilder(data).build();
+export const createSuccessResponse = <T>(data: T) => new MockApiResponseBuilder(data).build();
 
-export const createLoadingResponse = <T>() => 
-    new MockApiResponseBuilder(null as any).loading().build();
+export const createLoadingResponse = <T>() => new MockApiResponseBuilder(null as unknown as T).loading().build();
 
-export const createErrorResponse = <T>(error: Error) => 
-    new MockApiResponseBuilder(null as any).withError(error).build();
+export const createErrorResponse = <T>(error: Error) => new MockApiResponseBuilder(null as unknown as T).withError(error).build();
+
+/**
+ * Create a complete mock UseQueryResult for React Query
+ */
+export function createMockQueryResult<T>(
+    data: T | undefined, 
+    isLoading: boolean = false, 
+    error: Error | null = null
+): UseQueryResult<T, Error> {
+    const isSuccess = !isLoading && !error && data !== undefined;
+    const isError = !!error;
+    
+    return {
+        data,
+        error: error as Error | null,
+        isError,
+        isIdle: false,
+        isLoading,
+        isLoadingError: isLoading && isError,
+        isRefetchError: !isLoading && isError,
+        isSuccess,
+        status: isLoading ? 'loading' : isError ? 'error' : 'success',
+        dataUpdatedAt: isSuccess ? Date.now() : 0,
+        errorUpdatedAt: isError ? Date.now() : 0,
+        failureCount: isError ? 1 : 0,
+        failureReason: error,
+        errorUpdateCount: isError ? 1 : 0,
+        isFetched: !isLoading,
+        isFetchedAfterMount: !isLoading,
+        isFetching: isLoading,
+        isPlaceholderData: false,
+        isPaused: false,
+        isPending: isLoading,
+        isRefetching: false,
+        isStale: false,
+        fetchStatus: isLoading ? 'fetching' : 'idle',
+        refetch: vi.fn().mockResolvedValue({} as unknown),
+        remove: vi.fn()
+    } as unknown as UseQueryResult<T, Error>;
+}
 
 /**
  * Newsletter-specific factories
@@ -298,7 +331,7 @@ export const createMockClickStats = (postIds: string[] = ['post-1', 'post-2']) =
 /**
  * Test parameter factories
  */
-export const createStandardApiParams = (additionalParams: Record<string, any> = {}) => ({
+export const createStandardApiParams = (additionalParams: Record<string, unknown> = {}) => ({
     searchParams: {
         date_from: '2024-01-01',
         date_to: '2024-01-15',

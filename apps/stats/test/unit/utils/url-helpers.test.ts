@@ -1,9 +1,9 @@
-import {describe, expect, it, vi, beforeEach, afterEach} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {
-    getFrontendUrl,
     generateTitleFromPath,
-    shouldMakeClickable,
-    getClickHandler
+    getClickHandler,
+    getFrontendUrl,
+    shouldMakeClickable
 } from '@src/utils/url-helpers';
 
 // Mock window.open for testing

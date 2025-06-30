@@ -1,11 +1,11 @@
-import {describe, expect, it, vi} from 'vitest';
 import {
     CONTENT_TYPES,
     ContentType,
-    getContentTitle,
     getContentDescription,
+    getContentTitle,
     getGrowthContentDescription
 } from '@src/utils/content-helpers';
+import {describe, expect, it, vi} from 'vitest';
 
 describe('content-helpers', () => {
     describe('CONTENT_TYPES constants', () => {
@@ -48,14 +48,14 @@ describe('content-helpers', () => {
         });
 
         it('returns default title for undefined', () => {
-            expect(getContentTitle(undefined as any)).toBe('Top content');
+            expect(getContentTitle(undefined as unknown as ContentType)).toBe('Top content');
         });
     });
 
     describe('getContentDescription', () => {
         const mockGetPeriodText = vi.fn();
 
-        beforeEach(() => {
+        beforeEach(function () {
             mockGetPeriodText.mockClear();
         });
 
@@ -111,7 +111,7 @@ describe('content-helpers', () => {
     describe('getGrowthContentDescription', () => {
         const mockGetPeriodText = vi.fn();
 
-        beforeEach(() => {
+        beforeEach(function () {
             mockGetPeriodText.mockClear();
         });
 

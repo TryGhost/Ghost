@@ -1,6 +1,8 @@
-import {renderHook} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {createMockQueryResult} from '../../utils/mock-factories';
+import {renderHook} from '@testing-library/react';
 import {useTopSourcesGrowth} from '@src/hooks/useTopSourcesGrowth';
+import type {ReferrerHistoryResponseType} from '@tryghost/admin-x-framework/api/referrers';
 
 // Mock external dependencies
 vi.mock('@tryghost/shade', () => ({
@@ -41,19 +43,18 @@ describe('useTopSourcesGrowth', () => {
             timezone: mockTimezone
         });
         
-        mockFormatQueryDate.mockImplementation((date) => date.toISOString().split('T')[0]);
+        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
         
         mockUseGlobalData.mockReturnValue({
             audience: 'all-members'
-        });
+        } as {audience: string});
         
         mockGetAudienceQueryParam.mockReturnValue('all');
         
-        mockUseTopSourcesGrowthAPI.mockReturnValue({
-            data: { sources: [] },
-            isLoading: false,
-            error: null
-        });
+        mockUseTopSourcesGrowthAPI.mockReturnValue(createMockQueryResult<ReferrerHistoryResponseType>(
+            {stats: []},
+            false
+        ));
     });
 
     it('calls useTopSourcesGrowthAPI with correct default parameters', () => {
@@ -88,13 +89,13 @@ describe('useTopSourcesGrowth', () => {
 
     it('handles different audience types', () => {
         mockUseGlobalData.mockReturnValue({
-            audience: 'paid-members'
-        });
+            audience: 2 // Represents paid members (binary representation)
+        } as {audience: number});
         mockGetAudienceQueryParam.mockReturnValue('paid');
 
         renderHook(() => useTopSourcesGrowth(30));
 
-        expect(mockGetAudienceQueryParam).toHaveBeenCalledWith('paid-members');
+        expect(mockGetAudienceQueryParam).toHaveBeenCalledWith(2);
         expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
             searchParams: {
                 date_from: '2024-01-01',
@@ -166,11 +167,10 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('returns the result from useTopSourcesGrowthAPI', () => {
-        const mockResult = {
-            data: { sources: [{ name: 'Google', signups: 100 }] },
-            isLoading: false,
-            error: null
-        };
+        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+            {stats: [{source: 'Google', signups: 100, date: '2024-01-01', paid_conversions: 10, mrr: 1000}]},
+            false
+        );
         
         mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
 
@@ -180,11 +180,10 @@ describe('useTopSourcesGrowth', () => {
     });
 
     it('handles loading state', () => {
-        const mockResult = {
-            data: null,
-            isLoading: true,
-            error: null
-        };
+        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+            undefined,
+            true
+        );
         
         mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
 
@@ -195,11 +194,11 @@ describe('useTopSourcesGrowth', () => {
 
     it('handles error state', () => {
         const mockError = new Error('API Error');
-        const mockResult = {
-            data: null,
-            isLoading: false,
-            error: mockError
-        };
+        const mockResult = createMockQueryResult<ReferrerHistoryResponseType>(
+            undefined,
+            false,
+            mockError
+        );
         
         mockUseTopSourcesGrowthAPI.mockReturnValue(mockResult);
 
@@ -211,7 +210,7 @@ describe('useTopSourcesGrowth', () => {
     it('handles various order by values', () => {
         const orderByValues = ['signups desc', 'clicks desc', 'signups asc', 'name asc'];
         
-        orderByValues.forEach(orderBy => {
+        orderByValues.forEach((orderBy) => {
             renderHook(() => useTopSourcesGrowth(30, orderBy));
             
             expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
@@ -225,7 +224,7 @@ describe('useTopSourcesGrowth', () => {
     it('handles various limit values', () => {
         const limitValues = [10, 25, 50, 100];
         
-        limitValues.forEach(limit => {
+        limitValues.forEach((limit) => {
             renderHook(() => useTopSourcesGrowth(30, 'signups desc', limit));
             
             expect(mockUseTopSourcesGrowthAPI).toHaveBeenCalledWith({
@@ -239,7 +238,7 @@ describe('useTopSourcesGrowth', () => {
     it('handles various range values', () => {
         const ranges = [1, 7, 30, 90];
         
-        ranges.forEach(range => {
+        ranges.forEach((range) => {
             renderHook(() => useTopSourcesGrowth(range));
             
             expect(mockGetRangeDates).toHaveBeenCalledWith(range);

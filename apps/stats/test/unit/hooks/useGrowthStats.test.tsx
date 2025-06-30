@@ -1,6 +1,6 @@
-import {renderHook, waitFor} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
 import moment from 'moment';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {renderHook, waitFor} from '@testing-library/react';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 
 // Mock external dependencies
@@ -23,9 +23,9 @@ vi.mock('@tryghost/shade', async () => {
     };
 });
 
-import {useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
-import {getSymbol} from '@tryghost/admin-x-framework';
 import {formatPercentage, getRangeDates} from '@tryghost/shade';
+import {getSymbol} from '@tryghost/admin-x-framework';
+import {useMemberCountHistory, useMrrHistory, useSubscriptionStats} from '@tryghost/admin-x-framework/api/stats';
 
 const mockedUseMemberCountHistory = useMemberCountHistory as ReturnType<typeof vi.fn>;
 const mockedUseMrrHistory = useMrrHistory as ReturnType<typeof vi.fn>;
@@ -64,7 +64,7 @@ describe('useGrowthStats', () => {
         mockedGetRangeDates.mockImplementation((range: number) => {
             const endDate = moment();
             const startDate = range === -1 ? moment().startOf('year') : moment().subtract(range - 1, 'days');
-            return { startDate, endDate };
+            return {startDate, endDate};
         });
         
         // Default successful responses
@@ -263,7 +263,7 @@ describe('useGrowthStats', () => {
             const outOfRangeData = [
                 {date: lastWeek, signups: 5, cancellations: 2}, // Out of range
                 {date: yesterday, signups: 3, cancellations: 1}, // In range
-                {date: today, signups: 4, cancellations: 2}  // In range
+                {date: today, signups: 4, cancellations: 2} // In range
             ];
 
             mockedUseSubscriptionStats.mockReturnValue({

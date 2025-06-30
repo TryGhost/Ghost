@@ -1,13 +1,13 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, setupStatsAppMocks, setupDateMocking, getExpectedDateRange} from '../../utils/test-helpers';
+import {createTestWrapper, getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {
-    useNewsletterStatsWithRange, 
-    useNewslettersList, 
-    useSubscriberCountWithRange,
-    useNewsletterBasicStatsWithRange,
-    useNewsletterClickStatsWithRange,
-    useNewsletterStatsWithRangeSplit
+    useNewsletterBasicStatsWithRange, 
+    useNewsletterClickStatsWithRange, 
+    useNewsletterStatsWithRange,
+    useNewsletterStatsWithRangeSplit,
+    useNewslettersList,
+    useSubscriberCountWithRange
 } from '@src/hooks/useNewsletterStatsWithRange';
 
 // Mock the API hooks
@@ -55,13 +55,7 @@ describe('Newsletter Stats Hooks', () => {
         });
         
         mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
-    });
-
-    afterEach(() => {
-        dateMocking.cleanup();
-    });
-
-    beforeEach(() => {
+        
         // Apply the mocks to the actual imported modules with default return values
         mockUseNewsletterStats.mockReturnValue({
             data: {
@@ -213,6 +207,10 @@ describe('Newsletter Stats Hooks', () => {
             isFetchingPreviousPage: false
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any);
+    });
+
+    afterEach(function () {
+        dateMocking.cleanup();
     });
 
     describe('useNewsletterStatsWithRange', () => {
@@ -619,16 +617,16 @@ describe('Newsletter Stats Hooks', () => {
             
             const basicStatsData = {
                 stats: [
-                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1' },
-                    { post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2' }
+                    {post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1'},
+                    {post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2'}
                 ],
-                meta: { pagination: { total: 2 } }
+                meta: {pagination: {total: 2}}
             };
 
             const clickStatsData = {
                 stats: [
-                    { post_id: 'post-1', total_clicks: 100, click_rate: 0.1 },
-                    { post_id: 'post-2', total_clicks: 150, click_rate: 0.15 }
+                    {post_id: 'post-1', total_clicks: 100, click_rate: 0.1},
+                    {post_id: 'post-2', total_clicks: 150, click_rate: 0.15}
                 ]
             };
 
@@ -654,10 +652,10 @@ describe('Newsletter Stats Hooks', () => {
             
             expect(result.current.data).toEqual({
                 stats: [
-                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 100, click_rate: 0.1 },
-                    { post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2', total_clicks: 150, click_rate: 0.15 }
+                    {post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 100, click_rate: 0.1},
+                    {post_id: 'post-2', open_rate: 0.6, subject: 'Subject 2', total_clicks: 150, click_rate: 0.15}
                 ],
-                meta: { pagination: { total: 2 } }
+                meta: {pagination: {total: 2}}
             });
         });
 
@@ -666,9 +664,9 @@ describe('Newsletter Stats Hooks', () => {
             
             const basicStatsData = {
                 stats: [
-                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1' }
+                    {post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1'}
                 ],
-                meta: { pagination: { total: 1 } }
+                meta: {pagination: {total: 1}}
             };
 
             mockUseNewsletterBasicStats.mockReturnValue({
@@ -681,7 +679,7 @@ describe('Newsletter Stats Hooks', () => {
             } as any);
 
             mockUseNewsletterClickStats.mockReturnValue({
-                data: { stats: [] },
+                data: {stats: []},
                 isLoading: false,
                 error: null,
                 isError: false,
@@ -693,9 +691,9 @@ describe('Newsletter Stats Hooks', () => {
             
             expect(result.current.data).toEqual({
                 stats: [
-                    { post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 0, click_rate: 0 }
+                    {post_id: 'post-1', open_rate: 0.5, subject: 'Subject 1', total_clicks: 0, click_rate: 0}
                 ],
-                meta: { pagination: { total: 1 } }
+                meta: {pagination: {total: 1}}
             });
         });
 
@@ -720,7 +718,7 @@ describe('Newsletter Stats Hooks', () => {
             const wrapper = createTestWrapper();
             
             mockUseNewsletterBasicStats.mockReturnValue({
-                data: { meta: { pagination: { total: 0 } } },
+                data: {meta: {pagination: {total: 0}}},
                 isLoading: false,
                 error: null,
                 isError: false,
@@ -794,7 +792,7 @@ describe('Newsletter Stats Hooks', () => {
             
             const basicStatsData = {
                 stats: [],
-                meta: { pagination: { total: 0 } }
+                meta: {pagination: {total: 0}}
             };
 
             mockUseNewsletterBasicStats.mockReturnValue({
@@ -810,7 +808,7 @@ describe('Newsletter Stats Hooks', () => {
             
             // Click stats should be called with enabled: false since no post IDs
             expect(mockUseNewsletterClickStats).toHaveBeenCalledWith({
-                searchParams: { newsletter_id: 'newsletter-123' },
+                searchParams: {newsletter_id: 'newsletter-123'},
                 enabled: false
             });
         });
@@ -821,7 +819,7 @@ describe('Newsletter Stats Hooks', () => {
             const clickRefetch = vi.fn();
             
             mockUseNewsletterBasicStats.mockReturnValue({
-                data: { stats: [] },
+                data: {stats: []},
                 isLoading: false,
                 error: null,
                 isError: false,
@@ -830,7 +828,7 @@ describe('Newsletter Stats Hooks', () => {
             } as any);
 
             mockUseNewsletterClickStats.mockReturnValue({
-                data: { stats: [] },
+                data: {stats: []},
                 isLoading: false,
                 error: null,
                 isError: false,

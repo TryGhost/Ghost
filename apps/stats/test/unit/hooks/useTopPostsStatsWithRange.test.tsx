@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, setupStatsAppMocks, setupDateMocking, getExpectedDateRange} from '../../utils/test-helpers';
+import {createTestWrapper, getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
@@ -40,7 +40,7 @@ describe('useTopPostsStatsWithRange', () => {
         mockUseTopPostsStats.mockImplementation(mocks.mockUseTopPostsStats);
     });
 
-    afterEach(() => {
+    afterEach(function () {
         dateMocking.cleanup();
     });
 
