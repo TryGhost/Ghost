@@ -517,4 +517,121 @@ describe('useActiveVisitors', () => {
         // Should create a new interval
         expect(setIntervalSpy).toHaveBeenCalledTimes(2);
     });
+
+    it('should call useQuery with undefined endpoint when token is loading (preventing HTTP requests)', () => {
+        // Mock useTinybirdToken to return undefined token (still loading)
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Clear any previous calls
+        mockUseQuery.mockClear();
+
+        // Render the hook
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // EXPECTED: useQuery should be called with undefined endpoint when token is loading
+        // This prevents HTTP requests by disabling the SWR query entirely
+        expect(mockUseQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                endpoint: undefined,
+                token: undefined
+            })
+        );
+    });
+
+    it('calls useQuery with token when token is available', () => {
+        // Mock useTinybirdToken to return a valid token
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'valid-token',
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Clear any previous calls
+        mockUseQuery.mockClear();
+
+        // Render the hook
+        renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Should call useQuery with the valid token
+        expect(mockUseQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                token: 'valid-token'
+            })
+        );
+    });
+
+    it('transitions from undefined to valid token correctly', () => {
+        // Start with undefined token
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Render the hook
+        const {rerender} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Verify first call with undefined token (due to tokenLoading: true)
+        expect(mockUseQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                token: undefined
+            })
+        );
+
+        // Clear previous calls
+        mockUseQuery.mockClear();
+
+        // Now provide a valid token
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'valid-token',
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Rerender
+        rerender();
+
+        // Should now call useQuery with the valid token
+        expect(mockUseQuery).toHaveBeenLastCalledWith(
+            expect.objectContaining({
+                token: 'valid-token'
+            })
+        );
+    });
+
+    it('shows loading state when token is loading', () => {
+        // Mock token as loading
+        mockUseTinybirdToken.mockReturnValue({
+            token: undefined,
+            isLoading: true,
+            error: null,
+            refetch: vi.fn()
+        });
+
+        // Mock useQuery to return no loading (since token loading should be considered)
+        mockUseQuery.mockReturnValue({
+            data: null,
+            loading: false,
+            error: null,
+            meta: null,
+            statistics: null,
+            endpoint: 'https://api.example.com/api_active_visitors',
+            token: undefined,
+            refresh: vi.fn()
+        });
+
+        const {result} = renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
+
+        // Should show loading because token is loading and no lastKnownCount
+        expect(result.current.isLoading).toBe(true);
+        expect(result.current.activeVisitors).toBe(0);
+    });
 });
