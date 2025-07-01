@@ -173,7 +173,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                             description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
                             title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
                         >
-                            <LucideIcon.Globe strokeWidth={1.5} />
+                            <LucideIcon.UserPlus strokeWidth={1.5} />
                         </EmptyIndicator>
                     </div>
                 )}
