@@ -64,7 +64,7 @@ const notImplemented = function notImplemented(req, res, next) {
         schedules: ['PUT'],
         files: ['POST'],
         media: ['POST'],
-        db: ['POST'],
+        db: ['GET', 'POST'],
         settings: ['GET'],
         oembed: ['GET'],
         'search-index': ['GET']
