@@ -158,6 +158,22 @@ describe('PostsStatsService', function () {
         });
     }
 
+    async function _createUser(id, name) {
+        await db('users').insert({
+            id,
+            name
+        });
+    }
+
+    async function _createPostAuthor(postId, authorId, sortOrder = 0) {
+        await db('posts_authors').insert({
+            id: `${postId}_${authorId}`,
+            post_id: postId,
+            author_id: authorId,
+            sort_order: sortOrder
+        });
+    }
+
     before(async function () {
         db = knex({
             client: 'sqlite3',
@@ -262,12 +278,23 @@ describe('PostsStatsService', function () {
 
         service = new PostsStatsService({knex: db, urlService: mockUrlService});
 
+        // Create default users for test data
+        await _createUser('user1', 'John Doe');
+        await _createUser('user2', 'Jane Smith');
+
         const now = new Date();
         await _createPostWithDetails('post1', 'Post 1', 'published', {published_at: new Date(now.getTime() - 4 * 24 * 60 * 60 * 1000)}); // 4 days ago
         await _createPostWithDetails('post2', 'Post 2', 'published', {published_at: new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000)}); // 3 days ago
         await _createPostWithDetails('post3', 'Post 3', 'published', {published_at: new Date(now.getTime() - 2 * 24 * 60 * 60 * 1000)}); // 2 days ago
         await _createPostWithDetails('post4', 'Post 4', 'published', {published_at: new Date(now.getTime() - 1 * 24 * 60 * 60 * 1000)}); // 1 day ago
         await _createPost('post5', 'Post 5', 'draft');
+
+        // Assign authors to posts
+        await _createPostAuthor('post1', 'user1', 0);
+        await _createPostAuthor('post2', 'user2', 0);
+        await _createPostAuthor('post3', 'user1', 0);
+        await _createPostAuthor('post4', 'user2', 0);
+        await _createPostAuthor('post5', 'user1', 0);
     });
 
     afterEach(async function () {
@@ -655,6 +682,12 @@ describe('PostsStatsService', function () {
         it('returns latest posts with zero views when no views data exists', async function () {
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -670,6 +703,11 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-17'),
                 feature_image: null
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('post3', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);
@@ -711,6 +749,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 3',
                     published_at: new Date('2025-01-17').getTime(),
                     feature_image: null,
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 0,
                     sent_count: 300,
                     opened_count: 225,
@@ -726,6 +766,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 2',
                     published_at: new Date('2025-01-16').getTime(),
                     feature_image: null,
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 0,
                     sent_count: 200,
                     opened_count: 150,
@@ -741,6 +783,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 1',
                     published_at: new Date('2025-01-15').getTime(),
                     feature_image: null,
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 0,
                     sent_count: 100,
                     opened_count: 50,
@@ -759,6 +803,12 @@ describe('PostsStatsService', function () {
         it('backfills with latest posts when not enough views data', async function () {
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -779,6 +829,12 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-18'),
                 feature_image: 'https://example.com/image4.jpg'
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('post3', 'author1', 0);
+            await _createPostAuthor('post4', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);
@@ -839,6 +895,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 1',
                     published_at: new Date('2025-01-15').getTime(),
                     feature_image: 'https://example.com/image1.jpg',
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 1000,
                     sent_count: 100,
                     opened_count: 50,
@@ -854,6 +912,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 2',
                     published_at: new Date('2025-01-16').getTime(),
                     feature_image: 'https://example.com/image2.jpg',
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 500,
                     sent_count: 200,
                     opened_count: 150,
@@ -869,6 +929,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 4',
                     published_at: new Date('2025-01-18').getTime(),
                     feature_image: 'https://example.com/image4.jpg',
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 0,
                     sent_count: 400,
                     opened_count: 300,
@@ -884,6 +946,8 @@ describe('PostsStatsService', function () {
                     title: 'Post 3',
                     published_at: new Date('2025-01-17').getTime(),
                     feature_image: 'https://example.com/image3.jpg',
+                    status: 'published',
+                    authors: 'Test Author',
                     views: 0,
                     sent_count: 300,
                     opened_count: 225,
@@ -956,6 +1020,12 @@ describe('PostsStatsService', function () {
 
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -971,6 +1041,11 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-17'),
                 feature_image: 'https://example.com/image3.jpg'
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('post3', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);
@@ -1024,11 +1099,20 @@ describe('PostsStatsService', function () {
 
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
                 feature_image: 'https://example.com/image1.jpg'
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);
@@ -1076,6 +1160,12 @@ describe('PostsStatsService', function () {
 
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2025-01-15'),
@@ -1086,6 +1176,10 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2025-01-16'),
                 feature_image: 'https://example.com/image2.jpg'
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);
@@ -1124,6 +1218,12 @@ describe('PostsStatsService', function () {
         it('returns correct member attribution when member events exist', async function () {
             // Create posts with UUIDs
             await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create users
+            await _createUser('author1', 'Test Author');
+            
             await _createPostWithDetails('post1', 'Post 1', 'published', {
                 uuid: 'uuid1',
                 published_at: new Date('2020-01-15'),
@@ -1134,6 +1234,10 @@ describe('PostsStatsService', function () {
                 published_at: new Date('2020-01-16'),
                 feature_image: 'https://example.com/image2.jpg'
             });
+
+            // Assign authors to posts
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
 
             // Add email stats
             await _createEmailStats('post1', 100, 50);

@@ -1196,7 +1196,7 @@ class PostsStatsService {
                     'p.status',
                     'emails.email_count',
                     'emails.opened_count',
-                    this.knex.raw('GROUP_CONCAT(u.name ORDER BY pa.sort_order SEPARATOR ", ") as authors')
+                    this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
@@ -1267,7 +1267,7 @@ class PostsStatsService {
                         'p.status',
                         'emails.email_count',
                         'emails.opened_count',
-                        this.knex.raw('GROUP_CONCAT(u.name ORDER BY pa.sort_order SEPARATOR ", ") as authors')
+                        this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
                     )
                     .leftJoin('emails', 'emails.post_id', 'p.id')
                     .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
