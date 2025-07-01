@@ -12,7 +12,11 @@ describe('LinkedIn URLs', () => {
             assert.equal(validateLinkedInUrl('https://www.linkedin.com/in/johnsmith'), 'https://www.linkedin.com/in/johnsmith');
             assert.equal(validateLinkedInUrl('www.linkedin.com/in/john.smith'), 'https://www.linkedin.com/in/john.smith');
             assert.equal(validateLinkedInUrl('ca.linkedin.com/in/john-smith'), 'https://ca.linkedin.com/in/john-smith');
-            assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/in/john-smith-abc123');
+            assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/pub/john-smith-abc123');
+            assert.equal(validateLinkedInUrl('linkedin.com/company/ghost-foundation'), 'https://www.linkedin.com/in/ghost-foundation');
+            assert.equal(validateLinkedInUrl('linkedin.com/school/mit'), 'https://www.linkedin.com/school/mit');
+            assert.equal(validateLinkedInUrl('company/ghost-foundation'), 'https://www.linkedin.com/in/ghost-foundation');
+            assert.equal(validateLinkedInUrl('school/mit'), 'https://www.linkedin.com/school/mit');
             assert.equal(validateLinkedInUrl('@johnsmith'), 'https://www.linkedin.com/in/johnsmith');
             assert.equal(validateLinkedInUrl('johnsmith'), 'https://www.linkedin.com/in/johnsmith');
         });
@@ -29,8 +33,8 @@ describe('LinkedIn URLs', () => {
         });
 
         it('should allow valid non-custom LinkedIn usernames', () => {
-            assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/in/john-smith-abc123');
-            assert.equal(validateLinkedInUrl('linkedin.com/pub/john.smith-456789'), 'https://www.linkedin.com/in/john.smith-456789');
+            assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/pub/john-smith-abc123');
+            assert.equal(validateLinkedInUrl('linkedin.com/pub/john.smith-456789'), 'https://www.linkedin.com/pub/john.smith-456789');
         });
     });
 
@@ -56,7 +60,7 @@ describe('LinkedIn URLs', () => {
             assert.equal(linkedinUrlToHandle('https://www.linkedin.com/in/@johnsmith'), 'johnsmith');
             assert.equal(linkedinUrlToHandle('linkedin.com/in/john.smith'), 'john.smith');
             assert.equal(linkedinUrlToHandle('ca.linkedin.com/in/john-smith'), 'john-smith');
-            assert.equal(linkedinUrlToHandle('linkedin.com/pub/john-smith-abc123'), 'john-smith-abc123');
+            assert.equal(linkedinUrlToHandle('linkedin.com/pub/john-smith-abc123'), 'pub/john-smith-abc123');
         });
 
         it('should return null for invalid LinkedIn URLs', () => {
