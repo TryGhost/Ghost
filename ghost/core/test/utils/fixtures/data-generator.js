@@ -1413,13 +1413,15 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[7])
     ];
 
-    const tags = [
-        createTag(DataGenerator.Content.tags[0]),
-        createTag(DataGenerator.Content.tags[1]),
-        createTag(DataGenerator.Content.tags[2]),
-        createTag(DataGenerator.Content.tags[3]),
-        createTag(DataGenerator.Content.tags[4])
-    ];
+    const tags = DataGenerator.Content.tags.map((tag, index) => {
+        const adjustedTime = new Date(new Date().getTime() + index * 1000);
+
+        return createTag({
+            ...tag,
+            created_at: adjustedTime,
+            updated_at: adjustedTime
+        });
+    });
 
     const roles = [
         createBasic(DataGenerator.Content.roles[0]),

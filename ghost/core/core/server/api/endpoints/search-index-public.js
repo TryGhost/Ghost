@@ -14,7 +14,7 @@ const controller = {
             const options = {
                 filter: 'type:post',
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'slug', 'title', 'excerpt', 'url', 'updated_at', 'visibility']
             };
 
@@ -29,7 +29,7 @@ const controller = {
         query() {
             const options = {
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'slug', 'name', 'url', 'profile_image']
             };
 
@@ -44,7 +44,7 @@ const controller = {
         query() {
             const options = {
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'slug', 'name', 'url'],
                 filter: 'visibility:public'
             };
