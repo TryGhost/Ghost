@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getClickHandler} from '@src/utils/url-helpers';
@@ -147,7 +147,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
 
     return (
         <Card className='group/datalist'>
-            <div className='flex items-center justify-between p-6'>
+            <div className='flex items-center justify-between gap-6 p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
@@ -155,7 +155,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <div className='mb-4'>
+                <div className='mb-2'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>
@@ -170,12 +170,20 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 {isLoading ?
                     <SkeletonTable className='mt-3' />
                     :
-                    <TopContentTable
-                        contentType={selectedContentType}
-                        data={topContent}
-                        range={range}
-                        tableHeader={false}
-                    />
+                    topContent.length > 0 ?
+                        <TopContentTable
+                            contentType={selectedContentType}
+                            data={topContent}
+                            range={range}
+                            tableHeader={false}
+                        />
+                        :
+                        <EmptyIndicator
+                            className='w-full py-20'
+                            title={`No visitors ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.FileText strokeWidth={1.5} />
+                        </EmptyIndicator>
                 }
             </CardContent>
 
