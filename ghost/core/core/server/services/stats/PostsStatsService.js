@@ -1193,14 +1193,19 @@ class PostsStatsService {
                     'p.title',
                     'p.published_at',
                     'p.feature_image',
+                    'p.status',
                     'emails.email_count',
-                    'emails.opened_count'
+                    'emails.opened_count',
+                    this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
+                .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
+                .leftJoin('users as u', 'u.id', 'pa.author_id')
                 .where('p.status', 'published')
                 .whereNotNull('p.published_at')
                 .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
                 .orderBy('p.published_at', 'desc')
+                .groupBy('p.id', 'p.uuid', 'p.title', 'p.published_at', 'p.feature_image', 'p.status', 'emails.email_count', 'emails.opened_count')
                 .limit(limit);
 
             // Get member attribution counts and click counts for these posts
@@ -1227,6 +1232,8 @@ class PostsStatsService {
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: row.visits,
                     sent_count: post.email_count || null,
                     opened_count: post.opened_count || null,
@@ -1257,15 +1264,20 @@ class PostsStatsService {
                         'p.title',
                         'p.published_at',
                         'p.feature_image',
+                        'p.status',
                         'emails.email_count',
-                        'emails.opened_count'
+                        'emails.opened_count',
+                        this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
                     )
                     .leftJoin('emails', 'emails.post_id', 'p.id')
+                    .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
+                    .leftJoin('users as u', 'u.id', 'pa.author_id')
                     .whereNotIn('p.uuid', postUuids)
                     .whereNotIn('p.id', existingPostIds)
                     .where('p.status', 'published')
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
+                    .groupBy('p.id', 'p.uuid', 'p.title', 'p.published_at', 'p.feature_image', 'p.status', 'emails.email_count', 'emails.opened_count')
                     .limit(remainingCount);
 
                 // Get member attribution counts and click counts for additional posts
@@ -1289,6 +1301,8 @@ class PostsStatsService {
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: 0,
                     sent_count: post.email_count || null,
                     opened_count: post.opened_count || null,
