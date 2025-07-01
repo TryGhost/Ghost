@@ -675,4 +675,474 @@ describe(`Admin Comments API`, function () {
             res.body.comments[0].liked.should.eql(true);
         });
     });
+
+    describe('Add comments via Admin API', function () {
+        let emailMockReceiver;
+
+        beforeEach(async function () {
+            // Set up email mocking to test notifications
+            emailMockReceiver = mockManager.mockMail();
+        });
+
+        it('Can add a comment as a member via Admin API', async function () {
+            // Use existing fixture data
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>This is a test comment via Admin API</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This is a test comment via Admin API</p>');
+            comment.should.have.property('status', 'published');
+            comment.should.have.property('member');
+            comment.member.should.have.property('id', memberId);
+        });
+
+        it('Can add a comment with custom created_at timestamp', async function () {
+            // Use existing fixture data
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+            const customTimestamp = '2023-01-15T10:30:00.000Z';
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>This comment was created at a specific time</p>',
+                created_at: customTimestamp
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This comment was created at a specific time</p>');
+            comment.should.have.property('status', 'published');
+            comment.should.have.property('created_at', customTimestamp);
+            comment.should.have.property('member');
+            comment.member.should.have.property('id', memberId);
+        });
+
+        it('Can add a reply to an existing comment via Admin API', async function () {
+            // First create a parent comment using the helper function
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            // Use existing fixture data
+            const memberId = fixtureManager.get('members', 1).id;
+
+            const replyData = {
+                parent_id: parentComment.id,
+                member_id: memberId,
+                html: '<p>This is a reply via Admin API</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This is a reply via Admin API</p>');
+            reply.should.have.property('status', 'published');
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
+
+        it('Can add a reply with custom created_at timestamp', async function () {
+            // First create a parent comment using the helper function
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id
+            });
+
+            // Use existing fixture data
+            const memberId = fixtureManager.get('members', 1).id;
+            const customTimestamp = '2023-01-15T10:30:00.000Z';
+
+            const replyData = {
+                parent_id: parentComment.id,
+                member_id: memberId,
+                html: '<p>This is a timestamped reply via Admin API</p>',
+                created_at: customTimestamp
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This is a timestamped reply via Admin API</p>');
+            reply.should.have.property('status', 'published');
+            reply.should.have.property('created_at', customTimestamp);
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
+
+        it('Returns validation error for missing required fields', async function () {
+            const commentData = {
+                // Missing post_id/parent_id, member_id, and html
+            };
+
+            await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(400);
+        });
+
+        it('Returns validation error when neither post_id nor parent_id is provided', async function () {
+            const commentData = {
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>Test comment</p>'
+                // Missing both post_id and parent_id
+            };
+
+            await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(422);
+        });
+
+        it('Handles invalid created_at dates gracefully', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+
+            // Test with invalid date string
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with invalid date</p>',
+                created_at: 'invalid-date-string'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of invalid date
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should be a valid recent timestamp, not the invalid input
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            // Should be created within the last few seconds
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Handles future dates by using current timestamp', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+            const futureDate = new Date();
+            futureDate.setFullYear(futureDate.getFullYear() + 1);
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with future date</p>',
+                created_at: futureDate.toISOString()
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of future date
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should not be the future date
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            createdAt.should.not.eql(futureDate);
+            // Should be created recently (within the last few seconds)
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Handles non-string/non-Date created_at values gracefully', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with numeric timestamp</p>',
+                created_at: 12345 // Invalid type - should be string or Date
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Should succeed but use current timestamp instead of invalid type
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at');
+            // The created_at should be a valid recent timestamp
+            const createdAt = new Date(comment.created_at);
+            const now = new Date();
+            const timeDiff = Math.abs(now.getTime() - createdAt.getTime());
+            timeDiff.should.be.lessThan(10000);
+        });
+
+        it('Works correctly with valid Date object as created_at', async function () {
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 0).id;
+            const validDate = new Date('2023-01-15T10:30:00.000Z');
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>Comment with Date object</p>',
+                created_at: validDate
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('created_at', validDate.toISOString());
+        });
+
+        it('Can set in_reply_to_id when creating a reply to a specific reply', async function () {
+            // Create a parent comment first
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is the parent comment</p>'
+            });
+
+            // Create a first reply to the parent
+            const firstReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id,
+                parent_id: parentComment.id,
+                html: '<p><strong>This is the first reply</strong> to the parent</p>'
+            });
+
+            // Now create a reply to the first reply using the Admin API
+            const memberId = fixtureManager.get('members', 2).id;
+            const replyData = {
+                parent_id: parentComment.id,
+                in_reply_to_id: firstReply.id,
+                member_id: memberId,
+                html: '<p>This is a reply to the first reply via Admin API</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This is a reply to the first reply via Admin API</p>');
+            reply.should.have.property('status', 'published');
+            reply.should.have.property('in_reply_to_id', firstReply.id);
+            reply.should.have.property('in_reply_to_snippet', 'This is the first reply to the parent');
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
+
+        it('Ignores in_reply_to_id when no parent_id is specified', async function () {
+            // Create a comment to reference
+            const existingComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is an existing comment</p>'
+            });
+
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 1).id;
+
+            // Try to create a top-level comment with in_reply_to_id (should be ignored)
+            const commentData = {
+                post_id: targetPostId,
+                in_reply_to_id: existingComment.id, // This should be ignored since no parent_id
+                member_id: memberId,
+                html: '<p>This is a top-level comment that incorrectly references another comment</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This is a top-level comment that incorrectly references another comment</p>');
+            comment.should.have.property('status', 'published');
+            // For top-level comments, in_reply_to_id should be null
+            comment.should.have.property('in_reply_to_id', null);
+            comment.should.have.property('in_reply_to_snippet', null);
+            comment.should.have.property('member');
+            comment.member.should.have.property('id', memberId);
+        });
+
+        it('Ignores in_reply_to_id when referenced comment has different parent', async function () {
+            // Create two separate parent comments
+            const parentComment1 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is parent comment 1</p>'
+            });
+
+            const parentComment2 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id,
+                html: '<p>This is parent comment 2</p>'
+            });
+
+            // Create a reply under parent comment 1
+            const replyToParent1 = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 2).id,
+                parent_id: parentComment1.id,
+                html: '<p>This is a reply to parent 1</p>'
+            });
+
+            const memberId = fixtureManager.get('members', 3).id;
+
+            // Try to create a reply under parent comment 2 but reference a reply from parent comment 1
+            const replyData = {
+                parent_id: parentComment2.id,
+                in_reply_to_id: replyToParent1.id, // This should be ignored - different parent
+                member_id: memberId,
+                html: '<p>This reply has mismatched parent and in_reply_to</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate response structure
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This reply has mismatched parent and in_reply_to</p>');
+            reply.should.have.property('status', 'published');
+            // in_reply_to should be ignored due to parent mismatch  
+            reply.should.have.property('in_reply_to_id', null);
+            reply.should.have.property('in_reply_to_snippet', null);
+            reply.should.have.property('member');
+            reply.member.should.have.property('id', memberId);
+        });
+
+        it('Does not send notifications when adding comments via Admin API', async function () {
+            // Create a comment that would normally trigger notifications
+            const targetPostId = postId;
+            const memberId = fixtureManager.get('members', 1).id;
+
+            const commentData = {
+                post_id: targetPostId,
+                member_id: memberId,
+                html: '<p>This comment should not trigger notifications</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [commentData]})
+                .expectStatus(201);
+
+            // Validate the comment was created successfully
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const comment = response.body.comments[0];
+            comment.should.have.property('id').which.is.a.String();
+            comment.should.have.property('html', '<p>This comment should not trigger notifications</p>');
+            comment.should.have.property('status', 'published');
+
+            // Verify NO emails were sent (internal context should prevent notifications)
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+
+        it('Does not send notifications when adding replies via Admin API', async function () {
+            // Create a parent comment first
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: '<p>This is the parent comment</p>'
+            });
+
+            // Clear any emails from the parent comment creation
+            emailMockReceiver = mockManager.mockMail();
+
+            // Create a reply that would normally trigger notifications
+            const memberId = fixtureManager.get('members', 1).id;
+            const replyData = {
+                parent_id: parentComment.id,
+                member_id: memberId,
+                html: '<p>This reply should not trigger notifications</p>'
+            };
+
+            const response = await adminApi
+                .post('comments/')
+                .body({comments: [replyData]})
+                .expectStatus(201);
+
+            // Validate the reply was created successfully
+            response.body.should.have.property('comments');
+            response.body.comments.should.be.an.Array().with.lengthOf(1);
+            
+            const reply = response.body.comments[0];
+            reply.should.have.property('id').which.is.a.String();
+            reply.should.have.property('html', '<p>This reply should not trigger notifications</p>');
+            reply.should.have.property('status', 'published');
+
+            // Verify NO emails were sent (internal context should prevent notifications)
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+    });
 });
