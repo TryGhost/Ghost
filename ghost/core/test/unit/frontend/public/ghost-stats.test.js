@@ -168,9 +168,16 @@ describe('ghost-stats.js', function () {
     });
 
     describe('GhostStats Configuration', function () {
-        it('should initialize with required configuration', function () {
+        it('should initialize with host and token', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
             mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            expect(ghostStats.initConfig()).to.be.true;
+        });
+
+        it('should initialize with host and no token', function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
             
             expect(ghostStats.initConfig()).to.be.true;
         });
@@ -342,6 +349,18 @@ describe('ghost-stats.js', function () {
             expect(innerPayload.location).to.be.a('string');
             expect(innerPayload.site_uuid).to.be.a('string');
             expect(innerPayload.event_id).to.be.a('string');
+        });
+
+        it('should handle missing token gracefully', async function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
+            ghostStats.initConfig();
+            await ghostStats.trackEvent('test', {});
+
+            expect(mockFetch.calledOnce).to.be.true;
+            
+            // Verify request structure
+            const [url] = mockFetch.firstCall.args;
+            expect(url).to.equal('https://test.com?name=analytics_events');
         });
     });
 
