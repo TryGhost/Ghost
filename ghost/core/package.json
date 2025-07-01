@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.127.2",
+  "version": "5.128.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -164,6 +164,7 @@
     "got": "11.8.6",
     "gscan": "4.49.7",
     "handlebars": "4.7.8",
+    "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
     "html5parser": "2.0.2",
     "human-number": "2.0.4",
@@ -225,7 +226,7 @@
   },
   "devDependencies": {
     "@actions/core": "1.11.1",
-    "@playwright/test": "1.53.1",
+    "@playwright/test": "1.53.2",
     "@prettier/sync": "0.6.1",
     "@tryghost/express-test": "0.15.0",
     "@tryghost/webhook-mock-receiver": "0.2.17",

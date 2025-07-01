@@ -91,7 +91,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     const {data: globalData} = useGlobalData();
     const {data: mrrHistoryResponse} = useMrrHistory();
     const {appSettings} = useAppContext();
-    
+
     // Use external sort state if provided, otherwise use internal state
     const [internalSortBy, setInternalSortBy] = useState<SourcesOrder>('free_members desc');
     const sortBy = externalSortBy || internalSortBy;
@@ -99,7 +99,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
 
     // Convert our sort format to backend format
     const backendOrderBy = sortBy.replace('free_members', 'signups').replace('paid_members', 'paid_conversions');
-    
+
     // Use the new endpoint with server-side sorting and limiting
     const {data: referrersData, isLoading} = useTopSourcesGrowth(range, backendOrderBy, limit);
 
@@ -141,12 +141,13 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
             const iconSrc = faviconDomain
                 ? `https://www.faviconextractor.com/favicon/${faviconDomain}?larger=true`
                 : defaultSourceIconUrl;
-            const linkUrl = faviconDomain ? `https://${faviconDomain}` : undefined;
+            // Don't link Direct sources since they represent direct traffic to the site
+            const linkUrl = (faviconDomain && source !== 'Direct') ? `https://${faviconDomain}` : undefined;
 
             return {
                 source,
                 free_members: item.signups, // Backend returns 'signups', we map to 'free_members' for display
-                paid_members: item.paid_conversions, // Backend returns 'paid_conversions', we map to 'paid_members' for display  
+                paid_members: item.paid_conversions, // Backend returns 'paid_conversions', we map to 'paid_members' for display
                 mrr: item.mrr,
                 iconSrc,
                 displayName: source,
@@ -232,7 +233,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                                     <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                                 </SheetTrigger>
                                 <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                                    <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                         <SheetTitle>{title}</SheetTitle>
                                         <SheetDescription>{description}</SheetDescription>
                                     </SheetHeader>

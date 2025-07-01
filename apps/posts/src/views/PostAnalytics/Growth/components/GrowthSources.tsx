@@ -168,10 +168,13 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     </SourcesTable>
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                        {mode === 'growth'
-                            ? 'Once someone signs up on this post, sources will show here.'
-                            : 'No sources data available.'
-                        }
+                        <EmptyIndicator
+                            className='h-full'
+                            description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
+                            title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
+                        >
+                            <LucideIcon.UserPlus strokeWidth={1.5} />
+                        </EmptyIndicator>
                     </div>
                 )}
             </CardContent>
@@ -182,7 +185,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                 <SheetTitle>{sheetTitle}</SheetTitle>
                                 <SheetDescription>{sheetDescription}</SheetDescription>
                             </SheetHeader>

@@ -1,24 +1,36 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:search-index');
-const mappers = require('./mappers');
 const _ = require('lodash');
+
+const mappers = require('./mappers');
+const utils = require('../../index');
 
 module.exports = {
     async fetchPosts(models, apiConfig, frame) {
         debug('fetchPosts');
 
         let posts = [];
+        let keys = [];
 
-        const keys = [
-            'id',
-            'slug',
-            'title',
-            'excerpt',
-            'url',
-            'created_at',
-            'updated_at',
-            'published_at',
-            'visibility'
-        ];
+        if (utils.isContentAPI(frame)) {
+            keys.push(
+                'id',
+                'slug',
+                'title',
+                'excerpt',
+                'url',
+                'updated_at',
+                'visibility'
+            );
+        } else {
+            keys.push(
+                'id',
+                'url',
+                'title',
+                'status',
+                'published_at',
+                'visibility'
+            );
+        }
 
         for (let model of models.data) {
             let post = await mappers.posts(model, frame, {});
@@ -28,6 +40,54 @@ module.exports = {
 
         frame.response = {
             posts
+        };
+    },
+
+    async fetchPages(models, apiConfig, frame) {
+        debug('fetchPages');
+
+        let pages = [];
+
+        const keys = [
+            'id',
+            'url',
+            'title',
+            'status',
+            'published_at',
+            'visibility'
+        ];
+
+        for (let model of models.data) {
+            let page = await mappers.pages(model, frame, {});
+            page = _.pick(page, keys);
+            pages.push(page);
+        }
+
+        frame.response = {
+            pages
+        };
+    },
+
+    async fetchTags(models, apiConfig, frame) {
+        debug('fetchTags');
+
+        let tags = [];
+
+        const keys = [
+            'id',
+            'slug',
+            'name',
+            'url'
+        ];
+
+        for (let model of models.data) {
+            let tag = await mappers.tags(model, frame);
+            tag = _.pick(tag, keys);
+            tags.push(tag);
+        }
+
+        frame.response = {
+            tags
         };
     },
 
@@ -55,26 +115,27 @@ module.exports = {
         };
     },
 
-    async fetchTags(models, apiConfig, frame) {
-        debug('fetchTags');
+    async fetchUsers(models, apiConfig, frame) {
+        debug('fetchUsers');
 
-        let tags = [];
+        let users = [];
 
         const keys = [
             'id',
             'slug',
             'name',
-            'url'
+            'url',
+            'profile_image'
         ];
 
         for (let model of models.data) {
-            let tag = await mappers.tags(model, frame);
-            tag = _.pick(tag, keys);
-            tags.push(tag);
+            let user = await mappers.users(model, frame);
+            user = _.pick(user, keys);
+            users.push(user);
         }
 
         frame.response = {
-            tags
+            users
         };
     }
 };

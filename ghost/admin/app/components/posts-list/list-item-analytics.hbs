@@ -56,7 +56,9 @@
             <div class="gh-post-list-feature-image" style={{html-safe (concat "background-image: url(" @post.featureImage ");")}}>
                 {{!-- Fallback to placeholder --}}
                 {{#unless @post.featureImage}}
-                    <div class="gh-post-list-feature-image-placeholder"></div>
+                    <div class="gh-post-list-feature-image-placeholder">
+                        {{svg-jar "post-feature-image-placeholder"}}
+                    </div>
                 {{/unless}}
             </div>
             <div>
@@ -197,7 +199,7 @@
                         {{#if @post.email}}
                         <div class="metric">
                             <div class="data">
-                                {{svg-jar "analytics-tab-sent"}}
+                                {{svg-jar "analytics-sent"}}
                                 Sent
                             </div>
                             <span>{{format-number @post.email.emailCount}}</span>

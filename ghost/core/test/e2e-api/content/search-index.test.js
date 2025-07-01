@@ -21,10 +21,8 @@ describe('Search Index Content API', function () {
             title: anyString,
             excerpt: anyString,
             url: anyString,
-            visibility: anyString,
-            published_at: anyISODateTimeWithTZ,
-            created_at: anyISODateTimeWithTZ,
-            updated_at: anyISODateTimeWithTZ
+            updated_at: anyISODateTimeWithTZ,
+            visibility: anyString
         };
 
         it('should return a list of posts', async function () {
@@ -39,7 +37,7 @@ describe('Search Index Content API', function () {
                         .fill(searchIndexPostMatcher)
                 });
 
-            // Explicitely double-check that expensive fields are not included
+            // Explicitly double-check that expensive fields are not included
             const post = res.body.posts[0];
             assert.equal(post.html, undefined, 'html field should be not included in the response');
             assert.equal(post.plaintext, undefined, 'plaintext field should be not included in the response');

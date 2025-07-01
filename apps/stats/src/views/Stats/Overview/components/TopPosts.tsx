@@ -1,6 +1,6 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -30,7 +30,7 @@ const PostListTooltip:React.FC<PostlistTooptipProps> = ({
                 <div className="flex flex-col gap-1.5">
                     {metrics?.map(metric => (
                         <div key={metric.label} className="flex items-center justify-between gap-5">
-                            <div className="flex items-center gap-1 whitespace-nowrap">
+                            <div className="flex items-center gap-1.5 whitespace-nowrap">
                                 {metric.icon}
                                 {metric.label}
                             </div>
@@ -82,7 +82,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
-                                    <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center [&+div]:hover:border-transparent' onClick={() => {
+                                    <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent' onClick={() => {
                                         navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
                                     }}>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]'>
@@ -179,14 +179,12 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             })
                         }
                         {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
-                            <TableRow>
-                                <TableHead
-                                    className='text-center font-normal text-muted-foreground'
-                                    colSpan={4}
-                                >
-                            No data for the selected period
-                                </TableHead>
-                            </TableRow>
+                            <EmptyIndicator
+                                className='w-full pb-10'
+                                title={`No posts ${getPeriodText(range)}`}
+                            >
+                                <LucideIcon.FileText strokeWidth={1.5} />
+                            </EmptyIndicator>
                         )}
                     </>
                 }

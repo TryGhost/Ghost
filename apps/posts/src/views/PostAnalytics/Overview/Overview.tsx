@@ -9,11 +9,10 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, isPublishedOnly, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
-import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
@@ -74,15 +73,15 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
-    const {data, loading: tbLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data, loading: tbLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
-    const {data: chartData, loading: chartLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data: chartData, loading: chartLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: chartParams
     });
 
@@ -110,9 +109,9 @@ const Overview: React.FC = () => {
     });
 
     // Get sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 

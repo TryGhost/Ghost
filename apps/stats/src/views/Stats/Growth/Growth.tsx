@@ -262,23 +262,14 @@ const Growth: React.FC = () => {
                                                 </TableRow>
                                             ))
                                         ) : (
-                                            <TableRow>
+                                            <TableRow className='border-none'>
                                                 <TableCell className='py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                                                    <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                                                        <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                                            <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                                                <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                                            </svg>
-                                                        </div>
-                                                        <div className='space-y-1'>
-                                                            <h3 className='text-sm font-medium text-foreground'>
-                                                                No conversions {selectedContentType === CONTENT_TYPES.PAGES ? 'on pages' : selectedContentType === CONTENT_TYPES.POSTS ? 'on posts' : ''} {getPeriodText(range).toLowerCase()}
-                                                            </h3>
-                                                            <p className='text-sm text-muted-foreground'>
-                                                                Try adjusting your date range to see more data.
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    <EmptyIndicator
+                                                        description='Try adjusting your date range to see more data.'
+                                                        title={`No conversions ${getPeriodText(range)}`}
+                                                    >
+                                                        <LucideIcon.ChartColumnIncreasing strokeWidth={1.5} />
+                                                    </EmptyIndicator>
                                                 </TableCell>
                                             </TableRow>
                                         )}

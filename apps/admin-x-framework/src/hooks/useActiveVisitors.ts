@@ -1,7 +1,6 @@
 import {useEffect, useState} from 'react';
-import {getStatEndpointUrl, getToken} from '../utils/stats-config';
 import {StatsConfig} from '../providers/FrameworkProvider';
-import {useQuery} from '@tinybirdco/charts';
+import {useTinybirdQuery} from './useTinybirdQuery';
 
 interface UseActiveVisitorsOptions {
     postUuid?: string;
@@ -32,13 +31,15 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
         // Add postUuid if provided
         ...(postUuid && {post_uuid: postUuid}),
         // Add refreshKey to force refetch
-        _refresh: refreshKey
+        _refresh: refreshKey.toString()
     };
 
-    const {data, loading, error} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig || undefined, 'api_active_visitors'),
-        token: getToken(statsConfig || undefined),
-        params
+    // Use useTinybirdQuery for consistent token handling
+    const {data, loading, error} = useTinybirdQuery({
+        statsConfig,
+        endpoint: 'api_active_visitors',
+        params,
+        enabled
     });
 
     const currentCount = data?.[0]?.active_visitors;
