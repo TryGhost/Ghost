@@ -18,14 +18,14 @@ export default class HomeRoute extends Route {
         }
 
         // Redirect to Analytics if trafficAnalytics is enabled and user has access
-        if (this.config.stats && this.feature.trafficAnalytics && this.session.user.isAdmin) {
+        if (this.config.stats && this.feature.trafficAnalytics && this.session.user?.isAdmin) {
             return this.router.transitionTo('stats-x');
         }
 
-        if (this.settings.socialWebEnabled && this.session.user.isAdmin) {
+        if (this.settings.socialWebEnabled && this.session.user?.isAdmin) {
             this.router.transitionTo('activitypub-x');
         } else {
-            if (this.config.labs.updatedMainNav) {
+            if (this.config.labs?.updatedMainNav) {
                 this.router.transitionTo('stats-x');
             } else {
                 this.router.transitionTo('dashboard');
