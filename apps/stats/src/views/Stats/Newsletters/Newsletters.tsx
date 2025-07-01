@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -293,21 +293,21 @@ const Newsletters: React.FC = () => {
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
         if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
-            // When there's no data, create two zero points spanning the range to show a flat line
-            const now = new Date();
-            const rangeInDays = range;
-            const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
+            // When there's no data, create zero points for each day spanning the range
+            const {startDate, endDate} = getRangeDates(range);
 
-            return [
-                {
-                    date: startDate.toISOString().split('T')[0], // Start of range
+            const dailyData = [];
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                dailyData.push({
+                    date: currentDate.toISOString().split('T')[0],
                     value: 0
-                },
-                {
-                    date: now.toISOString().split('T')[0], // End of range (today)
-                    value: 0
-                }
-            ];
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return dailyData;
         }
 
         const deltas = subscriberStatsData.stats[0].deltas;
