@@ -295,7 +295,21 @@ const Newsletters: React.FC = () => {
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
         if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
-            return [];
+            // When there's no data, create two zero points spanning the range to show a flat line
+            const now = new Date();
+            const rangeInDays = range;
+            const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
+
+            return [
+                {
+                    date: startDate.toISOString().split('T')[0], // Start of range
+                    value: 0
+                },
+                {
+                    date: now.toISOString().split('T')[0], // End of range (today)
+                    value: 0
+                }
+            ];
         }
 
         const deltas = subscriberStatsData.stats[0].deltas;
