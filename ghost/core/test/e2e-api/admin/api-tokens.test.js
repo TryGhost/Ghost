@@ -293,7 +293,7 @@ describe('Admin API', function () {
                 await agent.useZapierAdminAPIKey();
                 await agent
                     .get('db')
-                    .expectStatus(501);
+                    .expectStatus(403);
             });
 
             it('Integrations cannot access GET /invites', async function () {
