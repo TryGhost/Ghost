@@ -151,6 +151,8 @@ export type TopPostViewsStats = {
     title: string;
     published_at: string;
     feature_image: string;
+    status: string;
+    authors: string;
     views: number;
     sent_count: number | null;
     opened_count: number | null;
@@ -160,9 +162,6 @@ export type TopPostViewsStats = {
     members: number;
     free_members: number;
     paid_members: number;
-    authors?: {
-        name: string;
-    }[];
 };
 
 export type TopPostViewsResponseType = {
