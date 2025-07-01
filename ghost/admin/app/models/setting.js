@@ -61,6 +61,7 @@ export default Model.extend(ValidationEngine, {
     emailTrackClicks: attr('boolean'),
     outboundLinkTagging: attr('boolean'),
     membersTrackSources: attr('boolean'),
+    webAnalytics: attr('boolean'),
     /**
      * Members settings
      */
@@ -121,6 +122,11 @@ export default Model.extend(ValidationEngine, {
      * Security settings
      */
     requireEmailMfa: attr('boolean'),
+
+    /**
+     * Social web (ActivityPub)
+     */
+    socialWebEnabled: attr('boolean'),
 
     // HACK - not a real model attribute but a workaround for Ember Data not
     //        exposing meta from save responses

@@ -69,7 +69,7 @@ export default class OffersSegmentSelect extends Component {
 
         // fetch all offers with count
         // TODO: add `include: 'count.members` to query once API supports
-        const offers = yield this.store.query('offer', {limit: 'all'});
+        const offers = yield this.store.findAll('offer');
         this.offers = offers;
         if (offers.length > 0) {
             const offersGroup = {

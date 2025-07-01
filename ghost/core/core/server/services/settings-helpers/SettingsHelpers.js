@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {EmailAddressParser} = require('@tryghost/email-addresses');
+const EmailAddressParser = require('../email-address/EmailAddressParser');
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
 
@@ -168,7 +168,7 @@ class SettingsHelpers {
     }
 
     areDonationsEnabled() {
-        return this.isStripeConnected();
+        return this.isStripeConnected() && this.config.get('enableTipsAndDonations');
     }
 
     createUnsubscribeUrl(uuid, options = {}) {
@@ -217,6 +217,19 @@ class SettingsHelpers {
             ...configBlocklist,
             ...settingsBlocklist
         ]));
+    }
+
+    /**
+     * Social web (ActivityPub) is enabled if:
+     * - Social web is enabled in the settings
+     * - 'ActivityPub' flag is enabled in the labs, for compatibility with Ghost 5.x
+     * - Config allows it (TODO)
+     * - Billing allows it (TODO)
+     *
+     * @returns {boolean}
+     */
+    isSocialWebEnabled() {
+        return this.settingsCache.get('social_web') === true && this.labs.isSet('ActivityPub');
     }
 
     // PRIVATE

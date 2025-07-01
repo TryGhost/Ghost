@@ -1,5 +1,4 @@
 import React from 'react';
-import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 
@@ -19,8 +18,6 @@ import HistoryModal from '../../settings/advanced/HistoryModal';
 import InviteUserModal from '../../settings/general/InviteUserModal';
 import NavigationModal from '../../settings/site/NavigationModal';
 import NewsletterDetailModal from '../../settings/email/newsletters/NewsletterDetailModal';
-import NewsletterDetailModalAlpha from '../../settings/email/newsletters/NewsletterDetailModalAlpha';
-import NewsletterDetailModalLabs from '../../settings/email/newsletters/NewsletterDetailModalLabs';
 import OfferSuccess from '../../settings/growth/offers/OfferSuccess';
 // import OffersModal from '../../settings/growth/offers/OffersIndex';
 import OffersContainerModal from '../../settings/growth/offers/OffersContainerModal';
@@ -33,20 +30,6 @@ import UnsplashModal from '../../settings/advanced/integrations/UnsplashModal';
 import UserDetailModal from '../../settings/general/UserDetailModal';
 import ZapierModal from '../../settings/advanced/integrations/ZapierModal';
 
-// Wrapper component to conditionally render based on feature flag
-const ConditionalNewsletterDetailModal: ModalComponent = (props) => {
-    const showPrototypeSettings = useFeatureFlag('emailCustomization');
-    const showAlphaSettings = useFeatureFlag('emailCustomizationAlpha');
-
-    if (showPrototypeSettings) {
-        return <NewsletterDetailModalLabs {...props} />;
-    } else if (showAlphaSettings) {
-        return <NewsletterDetailModalAlpha {...props} />;
-    } else {
-        return <NewsletterDetailModal {...props} />;
-    }
-};
-
 const modals = {
     AddIntegrationModal,
     AddNewsletterModal,
@@ -58,7 +41,7 @@ const modals = {
     HistoryModal,
     InviteUserModal,
     NavigationModal,
-    NewsletterDetailModal: ConditionalNewsletterDetailModal,
+    NewsletterDetailModal,
     PinturaModal,
     PortalModal,
     SlackModal,

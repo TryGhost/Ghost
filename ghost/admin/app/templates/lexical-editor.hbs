@@ -17,7 +17,12 @@
                 >
                     <div class="flex items-center pe-auto h-100">
                         {{#if this.ui.isFullScreen}}
-                            {{#if this.fromAnalytics }}
+                            {{#if (and this.fromAnalytics (feature "trafficAnalytics"))}}
+                                <a href="#{{this.fromAnalytics}}" class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
+                                    {{svg-jar "arrow-left"}}
+                                    <span>Analytics</span>
+                                </a>
+                            {{else if this.fromAnalytics}}
                                 <LinkTo @route="posts.analytics" @model={{this.post}} class="gh-btn-editor gh-editor-back-button" data-test-breadcrumb>
                                     {{svg-jar "arrow-left"}}
                                     <span>Analytics</span>

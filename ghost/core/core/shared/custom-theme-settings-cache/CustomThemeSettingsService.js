@@ -167,8 +167,9 @@ module.exports = class CustomThemeSettingsService {
     // Private -----------------------------------------------------------------
 
     /**
+     * @param {string} name - name of the theme
      * @param {Object} theme - checked theme output from gscan
-     * @returns {Array} - list of stored theme record objects
+     * @returns {Promise<Array>} - list of stored theme record objects
      * @private
      */
     async _syncRepositoryWithTheme(name, theme) {

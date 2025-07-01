@@ -133,7 +133,7 @@ export default class GhMembersSegmentSelect extends Component {
             options.push(labelsGroup);
         }
 
-        const offers = yield this.store.query('offer', {limit: 'all'});
+        const offers = yield this.store.findAll('offer');
 
         if (offers.length > 0) {
             const offersGroup = {

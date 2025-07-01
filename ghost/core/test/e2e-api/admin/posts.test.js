@@ -88,7 +88,6 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -360,50 +359,6 @@ describe('Posts API', function () {
                 });
         });
 
-        it('Clears all page html fields when creating published post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const post = {
-                title: 'Page reset test',
-                lexical: createLexical('Testing page.html reset when creating post'),
-                status: 'published'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-creation empty page count');
-        });
-
-        it('Does not clear page html fields when creating draft post', async function () {
-            const post = {
-                title: 'Page reset test',
-                lexical: createLexical('Testing page.html reset when creating post'),
-                status: 'draft'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201);
-
-            // no pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(0, 'post-creation empty page count');
-        });
-
         it('invalidates preview cache when updating a draft post', async function () {
             const post = {
                 title: 'Cache invalidation test',
@@ -465,7 +420,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // mobiledoc revisions are created
@@ -519,7 +474,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // post revisions are created
@@ -539,37 +494,6 @@ describe('Posts API', function () {
                 .fetchAll();
 
             mobiledocRevisions.length.should.equal(0);
-        });
-
-        it('Clears all page html fields when publishing a post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const {body: postBody} = await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [{
-                    title: 'Page reset test',
-                    lexical: createLexical('Testing page.html reset when updating post'),
-                    status: 'draft'
-                }]})
-                .expectStatus(201);
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .put(`/posts/${postResponse.id}/?source=html&formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, postResponse, {status: 'published'})]})
-                .expectStatus(200);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
 
         describe('Access', function () {
@@ -614,7 +538,7 @@ describe('Posts API', function () {
                         .matchHeaderSnapshot({
                             'content-version': anyContentVersion,
                             etag: anyEtag,
-                            'x-cache-invalidate': anyString
+                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                         })
                         .matchBodySnapshot({
                             posts: [Object.assign({}, matchPostShallowIncludes, {
@@ -656,31 +580,6 @@ describe('Posts API', function () {
                         id: anyErrorId
                     }]
                 });
-        });
-
-        it('Clears all page html fields when deleting a published post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const {body: postBody} = await agent
-                .get('/posts/?limit=1&filter=status:published')
-                .expectStatus(200);
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .delete(`/posts/${postResponse.id}/`)
-                .expectStatus(204);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
         });
     });
 

@@ -1,7 +1,6 @@
 import FeedItem from '@src/components/feed/FeedItem';
 import {Activity} from '@src/api/activitypub';
-import {LoadingIndicator, NoValueLabel} from '@tryghost/admin-x-design-system';
-import {Separator} from '@tryghost/shade';
+import {LoadingIndicator, LucideIcon, NoValueLabel, NoValueLabelIcon, Separator} from '@tryghost/shade';
 import {useEffect, useRef} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -59,14 +58,16 @@ const Posts: React.FC<PostsProps> = ({
     return (
         <>
             {hasNextPage === false && posts.length === 0 && (
-                <NoValueLabel icon='pen'>
+                <NoValueLabel>
+                    <NoValueLabelIcon><LucideIcon.Pencil /></NoValueLabelIcon>
                     {noResultsMessage}
                 </NoValueLabel>
             )}
-            <ul className='mx-auto flex max-w-[640px] flex-col'>
+            <ul className='mx-auto flex max-w-[640px] flex-col' data-testid="profile-posts-list">
                 {posts.map((activity, index) => (
                     <li
                         key={`posts-${activity.id}`}
+                        data-testid="profile-post-item"
                         data-test-view-article
                     >
                         <FeedItem
@@ -75,21 +76,15 @@ const Posts: React.FC<PostsProps> = ({
                             commentCount={activity.object.replyCount}
                             isLoading={isLoading}
                             layout='feed'
+                            likeCount={activity.object.likeCount}
                             object={activity.object}
                             repostCount={activity.object.repostCount}
                             type={activity.type}
                             onClick={() => {
                                 if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/notes/${encodeURIComponent(activity.object.id)}`);
                                 } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
-                                }
-                            }}
-                            onCommentClick={() => {
-                                if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
-                                } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/reader/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
                         />
