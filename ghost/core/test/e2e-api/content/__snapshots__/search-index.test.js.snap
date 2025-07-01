@@ -260,15 +260,15 @@ Object {
     },
     Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Getting Started",
-      "slug": "getting-started",
-      "url": "http://127.0.0.1:2369/tag/getting-started/",
-    },
-    Object {
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "kitchen sink",
       "slug": "kitchen-sink",
       "url": "http://127.0.0.1:2369/tag/kitchen-sink/",
+    },
+    Object {
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "name": "Getting Started",
+      "slug": "getting-started",
+      "url": "http://127.0.0.1:2369/tag/getting-started/",
     },
   ],
 }
