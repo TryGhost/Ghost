@@ -168,10 +168,13 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     </SourcesTable>
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                        {mode === 'growth'
-                            ? 'Once someone signs up on this post, sources will show here.'
-                            : 'No sources data available.'
-                        }
+                        <EmptyIndicator
+                            className='h-full'
+                            description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
+                            title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
+                        >
+                            <LucideIcon.UserPlus strokeWidth={1.5} />
+                        </EmptyIndicator>
                     </div>
                 )}
             </CardContent>
