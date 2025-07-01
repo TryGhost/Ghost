@@ -17,7 +17,7 @@ const controller = {
             const options = {
                 filter: 'type:post',
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'url', 'title', 'status', 'published_at', 'visibility']
             };
 
@@ -36,7 +36,7 @@ const controller = {
             const options = {
                 filter: 'type:page',
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'url', 'title', 'status', 'published_at', 'visibility']
             };
 
@@ -54,8 +54,8 @@ const controller = {
         query() {
             const options = {
                 limit: '10000',
-                order: 'updated_at DESC',
-                columns: ['id', 'slug', 'name', 'url']
+                order: 'updated_at DESC, id DESC',
+                columns: ['id', 'slug', 'name', 'url', 'updated_at']
             };
 
             return models.Tag.findPage(options);
@@ -72,7 +72,7 @@ const controller = {
         query() {
             const options = {
                 limit: '10000',
-                order: 'updated_at DESC',
+                order: 'updated_at DESC, id DESC',
                 columns: ['id', 'slug', 'url', 'name', 'profile_image']
             };
 

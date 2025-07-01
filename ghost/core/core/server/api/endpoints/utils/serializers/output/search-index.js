@@ -77,7 +77,8 @@ module.exports = {
             'id',
             'slug',
             'name',
-            'url'
+            'url',
+            'updated_at'
         ];
 
         for (let model of models.data) {
