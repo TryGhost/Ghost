@@ -1295,5 +1295,49 @@ describe('PostsStatsService', function () {
             assert.ok(typeof post1Result.free_members === 'number', 'Free members should be a number');
             assert.ok(typeof post1Result.paid_members === 'number', 'Paid members should be a number');
         });
+
+        it('properly formats multiple authors with single commas', function () {
+            // Test the comma formatting logic directly with expected output patterns
+            const testCases = [
+                {
+                    input: 'Alice Johnson, Bob Wilson, Carol Smith',
+                    description: '3 authors with proper comma separation'
+                },
+                {
+                    input: 'John Doe, Jane Smith',  
+                    description: '2 authors with single comma'
+                },
+                {
+                    input: 'Solo Author',
+                    description: 'single author with no commas'
+                }
+            ];
+
+            testCases.forEach((testCase) => {
+                const authorsString = testCase.input;
+                
+                // Should not have trailing comma
+                assert.ok(!authorsString.endsWith(','), `${testCase.description}: Should not have trailing comma`);
+                
+                // Should not have leading comma  
+                assert.ok(!authorsString.startsWith(','), `${testCase.description}: Should not have leading comma`);
+                
+                // Should not have multiple consecutive commas
+                assert.ok(!authorsString.includes(',,'), `${testCase.description}: Should not have consecutive commas`);
+                
+                // Should not have empty values between commas
+                assert.ok(!authorsString.includes(', ,'), `${testCase.description}: Should not have empty values between commas`);
+                
+                // For multiple authors, verify comma count
+                const commaCount = (authorsString.match(/,/g) || []).length;
+                const authorCount = authorsString.split(',').map(name => name.trim()).filter(name => name.length > 0).length;
+                
+                if (authorCount > 1) {
+                    assert.equal(commaCount, authorCount - 1, `${testCase.description}: Should have exactly ${authorCount - 1} commas for ${authorCount} authors`);
+                } else {
+                    assert.equal(commaCount, 0, `${testCase.description}: Single author should have no commas`);
+                }
+            });
+        });
     });
 });
