@@ -1,8 +1,21 @@
 import validator from 'validator';
 
+function isValidBlueskyUsername(username: string): boolean {
+    const validUsernamePatterns = [
+        // DID username: did:plc: + 24 chars
+        /^did:plc:[a-zA-Z0-9._]{24}$/, 
+        // Regular username: max 15 chars
+        /^[a-zA-Z0-9._]{1,15}$/,
+        // Domain username: requires dot, max 191 chars
+        // length check needs to be at the front because of the +, otherwise could go over 191 
+        /^(?=.{1,191}$)[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/
+    ];
+    
+    return validUsernamePatterns.some(pattern => pattern.test(username));
+}
+
 export function validateBlueskyUrl(newUrl: string) {
     const errMessage = 'The URL must be in a format like https://bsky.app/profile/yourUsername';
-    const invalidUsernameMessage = 'Your Username is not a valid Bluesky Username';
     if (!newUrl) {
         return '';
     }
@@ -28,22 +41,8 @@ export function validateBlueskyUrl(newUrl: string) {
     }
 
     // Validate username
-    if (username.startsWith('did:plc:')) {
-        // Bluesky DID starts with did:plc: followed by 24 alphanumeric characters 
-        // see https://github.com/did-method-plc/did-method-plc
-        if (!username.match(/^did:plc:[a-zA-Z0-9._]{24}$/)) {
-            throw new Error(invalidUsernameMessage);
-        }
-        // Regular username: alphanumeric, underscore, max 15 chars
-    } else if (!username.includes('.')) {
-        if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
-            throw new Error(invalidUsernameMessage);
-        }
-    } else {
-        // Domain-based username: alphanumeric, dots, hyphens, at least one dot, reasonable length
-        if (!username.match(/^[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/) || username.length > 253) {
-            throw new Error(invalidUsernameMessage);
-        }
+    if (!isValidBlueskyUsername(username)) {
+        throw new Error('Your Username is not a valid Bluesky Username');
     }
 
     // Construct and validate full URL
@@ -67,20 +66,8 @@ export const blueskyHandleToUrl = (handle: string) => {
     }
 
     // Validate username
-    if (username.startsWith('did:plc:')) {
-        // https://github.com/did-method-plc/did-method-plc
-        if (!username.match(/^did:plc:[a-zA-Z0-9._]{24}$/)) {
-            throw new Error(errMessage);
-        }
-        // Regular username: alphanumeric, underscore, max 15 chars
-    } else if (!username.includes('.')) {
-        if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
-            throw new Error(errMessage);
-        }
-    } else {
-        if (!username.match(/^[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/) || username.length > 191) { // 191 is the max length due to database constraints
-            throw new Error(errMessage);
-        }
+    if (!isValidBlueskyUsername(username)) {
+        throw new Error(errMessage);
     }
 
     return `https://bsky.app/profile/${username}`;
