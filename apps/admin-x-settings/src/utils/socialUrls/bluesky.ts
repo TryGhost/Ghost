@@ -28,9 +28,14 @@ export function validateBlueskyUrl(newUrl: string) {
     }
 
     // Validate username
-    // Regular username: alphanumeric, underscore, max 15 chars
-    const isRegularUsername = !username.includes('.');
-    if (isRegularUsername) {
+    if (username.startsWith('did:plc:')) {
+        // Bluesky DID starts with did:plc: followed by 24 alphanumeric characters 
+        // see https://github.com/did-method-plc/did-method-plc
+        if (!username.match(/^did:plc:[a-zA-Z0-9._]{24}$/)) {
+            throw new Error(invalidUsernameMessage);
+        }
+        // Regular username: alphanumeric, underscore, max 15 chars
+    } else if (!username.includes('.')) {
         if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
             throw new Error(invalidUsernameMessage);
         }
@@ -62,8 +67,13 @@ export const blueskyHandleToUrl = (handle: string) => {
     }
 
     // Validate username
-    const isRegularUsername = !username.includes('.');
-    if (isRegularUsername) {
+    if (username.startsWith('did:plc:')) {
+        // https://github.com/did-method-plc/did-method-plc
+        if (!username.match(/^did:plc:[a-zA-Z0-9._]{24}$/)) {
+            throw new Error(errMessage);
+        }
+        // Regular username: alphanumeric, underscore, max 15 chars
+    } else if (!username.includes('.')) {
         if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
             throw new Error(errMessage);
         }
