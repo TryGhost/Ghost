@@ -202,8 +202,8 @@
             {{/if}}
         {{/if}}
 
-        {{!-- Visitor count column (only show for published posts when traffic analytics is enabled) --}}
-        {{#if (feature "trafficAnalyticsAlpha")}}
+        {{!-- Visitor count column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
+        {{#if (and (feature "trafficAnalyticsAlpha") this.settings.webAnalytics)}}
             {{#if @post.isPublished}}
                 {{#if this.hasVisitorData}}
                     <div class="permalink gh-list-data gh-post-list-metrics">
@@ -227,8 +227,8 @@
             {{/if}}
         {{/if}}
 
-        {{!-- Member conversions column (only show for published posts when traffic analytics is enabled) --}}
-        {{#if (feature "trafficAnalyticsAlpha")}}
+        {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled AND member tracking is enabled) --}}
+        {{#if (and (feature "trafficAnalytics") (or this.settings.membersTrackSources false))}}
             {{#if @post.isPublished}}
                 {{#if this.hasMemberData}}
                     <div class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}>
@@ -259,7 +259,7 @@
 
     {{!-- Button column --}}
     {{#if @post.hasAnalyticsPage }}
-        {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalyticsAlpha"))}}
+        {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
         <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-button" title="">
             <span class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="Go to Analytics Beta" data-ignore-select>
                 {{svg-jar "stats" title="Go to Analytics Beta"}}

@@ -25,7 +25,7 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-size: 18px;
-    line-height: 1.4;
+    line-height: 0;
     margin: 0;
     padding: 0;
     -ms-text-size-adjust: 100%;
@@ -51,15 +51,13 @@ table td {
     BODY & CONTAINER
 ------------------------------------- */
 .body {
-    background-color: #fff;
     width: 100%;
-}
-
-.body {
+    line-height: 1.4;
     background-color: {{backgroundColor}} !important;
 }
 
 .header {
+    line-height: 1.4;
     {{#if headerBackgroundColor}}
     background-color: {{headerBackgroundColor}};
     {{else}}
@@ -570,10 +568,12 @@ figure blockquote p {
     padding-bottom: 16px;
 }
 
-.post-title-serif {
+.post-title-serif,
+.post-title-serif td {
     font-family: Georgia, serif;
     letter-spacing: -0.01em;
 }
+
 .post-title-left {
     text-align: left;
 }

@@ -7,7 +7,6 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
     @service router;
     @service session;
     @service settings;
-    @service themeManagement;
 
     beforeModel() {
         super.beforeModel(...arguments);

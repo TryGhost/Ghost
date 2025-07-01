@@ -9,10 +9,9 @@ import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
 import {Card, CardContent, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
+import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useQuery} from '@tinybirdco/charts';
 
 interface SourcesData {
     source?: string | number;
@@ -51,6 +50,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
+    const {appSettings} = useAppContext();
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -76,16 +76,16 @@ const Web: React.FC = () => {
     }
 
     // Get KPI data
-    const {data: kpiData, loading: kpiLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig,
         params
     });
 
     // Get top sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig,
         params
     });
 
@@ -94,6 +94,12 @@ const Web: React.FC = () => {
 
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
+
+    if (!appSettings?.analytics.webAnalytics) {
+        return (
+            <Navigate to='/' />
+        );
+    }
 
     return (
         <StatsLayout>
@@ -111,7 +117,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='grid min-h-[460px] grid-cols-2 gap-8'>
+                <div className='flex min-h-[460px] grid-cols-2 flex-col gap-8 lg:grid'>
                     <TopContent
                         range={range}
                     />

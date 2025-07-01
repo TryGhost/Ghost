@@ -8,11 +8,14 @@ interface ExtendedPost extends Post {
         name: string;
     }[];
     excerpt?: string;
-    email_only?: boolean;
+    count?: {
+        clicks?: number;
+    };
 }
 
 export interface LatestPostWithStats {
     id: string;
+    uuid: string;
     title: string;
     slug: string;
     feature_image?: string | null;
@@ -20,6 +23,15 @@ export interface LatestPostWithStats {
     url?: string;
     excerpt?: string;
     email_only?: boolean;
+    status?: string;
+    email?: {
+        opened_count: number;
+        email_count: number;
+        status?: string;
+    } | null;
+    count?: {
+        clicks?: number;
+    } | null;
     authors?: {
         name: string;
     }[];
@@ -41,7 +53,7 @@ export const useLatestPostStats = () => {
             filter: 'status:[published,sent]',
             order: 'published_at DESC',
             limit: '1',
-            include: 'authors'
+            include: 'authors,email,count.clicks'
         }
     });
 
@@ -76,6 +88,7 @@ export const useLatestPostStats = () => {
         return {
             // Post content from Posts API
             id: extendedPost.id,
+            uuid: extendedPost.uuid,
             title: extendedPost.title || '',
             slug: extendedPost.slug || '',
             feature_image: extendedPost.feature_image || null,
@@ -83,6 +96,9 @@ export const useLatestPostStats = () => {
             url: extendedPost.url || '',
             excerpt: extendedPost.excerpt || '',
             email_only: extendedPost.email_only || false,
+            status: extendedPost.status,
+            email: extendedPost.email,
+            count: extendedPost.count,
             authors: extendedPost.authors || [],
             // Analytics data from Stats API
             recipient_count: statsData.recipient_count,
@@ -98,6 +114,6 @@ export const useLatestPostStats = () => {
 
     return {
         data: latestPostWithStats,
-        isLoading: isPostLoading || isStatsLoading
+        isLoading: isPostLoading || (Boolean(extendedPost?.id) && isStatsLoading)
     };
 }; 

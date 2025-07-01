@@ -14,7 +14,7 @@ import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export function getAttachment(object: ObjectProperties) {
@@ -241,6 +241,26 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
 
+    const followMutation = useFollowMutationForUser(
+        'index',
+        () => {
+            toast.success(`Followed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to follow');
+        }
+    );
+
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.info(`Unfollowed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
+
     useEffect(() => {
         const element = contentRef.current;
         if (element) {
@@ -310,6 +330,34 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
+    const authorHandle = type === 'Announce'
+        ? (author ? getUsername(author) : null)
+        : (actor ? getUsername(actor) : null);
+
+    const followedByMe = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
+        : (actor?.followedByMe || false);
+
+    const isAuthorCurrentUser = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
+            ? (object.attributedTo as {authored: boolean}).authored
+            : (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) &&
+               typeof actor === 'object' && actor &&
+               (object.attributedTo as {id: string}).id === actor.id))
+        : object.authored;
+
+    const handleFollow = () => {
+        if (authorHandle) {
+            followMutation.mutate(authorHandle);
+        }
+    };
+
+    const handleUnfollow = () => {
+        if (authorHandle) {
+            unfollowMutation.mutate(authorHandle);
+        }
+    };
+
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
             <LucideIcon.Ellipsis />
@@ -339,33 +387,37 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
+                                <div className='flex min-w-0 grow flex-col' onClick={(e) => {
                                     if (!isPending) {
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
-                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
+                                        <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
-                                        <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                        <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                             {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    authoredByMe={isAuthorCurrentUser}
                                     disabled={isPending}
+                                    followedByMe={followedByMe}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
+                                    onFollow={handleFollow}
+                                    onUnfollow={handleUnfollow}
                                 />
                             </div>
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
@@ -449,7 +501,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
-                                        <APAvatar author={author}/>
+                                        <APAvatar author={author} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
@@ -506,7 +558,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author} disabled={isPending} />
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
@@ -525,11 +577,15 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
                                         disabled={isPending}
+                                        followedByMe={followedByMe}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
@@ -632,10 +688,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
+                                        followedByMe={followedByMe}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />
                                 </div>
                             </div>

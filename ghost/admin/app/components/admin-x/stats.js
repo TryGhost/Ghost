@@ -7,7 +7,15 @@ export default class Stats extends AdminXComponent {
     additionalProps = () => {
         return {
             appSettings: {
-                paidMembersEnabled: true
+                paidMembersEnabled: this.settings.paidMembersEnabled,
+                newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
+                analytics: {
+                    emailTrackOpens: this.settings.emailTrackOpens,
+                    emailTrackClicks: this.settings.emailTrackClicks,
+                    membersTrackSources: this.settings.membersTrackSources,
+                    outboundLinkTagging: this.settings.outboundLinkTagging,
+                    webAnalytics: this.feature.trafficAnalytics && (this.settings.webAnalytics ?? false)
+                }
             }
         };
     };

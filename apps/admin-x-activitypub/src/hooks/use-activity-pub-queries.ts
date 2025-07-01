@@ -152,6 +152,106 @@ function updateLikeCache(queryClient: QueryClient, handle: string, id: string, l
     }
 }
 
+function updateFollowCache(queryClient: QueryClient, handle: string, authorHandle: string, followedByMe: boolean) {
+    const queryKeys = [
+        QUERY_KEYS.feed,
+        QUERY_KEYS.inbox,
+        QUERY_KEYS.profilePosts('index')
+    ];
+
+    // Add handle-specific profile posts if different from index
+    if (handle !== 'index') {
+        queryKeys.push(QUERY_KEYS.profilePosts(handle));
+    }
+
+    const preferredUsername = authorHandle.split('@')[1];
+
+    for (const queryKey of queryKeys) {
+        queryClient.setQueriesData(queryKey, (current?: {pages: {posts: Activity[]}[]}) => {
+            if (current === undefined) {
+                return current;
+            }
+
+            return {
+                ...current,
+                pages: current.pages.map((page: {posts: Activity[]}) => {
+                    return {
+                        ...page,
+                        posts: page.posts.map((item: Activity) => {
+                            // Update regular posts by this author
+                            if (item.type !== 'Announce' && item.actor?.preferredUsername === preferredUsername) {
+                                return {
+                                    ...item,
+                                    actor: {
+                                        ...item.actor,
+                                        followedByMe: followedByMe
+                                    }
+                                };
+                            }
+
+                            // Update reposts where the original author is being followed/unfollowed
+                            if (item.type === 'Announce' &&
+                                typeof item.object.attributedTo === 'object' &&
+                                item.object.attributedTo &&
+                                !Array.isArray(item.object.attributedTo) &&
+                                'preferredUsername' in item.object.attributedTo &&
+                                item.object.attributedTo.preferredUsername === preferredUsername) {
+                                return {
+                                    ...item,
+                                    object: {
+                                        ...item.object,
+                                        attributedTo: {
+                                            ...item.object.attributedTo,
+                                            followedByMe: followedByMe
+                                        }
+                                    }
+                                };
+                            }
+
+                            return item;
+                        })
+                    };
+                })
+            };
+        });
+    }
+
+    // Handle reply chain cache (used by Note.tsx and Reader.tsx)
+    const replyChainQueryKey = QUERY_KEYS.replyChain(null);
+    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+        if (!current) {
+            return current;
+        }
+
+        const updatePost = (post: Post) => {
+            if (post.author.handle === authorHandle) {
+                return {
+                    ...post,
+                    author: {
+                        ...post.author,
+                        followedByMe: followedByMe
+                    }
+                };
+            }
+            return post;
+        };
+
+        return {
+            ...current,
+            post: updatePost(current.post),
+            ancestors: {
+                ...current.ancestors,
+                chain: current.ancestors.chain.map(updatePost)
+            },
+            children: current.children.map(child => ({
+                ...child,
+                post: updatePost(child.post),
+                chain: child.chain.map(updatePost)
+            }))
+        };
+    });
+}
+
 // Update non-paginated caches (should only be called once per mutation)
 function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
@@ -906,6 +1006,8 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 });
             });
 
+            updateFollowCache(queryClient, handle, fullHandle, false);
+
             onSuccess();
         },
         onError
@@ -1067,6 +1169,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
                 };
             });
 
+            updateFollowCache(queryClient, handle, fullHandle, true);
+
             onSuccess();
         },
         onError(error: {message: string, statusCode: number}) {
@@ -1214,11 +1318,12 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
+        async mutationFn({inReplyTo, content, imageUrl, altText}: {inReplyTo: string, content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.reply(inReplyTo, content, image);
         },
         onMutate: ({inReplyTo}) => {
             if (!actorProps) {
@@ -1279,11 +1384,12 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
+        async mutationFn({content, imageUrl, altText}: {content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.note(content, image);
         },
         onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
@@ -2051,28 +2157,37 @@ export function useResetNotificationsCountForUser(handle: string) {
     });
 }
 
-function useFilteredAccountsFromJSON() {
+function useFilteredAccountsFromJSON(options: {
+    excludeFollowing?: boolean;
+    excludeCurrentUser?: boolean;
+} = {}) {
+    const {
+        excludeFollowing = true,
+        excludeCurrentUser = false
+    } = options;
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
     const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
     const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = currentAccountQuery;
 
     useEffect(() => {
         if (hasNextPage && !isLoadingFollowing) {
             fetchNextPage();
         }
-    }, [hasNextPage, fetchNextPage, isLoadingFollowing]);
+    }, [hasNextPage, fetchNextPage, isLoadingFollowing, followingData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedAccounts && !isLoadingBlockedAccounts) {
             fetchNextBlockedAccounts();
         }
-    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts]);
+    }, [hasNextBlockedAccounts, fetchNextBlockedAccounts, isLoadingBlockedAccounts, blockedAccountsData?.pages]);
 
     useEffect(() => {
         if (hasNextBlockedDomains && !isLoadingBlockedDomains) {
             fetchNextBlockedDomains();
         }
-    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains]);
+    }, [hasNextBlockedDomains, fetchNextBlockedDomains, isLoadingBlockedDomains, blockedDomainsData?.pages]);
 
     const followingIds = useMemo(() => {
         const ids = new Set<string>();
@@ -2130,7 +2245,15 @@ function useFilteredAccountsFromJSON() {
             const accounts = data.accounts as Account[];
 
             const filteredAccounts = accounts.filter((account) => {
+                if (excludeFollowing && followingIds.has(account.id)) {
+                    return false;
+                }
+
                 if (blockedAccountIds.has(account.id)) {
+                    return false;
+                }
+
+                if (excludeCurrentUser && currentUser && account.handle === currentUser.handle) {
                     return false;
                 }
 
@@ -2154,20 +2277,26 @@ function useFilteredAccountsFromJSON() {
         } catch (error) {
             return [];
         }
-    }, [followingIds, blockedAccountIds, blockedDomains]);
+    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
-    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains;
+    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
+    
+    // Track if we have finished loading all following data
+    const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
     return {
         fetchAndFilterAccounts,
-        isLoading
+        isLoading,
+        isFollowingDataComplete
     };
 }
 
 export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
+        excludeFollowing: false
+    });
 
     const fetchExploreProfilesFromJSON = useCallback(async () => {
         const accounts = await fetchAndFilterAccounts();
@@ -2190,7 +2319,7 @@ export function useExploreProfilesForUser(handle: string) {
         queryFn: () => fetchExploreProfilesFromJSON(),
         getNextPageParam: () => undefined,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
@@ -2238,7 +2367,10 @@ export function useExploreProfilesForUser(handle: string) {
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON();
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
+        excludeFollowing: true,
+        excludeCurrentUser: true
+    });
 
     const suggestedProfilesQuery = useQuery({
         queryKey,
@@ -2249,11 +2381,11 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
                 .sort(() => Math.random() - 0.5)
                 .slice(0, limit);
 
-            return randomAccounts;
+            return randomAccounts.length > 0 ? randomAccounts : null;
         },
         retry: false,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {

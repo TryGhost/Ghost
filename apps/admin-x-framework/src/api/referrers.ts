@@ -19,7 +19,7 @@ export const useReferrerHistory = createQuery<ReferrerHistoryResponseType>({
     path: '/stats/referrers/'
 });
 
-export const useReferrerGrowth = createQuery<ReferrerHistoryResponseType>({
-    dataType: 'ReferrerGrowthResponseType',
-    path: '/stats/referrers-growth'
+export const useTopSourcesGrowth = createQuery<ReferrerHistoryResponseType>({
+    dataType: 'TopSourcesGrowthResponseType',
+    path: '/stats/top-sources-growth'
 });

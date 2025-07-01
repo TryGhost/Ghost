@@ -551,6 +551,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "web_analytics": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "pintura": {
@@ -604,6 +612,20 @@
     "security": {
         "require_email_mfa": {
             "defaultValue": false,
+            "type": "boolean"
+        }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
             "type": "boolean"
         }
     }

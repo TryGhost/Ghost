@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/Sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
@@ -10,10 +10,10 @@ interface WebOverviewProps {
     range: number;
     isLoading: boolean;
     visitors: number;
-    fullWidth?: boolean;
+    isNewsletterShown?: boolean;
 }
 
-const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, fullWidth = false}) => {
+const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, isNewsletterShown = true}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
 
@@ -32,7 +32,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
 
     return (
         <>
-            <Card className='group/datalist'>
+            <Card className={`group/datalist overflow-hidden ${!isNewsletterShown && 'col-span-2'}`}>
                 <div className='relative flex items-center justify-between gap-6'>
                     <CardHeader>
                         <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -40,7 +40,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                             Web performance
                         </CardTitle>
                     </CardHeader>
-                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
+                    <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
                         navigate(`/analytics/beta/${postId}/web`);
                     }}>View more</Button>
                 </div>
@@ -64,7 +64,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                 </div>
                                 :
                                 <GhAreaChart
-                                    className={'h-[240px] w-full'}
+                                    className={'aspect-auto h-[240px] w-full'}
                                     color='hsl(var(--chart-blue))'
                                     data={chartData || []}
                                     id="visitors"
@@ -74,8 +74,8 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                             }
                         </div>
                     </div>
-                    {!fullWidth &&
-                        <div className={fullWidth ? '-mt-3' : 'border-t pt-3'}>
+                    {isNewsletterShown &&
+                        <div className={!isNewsletterShown ? '-mt-3' : 'border-t pt-3'}>
                             <div>
                                 <div className='flex items-center justify-between gap-3 py-3'>
                                     <span className='font-medium text-muted-foreground'>How readers found this post</span>
@@ -89,13 +89,17 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     siteIcon={siteIcon}
                                     siteUrl={siteUrl}
                                     tableOnly={true}
-                                    topSourcesLimit={3}
+                                    topSourcesLimit={5}
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :
-                                <div className='py-10 text-center text-sm text-muted-foreground'>
-                                    No data available.
-                                </div>
+                                <EmptyIndicator
+                                    className='h-full py-10'
+                                    description='Once someone visits this post, sources will show here'
+                                    title={`No visitors since you published this post`}
+                                >
+                                    <LucideIcon.Globe strokeWidth={1.5} />
+                                </EmptyIndicator>
                             }
                         </div>
                     }

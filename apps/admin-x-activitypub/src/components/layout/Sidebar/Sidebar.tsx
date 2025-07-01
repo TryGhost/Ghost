@@ -48,16 +48,16 @@ const Sidebar: React.FC = () => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='/inbox'>
-                            <LucideIcon.Inbox size={18} strokeWidth={1.5} />
-                            Inbox
+                        <SidebarMenuLink to='/reader'>
+                            <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
+                            Reader
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/feed'>
-                            <LucideIcon.Hash size={18} strokeWidth={1.5} />
-                            Feed
+                        <SidebarMenuLink to='/notes'>
+                            <LucideIcon.MessageCircle size={18} strokeWidth={1.5} />
+                            Notes
                         </SidebarMenuLink>
-                        <SidebarMenuLink 
-                            count={location.pathname !== '/notifications' ? notificationsCount : undefined} 
+                        <SidebarMenuLink
+                            count={location.pathname !== '/notifications' ? notificationsCount : undefined}
                             to='/notifications'
                             onClick={handleNotificationsClick}
                         >
@@ -78,7 +78,7 @@ const Sidebar: React.FC = () => {
                         </SidebarMenuLink>
                     </div>
                     <NewNoteModal>
-                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white hover:bg-purple-600 dark:hover:bg-purple-600'>
                             <LucideIcon.FilePen />
                             New note
                         </Button>

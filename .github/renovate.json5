@@ -55,6 +55,15 @@
         "ghost/admin/lib/koenig-editor/package.json"
     ],
     "packageRules": [
+        // Always automerge these packages:
+        {
+            "matchPackageNames": [
+                // This is a pre-1.0.0 package, but it provides icons
+                // and is very very regularly updated and seems safe to update
+                "lucide-react"
+            ],
+            "automerge": true
+        },
 
         // Ignore all ember-related packages in admin
         // Our ember codebase is being replaced with react and
