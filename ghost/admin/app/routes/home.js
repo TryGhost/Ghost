@@ -25,7 +25,11 @@ export default class HomeRoute extends Route {
         if (this.settings.socialWebEnabled && this.session.user.isAdmin) {
             this.router.transitionTo('activitypub-x');
         } else {
-            this.router.transitionTo('dashboard');
+            if (this.config.labs.updatedMainNav) {
+                this.router.transitionTo('stats-x');
+            } else {
+                this.router.transitionTo('dashboard');
+            }
         }
     }
 
