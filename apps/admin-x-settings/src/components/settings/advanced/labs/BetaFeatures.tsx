@@ -16,7 +16,7 @@ const BetaFeatures: React.FC = () => {
     const [redirectsUploading, setRedirectsUploading] = useState(false);
     const [routesUploading, setRoutesUploading] = useState(false);
     const {config, siteData} = useGlobalData();
-    const isPro = !config.hostSettings?.siteId;
+    const isPro = !!config.hostSettings?.siteId;
     const homepageUrl = getHomepageUrl(siteData!);
     const noCustomDomainSetup = !!homepageUrl?.match(/ghost\.io\/?$/) || false;
     const {subdir} = getGhostPaths();
@@ -25,19 +25,6 @@ const BetaFeatures: React.FC = () => {
     const socialWebNotAvailableMsg = hasSubdir ?
         'Not compatible with /subdirectory installations.' :
         'Please setup a custom domain to enable.';
-
-    //TODO: Temporarily disabled until general rollout of limit
-    // useEffect(() => {
-    //     if (limiter?.isLimited('limitSocialWeb')) {
-    //         limiter.errorIfWouldGoOverLimit('limitSocialWeb').catch ((error) => {
-    //             if (error instanceof HostLimitError) {
-    //                 setLimitSocialWeb(true);
-    //             } else {
-    //                 handleError(error);
-    //             }
-    //         });
-    //     }
-    // }, [limiter, setLimitSocialWeb, handleError]);
 
     return (
         <List titleSeparator={false}>
