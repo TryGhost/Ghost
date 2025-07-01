@@ -9,15 +9,14 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, hasBeenEmailed, isPublishedOnly, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
-import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId, tinybirdToken} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
@@ -74,15 +73,15 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
-    const {data, loading: tbLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: tinybirdToken,
+    const {data, loading: tbLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
-    const {data: chartData, loading: chartLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: tinybirdToken,
+    const {data: chartData, loading: chartLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: chartParams
     });
 
@@ -110,9 +109,9 @@ const Overview: React.FC = () => {
     });
 
     // Get sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: tinybirdToken,
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 

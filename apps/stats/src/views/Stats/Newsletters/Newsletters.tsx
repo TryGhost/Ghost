@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -49,69 +49,55 @@ const NewsletterTableRows: React.FC<{
     // Data is already sorted by the API based on sortBy
     const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
 
+    const colSpan = emailTrackOpensEnabled && emailTrackClicksEnabled ? 5 : emailTrackOpensEnabled ? 4 : emailTrackClicksEnabled ? 4 : 3;
+
     // Memoize loading rows to prevent recreation on every render
     const loadingRows = useMemo(() => (
         <>
-            {Array.from({length: 5}, (_, index) => (
-                <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
-                    <TableCell className="font-medium">
-                        <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">
-                        <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                    </TableCell>
-                    {emailTrackOpensEnabled &&
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    }
-                    {emailTrackClicksEnabled &&
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    }
-                </TableRow>
-            ))}
+            <TableRow className='last:border-none [&>td]:py-2.5'>
+                <TableCell className="font-medium" colSpan={colSpan}>
+                    <SkeletonTable className='mt-5' />
+                </TableCell>
+            </TableRow>
         </>
-    ), [emailTrackOpensEnabled, emailTrackClicksEnabled]);
+    ), [colSpan]);
 
     // Memoize the data rows based on the actual data and loading states
-    const dataRows = useMemo(() => (
-        <>
-            {sortedStats.map(post => (
-                <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
-                    <TableCell className="font-medium">
-                        <div className='group/link inline-flex items-center gap-2'>
-                            {post.post_id ?
-                                <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                    navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
-                                }}>
-                                    {post.post_title}
-                                </Button>
-                                :
-                                <>
-                                    {post.post_title}
-                                </>
-                            }
-                        </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">
-                        {formatDisplayDate(new Date(post.send_date))}
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        {formatNumber(post.sent_to)}
-                    </TableCell>
-                    {emailTrackOpensEnabled &&
+    const dataRows = useMemo(() => {
+        return (
+            sortedStats.length > 0 ?
+                <>
+                    {sortedStats.map(post => (
+                        <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
+                            <TableCell className="font-medium">
+                                <div className='group/link inline-flex items-center gap-2'>
+                                    {post.post_id ?
+                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                            navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
+                                        }}>
+                                            {post.post_title}
+                                        </Button>
+                                        :
+                                        <>
+                                            {post.post_title}
+                                        </>
+                                    }
+                                </div>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-sm">
+                                {formatDisplayDate(new Date(post.send_date))}
+                            </TableCell>
+                            <TableCell className='text-right font-mono text-sm'>
+                                {formatNumber(post.sent_to)}
+                            </TableCell>
+                            {emailTrackOpensEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
                             <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
                         </TableCell>
-                    }
+                            }
 
-                    {emailTrackClicksEnabled &&
+                            {emailTrackClicksEnabled &&
                         <TableCell className='text-right font-mono text-sm'>
                             {isClicksLoading ? (
                                 <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
@@ -122,11 +108,23 @@ const NewsletterTableRows: React.FC<{
                                 </>
                             )}
                         </TableCell>
-                    }
+                            }
+                        </TableRow>
+                    ))}
+                </>
+                :
+                <TableRow className='border-none hover:bg-transparent'>
+                    <TableCell className='text-center group-hover:!bg-transparent' colSpan={5}>
+                        <EmptyIndicator
+                            className='size-full py-20'
+                            title={`No newsletters ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.Mail strokeWidth={1.5} />
+                        </EmptyIndicator>
+                    </TableCell>
                 </TableRow>
-            ))}
-        </>
-    ), [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled]);
+        );
+    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range]);
 
     // Show loading rows while data is loading
     if (isStatsLoading || !newsletterStatsData) {
@@ -295,7 +293,21 @@ const Newsletters: React.FC = () => {
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
         if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
-            return [];
+            // When there's no data, create zero points for each day spanning the range
+            const {startDate, endDate} = getRangeDates(range);
+
+            const dailyData = [];
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                dailyData.push({
+                    date: currentDate.toISOString().split('T')[0],
+                    value: 0
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return dailyData;
         }
 
         const deltas = subscriberStatsData.stats[0].deltas;
@@ -342,11 +354,11 @@ const Newsletters: React.FC = () => {
     }, [newsletterStatsData]);
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading || isClicksLoading;
+    const isKPIsLoading = isSubscriberStatsLoading || isClicksLoading || isNewsletterStatsLoading;
 
     // Show data only if there are actual newsletters sent in the time period
-    const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
-    const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
+    // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
+    // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
         return (
@@ -360,24 +372,26 @@ const Newsletters: React.FC = () => {
                 <NewsletterSelect newsletters={newslettersData?.newsletters} />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
-                <Card>
-                    <CardContent>
-                        <NewsletterKPIs
-                            avgsData={avgsData}
-                            initialTab={initialTab}
-                            isAvgsLoading={false}
-                            isLoading={isKPIsLoading}
-                            subscribersData={subscribersData}
-                            totals={totals}
-                        />
-                    </CardContent>
-                </Card>
-                <TopNewslettersTable
-                    range={range}
-                    selectedNewsletterId={selectedNewsletterId}
-                    shouldFetchStats={!!shouldFetchStats}
-                />
+            <StatsView isLoading={false} loadingComponent={<></>}>
+                <>
+                    <Card>
+                        <CardContent>
+                            <NewsletterKPIs
+                                avgsData={avgsData}
+                                initialTab={initialTab}
+                                isAvgsLoading={false}
+                                isLoading={isKPIsLoading}
+                                subscribersData={subscribersData}
+                                totals={totals}
+                            />
+                        </CardContent>
+                    </Card>
+                    <TopNewslettersTable
+                        range={range}
+                        selectedNewsletterId={selectedNewsletterId}
+                        shouldFetchStats={!!shouldFetchStats}
+                    />
+                </>
             </StatsView>
         </StatsLayout>
     );

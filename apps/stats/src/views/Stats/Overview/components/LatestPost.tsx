@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -214,10 +214,19 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         </div>
                     </>
                 ) : !isLoading && (
-                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
-                        <LucideIcon.FileText size={32} strokeWidth={1.5} />
-                        <div>No published posts yet</div>
-                    </div>
+
+                    <EmptyIndicator
+                        actions={<Button variant='secondary' onClick={() => {
+                            navigate('/editor/post', {crossApp: true});
+                        }}>
+                            New post
+                        </Button>}
+                        className='w-full pb-10 xl:col-span-3'
+                        description={`Once it's live, you can track performance here`}
+                        title='Publish your first post'
+                    >
+                        <LucideIcon.FileText strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
         </Card>

@@ -2,7 +2,6 @@ import {renderHook} from '@testing-library/react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useTinybirdToken} from '../../../src/hooks/useTinybirdToken';
 import {getTinybirdToken} from '../../../src/api/tinybird';
-import {vi} from 'vitest';
 import React from 'react';
 
 // Mock the getTinybirdToken API
