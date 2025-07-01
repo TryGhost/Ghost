@@ -394,14 +394,21 @@
 
 .gh-post-list-feature-image-placeholder {
     position: relative;
-    background-color: var(--lightgrey);
-    height: 3px;
+    height: 100%;
     width: 100%;
-    margin-top: -16px;
-    opacity: 0.6;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--midgrey);
 }
 
-.gh-post-list-feature-image-placeholder:before,
+.gh-post-list-feature-image-placeholder svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* .gh-post-list-feature-image-placeholder:before,
 .gh-post-list-feature-image-placeholder:after {
     position: absolute;
     display: block;
@@ -423,7 +430,7 @@
 .gh-post-list-feature-image-placeholder:after {
     top: 16px;
     right: 8px;
-}
+} */
 
 .gh-post-list-external path {
     fill: var(--midgrey);
