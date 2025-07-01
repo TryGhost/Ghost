@@ -187,10 +187,18 @@ describe('useActiveVisitors', () => {
         expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
-    it('calls getStatEndpointUrl with undefined when no statsConfig and uses tinybirdToken', () => {
+    it('calls useTinybirdQuery with undefined endpoint when no statsConfig and uses tinybirdToken', () => {
         renderHook(() => useActiveVisitors({enabled: true}), {wrapper});
 
-        expect(mockGetStatEndpointUrl).toHaveBeenCalledWith(undefined, 'api_active_visitors');
+        expect(mockUseQuery).toHaveBeenCalledWith(
+            expect.objectContaining({
+                endpoint: undefined,
+                token: 'mock-token',
+                params: expect.objectContaining({
+                    site_uuid: ''
+                })
+            })
+        );
         expect(mockUseTinybirdToken).toHaveBeenCalled();
     });
 
@@ -201,7 +209,7 @@ describe('useActiveVisitors', () => {
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 params: expect.objectContaining({
-                    _refresh: 0
+                    _refresh: '0'
                 })
             })
         );
@@ -215,7 +223,7 @@ describe('useActiveVisitors', () => {
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 params: expect.objectContaining({
-                    _refresh: 1
+                    _refresh: '1'
                 })
             })
         );
@@ -233,7 +241,7 @@ describe('useActiveVisitors', () => {
         expect(mockUseQuery).toHaveBeenCalledWith(
             expect.objectContaining({
                 params: expect.objectContaining({
-                    _refresh: 0
+                    _refresh: '0'
                 })
             })
         );

@@ -1,8 +1,6 @@
 import {useEffect, useState} from 'react';
-import {getStatEndpointUrl} from '../utils/stats-config';
 import {StatsConfig} from '../providers/FrameworkProvider';
-import {useQuery} from '@tinybirdco/charts';
-import {useTinybirdToken} from './useTinybirdToken';
+import {useTinybirdQuery} from './useTinybirdQuery';
 
 interface UseActiveVisitorsOptions {
     postUuid?: string;
@@ -14,7 +12,6 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     const {postUuid, statsConfig, enabled = true} = options;
     const [refreshKey, setRefreshKey] = useState(0);
     const [lastKnownCount, setLastKnownCount] = useState<number | null>(null);
-    const {token, isLoading: tokenLoading} = useTinybirdToken();
 
     // Set up 60-second interval only if enabled
     useEffect(() => {
@@ -34,13 +31,15 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
         // Add postUuid if provided
         ...(postUuid && {post_uuid: postUuid}),
         // Add refreshKey to force refetch
-        _refresh: refreshKey
+        _refresh: refreshKey.toString()
     };
 
-    const {data, loading, error} = useQuery({
-        endpoint: (enabled && !tokenLoading && token) ? getStatEndpointUrl(statsConfig || undefined, 'api_active_visitors') : undefined,
-        token: token,
-        params
+    // Use useTinybirdQuery for consistent token handling
+    const {data, loading, error} = useTinybirdQuery({
+        statsConfig,
+        endpoint: 'api_active_visitors',
+        params,
+        enabled
     });
 
     const currentCount = data?.[0]?.active_visitors;
@@ -54,7 +53,7 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
 
     const activeVisitors = enabled ? (lastKnownCount || 0) : 0;
     // Only show loading on initial load (when we have no last known count)
-    const isInitialLoading = enabled && (tokenLoading || loading) && lastKnownCount === null;
+    const isInitialLoading = enabled && loading && lastKnownCount === null;
 
     return {
         activeVisitors,

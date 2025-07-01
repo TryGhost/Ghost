@@ -4,7 +4,6 @@ import React, {ReactNode} from 'react';
 import {getTinybirdToken} from '../../../src/api/tinybird';
 import {FrameworkProvider} from '../../../src/providers/FrameworkProvider';
 import {withMockFetch} from '../../utils/mockFetch';
-import {vi} from 'vitest';
 
 const queryClient = new QueryClient({
     defaultOptions: {

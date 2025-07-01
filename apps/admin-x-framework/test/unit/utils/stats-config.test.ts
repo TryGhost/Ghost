@@ -1,7 +1,6 @@
 import {getStatEndpointUrl, getToken} from '../../../src/utils/stats-config';
 import {StatsConfig} from '../../../src/providers/FrameworkProvider';
 import {getTinybirdToken} from '../../../src/api/tinybird';
-import {vi} from 'vitest';
 
 // Mock getTinybirdToken
 vi.mock('../../../src/api/tinybird', () => ({

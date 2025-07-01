@@ -38,7 +38,6 @@
         "vitest": "1.6.1"
     },
     "dependencies": {
-        "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",
