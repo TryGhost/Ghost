@@ -1413,8 +1413,12 @@ DataGenerator.forKnex = (function () {
         createPost(DataGenerator.Content.posts[7])
     ];
 
+    // Offset tag creation by 5 seconds to make sure the times
+    // Don't interfere with the default fixtures
+    const tagBaseTime = new Date().getTime() + 5000;
     const tags = DataGenerator.Content.tags.map((tag, index) => {
-        const adjustedTime = new Date(new Date().getTime() + index * 1000);
+        // Separate each tag by a second, to ensure order
+        const adjustedTime = new Date(tagBaseTime + index * 1000);
 
         return createTag({
             ...tag,
