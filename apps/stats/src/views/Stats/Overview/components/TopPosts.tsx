@@ -97,7 +97,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             <div className='flex flex-col'>
                                                 <span className='line-clamp-2 text-lg font-semibold leading-[1.35em]'>{post.title}</span>
                                                 <span className='text-sm text-muted-foreground'>
-                                                    By {post.authors} • {formatDisplayDate(post.published_at)}
+                                                    By {post.authors} &ndash; {formatDisplayDate(post.published_at)}
                                                 </span>
                                                 <span className='text-sm text-muted-foreground'>
                                                     {getPostStatusText(post)}
