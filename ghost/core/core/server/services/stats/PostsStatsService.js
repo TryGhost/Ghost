@@ -1195,18 +1195,37 @@ class PostsStatsService {
                     'p.feature_image',
                     'p.status',
                     'emails.email_count',
-                    'emails.opened_count',
-                    this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
+                    'emails.opened_count'
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
-                .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
-                .leftJoin('users as u', 'u.id', 'pa.author_id')
                 .where('p.status', 'published')
                 .whereNotNull('p.published_at')
                 .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
                 .orderBy('p.published_at', 'desc')
-                .groupBy('p.id', 'p.uuid', 'p.title', 'p.published_at', 'p.feature_image', 'p.status', 'emails.email_count', 'emails.opened_count')
                 .limit(limit);
+
+            // Get authors for all posts
+            const postIds = posts.map(p => p.post_id);
+            const authorsData = postIds.length > 0 ? await this.knex('posts_authors as pa')
+                .select('pa.post_id', 'u.name', 'pa.sort_order')
+                .leftJoin('users as u', 'u.id', 'pa.author_id')
+                .whereIn('pa.post_id', postIds)
+                .whereNotNull('u.name')
+                .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+            // Group authors by post_id
+            const authorsByPost = {};
+            authorsData.forEach((author) => {
+                if (!authorsByPost[author.post_id]) {
+                    authorsByPost[author.post_id] = [];
+                }
+                authorsByPost[author.post_id].push(author.name);
+            });
+
+            // Add authors to posts
+            posts.forEach((post) => {
+                post.authors = (authorsByPost[post.post_id] || []).join(', ');
+            });
 
             // Get member attribution counts and click counts for these posts
             const [memberAttributionCounts, clickCounts] = await Promise.all([
@@ -1266,19 +1285,38 @@ class PostsStatsService {
                         'p.feature_image',
                         'p.status',
                         'emails.email_count',
-                        'emails.opened_count',
-                        this.knex.raw('GROUP_CONCAT(u.name, ", ") as authors')
+                        'emails.opened_count'
                     )
                     .leftJoin('emails', 'emails.post_id', 'p.id')
-                    .leftJoin('posts_authors as pa', 'pa.post_id', 'p.id')
-                    .leftJoin('users as u', 'u.id', 'pa.author_id')
                     .whereNotIn('p.uuid', postUuids)
                     .whereNotIn('p.id', existingPostIds)
                     .where('p.status', 'published')
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
-                    .groupBy('p.id', 'p.uuid', 'p.title', 'p.published_at', 'p.feature_image', 'p.status', 'emails.email_count', 'emails.opened_count')
                     .limit(remainingCount);
+
+                // Get authors for additional posts
+                const additionalPostIds = additionalPosts.map(p => p.post_id);
+                const additionalAuthorsData = additionalPostIds.length > 0 ? await this.knex('posts_authors as pa')
+                    .select('pa.post_id', 'u.name', 'pa.sort_order')
+                    .leftJoin('users as u', 'u.id', 'pa.author_id')
+                    .whereIn('pa.post_id', additionalPostIds)
+                    .whereNotNull('u.name')
+                    .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+                // Group authors by post_id for additional posts
+                const additionalAuthorsByPost = {};
+                additionalAuthorsData.forEach((author) => {
+                    if (!additionalAuthorsByPost[author.post_id]) {
+                        additionalAuthorsByPost[author.post_id] = [];
+                    }
+                    additionalAuthorsByPost[author.post_id].push(author.name);
+                });
+
+                // Add authors to additional posts
+                additionalPosts.forEach((post) => {
+                    post.authors = (additionalAuthorsByPost[post.post_id] || []).join(', ');
+                });
 
                 // Get member attribution counts and click counts for additional posts
                 if (additionalPosts.length > 0) {
