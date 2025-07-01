@@ -1193,6 +1193,7 @@ class PostsStatsService {
                     'p.title',
                     'p.published_at',
                     'p.feature_image',
+                    'p.status',
                     'emails.email_count',
                     'emails.opened_count'
                 )
@@ -1202,6 +1203,29 @@ class PostsStatsService {
                 .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
                 .orderBy('p.published_at', 'desc')
                 .limit(limit);
+
+            // Get authors for all posts
+            const postIds = posts.map(p => p.post_id);
+            const authorsData = postIds.length > 0 ? await this.knex('posts_authors as pa')
+                .select('pa.post_id', 'u.name', 'pa.sort_order')
+                .leftJoin('users as u', 'u.id', 'pa.author_id')
+                .whereIn('pa.post_id', postIds)
+                .whereNotNull('u.name')
+                .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+            // Group authors by post_id
+            const authorsByPost = {};
+            authorsData.forEach((author) => {
+                if (!authorsByPost[author.post_id]) {
+                    authorsByPost[author.post_id] = [];
+                }
+                authorsByPost[author.post_id].push(author.name);
+            });
+
+            // Add authors to posts
+            posts.forEach((post) => {
+                post.authors = (authorsByPost[post.post_id] || []).join(', ');
+            });
 
             // Get member attribution counts and click counts for these posts
             const [memberAttributionCounts, clickCounts] = await Promise.all([
@@ -1227,6 +1251,8 @@ class PostsStatsService {
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: row.visits,
                     sent_count: post.email_count || null,
                     opened_count: post.opened_count || null,
@@ -1257,6 +1283,7 @@ class PostsStatsService {
                         'p.title',
                         'p.published_at',
                         'p.feature_image',
+                        'p.status',
                         'emails.email_count',
                         'emails.opened_count'
                     )
@@ -1267,6 +1294,29 @@ class PostsStatsService {
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
                     .limit(remainingCount);
+
+                // Get authors for additional posts
+                const additionalPostIds = additionalPosts.map(p => p.post_id);
+                const additionalAuthorsData = additionalPostIds.length > 0 ? await this.knex('posts_authors as pa')
+                    .select('pa.post_id', 'u.name', 'pa.sort_order')
+                    .leftJoin('users as u', 'u.id', 'pa.author_id')
+                    .whereIn('pa.post_id', additionalPostIds)
+                    .whereNotNull('u.name')
+                    .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+                // Group authors by post_id for additional posts
+                const additionalAuthorsByPost = {};
+                additionalAuthorsData.forEach((author) => {
+                    if (!additionalAuthorsByPost[author.post_id]) {
+                        additionalAuthorsByPost[author.post_id] = [];
+                    }
+                    additionalAuthorsByPost[author.post_id].push(author.name);
+                });
+
+                // Add authors to additional posts
+                additionalPosts.forEach((post) => {
+                    post.authors = (additionalAuthorsByPost[post.post_id] || []).join(', ');
+                });
 
                 // Get member attribution counts and click counts for additional posts
                 if (additionalPosts.length > 0) {
@@ -1289,6 +1339,8 @@ class PostsStatsService {
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: 0,
                     sent_count: post.email_count || null,
                     opened_count: post.opened_count || null,

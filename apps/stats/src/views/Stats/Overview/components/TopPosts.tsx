@@ -1,8 +1,9 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, SkeletonTable, TableHead, TableRow, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
@@ -96,9 +97,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                             <div className='flex flex-col'>
                                                 <span className='line-clamp-2 text-lg font-semibold leading-[1.35em]'>{post.title}</span>
                                                 <span className='text-sm text-muted-foreground'>
-                                                    {/* By {post.authors?.map(author => author.name).join(', ')} &mdash;  */}
-                                                    {formatDisplayDate(post.published_at)}</span>
-                                                {/* <span className='text-sm text-muted-foreground'>Published</span> */}
+                                                    By {post.authors} &ndash; {formatDisplayDate(post.published_at)}
+                                                </span>
+                                                <span className='text-sm text-muted-foreground'>
+                                                    {getPostStatusText(post)}
+                                                </span>
                                             </div>
                                         </div>
                                         <div className='z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
@@ -179,14 +182,12 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             })
                         }
                         {(!topPostsData?.stats || topPostsData.stats.length === 0) && (
-                            <TableRow>
-                                <TableHead
-                                    className='text-center font-normal text-muted-foreground'
-                                    colSpan={4}
-                                >
-                            No data for the selected period
-                                </TableHead>
-                            </TableRow>
+                            <EmptyIndicator
+                                className='w-full pb-10'
+                                title={`No posts ${getPeriodText(range)}`}
+                            >
+                                <LucideIcon.FileText strokeWidth={1.5} />
+                            </EmptyIndicator>
                         )}
                     </>
                 }

@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -12,6 +12,16 @@ interface LatestPostProps {
     latestPostStats: LatestPostWithStats | null;
     isLoading: boolean;
 }
+
+const getPostStatusText = (latestPostStats: LatestPostWithStats) => {
+    if (latestPostStats.email_only) {
+        return 'Sent';
+    } else if (latestPostStats.email) {
+        return 'Published and sent';
+    } else {
+        return 'Published';
+    }
+};
 
 const LatestPost: React.FC<LatestPostProps> = ({
     latestPostStats,
@@ -88,12 +98,19 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     if (!isLoading && latestPostStats) {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                                     }
-                                }}>{latestPostStats.title}</div>
-                                <div className='mt-1 text-sm text-muted-foreground'>
+                                }}>
+                                    {latestPostStats.title}
+                                </div>
+                                <div className='mt-0.5 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
-                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} &mdash; </span>
+                                        <div>
+                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash;
+                                            {formatDisplayDate(latestPostStats.published_at)}
+                                        </div>
                                     )}
-                                    Published {formatDisplayDate(latestPostStats.published_at)}
+                                    <div className='mt-0.5'>
+                                        {getPostStatusText(latestPostStats)}
+                                    </div>
                                 </div>
                                 <div className='mt-6 flex items-center gap-2'>
                                     {!latestPostStats.email_only && (
@@ -214,10 +231,19 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         </div>
                     </>
                 ) : !isLoading && (
-                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
-                        <LucideIcon.FileText size={32} strokeWidth={1.5} />
-                        <div>No published posts yet</div>
-                    </div>
+
+                    <EmptyIndicator
+                        actions={<Button variant='secondary' onClick={() => {
+                            navigate('/editor/post', {crossApp: true});
+                        }}>
+                            New post
+                        </Button>}
+                        className='w-full pb-10 xl:col-span-3'
+                        description={`Once it's live, you can track performance here`}
+                        title='Publish your first post'
+                    >
+                        <LucideIcon.FileText strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
         </Card>

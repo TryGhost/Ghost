@@ -1,20 +1,19 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
-import EmptyStatView from '../components/EmptyStatView';
 import Kpis from './components/Kpis';
 import Locations from './components/Locations';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
-import {BarChartLoadingIndicator, Card, CardContent, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
-import {BaseSourceData, getStatEndpointUrl, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, LucideIcon, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
+import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 
 import {useEffect, useMemo} from 'react';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 import {STATS_RANGES} from '@src/utils/constants';
-import {useQuery} from '@tinybirdco/charts';
+import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Array of values that represent unknown locations
 const UNKNOWN_LOCATIONS = ['NULL', 'ᴺᵁᴸᴸ', ''];
@@ -30,7 +29,7 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data: globalData, post, isPostLoading, tinybirdToken} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data: globalData, post, isPostLoading} = useGlobalData();
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
@@ -75,23 +74,23 @@ const Web: React.FC<postAnalyticsProps> = () => {
     }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience]);
 
     // Get web kpi data
-    const {data: kpiData, loading: isKpisLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: tinybirdToken,
+    const {data: kpiData, loading: isKpisLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
     // Get locations data
-    const {data: locationsData, loading: isLocationsLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: tinybirdToken,
+    const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
+        endpoint: 'api_top_locations',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
     // Get sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: tinybirdToken,
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
@@ -179,8 +178,14 @@ const Web: React.FC<postAnalyticsProps> = () => {
                             </div>
                         </>
                         :
-                        <div className='mt-10 grow'>
-                            <EmptyStatView />
+                        <div className='grow'>
+                            <EmptyIndicator
+                                className='h-full'
+                                description='Try adjusting your date range to see more data.'
+                                title={`No visitors ${getPeriodText(range)}`}
+                            >
+                                <LucideIcon.Globe strokeWidth={1.5} />
+                            </EmptyIndicator>
                         </div>
                 }
             </PostAnalyticsContent>
