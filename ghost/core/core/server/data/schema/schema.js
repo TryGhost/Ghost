@@ -135,7 +135,7 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         profile_image: {type: 'string', maxlength: 2000, nullable: true},
         cover_image: {type: 'string', maxlength: 2000, nullable: true},
-        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 200}}},
+        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 250}}},
         website: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         location: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 150}}},
         facebook: {type: 'string', maxlength: 2000, nullable: true},
