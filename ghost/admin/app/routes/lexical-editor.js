@@ -28,7 +28,7 @@ export default AuthenticatedRoute.extend({
     },
 
     resetController(controller) {
-        controller.fromAnalytics = null;
+        controller.fromAnalytics = false;
     },
 
     deactivate() {
