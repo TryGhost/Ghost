@@ -60,9 +60,7 @@ const AlphaFeatures: React.FC = () => {
             }
             setAllowedFeatures(filtered);
         };
-        if (limiter) {
-            filterFeatures();
-        }
+        filterFeatures();
     }, [limiter]);
 
     return (
