@@ -1,5 +1,10 @@
 import validator from 'validator';
 
+const ERRORS = {
+    INVALID_USERNAME: 'Your Username is not a valid Bluesky Username',
+    INVALID_URL: 'The URL must be in a format like https://bsky.app/profile/yourUsername'
+};
+
 function isValidBlueskyUsername(username: string): boolean {
     const validUsernamePatterns = [
         // DID username: did:plc: + 24 chars
@@ -15,7 +20,6 @@ function isValidBlueskyUsername(username: string): boolean {
 }
 
 export function validateBlueskyUrl(newUrl: string) {
-    const errMessage = 'The URL must be in a format like https://bsky.app/profile/yourUsername';
     if (!newUrl) {
         return '';
     }
@@ -26,13 +30,13 @@ export function validateBlueskyUrl(newUrl: string) {
     if (newUrl.startsWith('http') || newUrl.startsWith('www.') || newUrl.includes('bsky.app')) {
         // Only allow bsky.app domain
         if (!newUrl.includes('bsky.app')) {
-            throw new Error(errMessage);
+            throw new Error(ERRORS.INVALID_URL);
         }
 
         // Extract username from URL
         const usernameMatch = newUrl.match(/bsky\.app\/profile\/@?([^/]+)/);
         if (!usernameMatch) {
-            throw new Error(errMessage);
+            throw new Error(ERRORS.INVALID_URL);
         }
         username = usernameMatch[1];
     } else {
@@ -42,22 +46,21 @@ export function validateBlueskyUrl(newUrl: string) {
 
     // Validate username
     if (!isValidBlueskyUsername(username)) {
-        throw new Error('Your Username is not a valid Bluesky Username');
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
     // Construct and validate full URL
     const normalizedUrl = `https://bsky.app/profile/${username}`;
     if (!validator.isURL(normalizedUrl)) {
-        throw new Error(errMessage);
+        throw new Error(ERRORS.INVALID_URL);
     }
 
     return normalizedUrl;
 }
 
 export const blueskyHandleToUrl = (handle: string) => {
-    const errMessage = 'Your Username is not a valid Bluesky Username';
     if (!handle) {
-        throw new Error(errMessage);
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
     let username = handle;
@@ -67,7 +70,7 @@ export const blueskyHandleToUrl = (handle: string) => {
 
     // Validate username
     if (!isValidBlueskyUsername(username)) {
-        throw new Error(errMessage);
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
     return `https://bsky.app/profile/${username}`;
