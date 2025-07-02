@@ -176,6 +176,9 @@ const NewsletterKPIs: React.FC<{
         gridClass = 'grid-cols-1';
     }
 
+    const showAvgLine = (currentTab === 'avg-open-rate' && avgOpenRate > 0 && avgOpenRate < 1) || (currentTab === 'avg-click-rate' && avgClickRate > 0 && avgClickRate < 1);
+    const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
+
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
             <TabsList className={`-mx-6 hidden grid-cols-3 md:!visible md:!grid ${gridClass}`}>
@@ -298,12 +301,12 @@ const NewsletterKPIs: React.FC<{
                                                     <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
                                                 </linearGradient>
                                             </defs>
-                                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                                            <Recharts.CartesianGrid horizontal={true} vertical={false} />
                                             <Recharts.XAxis
                                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                                                 dataKey="post_id"
                                                 interval={0}
-                                                stroke="hsl(var(--gray-300))"
+                                                stroke="hsl(var(--border))"
                                                 tickFormatter={() => ('')}
                                                 tickLine={false}
                                                 tickMargin={10}
@@ -322,6 +325,9 @@ const NewsletterKPIs: React.FC<{
                                                 isAnimationActive={false}
                                                 position={{y: 10}}
                                             />
+                                            {showAvgLine &&
+                                                <Recharts.ReferenceLine label={{value: `${formatPercentage(avgValue)}`, position: 'left', offset: 8, fill: 'hsl(var(--muted-foreground))'}} opacity={0.5} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" y={avgValue} />
+                                            }
                                             <Recharts.Bar
                                                 activeBar={{fillOpacity: 1}}
                                                 dataKey={tabConfig[currentTab].datakey}
