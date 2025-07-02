@@ -19,7 +19,7 @@ describe('Acceptance: Members Test', function () {
     });
 
     it('redirects roles without member management permission to site', async function () {
-        let role = this.server.create('role', {name: 'Editor'});
+        let role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role]});
 
         await authenticateSession();
