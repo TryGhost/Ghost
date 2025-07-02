@@ -17,7 +17,7 @@ function setIsRoles(loadedPermissions) {
         isAdmin: false,
         isEditor: false,
         isAuthor: false,
-        isContributor: false,
+        isContributor: false
     };
     if (!loadedPermissions?.user?.roles) {
         return resultsObject;
