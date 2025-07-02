@@ -1511,12 +1511,6 @@ DataGenerator.forKnex = (function () {
             user_id: DataGenerator.Content.users[7].id, // contributor
             type: 'admin',
             secret: _.repeat('4', 64)
-        },
-        {
-            id: ObjectId().toHexString(),
-            user_id: DataGenerator.Content.users[9].id,
-            type: 'admin',
-            secret: _.repeat('5', 64)
         }
     ];
 
