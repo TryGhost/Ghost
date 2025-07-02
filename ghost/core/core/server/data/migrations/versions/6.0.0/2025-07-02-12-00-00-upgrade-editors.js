@@ -1,5 +1,7 @@
 const logging = require('@tryghost/logging');
-const {addPermissionToRole, combineTransactionalMigrations, createTransactionalMigration, meta} = require('../../utils');
+const errors = require('@tryghost/errors');
+const {addPermissionToRole, combineTransactionalMigrations, createTransactionalMigration} = require('../../utils');
+const MIGRATION_USER = 1;
 
 module.exports = combineTransactionalMigrations(
     // Remove the Super Editor role
@@ -30,11 +32,13 @@ module.exports = combineTransactionalMigrations(
                 }).first();
 
                 if (!editorRole) {
-                    throw new Error('Editor role not found');
+                    throw new errors.InternalServerError({
+                        message: 'Editor role not found'
+                    });
                 }
 
-                // For each user with Super Editor role, add Editor role and remove Super Editor role
-                for (const userRole of usersWithSuperEditorRole) {
+                // Convert users with Super Editor role to regular Editors
+                await Promise.all(usersWithSuperEditorRole.map(async (userRole) => {
                     // Check if user already has Editor role
                     const existingEditorRole = await knex('users_roles')
                         .join('roles', 'users_roles.role_id', 'roles.id')
@@ -61,7 +65,7 @@ module.exports = combineTransactionalMigrations(
                             'roles.name': 'Super Editor'
                         })
                         .del();
-                }
+                }));
             }
 
             // Remove the role
@@ -79,7 +83,7 @@ module.exports = combineTransactionalMigrations(
                 id: superEditorRoleId,
                 name: 'Super Editor',
                 description: 'Editor plus member management',
-                created_by: meta.MIGRATION_USER,
+                created_by: MIGRATION_USER,
                 created_at: knex.raw('current_timestamp')
             });
 
