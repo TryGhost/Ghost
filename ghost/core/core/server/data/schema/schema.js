@@ -1,9 +1,10 @@
 /* String Column Sizes Information
  * (From: https://github.com/TryGhost/Ghost/pull/7932)
- *
+ * New/Updated column maxlengths should meet these guidlines
+ * 
  * Small strings = length 50
  * Medium strings = length 191
- * Large strings = length 1000-2000
+ * Large strings = length 2000 (use soft limits via validation for 191-2000)
  * Text = length 65535 (64 KiB)
  * Long text = length 1,000,000,000
  */
@@ -115,7 +116,7 @@ module.exports = {
         meta_description: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 500}}},
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         frontmatter: {type: 'text', maxlength: 65535, nullable: true},
-        feature_image_alt: {type: 'string', maxlength: 191, nullable: true},
+        feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
@@ -409,7 +410,7 @@ module.exports = {
         post_status: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['draft', 'published', 'scheduled', 'sent']]}},
         reason: {type: 'string', maxlength: 50, nullable: true},
         feature_image: {type: 'string', maxlength: 2000, nullable: true},
-        feature_image_alt: {type: 'string', maxlength: 191, nullable: true},
+        feature_image_alt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 191}}},
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         custom_excerpt: {type: 'string', maxlength: 2000, nullable: true, validations: {isLength: {max: 300}}}
     },
