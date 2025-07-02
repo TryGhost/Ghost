@@ -260,7 +260,10 @@ describe('Members Feedback', function () {
     });
 
     it('Can change existing feedback', async function () {
-        clock = sinon.useFakeTimers(new Date());
+        clock = sinon.useFakeTimers({
+            now: new Date(),
+            toFake: ['setTimeout', 'clearTimeout', 'setInterval', 'clearInterval', 'Date']
+        });
         const postId = fixtureManager.get('posts', 1).id;
 
         const {body} = await membersAgent
