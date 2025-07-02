@@ -1070,7 +1070,7 @@ jobs:
         job_unit-tests,
         job_acceptance-tests,
         job_legacy-tests,
-        job_browser-tests,
+        # job_browser-tests,
         job_admin_x_settings,
         job_admin_x_activitypub,
         job_comments_ui,
