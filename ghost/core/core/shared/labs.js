@@ -26,7 +26,9 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility'
+    'contentVisibility',
+    'ui60',
+    'explore'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -46,9 +48,7 @@ const PRIVATE_FEATURES = [
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
-    'ui60',
     'contentVisibilityAlpha',
-    'explore',
     'emailCustomization'
 ];
 
