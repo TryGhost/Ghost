@@ -143,7 +143,10 @@ describe('Update Check', function () {
                     users: {
                         browse: sinon.stub().resolves({
                             users: [{
-                                created_at: '1995-12-24T23:15:00Z'
+                                created_at: '1995-12-24T23:15:00Z',
+                                roles: [{
+                                    name: 'Owner'
+                                }]
                             }, {}]
                         })
                     },

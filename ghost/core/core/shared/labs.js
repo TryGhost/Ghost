@@ -26,12 +26,16 @@ const GA_FEATURES = [
     'themeErrorsNotification',
     'announcementBar',
     'customFonts',
-    'contentVisibility'
+    'contentVisibility',
+    'ActivityPub',
+    'trafficAnalytics',
+    'trafficAnalyticsAlpha',
+    'trafficAnalyticsTracking',
+    'ui60'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
-    'ActivityPub',
     'editorExcerpt',
     'additionalPaymentMethods'
 ];
@@ -41,13 +45,9 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'trafficAnalytics',
     'importMemberTier',
     'urlCache',
-    'mailEvents',
     'lexicalIndicators',
-    'trafficAnalyticsAlpha',
-    'ui60',
     'contentVisibilityAlpha',
     'explore',
     'emailCustomization'

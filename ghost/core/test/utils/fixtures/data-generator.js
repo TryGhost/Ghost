@@ -2,6 +2,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
+
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -126,8 +127,8 @@ DataGenerator.Content = {
     // Password = Sl1m3rson99
     users: [
         {
-            // owner (owner is still id 1 because of permissions)
-            id: '1',
+            // owner
+            id: '5951f5fc0000000000000000',
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
@@ -1002,9 +1003,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1021,9 +1020,7 @@ DataGenerator.forKnex = (function () {
             meta_description: null,
             description: 'description',
             visibility: 'public',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1053,9 +1050,7 @@ DataGenerator.forKnex = (function () {
             type: 'post',
             slug: 'slug',
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            created_by: DataGenerator.Content.users[0].id,
             published_at: new Date(),
             published_by: DataGenerator.Content.users[0].id,
             visibility: 'public'
@@ -1098,10 +1093,8 @@ DataGenerator.forKnex = (function () {
             profile_image: null,
             status: 'active',
             password: 'Sl1m3rson99',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             visibility: 'public',
             location: 'location'
         });
@@ -1241,9 +1234,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             name: 'label',
             slug: 'slug',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1262,9 +1253,7 @@ DataGenerator.forKnex = (function () {
             yearly_price: 5000,
             visibility: 'public',
             benefits: [],
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1296,9 +1285,7 @@ DataGenerator.forKnex = (function () {
             value: null,
             type: 'site',
             created_at: new Date(),
-            created_by: DataGenerator.Content.users[0].id,
-            updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id
+            updated_at: new Date()
         });
     }
 
@@ -1321,7 +1308,6 @@ DataGenerator.forKnex = (function () {
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             status: 'sent'
         });
@@ -1334,9 +1320,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             event: 'test',
             target_url: 'https://example.com/hooks/test',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1348,9 +1332,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             name: 'test integration',
             slug: 'test-integration',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
