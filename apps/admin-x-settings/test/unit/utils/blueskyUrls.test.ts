@@ -17,6 +17,7 @@ describe('Bluesky URLs', () => {
             assert.equal(validateBlueskyUrl('www.bsky.app/profile/username'), 'https://bsky.app/profile/username');
             assert.equal(validateBlueskyUrl('www.bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq'), 'https://bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq');
             assert.equal(validateBlueskyUrl('did:plc:g67wcylkodj4rrrgh26eifkq'), 'https://bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq');
+            assert.equal(validateBlueskyUrl('did:plc:THISWILLBELOWERCASED4567'), 'https://bsky.app/profile/did:plc:thiswillbelowercased4567');
             assert.equal(validateBlueskyUrl('@username'), 'https://bsky.app/profile/username');
             assert.equal(validateBlueskyUrl('username'), 'https://bsky.app/profile/username');
         });
@@ -29,6 +30,7 @@ describe('Bluesky URLs', () => {
         it('should reject invalid Bluesky usernames', () => {
             assert.throws(() => validateBlueskyUrl('bsky.app/profile/username@'), /Your Username is not a valid Bluesky Username/);
             assert.throws(() => validateBlueskyUrl('bsky.app/profile/username!'), /Your Username is not a valid Bluesky Username/);
+            assert.throws(() => validateBlueskyUrl('bsky.app/profile/did:plc:thisisnotavalidformat'), /Your Username is not a valid Bluesky Username/);
             assert.throws(() => validateBlueskyUrl('bsky.app/profile/thisusernameistoolongforbluesky'), /Your Username is not a valid Bluesky Username/);
         });
     });
