@@ -22,7 +22,7 @@ describe('useResponsiveChartSize', () => {
         vi.clearAllMocks();
     });
 
-    afterEach(() => {
+    afterEach(function () {
         vi.restoreAllMocks();
     });
 
@@ -77,8 +77,7 @@ describe('useResponsiveChartSize', () => {
 
         Object.defineProperty(window, 'innerWidth', {value: 600});
 
-        const {result} = renderHook(() => 
-            useResponsiveChartSize({breakpoints: customBreakpoints})
+        const {result} = renderHook(() => useResponsiveChartSize({breakpoints: customBreakpoints})
         );
 
         expect(result.current.chartSize).toBe('md');
@@ -228,8 +227,7 @@ describe('useResponsiveChartSize', () => {
 
         Object.defineProperty(window, 'innerWidth', {value: 700});
 
-        const {result} = renderHook(() => 
-            useResponsiveChartSize({breakpoints: customBreakpoints})
+        const {result} = renderHook(() => useResponsiveChartSize({breakpoints: customBreakpoints})
         );
 
         expect(result.current.chartSize).toBe('md');
