@@ -142,9 +142,6 @@ const NewsletterKPIs: React.FC<{
         }
     } satisfies ChartConfig;
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 1];
-
     const tabConfig = {
         'total-subscribers': {
             color: 'hsl(var(--chart-darkblue))',
@@ -159,6 +156,41 @@ const NewsletterKPIs: React.FC<{
             datakey: 'click_rate'
         }
     };
+
+    // Calculate dynamic domain and ticks based on current tab's data
+    const {barDomain, barTicks} = useMemo(() => {
+        if (!avgsData || avgsData.length === 0 || currentTab === 'total-subscribers') {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const dataKey = tabConfig[currentTab as keyof typeof tabConfig]?.datakey;
+        if (!dataKey) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        // Extract values for the current data key
+        const values = avgsData.map(item => item[dataKey as keyof AvgsDataItem]).filter(val => typeof val === 'number') as number[];
+
+        if (values.length === 0) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+
+        // Round to nearest 0.1
+        const roundedMin = Math.floor(minValue * 10) / 10;
+        const roundedMax = Math.ceil(maxValue * 10) / 10;
+
+        // Ensure we have some padding and don't have the same min/max
+        const finalMin = Math.max(0, roundedMin);
+        const finalMax = roundedMax === finalMin ? finalMin + 0.1 : roundedMax;
+
+        return {
+            barDomain: [finalMin, finalMax],
+            barTicks: [finalMin, finalMax]
+        };
+    }, [avgsData, currentTab]);
 
     if (isLoading) {
         return (
