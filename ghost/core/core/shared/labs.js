@@ -43,7 +43,6 @@ const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
     'trafficAnalytics',
-    'trafficAnalyticsTracking',
     'importMemberTier',
     'urlCache',
     'mailEvents',
