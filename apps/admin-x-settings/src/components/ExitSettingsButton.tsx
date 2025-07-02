@@ -10,7 +10,7 @@ const ExitSettingsButton: React.FC = () => {
     const [hasActivityPub] = getSettingValues(settings, ['social_web_enabled']) as [boolean];
 
     const navigateAway = () => {
-        if (config.labs.updatedMainNav) {
+        if (config.labs.ui60) {
             window.location.hash = '/analytics';
         } else {
             window.location.hash = (hasActivityPub && hasAdminAccess(currentUser)) ? '/activitypub' : '/dashboard';

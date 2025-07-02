@@ -49,7 +49,7 @@ const PRIVATE_FEATURES = [
     'mailEvents',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
-    'updatedMainNav',
+    'ui60',
     'contentVisibilityAlpha',
     'explore',
     'emailCustomization'

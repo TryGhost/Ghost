@@ -36,7 +36,7 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    if (config.labs.updatedMainNav) {
+                    if (config.labs.ui60) {
                         navigateAway('/analytics');
                     } else {
                         if (hasActivityPub && hasAdminAccess(currentUser)) {
@@ -54,7 +54,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty, hasActivityPub, currentUser, config.labs.updatedMainNav]);
+    }, [isDirty, hasActivityPub, currentUser, config.labs.ui60]);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load

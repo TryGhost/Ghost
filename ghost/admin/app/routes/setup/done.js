@@ -22,7 +22,7 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
             return this.router.transitionTo('stats-x');
         }
 
-        if (this.config.labs?.updatedMainNav) {
+        if (this.config.labs?.ui60) {
             return this.router.transitionTo('stats-x');
         } else {
             return this.router.transitionTo('dashboard');
