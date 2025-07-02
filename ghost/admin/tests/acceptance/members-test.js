@@ -378,11 +378,11 @@ describe('Acceptance: Members Test', function () {
             expect(findAll('[data-test-member]')).to.have.length(1);
         });
     });
-    describe('as super editor', function () {
+    describe('as editor', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
 
-            let role = this.server.create('role', {name: 'Super Editor'});
+            let role = this.server.create('role', {name: 'Editor'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
