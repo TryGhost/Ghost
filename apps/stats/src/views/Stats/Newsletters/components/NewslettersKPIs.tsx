@@ -142,9 +142,6 @@ const NewsletterKPIs: React.FC<{
         }
     } satisfies ChartConfig;
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 1];
-
     const tabConfig = {
         'total-subscribers': {
             color: 'hsl(var(--chart-darkblue))',
@@ -159,6 +156,41 @@ const NewsletterKPIs: React.FC<{
             datakey: 'click_rate'
         }
     };
+
+    // Calculate dynamic domain and ticks based on current tab's data
+    const {barDomain, barTicks} = useMemo(() => {
+        if (!avgsData || avgsData.length === 0 || currentTab === 'total-subscribers') {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const dataKey = tabConfig[currentTab as keyof typeof tabConfig]?.datakey;
+        if (!dataKey) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        // Extract values for the current data key
+        const values = avgsData.map(item => item[dataKey as keyof AvgsDataItem]).filter(val => typeof val === 'number') as number[];
+
+        if (values.length === 0) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+
+        // Round to nearest 0.1
+        const roundedMin = Math.floor(minValue * 10) / 10;
+        const roundedMax = Math.ceil(maxValue * 10) / 10;
+
+        // Ensure we have some padding and don't have the same min/max
+        const finalMin = Math.max(0, roundedMin);
+        const finalMax = roundedMax === finalMin ? finalMin + 0.1 : roundedMax;
+
+        return {
+            barDomain: [finalMin, finalMax],
+            barTicks: [finalMin, finalMax]
+        };
+    }, [avgsData, currentTab]);
 
     if (isLoading) {
         return (
@@ -175,6 +207,9 @@ const NewsletterKPIs: React.FC<{
     if (!emailTrackClicksEnabled && !emailTrackOpensEnabled) {
         gridClass = 'grid-cols-1';
     }
+
+    const showAvgLine = (currentTab === 'avg-open-rate' && avgOpenRate > barDomain[0] && avgOpenRate < barDomain[1]) || (currentTab === 'avg-click-rate' && avgClickRate > barDomain[0] && avgClickRate < barDomain[1]);
+    const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
 
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
@@ -298,12 +333,12 @@ const NewsletterKPIs: React.FC<{
                                                     <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
                                                 </linearGradient>
                                             </defs>
-                                            <Recharts.CartesianGrid horizontal={false} vertical={false} />
+                                            <Recharts.CartesianGrid horizontal={true} vertical={false} />
                                             <Recharts.XAxis
                                                 axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                                                 dataKey="post_id"
                                                 interval={0}
-                                                stroke="hsl(var(--gray-300))"
+                                                stroke="hsl(var(--border))"
                                                 tickFormatter={() => ('')}
                                                 tickLine={false}
                                                 tickMargin={10}
@@ -322,6 +357,9 @@ const NewsletterKPIs: React.FC<{
                                                 isAnimationActive={false}
                                                 position={{y: 10}}
                                             />
+                                            {showAvgLine &&
+                                                <Recharts.ReferenceLine label={{value: `${formatPercentage(avgValue)}`, position: 'left', offset: 8, fill: 'hsl(var(--muted-foreground))'}} opacity={0.5} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" y={avgValue} />
+                                            }
                                             <Recharts.Bar
                                                 activeBar={{fillOpacity: 1}}
                                                 dataKey={tabConfig[currentTab].datakey}
