@@ -208,7 +208,7 @@ const NewsletterKPIs: React.FC<{
         gridClass = 'grid-cols-1';
     }
 
-    const showAvgLine = (currentTab === 'avg-open-rate' && avgOpenRate > 0 && avgOpenRate < 1) || (currentTab === 'avg-click-rate' && avgClickRate > 0 && avgClickRate < 1);
+    const showAvgLine = (currentTab === 'avg-open-rate' && avgOpenRate > barDomain[0] && avgOpenRate < barDomain[1]) || (currentTab === 'avg-click-rate' && avgClickRate > barDomain[0] && avgClickRate < barDomain[1]);
     const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
 
     return (
