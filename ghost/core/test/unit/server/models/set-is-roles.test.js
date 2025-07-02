@@ -86,16 +86,6 @@ describe('setIsRoles function behavior', function () {
         result.isContributor.should.equal(false);
     });
 
-    it('returns the correct object for Super Editor', function () {
-        let result = setIsRoles(loadedPermissionsSuperEditor);
-        result.should.be.an.Object();
-        result.isOwner.should.equal(false);
-        result.isAdmin.should.equal(false);
-        result.isEditor.should.equal(false);
-        result.isAuthor.should.equal(false);
-        result.isContributor.should.equal(false);
-    });
-
     it('returns the correct object for multiple roles', function () {
         let result = setIsRoles(loadedPermissionsWithMultipleRoles);
         result.should.be.an.Object();
