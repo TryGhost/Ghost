@@ -30,7 +30,7 @@ Object {
       "trafficAnalytics": true,
       "trafficAnalyticsAlpha": true,
       "trafficAnalyticsTracking": true,
-      "updatedMainNav": true,
+      "ui60": true,
       "urlCache": true,
       "webmentions": true,
     },
