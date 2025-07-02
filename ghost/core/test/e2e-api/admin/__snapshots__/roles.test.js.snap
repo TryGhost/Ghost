@@ -72,14 +72,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Scheduler Integration",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-    },
-    Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": "Super Editor",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Super Editor",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-    },
+    }
   ],
 }
 `;
@@ -127,14 +120,7 @@ Object {
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Contributor",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-    },
-    Object {
-      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "description": "Super Editor",
-      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Super Editor",
-      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-    },
+    }
   ],
 }
 `;
