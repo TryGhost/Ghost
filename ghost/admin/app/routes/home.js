@@ -1,8 +1,8 @@
-import Route from '@ember/routing/route';
+import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
-export default class HomeRoute extends Route {
+export default class HomeRoute extends AuthenticatedRoute {
     @inject config;
     @service feature;
     @service router;

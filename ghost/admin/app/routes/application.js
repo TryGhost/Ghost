@@ -66,7 +66,13 @@ export default Route.extend(ShortcutsRoute, {
 
     config: inject(),
 
-    async beforeModel() {
+    async beforeModel(transition) {
+        // Intercept home route when unauthenticated
+        if (transition.to?.name === 'home' && !this.session.isAuthenticated) {
+            transition.abort();
+            return this.transitionTo('signin');
+        }
+        
         await this.session.setup();
         return this.prepareApp();
     },
