@@ -362,7 +362,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-            const isTbTrackingEnabled = labs.isSet('trafficAnalytics') || labs.isSet('trafficAnalyticsTracking');
+            const isTbTrackingEnabled = labs.isSet('trafficAnalytics');
             const hasTbConfig = config.get('tinybird') && config.get('tinybird:tracker');
             if (isTbTrackingEnabled && hasTbConfig) {
                 head.push(getTinybirdTrackerScript(dataRoot));
