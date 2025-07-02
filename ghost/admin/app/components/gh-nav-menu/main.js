@@ -44,7 +44,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @equal('router.currentRouteName', 'site')
         isOnSite;
 
-    @or('session.user.isAdmin', 'session.user.isEitherEditor')
+    @or('session.user.isAdmin', 'session.user.isEditor')
         showTagsNavigation;
 
     @and('config.clientExtensions.menu', 'session.user.isOwnerOnly')

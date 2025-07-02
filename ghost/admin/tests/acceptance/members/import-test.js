@@ -111,11 +111,11 @@ testemail@example.com,Test Email,This is a test template for importing your memb
             expect(apiLabels).to.equal(label1.name);
         });
     });
-    describe ('super editors functions', function () {
+    describe ('editors functions', function () {
         beforeEach(async function () {
             this.server.loadFixtures('configs');
 
-            let role = this.server.create('role', {name: 'Super Editor'});
+            let role = this.server.create('role', {name: 'Editor'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
@@ -208,22 +208,6 @@ testemail@example.com,Test Email,This is a test template for importing your memb
             await click('[data-test-button="perform-import"]');
 
             expect(apiLabels).to.equal(label1.name);
-        });
-    });
-    describe('Editor functions', function () {
-        beforeEach(async function () {
-            this.server.loadFixtures('configs');
-
-            let role = this.server.create('role', {name: 'Editor'});
-            this.server.create('user', {roles: [role]});
-
-            await authenticateSession();
-        });
-
-        it('Editor cannot access members import', async function () {
-            await visit('/members/import');
-
-            expect(currentURL()).to.equal('/site');
         });
     });
 });
