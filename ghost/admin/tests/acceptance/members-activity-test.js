@@ -20,7 +20,7 @@ describe('Acceptance: Members activity', function () {
     it('redirects roles w/o manage members permission', async function () {
         await invalidateSession();
 
-        const role = this.server.create('role', {name: 'Editor'});
+        const role = this.server.create('role', {name: 'Author'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
 
         await authenticateSession();
@@ -41,9 +41,9 @@ describe('Acceptance: Members activity', function () {
             expect(currentURL()).to.equal('/members-activity');
         });
     });
-    describe('as super editor', function () {
+    describe('editor', function () {
         beforeEach(async function () {
-            const role = this.server.create('role', {name: 'Super Editor'});
+            const role = this.server.create('role', {name: 'Editor'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();

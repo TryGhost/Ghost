@@ -12,7 +12,7 @@ const permissions = require('../services/permissions');
 const urlUtils = require('../../shared/url-utils');
 const {setIsRoles} = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
-const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
+const ASSIGNABLE_ROLES = ['Administrator', 'Editor', 'Author', 'Contributor'];
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -799,7 +799,7 @@ User = ghostBookshelf.Model.extend({
         const self = this;
         const userModel = userModelOrId;
         let origArgs;
-        const {isOwner, isEitherEditor} = setIsRoles(loadedPermissions);
+        const {isOwner, isEditor} = setIsRoles(loadedPermissions);
 
         // If we passed in a model without its related roles, we need to fetch it again
         if (typeof userModelOrId === 'object' && !(typeof userModelOrId.related('roles') === 'object')) {
@@ -842,7 +842,7 @@ User = ghostBookshelf.Model.extend({
             } else if (loadedPermissions.user && userModel.hasRole('Owner')) {
                 // Owner can only be edited by owner
                 hasUserPermission = isOwner;
-            } else if (isEitherEditor) {
+            } else if (isEditor) {
                 // If the user we are trying to edit is an Author or Contributor, allow it
                 hasUserPermission = userModel.hasRole('Author') || userModel.hasRole('Contributor');
             }

@@ -61,8 +61,6 @@ export default BaseModel.extend(ValidationEngine, {
     isEditor: equal('role.name', 'Editor'),
     isAdminOnly: equal('role.name', 'Administrator'),
     isOwnerOnly: equal('role.name', 'Owner'),
-    isSuperEditor: equal('role.name', 'Super Editor'),
-    isEitherEditor: or('isEditor', 'isSuperEditor'),
 
     // These are used in enough places that it's useful to throw them here
     isAdmin: or('isOwnerOnly', 'isAdminOnly'),
@@ -71,8 +69,8 @@ export default BaseModel.extend(ValidationEngine, {
     // adding some permisions-like properties, to facilitate future
     // switch to using the permissions system instead of role-based
     // hard-coded permissions
-    canManageMembers: or('isAdmin', 'isSuperEditor'),
-    canManageComments: or('isAdmin', 'isSuperEditor'),
+    canManageMembers: or('isAdmin', 'isEditor'),
+    canManageComments: or('isAdmin', 'isEditor'),
 
     isLoggedIn: computed('id', 'session.user.id', function () {
         return this.id === this.get('session.user.id');

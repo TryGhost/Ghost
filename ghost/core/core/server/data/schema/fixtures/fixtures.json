@@ -106,10 +106,6 @@
                 {
                     "name": "Scheduler Integration",
                     "description": "Internal Scheduler Client"
-                },
-                {
-                    "name": "Super Editor",
-                    "description": "Super Editors"
                 }
             ]
         },
@@ -921,9 +917,9 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
-                    "member_signin_url": "read"
+                    "member_signin_url": "read"       
                 },
-                "Super Editor": {
+                "Editor": {
                     "notification": "all",
                     "post": "all",
                     "setting": ["browse", "read"],
@@ -945,25 +941,6 @@
                     "member_signin_url": "read",
                     "offer": ["browse", "read"],
                     "comment": "all"
-                },
-                "Editor": {
-                    "notification": "all",
-                    "post": "all",
-                    "setting": ["browse", "read"],
-                    "slug": "all",
-                    "tag": "all",
-                    "user": "all",
-                    "role": "all",
-                    "invite": "all",
-                    "theme": ["browse", "readActive"],
-                    "email_preview": "all",
-                    "email": "all",
-                    "snippet": "all",
-                    "label": ["browse", "read"],
-                    "product": ["browse", "read"],
-                    "newsletter": ["browse", "read"],
-                    "collection": "all",
-                    "recommendation": ["browse", "read"]
                 },
                 "Author": {
                     "post": ["browse", "read", "edit", "add", "destroy"],
