@@ -41,7 +41,7 @@ const extractInputParts = (input: string) => {
         }
 
         // don't need protocol from match
-        const [, regional, pathType, rawUsername] = match
+        const [, regional, pathType, rawUsername] = match;
         const username = formatUsername(rawUsername);
 
         // validate regional code is two letters if present
