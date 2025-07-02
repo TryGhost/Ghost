@@ -28,7 +28,6 @@ Object {
       "themeErrorsNotification": true,
       "trafficAnalytics": true,
       "trafficAnalyticsAlpha": true,
-      "trafficAnalyticsTracking": true,
       "ui60": true,
       "urlCache": true,
       "webmentions": true,
