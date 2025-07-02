@@ -51,7 +51,6 @@ describe('Acceptance: Dashboard', function () {
             await visit('/dashboard');
             expect(currentURL()).to.equal('/site');
         });
-
     });
     describe('as admin', function () {
         beforeEach(async function () {

@@ -21,7 +21,8 @@ const InviteUserModal = NiceModal.create(() => {
     const limiter = useLimiter();
 
     const {updateRoute} = useRouting();
-
+    const {config} = useGlobalData();
+    const editorBeta = config.labs.superEditors;
     const focusRef = useRef<HTMLInputElement>(null);
     const [email, setEmail] = useState<string>('');
     const [saveState, setSaveState] = useState<'saving' | 'saved' | 'error' | ''>('');
