@@ -4,7 +4,9 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class TagsController extends Controller {
+    @service infinity;
     @service router;
+    @service tagsManager;
 
     queryParams = ['type'];
     @tracked type = 'public';
@@ -15,15 +17,12 @@ export default class TagsController extends Controller {
 
     get filteredTags() {
         return this.tags.filter((tag) => {
-            return (!tag.isNew && (!this.type || tag.visibility === this.type));
+            return (!tag.isNew && !tag.isDestroyed && !tag.isDestroying && !tag.isDeleted && (!this.type || tag.visibility === this.type));
         });
     }
 
     get sortedTags() {
-        return this.filteredTags.sort((tagA, tagB) => {
-            // ignorePunctuation means the # in internal tag names is ignored
-            return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
-        });
+        return this.tagsManager.sortTags(this.filteredTags);
     }
 
     @action
@@ -34,5 +33,10 @@ export default class TagsController extends Controller {
     @action
     newTag() {
         this.router.transitionTo('tag.new');
+    }
+
+    @action
+    loadMoreTags() {
+        this.infinity.infinityLoad(this.model);
     }
 }

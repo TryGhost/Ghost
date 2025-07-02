@@ -1,8 +1,11 @@
 import Service, {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {tracked} from '@glimmer/tracking';
 
 export default class TagsManagerService extends Service {
     @service store;
+
+    @tracked tagsScreenInfinityModel = null;
 
     _loadedTags = this.store.peekAll('tag');
 
