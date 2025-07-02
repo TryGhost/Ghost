@@ -1,17 +1,9 @@
-<GhTokenInput
-    @extra={{hash
-        tokenComponent=(component "gh-token-input/tag-token")
-    }}
+<GhTagsTokenInput
+    @allowCreation={{true}}
+    @selected={{@post.tags}}
     @onChange={{this.updateTags}}
     @onCreate={{this.createTag}}
-    @onOpen={{this.loadInitialTags}}
-    @options={{this.availableTags}}
-    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreTagsTask)}}
-    @registerAPI={{this.registerPowerSelectAPI}}
-    @renderInPlace={{true}}
-    @search={{perform this.searchTagsTask}}
-    @selected={{@post.tags}}
-    @showCreateWhen={{this.hideCreateOptionOnMatchingTag}}
     @triggerId={{@triggerId}}
     @triggerClass={{@triggerClass}}
+    @renderInPlace={{true}}
 />
