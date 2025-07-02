@@ -22,7 +22,7 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 };
 
 const MainContent: React.FC = () => {
-    const {currentUser} = useGlobalData();
+    const {currentUser, config} = useGlobalData();
     const {route, updateRoute, loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
     const {settings} = useGlobalData();
@@ -36,10 +36,14 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    if (hasActivityPub && hasAdminAccess(currentUser)) {
-                        navigateAway('/activitypub');
+                    if (config.labs.ui60) {
+                        navigateAway('/analytics');
                     } else {
-                        navigateAway('/dashboard');
+                        if (hasActivityPub && hasAdminAccess(currentUser)) {
+                            navigateAway('/activitypub');
+                        } else {
+                            navigateAway('/dashboard');
+                        }
                     }
                 });
             }
@@ -50,7 +54,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty, hasActivityPub, currentUser]);
+    }, [isDirty, hasActivityPub, currentUser, config.labs.ui60]);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load

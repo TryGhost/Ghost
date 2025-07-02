@@ -1,76 +1,87 @@
 import validator from 'validator';
 
-export function validateBlueskyUrl(newUrl: string) {
-    const errMessage = 'The URL must be in a format like https://bsky.app/profile/yourUsername';
-    const invalidUsernameMessage = 'Your Username is not a valid Bluesky Username';
-    if (!newUrl) {
+const ERRORS = {
+    INVALID_USERNAME: 'Your Username is not a valid Bluesky Username',
+    INVALID_URL: 'The URL must be in a format like https://bsky.app/profile/yourUsername'
+};
+
+function isValidBlueskyUsername(username: string): boolean {
+    const validUsernamePatterns = [
+        // DID username: did:plc: + 24-character Base32 identifier (lowercase a–z, digits 2–7)
+        /^did:plc:[a-z2-7]{24}$/, 
+        // Regular username: max 15 chars
+        /^[a-zA-Z0-9._]{1,15}$/,
+        // Domain username: requires dot, max 191 chars
+        // length check needs to be at the front because of the +, otherwise could go over 191 
+        /^(?=.{1,191}$)[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/
+    ];
+    
+    return validUsernamePatterns.some(pattern => pattern.test(username));
+}
+
+function formatUsername(username: string) {
+    let formattedUsername = username.trim();
+
+    if (formattedUsername.startsWith('@')) {
+        formattedUsername = formattedUsername.slice(1);
+    }
+
+    if (formattedUsername.startsWith('did:plc:')) {
+        return formattedUsername.toLowerCase();
+    }
+
+    return formattedUsername;
+}
+
+export function validateBlueskyUrl(handleOrUrl: string) {
+    if (!handleOrUrl) {
         return '';
     }
 
     let username: string;
 
     // Extract username from URL or handle
-    if (newUrl.startsWith('http') || newUrl.startsWith('www.') || newUrl.includes('bsky.app')) {
+    if (handleOrUrl.startsWith('http') || handleOrUrl.startsWith('www.') || handleOrUrl.includes('bsky.app')) {
         // Only allow bsky.app domain
-        if (!newUrl.includes('bsky.app')) {
-            throw new Error(errMessage);
+        if (!handleOrUrl.includes('bsky.app')) {
+            throw new Error(ERRORS.INVALID_URL);
         }
 
         // Extract username from URL
-        const usernameMatch = newUrl.match(/bsky\.app\/profile\/@?([^/]+)/);
+        const usernameMatch = handleOrUrl.match(/bsky\.app\/profile\/@?([^/]+)/);
         if (!usernameMatch) {
-            throw new Error(errMessage);
+            throw new Error(ERRORS.INVALID_URL);
         }
-        username = usernameMatch[1];
+        username = formatUsername(usernameMatch[1]);
     } else {
-        // Handle username or @username
-        username = newUrl.startsWith('@') ? newUrl.slice(1) : newUrl;
+        // Handle username, @username or ensuring DID is lowercase
+        username = formatUsername(handleOrUrl);
     }
 
     // Validate username
-    // Regular username: alphanumeric, underscore, max 15 chars
-    const isRegularUsername = !username.includes('.');
-    if (isRegularUsername) {
-        if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
-            throw new Error(invalidUsernameMessage);
-        }
-    } else {
-        // Domain-based username: alphanumeric, dots, hyphens, at least one dot, reasonable length
-        if (!username.match(/^[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/) || username.length > 253) {
-            throw new Error(invalidUsernameMessage);
-        }
+    if (!isValidBlueskyUsername(username)) {
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
     // Construct and validate full URL
     const normalizedUrl = `https://bsky.app/profile/${username}`;
     if (!validator.isURL(normalizedUrl)) {
-        throw new Error(errMessage);
+        throw new Error(ERRORS.INVALID_URL);
     }
 
     return normalizedUrl;
 }
 
 export const blueskyHandleToUrl = (handle: string) => {
-    const errMessage = 'Your Username is not a valid Bluesky Username';
     if (!handle) {
-        throw new Error(errMessage);
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
-    let username = handle;
-    if (username.startsWith('@')) {
-        username = username.slice(1);
-    }
+    let username = formatUsername(handle);
 
     // Validate username
-    const isRegularUsername = !username.includes('.');
-    if (isRegularUsername) {
-        if (!username.match(/^[a-zA-Z0-9._]{1,15}$/)) {
-            throw new Error(errMessage);
-        }
-    } else {
-        if (!username.match(/^[a-zA-Z0-9._-]+\.[a-zA-Z0-9._-]+$/) || username.length > 191) { // 191 is the max length due to database constraints
-            throw new Error(errMessage);
-        }
+    if (!isValidBlueskyUsername(username)) {
+        throw new Error(ERRORS.INVALID_USERNAME);
     }
 
     return `https://bsky.app/profile/${username}`;

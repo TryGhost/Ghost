@@ -139,6 +139,10 @@ export default class GhTokenInput extends Component {
         let suggestion = selection.find(option => option.__isSuggestion__);
 
         if (suggestion) {
+            // abort creating if we're still searching otherwise we could create duplicates
+            if (this.searchAndSuggestTask.isRunning) {
+                return;
+            }
             this.args.onCreate(suggestion.__value__, select);
         } else {
             this.args.onChange(selection, select);
