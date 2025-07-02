@@ -300,7 +300,7 @@ describe('Admin API', function () {
                 await agent.useZapierAdminAPIKey();
                 await agent
                     .get('invites')
-                    .expectStatus(501);
+                    .expectStatus(403);
             });
         });
     });
