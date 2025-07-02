@@ -16,8 +16,8 @@ export function validateTwitterUrl(newUrl: string) {
         }
 
         // check if username starts with http:, https:, or www. and show error if so
-        if (username.match(/^(http:|www\.|https:)|(\/)/) || !username.match(/^[a-z\d._]{1,15}$/mi)) {
-            const message = !username.match(/^[a-z\d._]{1,15}$/mi)
+        if (username.match(/^(http:|www\.|https:)|(\/)/) || !username.match(/^[a-z\d_]{1,15}$/mi)) {
+            const message = !username.match(/^[a-z\d_]{1,15}$/mi)
                 ? 'Your Username is not a valid Twitter Username'
                 : 'The URL must be in a format like https://x.com/yourUsername';
             throw new Error(message);
