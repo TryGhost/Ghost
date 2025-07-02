@@ -1,7 +1,7 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {Offer} = require('@tryghost/members-offers');
+const Offer = require('./domain/models/Offer');
 const sentry = require('../../../shared/sentry');
 const logger = require('@tryghost/logging');
 
@@ -33,12 +33,12 @@ const mongoTransformer = flowRight(statusTransformer, rejectNonStatusTransformer
 
 /**
  * @typedef {object} BaseOptions
- * @prop {import('knex').Transaction} transacting
+ * @prop {import('knex').Knex.Transaction} transacting
  */
 
 /**
  * @typedef {object} ListOptions
- * @prop {import('knex').Transaction} transacting
+ * @prop {import('knex').Knex.Transaction} transacting
  * @prop {string} filter
  */
 
@@ -56,7 +56,7 @@ class OfferBookshelfRepository {
 
     /**
      * @template T
-     * @param {(t: import('knex').Transaction) => Promise<T>} cb
+     * @param {(t: import('knex').Knex.Transaction) => Promise<T>} cb
      * @returns {Promise<T>}
      */
     async createTransaction(cb) {
@@ -93,7 +93,7 @@ class OfferBookshelfRepository {
      * @private
      * @param {import('bookshelf').Model<any>} model
      * @param {BaseOptions} options
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async mapToOffer(model, options) {
         const json = model.toJSON();
@@ -107,6 +107,8 @@ class OfferBookshelfRepository {
         });
 
         try {
+            const lastRedeemedObject = lastRedeemed.toJSON();
+
             return await Offer.create({
                 id: json.id,
                 name: json.name,
@@ -126,7 +128,7 @@ class OfferBookshelfRepository {
                     name: json.product.name
                 },
                 created_at: json.created_at,
-                last_redeemed: lastRedeemed.toJSON().length > 0 ? lastRedeemed.toJSON()[0].created_at : null
+                last_redeemed: lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null
             }, null);
         } catch (err) {
             logger.error(err);
@@ -138,7 +140,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id
      * @param {BaseOptions} [options]
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async getById(id, options) {
         const model = await this.OfferModel.findOne({id}, {
@@ -156,7 +158,7 @@ class OfferBookshelfRepository {
     /**
      * @param {string} id stripe_coupon_id
      * @param {BaseOptions} [options]
-     * @returns {Promise<import('@tryghost/members-offers').Offer>}
+     * @returns {Promise<import('./domain/models/Offer')>}
      */
     async getByStripeCouponId(id, options) {
         const model = await this.OfferModel.findOne({stripe_coupon_id: id}, {
@@ -173,7 +175,7 @@ class OfferBookshelfRepository {
 
     /**
      * @param {ListOptions} options
-     * @returns {Promise<import('@tryghost/members-offers').Offer[]>}
+     * @returns {Promise<import('./domain/models/Offer')[]>}
      */
     async getAll(options) {
         const models = await this.OfferModel.findAll({
@@ -192,7 +194,7 @@ class OfferBookshelfRepository {
     }
 
     /**
-     * @param {import('@tryghost/members-offers').Offer} offer
+     * @param {import('./domain/models/Offer')} offer
      * @param {BaseOptions} [options]
      * @returns {Promise<void>}
      */

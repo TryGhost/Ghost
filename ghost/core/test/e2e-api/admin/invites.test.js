@@ -116,6 +116,7 @@ describe('Invites API', function () {
             mailService.GhostMailer.prototype.send.called.should.be.false();
         });
     });
+    
     describe('As Admin Integration', function () {
         before(async function () {
             await localUtils.startGhost();
@@ -212,21 +213,8 @@ describe('Invites API', function () {
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
         });
 
-        it('Can not add a new invite by API Key with the Administrator Role', async function () {
-            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Administrator').id;
-            await request
-                .post(localUtils.API.getApiQuery('invites/'))
-                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
-                .send({
-                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
-                })
-                .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.private)
-                .expect(403);
-        });
-
-        it('Can add a new invite by API Key with the Contributor Role', async function () {
-            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Contributor').id;
+        it('Can add a new invite by API Key with the Super Editor Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Super Editor').id;
             const res = await request
                 .post(localUtils.API.getApiQuery('invites/'))
                 .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
@@ -250,6 +238,19 @@ describe('Invites API', function () {
 
             should.exist(res.headers.location);
             res.headers.location.should.equal(`http://127.0.0.1:2369${localUtils.API.getApiQuery('invites/')}${res.body.invites[0].id}/`);
+        });
+
+        it('Can not add a new invite by API Key with the Administrator Role', async function () {
+            const roleId = testUtils.getExistingData().roles.find(role => role.name === 'Administrator').id;
+            await request
+                .post(localUtils.API.getApiQuery('invites/'))
+                .set('Authorization', `Ghost ${localUtils.getValidAdminToken('/admin/')}`)
+                .send({
+                    invites: [{email: 'admin-api-key-test@example.com', role_id: roleId}]
+                })
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(403);
         });
     });
 });

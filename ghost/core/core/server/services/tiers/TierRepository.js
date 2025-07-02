@@ -1,15 +1,15 @@
-const {Tier} = require('@tryghost/tiers');
+const Tier = require('./Tier');
 const nql = require('@tryghost/nql');
 
 /**
- * @typedef {import('@tryghost/tiers/lib/TiersAPI').ITierRepository} ITierRepository
+ * @typedef {import('./TiersAPI').ITierRepository} ITierRepository
  */
 
 /**
  * @implements {ITierRepository}
  */
 module.exports = class TierRepository {
-    /** @type {import('@tryghost/tiers/lib/Tier')[]} */
+    /** @type {import('./Tier')[]} */
     #store = [];
     /** @type {Object.<string, true>} */
     #ids = {};
@@ -44,7 +44,7 @@ module.exports = class TierRepository {
     }
 
     /**
-     * @param {import('@tryghost/tiers/lib/Tier')} tier
+     * @param {import('./Tier')} tier
      * @returns {any}
      */
     toPrimitive(tier) {
@@ -83,10 +83,11 @@ module.exports = class TierRepository {
     /**
      * @param {object} [options]
      * @param {string} [options.filter]
-     * @returns {Promise<import('@tryghost/tiers/lib/Tier')[]>}
+     * @returns {Promise<import('./Tier')[]>}
      */
     async getAll(options = {}) {
-        const filter = nql(options.filter, {});
+        const filter = nql();
+        filter.filter = options.filter || {};
         return Promise.all(this.#store.slice().filter((item) => {
             return filter.queryJSON(this.toPrimitive(item));
         }).map((tier) => {
@@ -96,7 +97,7 @@ module.exports = class TierRepository {
 
     /**
      * @param {import('bson-objectid').default} id
-     * @returns {Promise<import('@tryghost/tiers/lib/Tier')>}
+     * @returns {Promise<import('./Tier')>}
      */
     async getById(id) {
         const found = this.#store.find((item) => {
@@ -111,7 +112,7 @@ module.exports = class TierRepository {
     }
 
     /**
-     * @param {import('@tryghost/tiers/lib/Tier')} tier
+     * @param {import('./Tier')} tier
      * @returns {Promise<void>}
      */
     async save(tier) {

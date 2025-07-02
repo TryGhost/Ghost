@@ -8,9 +8,10 @@ describe('UNIT - services/routing/ParentRouter', function () {
     let req;
     let res;
     let next;
+    let redirect301Stub;
 
     beforeEach(function () {
-        sinon.stub(urlUtils, 'redirect301');
+        redirect301Stub = sinon.stub(urlUtils, 'redirect301');
 
         req = sinon.stub();
         req.app = {
@@ -74,7 +75,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/channel/').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/channel/').calledOnce.should.be.true();
         });
 
         it('redirect with query params', function () {
@@ -104,7 +105,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/channel/?a=b').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/channel/?a=b').calledOnce.should.be.true();
         });
 
         it('redirect rss', function () {
@@ -134,7 +135,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/channel/rss/').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/channel/rss/').calledOnce.should.be.true();
         });
 
         it('redirect pagination', function () {
@@ -164,7 +165,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/channel/page/2/').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/channel/page/2/').calledOnce.should.be.true();
         });
 
         it('redirect correctly with subdirectory', function () {
@@ -196,7 +197,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/blog/channel/').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/blog/channel/').calledOnce.should.be.true();
         });
 
         it('no redirect: different data key', function () {
@@ -223,7 +224,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(true);
-            urlUtils.redirect301.called.should.be.false();
+            redirect301Stub.called.should.be.false();
         });
 
         it('no redirect: no channel defined', function () {
@@ -245,7 +246,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'bacon');
             next.called.should.eql(true);
-            urlUtils.redirect301.called.should.be.false();
+            redirect301Stub.called.should.be.false();
         });
 
         it('redirect primary tag permalink', function () {
@@ -275,24 +276,24 @@ describe('UNIT - services/routing/ParentRouter', function () {
 
             parentRouter._respectDominantRouter(req, res, next, 'welcome');
             next.called.should.eql(false);
-            urlUtils.redirect301.withArgs(res, '/route/?x=y').calledOnce.should.be.true();
+            redirect301Stub.withArgs(res, '/route/?x=y').calledOnce.should.be.true();
         });
     });
 
     describe('fn: isRedirectEnabled', function () {
-        it('no data key defined', function () {
+        it('data is undefined', function () {
             const parentRouter = new ParentRouter();
             parentRouter.data = undefined;
             parentRouter.isRedirectEnabled('tags', 'bacon').should.be.false();
         });
 
-        it('no data key defined', function () {
+        it('data keys are undefined', function () {
             const parentRouter = new ParentRouter();
             parentRouter.data = {query: {}, router: {}};
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when unspecified slug', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -305,7 +306,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when wrong slug', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -318,7 +319,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('no redirect', function () {
+        it('no redirect when tag redirect=false', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -331,7 +332,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.not.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('redirect', function () {
+        it('redirect (tags)', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {
@@ -344,7 +345,7 @@ describe('UNIT - services/routing/ParentRouter', function () {
             should.exist(parentRouter.isRedirectEnabled('tags', 'bacon'));
         });
 
-        it('redirect', function () {
+        it('redirect (pages)', function () {
             const parentRouter = new ParentRouter();
 
             parentRouter.data = {

@@ -174,7 +174,7 @@ const ImageUpload: React.FC<ImageUploadProps> = ({
             <div className={`${buttonContainerClassName} ${unsplashEnabled ? 'relative' : ''}`}>
                 {
                     unsplashEnabled &&
-                        <button className={unsplashButtonClassName} type='button' onClick={openUnsplash}>
+                        <button className={unsplashButtonClassName} data-testid="toggle-unsplash-button" type='button' onClick={openUnsplash}>
                             {unsplashButtonContent}
                         </button>
                 }

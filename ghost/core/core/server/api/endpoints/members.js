@@ -2,6 +2,7 @@
 // as it is a getter and may change during runtime.
 const moment = require('moment-timezone');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const models = require('../../models');
 const membersService = require('../../services/members');
 
@@ -11,6 +12,7 @@ const _ = require('lodash');
 
 const messages = {
     memberNotFound: 'Member not found.',
+    notSendingWelcomeEmail: 'Email verification required, welcome email is disabled',
     memberAlreadyExists: {
         message: 'Member already exists',
         context: 'Attempting to {action} member with existing email address.'
@@ -22,14 +24,15 @@ const messages = {
     },
     stripeCustomerNotFound: {
         context: 'Missing Stripe customer.',
-        help: 'Make sure you’re connected to the correct Stripe Account.'
+        help: 'Make sure you\'re connected to the correct Stripe Account.'
     },
     resourceNotFound: '{resource} not found.'
 };
 
 const allowedIncludes = ['email_recipients', 'products', 'tiers'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'members',
 
     browse: {
@@ -114,6 +117,10 @@ module.exports = {
         },
         permissions: true,
         async query(frame) {
+            if (await membersService.verificationTrigger.checkVerificationRequired()) {
+                logging.warn(tpl(messages.notSendingWelcomeEmail));
+                frame.options.send_email = false;
+            }
             const member = await membersService.api.memberBREADService.add(frame.data.members[0], frame.options);
 
             return member;
@@ -374,10 +381,12 @@ module.exports = {
                     return `members.${datetime}.csv`;
                 }
             },
+            contentType: 'text/csv',
             cacheInvalidate: false
         },
         response: {
-            format: 'plain'
+            format: 'plain',
+            stream: true
         },
         permissions: {
             method: 'browse'
@@ -503,3 +512,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

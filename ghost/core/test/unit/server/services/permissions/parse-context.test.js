@@ -86,6 +86,27 @@ describe('Permissions', function () {
             });
         });
 
+        it('should return both user and api_key when both provided (staff API key scenario)', function () {
+            parseContext({
+                user: {id: 1},
+                api_key: {
+                    id: 2,
+                    type: 'admin'
+                },
+                integration: {id: 3}
+            }).should.eql({
+                internal: false,
+                user: {id: 1},
+                api_key: {
+                    id: 2,
+                    type: 'admin'
+                },
+                member: null,
+                public: false,
+                integration: {id: 3}
+            });
+        });
+
         it('should return internal if internal provided', function () {
             parseContext({internal: true}).should.eql({
                 internal: true,

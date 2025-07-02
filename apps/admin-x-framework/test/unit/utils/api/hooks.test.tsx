@@ -36,13 +36,13 @@ const wrapper: React.FC<{ children: ReactNode }> = ({children}) => (
     </FrameworkProvider>
 );
 
-describe('API hooks', function () {
-    describe('createQuery', function () {
-        afterEach(function () {
+describe('API hooks', () => {
+    describe('createQuery', () => {
+        afterEach(() => {
             queryClient.clear();
         });
 
-        it('makes an API request', async function () {
+        it('makes an API request', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -60,18 +60,53 @@ describe('API hooks', function () {
                 expect(mock.calls.length).toBe(1);
                 expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
                     credentials: 'include',
+                    dataType: 'test',
                     headers: {
                         'app-pragma': 'no-cache',
                         'x-ghost-version': '5.x'
                     },
                     method: 'GET',
                     mode: 'cors',
+                    path: '/test/',
                     signal: expect.any(AbortSignal)
                 }]);
             });
         });
 
-        it('sends default query params', async function () {
+        it('can add custom headers', async () => {
+            await withMockFetch({
+                json: {test: 1}
+            }, async (mock) => {
+                const useTestQuery = createQuery({
+                    dataType: 'test',
+                    path: '/test/',
+                    headers: {'Content-Type': 'ALOHA'}
+                });
+
+                const {result} = renderHook(() => useTestQuery(), {wrapper});
+
+                await waitFor(() => expect(result.current.isLoading).toBe(false));
+
+                expect(result.current.data).toEqual({test: 1});
+
+                expect(mock.calls.length).toBe(1);
+                expect(mock.calls[0]).toEqual(['http://localhost:3000/ghost/api/admin/test/', {
+                    credentials: 'include',
+                    dataType: 'test',
+                    headers: {
+                        'Content-Type': 'ALOHA',
+                        'app-pragma': 'no-cache',
+                        'x-ghost-version': '5.x'
+                    },
+                    method: 'GET',
+                    mode: 'cors',
+                    path: '/test/',
+                    signal: expect.any(AbortSignal)
+                }]);
+            });
+        });
+
+        it('sends default query params', async () => {
             await withMockFetch({}, async (mock) => {
                 const useTestQuery = createQuery({
                     dataType: 'test',
@@ -88,7 +123,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can override default query params', async function () {
+        it('can override default query params', async () => {
             await withMockFetch({}, async (mock) => {
                 const useTestQuery = createQuery({
                     dataType: 'test',
@@ -105,7 +140,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can transform return data', async function () {
+        it('can transform return data', async () => {
             await withMockFetch({json: {test: 1}}, async () => {
                 const useTestQuery = createQuery({
                     dataType: 'test',
@@ -122,12 +157,12 @@ describe('API hooks', function () {
         });
     });
 
-    describe('createPaginatedQuery', function () {
-        afterEach(function () {
+    describe('createPaginatedQuery', () => {
+        afterEach(() => {
             queryClient.clear();
         });
 
-        it('makes a paginated API request', async function () {
+        it('makes a paginated API request', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -156,7 +191,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('sends default query params', async function () {
+        it('sends default query params', async () => {
             await withMockFetch({}, async (mock) => {
                 const useTestQuery = createPaginatedQuery({
                     dataType: 'test',
@@ -173,7 +208,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can override default query params', async function () {
+        it('can override default query params', async () => {
             await withMockFetch({}, async (mock) => {
                 const useTestQuery = createPaginatedQuery({
                     dataType: 'test',
@@ -190,7 +225,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can transform return data', async function () {
+        it('can transform return data', async () => {
             await withMockFetch({json: {test: 1}}, async () => {
                 const useTestQuery = createPaginatedQuery({
                     dataType: 'test',
@@ -206,7 +241,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('exposes pagination metadata', async function () {
+        it('exposes pagination metadata', async () => {
             await withMockFetch({json: {meta: {pagination: {pages: 2, total: 100}}}}, async () => {
                 const useTestQuery = createPaginatedQuery({
                     dataType: 'test',
@@ -225,7 +260,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('supports navigating pages', async function () {
+        it('supports navigating pages', async () => {
             await withMockFetch({json: {meta: {pagination: {pages: 2}}}}, async (mock) => {
                 const useTestQuery = createPaginatedQuery({
                     dataType: 'test',
@@ -260,12 +295,12 @@ describe('API hooks', function () {
         });
     });
 
-    describe('createInfiniteQuery', function () {
-        afterEach(function () {
+    describe('createInfiniteQuery', () => {
+        afterEach(() => {
             queryClient.clear();
         });
 
-        it('makes a paginated API request', async function () {
+        it('makes a paginated API request', async () => {
             await withMockFetch({
                 json: {test: 1, pagination: {next: 2}}
             }, async (mock) => {
@@ -311,12 +346,12 @@ describe('API hooks', function () {
         });
     });
 
-    describe('createQueryWithId', function () {
-        afterEach(function () {
+    describe('createQueryWithId', () => {
+        afterEach(() => {
             queryClient.clear();
         });
 
-        it('fills in the ID in the request', async function () {
+        it('fills in the ID in the request', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -337,12 +372,12 @@ describe('API hooks', function () {
         });
     });
 
-    describe('createMutation', function () {
-        afterEach(function () {
+    describe('createMutation', () => {
+        afterEach(() => {
             queryClient.clear();
         });
 
-        it('makes a request', async function () {
+        it('makes a request', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -370,7 +405,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('computes path, body, searchParams', async function () {
+        it('computes path, body, searchParams', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -401,7 +436,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can invalidate queries in the cache', async function () {
+        it('can invalidate queries in the cache', async () => {
             await withMockFetch({
                 json: {test: 1}
             }, async (mock) => {
@@ -425,7 +460,7 @@ describe('API hooks', function () {
             });
         });
 
-        it('can update queries in the cache', async function () {
+        it('can update queries in the cache', async () => {
             await withMockFetch({
                 json: {test: 10}
             }, async (mock) => {

@@ -6,8 +6,7 @@ import type {ModalName} from './routing/modals';
 export const modalPaths: {[key: string]: ModalName} = {
     'design/change-theme': 'DesignAndThemeModal',
     'design/edit': 'DesignAndThemeModal',
-    // this is a special route, because it can install a theme directly from the Ghost Marketplace
-    'design/change-theme/install': 'DesignAndThemeModal',
+    'theme/install': 'DesignAndThemeModal', // this is a special route, because it can install a theme directly from the Ghost Marketplace
     'navigation/edit': 'NavigationModal',
     'staff/invite': 'InviteUserModal',
     'staff/:slug': 'UserDetailModal',
@@ -22,7 +21,6 @@ export const modalPaths: {[key: string]: ModalName} = {
     'history/view/:user': 'HistoryModal',
     'integrations/zapier': 'ZapierModal',
     'integrations/slack': 'SlackModal',
-    'integrations/amp': 'AmpModal',
     'integrations/unsplash': 'UnsplashModal',
     'integrations/firstpromoter': 'FirstpromoterModal',
     'integrations/pintura': 'PinturaModal',
@@ -43,7 +41,7 @@ export const loadModals = () => import('./routing/modals');
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
     const {route} = useRouting();
-
+    // get current route
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {
             scrollToSection(newPath.split('/')[0]);

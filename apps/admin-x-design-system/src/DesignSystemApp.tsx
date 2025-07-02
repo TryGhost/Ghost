@@ -11,13 +11,12 @@ export interface DesignSystemAppProps extends React.HTMLProps<HTMLDivElement> {
 const DesignSystemApp: React.FC<DesignSystemAppProps> = ({darkMode, fetchKoenigLexical, className, children, ...props}) => {
     const appClassName = clsx(
         'admin-x-base',
-        darkMode && 'dark',
         className
     );
 
     return (
         <div className={appClassName} {...props}>
-            <DesignSystemProvider fetchKoenigLexical={fetchKoenigLexical}>
+            <DesignSystemProvider darkMode={darkMode} fetchKoenigLexical={fetchKoenigLexical}>
                 {children}
             </DesignSystemProvider>
         </div>

@@ -139,20 +139,34 @@
 }
 
 .gh-email-preview-newsletter-select p.gh-preview-newsletter-name {
-    color: var(--darkgrey);
-    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 0;
+    min-height: 38px;
+    padding: 4px 0;
+    line-height: 1.15;
+}
+
+.gh-post-preview-email-mockup-mobile p.gh-preview-newsletter-name {
+    min-height: unset;
+    font-size: 1.3rem;
 }
 
 p .gh-preview-email-address {
-    color: var(--midlightgrey);
-    font-weight: 500;
+    color: var(--midgrey-l1);
+}
+
+.gh-post-preview-email-mockup-mobile .gh-preview-email-address {
+    display: none;
 }
 
 .gh-preview-email-subject {
     display: flex;
     align-items: center;
-    color: var(--darkgrey);
-    font-weight: 600;
+    color: var(--black);
+    font-size: 1.4rem;
+    font-weight: 400;
     cursor: pointer;
 }
 
@@ -179,25 +193,19 @@ p .gh-preview-email-address {
     stroke-width: 2px;
 }
 
-.gh-preview-email-subject-input {
-    height: 25px;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    padding: 0;
-    font-size: 1.4rem;
-    font-weight: 600;
-    line-height: 1.8em;
-}
-
-.gh-preview-email-subject-input:focus {
-    background: transparent;
-    box-shadow: inset 0 -1px 0 var(--lightgrey-l1);
+.gh-preview-email-subject-text {
+    margin: 0;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 1;
+    font-size: 1.3rem;
 }
 
 .gh-email-subject {
     display: flex;
     align-items: center;
+    width: 100%;
 }
 
 .gh-pe-emailclient-sender span.strong {
@@ -209,7 +217,7 @@ p .gh-preview-email-address {
     flex-direction: column;
     flex-grow: 1;
     align-items: center;
-    background: var(--white);
+    background: var(--whitegrey-l2);
     padding: 8vmin 30px 30px;
     height: calc(100vh - 119px);
     border-bottom-left-radius: 5px;
@@ -219,9 +227,9 @@ p .gh-preview-email-address {
 .gh-pe-mobile-bezel {
     width: 320px;
     height: 657px;
-    border-radius: 40px;
+    border-radius: 32px;
     display: flex;
-    background: var(--whitegrey-l2);
+    background: var(--white);
     box-shadow:
         0 0 0 1px rgba(0,0,0,0.02),
         0 2.8px 2.2px rgba(0, 0, 0, 0.02),
@@ -235,10 +243,10 @@ p .gh-preview-email-address {
 
 .gh-pe-mobile-screen {
     width: 100%;
-    margin: 14px;
+    margin: 12px;
     border: 1px solid var(--whitegrey-l1);
     background: var(--white);
-    border-radius: 28px;
+    border-radius: 24px;
     flex-grow: 1;
     overflow: hidden;
     -webkit-mask-image: -webkit-radial-gradient(white, black);
@@ -249,7 +257,7 @@ p .gh-preview-email-address {
     transform: scale(0.8);
     transform-origin: 0 0;
     overflow-x: hidden;
-    width: 361px;
+    width: 368px;
     height: 706px;
 }
 

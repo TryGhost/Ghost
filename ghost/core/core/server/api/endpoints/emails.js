@@ -12,7 +12,8 @@ const messages = {
 const allowedBatchIncludes = ['count.recipients'];
 const allowedFailureIncludes = ['member', 'email_recipient'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'emails',
 
     browse: {
@@ -48,17 +49,15 @@ module.exports = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return models.Email.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.emailNotFound)
-                        });
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Email.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.emailNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -180,3 +179,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

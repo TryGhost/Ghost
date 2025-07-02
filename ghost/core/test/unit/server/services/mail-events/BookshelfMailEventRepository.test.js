@@ -1,6 +1,6 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const {MailEvent} = require('@tryghost/mail-events');
+const {MailEvent} = require('../../../../../core/server/services/mail-events/MailEvent');
 const BookshelfMailEventRepository = require('../../../../../core/server/services/mail-events/BookshelfMailEventRepository');
 
 describe('BookshelfMailEventRepository', function () {

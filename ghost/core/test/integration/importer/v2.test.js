@@ -389,7 +389,7 @@ describe('Importer', function () {
                     response.length.should.equal(6);
                     // NOTE: a duplicated tag.slug is a warning
                     response[0].errorType.should.equal('ValidationError');
-                    response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 200 characters.');
+                    response[0].message.should.eql('Value in [users.bio] exceeds maximum length of 250 characters.');
 
                     response[1].errorType.should.equal('ValidationError');
                     response[1].message.should.eql('Validation (isEmail) failed for email');
@@ -824,7 +824,7 @@ describe('Importer', function () {
 
             exportData.data.settings[0] = testUtils.DataGenerator.forKnex.createSetting({
                 key: 'labs',
-                value: JSON.stringify({activitypub: true})
+                value: JSON.stringify({additionalPaymentMethods: true})
             });
 
             return dataImporter.doImport(exportData, importOptions)
@@ -835,7 +835,7 @@ describe('Importer', function () {
                 .then(function (result) {
                     should.equal(result.attributes.key, 'labs');
                     should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{"activitypub":true}');
+                    should.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
                 });
         });
 

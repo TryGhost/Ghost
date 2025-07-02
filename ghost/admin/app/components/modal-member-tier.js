@@ -1,8 +1,8 @@
 import ModalComponent from 'ghost-admin/components/modal-base';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {didCancel, task} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class ModalMemberTier extends ModalComponent {
@@ -77,7 +77,16 @@ export default class ModalMemberTier extends ModalComponent {
     @action
     setup() {
         this.loadingTiers = true;
-        this.fetchTiers.perform();
+        try {
+            this.fetchTiers.perform();
+        } catch (e) {
+            // Do not throw cancellation errors
+            if (didCancel(e)) {
+                return;
+            }
+
+            throw e;
+        }
     }
 
     @action

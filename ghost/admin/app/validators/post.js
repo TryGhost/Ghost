@@ -62,8 +62,11 @@ export default BaseValidator.create({
 
     customExcerpt(model) {
         if (!validator.isLength(model.customExcerpt || '', 0, 300)) {
-            model.errors.add('customExcerpt', 'Excerpt cannot be longer than 300 characters.');
+            const errorMessage = 'Excerpt cannot be longer than 300 characters.';
+            model.errors.add('customExcerpt', errorMessage);
             this.invalidate();
+        } else {
+            model.errors.remove('customExcerpt');
         }
     },
 
@@ -190,20 +193,20 @@ export default BaseValidator.create({
 
             // draft/published must be in past
             if ((status === 'draft' || status === 'published') && publishedAtBlogTZ.isSameOrAfter(now)) {
-                model.errors.add('publishedAtBlogDate', 'Must be in the past');
+                model.errors.add('publishedAtBlogDate', 'Please choose a past date and time.');
                 this.invalidate();
 
             // scheduled must be in the future when first scheduling
             } else if ((model.changedAttributes().status || model.changedAttributes().publishedAtUTC) && status === 'scheduled' && !isInFuture) {
-                model.errors.add('publishedAtBlogDate', 'Must be in the future');
+                model.errors.add('publishedAtBlogDate', 'Please choose a future date and time.');
                 this.invalidate();
             }
         }
     },
 
     featureImageAlt(model) {
-        if (!validator.isLength(model.featureImageAlt || '', 0, 125)) {
-            model.errors.add('featureImageAlt', 'Feature image alt text cannot be longer than 125 characters.');
+        if (!validator.isLength(model.featureImageAlt || '', 0, 191)) {
+            model.errors.add('featureImageAlt', 'Feature image alt text cannot be longer than 191 characters.');
             this.invalidate();
         }
     }

@@ -5,6 +5,9 @@ const sentry = require('../../../shared/sentry');
 const errorHandler = require('@tryghost/mw-error-handler');
 const APIVersionCompatibilityService = require('../../services/api-version-compatibility');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupApiApp() {
     debug('Parent API setup start');
     const apiApp = express('api');
@@ -21,7 +24,6 @@ module.exports = function setupApiApp() {
 
     // Error handling for requests to non-existent API versions
     apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(APIVersionCompatibilityService.errorHandler);
     apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Parent API setup end');

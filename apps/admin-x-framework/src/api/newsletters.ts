@@ -20,7 +20,9 @@ export type Newsletter = {
     show_header_icon: boolean;
     show_header_title: boolean;
     title_font_category: string;
+    title_font_weight: string;
     title_alignment: string;
+    show_excerpt: boolean;
     show_feature_image: boolean;
     body_font_category: string;
     footer_content: string | null;
@@ -31,8 +33,17 @@ export type Newsletter = {
     show_subscription_details: boolean;
     show_latest_posts: boolean;
     background_color: string;
-    border_color: string | null;
-    title_color: string | null;
+    header_background_color: string;
+    button_color: string | null;
+    link_color: string | null;
+    post_title_color: string | null;
+    section_title_color: string | null;
+    divider_color: string | null;
+    button_corners: string | null;
+    button_style: string | null;
+    image_corners: string | null;
+    link_style: string | null;
+    divider_style: string | null;
     created_at: string;
     updated_at: string;
     count?: {
@@ -60,7 +71,7 @@ export const useBrowseNewsletters = createInfiniteQuery<NewslettersResponseType 
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<NewslettersResponseType>;
         const newsletters = pages.flatMap(page => page.newsletters);
-        const meta = pages.at(-1)!.meta;
+        const meta = pages[pages.length - 1].meta;
 
         return {
             newsletters: newsletters,

@@ -1,3 +1,9 @@
+/* eslint-env browser */
+/* eslint-disable no-console */
+const urlAttribution = require('../utils/url-attribution');
+const parseReferrer = urlAttribution.parseReferrer;
+const getReferrer = urlAttribution.getReferrer;
+
 // Location where we want to store the history in localStorage
 const STORAGE_KEY = 'ghost-history';
 
@@ -38,7 +44,7 @@ const LIMIT = 15;
             try {
                 history = JSON.parse(historyString);
             } catch (error) {
-                // Ignore invalid JSON, ans clear history
+                // Ignore invalid JSON, and clear history
                 console.warn('[Member Attribution] Error while parsing history', error);
             }
         }
@@ -71,25 +77,33 @@ const LIMIT = 15;
             history = [];
         }
 
-        // Fetch referrer data from query params
-        let refParam;
-        let sourceParam;
-        let utmSourceParam;
-        let utmMediumParam;
+        // Get detailed referrer information using parseReferrer
+        let referrerData;
         try {
-            // Fetch source/medium from query param
-            const url = new URL(window.location.href);
-            refParam = url.searchParams.get('ref');
-            sourceParam = url.searchParams.get('source');
-            utmSourceParam = url.searchParams.get('utm_source');
-            utmMediumParam = url.searchParams.get('utm_medium');
+            referrerData = parseReferrer(window.location.href);
         } catch (e) {
-            console.error('[Member Attribution] Parsing referrer from querystring failed', e);
+            console.error('[Member Attribution] Parsing referrer failed', e);
+            referrerData = {source: null, medium: null, url: null};
         }
 
-        const referrerSource = refParam || sourceParam || utmSourceParam || null;
-        const referrerMedium = utmMediumParam || null;
-        const referrerUrl = window.document.referrer || null;
+        // Get referrer components from the parsed data
+        const referrerSource = referrerData.source;
+        const referrerMedium = referrerData.medium;
+        
+        // Use the getReferrer helper to handle same-domain referrer filtering
+        // This will return null if the referrer is from the same domain
+        let referrerUrl;
+        try {
+            referrerUrl = getReferrer(window.location.href);
+            // If no referrer value returned by getReferrer but we have a document.referrer,
+            // use the original URL from parseReferrer
+            if (!referrerUrl && referrerData.url) {
+                referrerUrl = referrerData.url;
+            }
+        } catch (e) {
+            console.error('[Member Attribution] Getting final referrer failed', e);
+            referrerUrl = referrerData.url;
+        }
 
         // Do we have attributions in the query string?
         try {

@@ -1,9 +1,10 @@
-import AdminRoute from 'ghost-admin/routes/admin';
+import * as Sentry from '@sentry/ember';
 import ConfirmUnsavedChangesModal from '../components/modals/confirm-unsaved-changes';
+import MembersManagementRoute from './members-management';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
-export default class MembersRoute extends AdminRoute {
+export default class MembersRoute extends MembersManagementRoute {
     @service feature;
     @service modals;
     @service router;
@@ -96,6 +97,7 @@ export default class MembersRoute extends AdminRoute {
     }
 
     async confirmUnsavedChanges() {
+        Sentry.captureMessage('showing unsaved changes modal for members route');
         this.confirmModal = this.modals
             .open(ConfirmUnsavedChangesModal)
             .finally(() => {

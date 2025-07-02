@@ -1,0 +1,212 @@
+name: ghost
+
+# Template to share volumes and environment variable between all services running the same base image
+x-service-template: &service-template
+  volumes:
+    - .:/home/ghost
+    - ${SSH_AUTH_SOCK}:/ssh-agent
+    - ${HOME}/.gitconfig:/root/.gitconfig:ro
+    - ${HOME}/.yalc:/root/.yalc
+    - node_modules_yarn_lock_hash:/home/ghost/.yarnhash:delegated
+    - node_modules_ghost_root:/home/ghost/node_modules:delegated
+    - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
+    - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
+    - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
+    - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
+    - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
+    - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
+    - node_modules_apps_admin-x-settings:/home/ghost/apps/admin-x-settings/node_modules:delegated
+    - node_modules_apps_announcement-bar:/home/ghost/apps/announcement-bar/node_modules:delegated
+    - node_modules_apps_comments-ui:/home/ghost/apps/comments-ui/node_modules:delegated
+    - node_modules_apps_portal:/home/ghost/apps/portal/node_modules:delegated
+    - node_modules_apps_posts:/home/ghost/apps/posts/node_modules:delegated
+    - node_modules_apps_shade:/home/ghost/apps/shade/node_modules:delegated
+    - node_modules_apps_signup-form:/home/ghost/apps/signup-form/node_modules:delegated
+    - node_modules_apps_sodo-search:/home/ghost/apps/sodo-search/node_modules:delegated
+    - node_modules_apps_stats:/home/ghost/apps/stats/node_modules:delegated
+  environment:
+    - DEBUG=${DEBUG:-}
+    - SSH_AUTH_SOCK=/ssh-agent
+    - NX_DAEMON=${NX_DAEMON:-true}
+    - GHOST_DEV_IS_DOCKER=true
+    - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+    - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+    - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+    - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+    - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+services:
+  server:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost/ghost/core
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368"
+    profiles: [ split ]
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      - DEBUG=${DEBUG:-}
+      - SSH_AUTH_SOCK=/ssh-agent
+      - NX_DAEMON=false
+      - GHOST_DEV_IS_DOCKER=true
+      - GHOST_DEV_APP_FLAGS=${GHOST_DEV_APP_FLAGS:-}
+      - GHOST_UPSTREAM=${GHOST_UPSTREAM:-}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
+      - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+
+  admin:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost/ghost/admin
+    command: [ "yarn", "dev" ]
+    ports:
+      - "4200:4200"
+      - "4201:4201"
+    profiles: [ split ]
+    tty: true
+
+  caddy:
+    image: caddy:latest
+    container_name: ghost-caddy
+    profiles: [ split ]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    restart: always
+
+  ghost:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    build:
+      context: .
+      dockerfile: ./.docker/Dockerfile
+      target: development
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    command: [ "yarn", "dev" ]
+    ports:
+      - "2368:2368" # Ghost
+      - "4200:4200" # Admin
+      - "4201:4201" # Admin tests
+      - "4175:4175" # Portal
+      - "4176:4176" # Portal HTTPS
+      - "4177:4177" # Announcement bar
+      - "4178:4178" # Search
+      - "6174:6174" # Signup form
+      - "7173:7173" # Comments
+      - "7174:7174" # Comments HTTPS
+    profiles: [ ghost ]
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  mysql:
+    image: mysql:8.4.5
+    container_name: ghost-mysql
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost
+    restart: always
+    volumes:
+      - ./.docker/mysql-preload:/docker-entrypoint-initdb.d
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: mysql -uroot -proot ghost -e 'select 1'
+      interval: 1s
+      retries: 120
+  redis:
+    image: redis:7.0
+    container_name: ghost-redis
+    ports:
+      - 6379:6379
+    restart: always
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - --raw
+        - incr
+        - ping
+      interval: 1s
+      retries: 120
+  prometheus:
+    profiles: [ monitoring ]
+    image: prom/prometheus:v2.55.1
+    container_name: ghost-prometheus
+    ports:
+      - 9090:9090
+    restart: always
+    volumes:
+      - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+  grafana:
+    profiles: [ monitoring ]
+    image: grafana/grafana:8.5.27
+    container_name: ghost-grafana
+    ports:
+      - 3000:3000
+    restart: always
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    volumes:
+      - ./.docker/grafana/datasources:/etc/grafana/provisioning/datasources
+      - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
+      - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
+  pushgateway:
+    profiles: [ monitoring ]
+    image: prom/pushgateway:v1.11.1
+    container_name: ghost-pushgateway
+    ports:
+      - 9091:9091
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: ghost-mailhog
+    profiles: [ ghost, split ]
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    restart: always
+volumes:
+  mysql-data: {}
+  redis-data: {}
+  caddy_data: {}
+  node_modules_yarn_lock_hash: {}
+  node_modules_ghost_root: {}
+  node_modules_ghost_admin: {}
+  node_modules_ghost_core: {}
+  node_modules_ghost_i18n: {}
+  node_modules_apps_admin-x-activitypub: {}
+  node_modules_apps_admin-x-design-system: {}
+  node_modules_apps_admin-x-framework: {}
+  node_modules_apps_admin-x-settings: {}
+  node_modules_apps_announcement-bar: {}
+  node_modules_apps_comments-ui: {}
+  node_modules_apps_portal: {}
+  node_modules_apps_posts: {}
+  node_modules_apps_shade: {}
+  node_modules_apps_signup-form: {}
+  node_modules_apps_sodo-search: {}
+  node_modules_apps_stats: {}

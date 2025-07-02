@@ -1,4 +1,5 @@
-const {PostsService, PostsExporter} = require('@tryghost/posts-service');
+const PostsService = require('./PostsService');
+const PostsExporter = require('./PostsExporter');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 /**
@@ -12,7 +13,6 @@ const getPostServiceInstance = () => {
     const emailService = require('../email-service');
     const settingsCache = require('../../../shared/settings-cache');
     const settingsHelpers = require('../settings-helpers');
-    const collectionsService = require('../collections');
 
     const postStats = new PostStats();
 
@@ -38,8 +38,7 @@ const getPostServiceInstance = () => {
         isSet: flag => labs.isSet(flag), // don't use bind, that breaks test subbing of labs
         stats: postStats,
         emailService: emailService.service,
-        postsExporter,
-        collectionsService: collectionsService.api
+        postsExporter
     });
 };
 

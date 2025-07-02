@@ -5,8 +5,10 @@ const apiMw = require('../../middleware');
 const mw = require('./middleware');
 
 const shared = require('../../../shared');
-const labs = require('../../../../../shared/labs');
 
+/**
+ * @returns {import('express').Router}
+ */
 module.exports = function apiRoutes() {
     const router = express.Router('admin api');
 
@@ -18,14 +20,6 @@ module.exports = function apiRoutes() {
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
     router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
-
-    // ## Collections
-    router.get('/collections', mw.authAdminApi, http(api.collections.browse));
-    router.get('/collections/:id', mw.authAdminApi, http(api.collections.read));
-    router.get('/collections/slug/:slug', mw.authAdminApi, http(api.collections.read));
-    router.post('/collections', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.add));
-    router.put('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.edit));
-    router.del('/collections/:id', mw.authAdminApi, labs.enabledMiddleware('collections'), http(api.collections.destroy));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
@@ -48,6 +42,10 @@ module.exports = function apiRoutes() {
 
     router.get('/mentions', mw.authAdminApi, http(api.mentions.browse));
 
+    router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
+    router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
+    router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
+    router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
     // ## Pages
@@ -157,6 +155,19 @@ module.exports = function apiRoutes() {
     router.get('/stats/subscriptions', mw.authAdminApi, http(api.stats.subscriptions));
     router.get('/stats/referrers/posts/:id', mw.authAdminApi, http(api.stats.postReferrers));
     router.get('/stats/referrers', mw.authAdminApi, http(api.stats.referrersHistory));
+    router.get('/stats/posts/:id/stats', mw.authAdminApi, http(api.stats.postStats));
+    router.get('/stats/top-posts', mw.authAdminApi, http(api.stats.topPosts));
+    router.get('/stats/top-posts-views', mw.authAdminApi, http(api.stats.topPostsViews));
+    router.get('/stats/top-content', mw.authAdminApi, http(api.stats.topContent));
+    router.get('/stats/newsletter-stats', mw.authAdminApi, http(api.stats.newsletterStats));
+    router.get('/stats/newsletter-basic-stats', mw.authAdminApi, http(api.stats.newsletterBasicStats));
+    router.get('/stats/newsletter-click-stats', mw.authAdminApi, http(api.stats.newsletterClickStats));
+    router.get('/stats/subscriber-count', mw.authAdminApi, http(api.stats.subscriberCount));
+    router.get('/stats/posts/:id/top-referrers', mw.authAdminApi, http(api.stats.postReferrersAlpha));
+    router.get('/stats/posts/:id/growth', mw.authAdminApi, http(api.stats.postGrowthStats));
+    router.get('/stats/top-sources-growth', mw.authAdminApi, http(api.stats.topSourcesGrowth));
+    router.post('/stats/posts-visitor-counts', mw.authAdminApi, http(api.stats.postsVisitorCounts));
+    router.post('/stats/posts-member-counts', mw.authAdminApi, http(api.stats.postsMemberCounts));
 
     // ## Labels
     router.get('/labels', mw.authAdminApi, http(api.labels.browse));
@@ -171,6 +182,7 @@ module.exports = function apiRoutes() {
 
     // ## Slugs
     router.get('/slugs/:type/:name', mw.authAdminApi, http(api.slugs.generate));
+    router.get('/slugs/:type/:name/:id', mw.authAdminApi, http(api.slugs.generate));
 
     // ## Themes
     router.get('/themes/', mw.authAdminApi, http(api.themes.browse));
@@ -231,6 +243,9 @@ module.exports = function apiRoutes() {
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+    // ## Tinybird
+    router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
+
     // ## Sessions
     router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
@@ -240,6 +255,8 @@ module.exports = function apiRoutes() {
         http(api.session.add)
     );
     router.del('/session', mw.authAdminApi, http(api.session.delete));
+    router.post('/session/verify', shared.middleware.brute.sendVerificationCode, http(api.session.sendVerification));
+    router.put('/session/verify', shared.middleware.brute.userVerification, http(api.session.verify));
 
     // ## Identity
     router.get('/identities', mw.authAdminApi, http(api.identities.read));
@@ -358,6 +375,15 @@ module.exports = function apiRoutes() {
 
     // Incoming recommendations
     router.get('/incoming_recommendations', mw.authAdminApi, http(api.incomingRecommendations.browse));
+
+    // Feedback
+    router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
+
+    // Search index
+    router.get('/search-index/posts', mw.authAdminApi, http(api.searchIndex.fetchPosts));
+    router.get('/search-index/pages', mw.authAdminApi, http(api.searchIndex.fetchPages));
+    router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
+    router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
 
     return router;
 };

@@ -5,6 +5,8 @@ export default class HomeRoute extends Route {
     @service feature;
     @service modals;
     @service router;
+    @service session;
+    @service settings;
 
     beforeModel(transition) {
         super.beforeModel(...arguments);
@@ -13,7 +15,11 @@ export default class HomeRoute extends Route {
             return this.router.transitionTo('setup.done');
         }
 
-        this.router.transitionTo('dashboard');
+        if (this.settings.socialWebEnabled && this.session.user.isAdmin) {
+            this.router.transitionTo('activitypub-x');
+        } else {
+            this.router.transitionTo('dashboard');
+        }
     }
 
     resetController(controller) {

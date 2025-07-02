@@ -23,6 +23,12 @@ const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value,
     };
 });
 
+/**
+ *
+ * @param {import('@tryghost/api-framework').Frame} frame
+ * @param {object} options
+ * @returns {object}
+ */
 function generateOptionsData(frame, options) {
     return options.reduce((memo, option) => {
         let value = frame.options?.[option];
@@ -52,7 +58,9 @@ function generateAuthData(frame) {
         };
     }
 }
-module.exports = {
+
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'posts',
 
     browse: {
@@ -154,21 +162,21 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
+        async query(frame) {
             const options = {
                 ...frame.options,
                 mongoTransformer: rejectPrivateFieldsTransformer
             };
-            return models.Post.findOne(frame.data, options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.postNotFound)
-                        });
-                    }
-
-                    return model;
+            const model = await models.Post.findOne(frame.data, options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.postNotFound)
                 });
+            }
+
+            return model;
         }
     }
 };
+
+module.exports = controller;

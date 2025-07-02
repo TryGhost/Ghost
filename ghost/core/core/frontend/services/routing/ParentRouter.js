@@ -56,7 +56,7 @@ class ParentRouter {
     /**
      * @description Helper function to find the site router in the express router stack.
      * @param {Object} req
-     * @returns {Express-Router}
+     * @returns {import('express').Router}
      * @private
      */
     _getSiteRouter(req) {
@@ -116,8 +116,8 @@ class ParentRouter {
 
     /**
      * @description Mount a router on a router (sub-routing)
-     * @param {String} path
-     * @param {Express-Router} router
+     * @param {String | import('express').Router} path
+     * @param {import('express').Router} [router]
      */
     mountRouter(path, router) {
         if (arguments.length === 1) {
@@ -166,7 +166,7 @@ class ParentRouter {
 
     /**
      * @description Very important function to get the actual express router, which satisfies express.
-     * @returns {Express-Router}
+     * @returns {import('express').Router}
      */
     router() {
         return this._router;

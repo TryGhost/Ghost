@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import clsx from 'clsx';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Form, Heading, Icon, ImageUpload, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {ReactComponent as PortalIcon1} from '../../../../assets/icons/portal-icon-1.svg';
 import {ReactComponent as PortalIcon2} from '../../../../assets/icons/portal-icon-2.svg';
@@ -53,7 +54,11 @@ const LookAndFeel: React.FC<{
             updateSetting('portal_button_icon', imageUrl);
             setUploadedIcon(imageUrl);
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 
@@ -71,14 +76,14 @@ const LookAndFeel: React.FC<{
     return <div className='mt-7'><Form>
         <Toggle
             checked={Boolean(portalButton)}
+            direction='rtl'
             label='Show portal button'
-            labelStyle='heading'
             onChange={e => updateSetting('portal_button', e.target.checked)}
         />
         <Select
             options={portalButtonOptions}
             selectedOption={portalButtonOptions.find(option => option.value === portalButtonStyle)}
-            title='Portal button style'
+            title='Button style'
             onSelect={option => updateSetting('portal_button_style', option?.value || null)}
         />
         {portalButtonStyle?.toString()?.includes('icon') &&
@@ -88,7 +93,7 @@ const LookAndFeel: React.FC<{
 
                     {defaultButtonIcons.map(icon => (
                         <button className={clsx('border p-3', currentIcon === icon.value ? 'border-green' : 'border-transparent')} type="button" onClick={() => updateSetting('portal_button_icon', icon.value)}>
-                            <icon.Component className={`h-5 w-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
+                            <icon.Component className={`size-5 ${currentIcon === icon.value ? 'text-green' : 'text-black opacity-70 transition-all hover:opacity-100 dark:text-white'}`} />
                         </button>
                     ))}
                     <div className={clsx('relative w-[46px] border', currentIcon === uploadedIcon ? 'border-green' : 'border-transparent')}>

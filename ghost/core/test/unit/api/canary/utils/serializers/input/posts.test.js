@@ -1,7 +1,15 @@
 const should = require('should');
+const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
+const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
+
+const mobiledocLib = require('@tryghost/html-to-mobiledoc');
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
+    afterEach(function () {
+        sinon.restore();
+    });
+
     describe('browse', function () {
         it('default', function () {
             const apiConfig = {};
@@ -37,7 +45,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             should.equal(frame.options.filter, '(type:post)+status:[draft,published,scheduled,sent]');
         });
 
-        it('combine filters', function () {
+        it('combine status+tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -57,7 +65,7 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             frame.options.filter.should.eql('(status:published+tag:eins)+type:post');
         });
 
-        it('combine filters', function () {
+        it('only tag filters', function () {
             const apiConfig = {};
             const frame = {
                 apiType: 'content',
@@ -92,6 +100,65 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
             frame.options.formats.should.not.containEql('lexical');
             frame.options.formats.should.containEql('html');
             frame.options.formats.should.containEql('plaintext');
+        });
+
+        describe('Content API', function () {
+            it('selects all columns from the posts schema but mobiledoc and lexical when no columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {}
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                const columns = Object.keys(postsSchema);
+                const parsedSelectRaw = frame.options.selectRaw.split(',').map(column => column.trim());
+                parsedSelectRaw.should.eql(columns.filter(column => !['mobiledoc', 'lexical','@@UNIQUE_CONSTRAINTS@@','@@INDEXES@@'].includes(column)));
+            });
+
+            it('strips mobiledoc and lexical columns from a specified columns option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id', 'mobiledoc', 'lexical', 'visibility']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                frame.options.columns.should.eql(['id', 'visibility']);
+            });
+
+            it('forces visibility column if columns are specified', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        columns: ['id']
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                frame.options.columns.should.eql(['id', 'visibility']);
+            });
+
+            it('strips mobiledoc and lexical columns from a specified selectRaw option', function () {
+                const apiConfig = {};
+                const frame = {
+                    apiType: 'content',
+                    options: {
+                        context: {},
+                        selectRaw: 'id, mobiledoc, lexical'
+                    }
+                };
+
+                serializers.input.posts.browse(apiConfig, frame);
+                frame.options.selectRaw.should.eql('id');
+            });
         });
     });
 
@@ -286,7 +353,35 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 serializers.input.posts.edit(apiConfig, frame);
 
                 let postData = frame.data.posts[0];
-                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>"},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                postData.lexical.should.equal('{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1},{"type":"html","version":1,"html":"<div class=\\"custom\\">My Custom HTML</div>","visibility":{"web":{"nonMember":true,"memberSegment":"status:free,status:-free"},"email":{"memberSegment":"status:free,status:-free"}}},{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"custom html preserved!","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+            });
+
+            it('throws error when HTML conversion fails', function () {
+                // JSDOM require is sometimes very slow on CI causing random timeouts
+                this.timeout(4000);
+
+                const frame = {
+                    options: {
+                        source: 'html'
+                    },
+                    data: {
+                        posts: [
+                            {
+                                id: 'id1',
+                                html: '<bananarama>'
+                            }
+                        ]
+                    }
+                };
+
+                sinon.stub(mobiledocLib, 'toMobiledoc').throws(new Error('Some error'));
+
+                try {
+                    serializers.input.posts.edit({}, frame);
+                    should.fail('Error expected');
+                } catch (err) {
+                    err.message.should.eql('Failed to convert HTML to Mobiledoc');
+                }
             });
         });
 

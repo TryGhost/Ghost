@@ -120,6 +120,7 @@ function getHomeSchema(metaData) {
         '@type': 'WebSite',
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
+        name: metaData.site.title,
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.url,
         description: metaData.metaDescription ?

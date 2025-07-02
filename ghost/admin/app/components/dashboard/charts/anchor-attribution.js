@@ -250,8 +250,8 @@ export default class Anchor extends Component {
         const canvasFill = document.createElement('canvas');
         const ctxFill = canvasFill.getContext('2d');
         const gradientFill = ctxFill.createLinearGradient(0, 0, 1000, 0);
-        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0.2');
-        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0.1');
+        gradientFill.addColorStop(0, 'rgba(250, 45, 142, 0');
+        gradientFill.addColorStop(1, 'rgba(143, 66, 255, 0');
 
         return {
             labels: labels,
@@ -259,7 +259,7 @@ export default class Anchor extends Component {
                 data: data,
                 tension: 1,
                 cubicInterpolationMode: 'monotone',
-                fill: true,
+                fill: false,
                 fillColor: gradientFill,
                 backgroundColor: gradientFill,
                 pointRadius: 0,
@@ -374,7 +374,10 @@ export default class Anchor extends Component {
                         zeroLineWidth: 1
                     },
                     ticks: {
-                        display: false
+                        display: false,
+                        beginAtZero: false,
+                        suggestedMin: this.getYAxisMin(),
+                        suggestedMax: this.getYAxisMax()
                     }
                 }],
                 xAxes: [{
@@ -810,5 +813,29 @@ export default class Anchor extends Component {
         }
 
         return Math.round((to - from) / from * 100);
+    }
+
+    getYAxisMax() {
+        if (!this.chartData || !this.chartData.datasets || !this.chartData.datasets[0]) {
+            return null; // Let Chart.js handle it if data is not available
+        }
+        const data = this.chartData.datasets[0].data;
+        if (!data || data.length === 0) {
+            return null; 
+        }
+        const max = Math.max(...data);
+        return Math.ceil(max * 1.05); // End y-axis at 105% of the maximum value for all chart types
+    }
+
+    getYAxisMin() {
+        if (!this.chartData || !this.chartData.datasets || !this.chartData.datasets[0]) {
+            return null; 
+        }
+        const data = this.chartData.datasets[0].data;
+        if (!data || data.length === 0) {
+            return null; 
+        }
+        const min = Math.min(...data);
+        return Math.floor(min * 0.95); // Start y-axis at 95% of the minimum value for all chart types
     }
 }

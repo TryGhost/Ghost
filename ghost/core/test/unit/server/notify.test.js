@@ -3,8 +3,7 @@ const sinon = require('sinon');
 
 const configUtils = require('../../utils/configUtils');
 const events = require('../../../core/server/lib/common/events');
-
-const bootstrapSocket = require('@tryghost/bootstrap-socket');
+const bootstrapSocket = require('../../../core/server/lib/bootstrap-socket');
 
 describe('Notify', function () {
     describe('notifyServerStarted', function () {

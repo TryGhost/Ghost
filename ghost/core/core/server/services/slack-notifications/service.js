@@ -3,7 +3,7 @@ const config = require('../../../shared/config');
 const logging = require('@tryghost/logging');
 
 class SlackNotificationsServiceWrapper {
-    /** @type {import('@tryghost/slack-notifications/lib/SlackNotificationsService')} */
+    /** @type {import('./SlackNotificationsService')} */
     #api;
 
     /**
@@ -12,14 +12,13 @@ class SlackNotificationsServiceWrapper {
      * @param {string} deps.siteUrl
      * @param {boolean} deps.isEnabled
      * @param {URL} deps.webhookUrl
+     * @param {number} deps.minThreshold
      *
-     * @returns {import('@tryghost/slack-notifications/lib/SlackNotificationsService')}
+     * @returns {import('./SlackNotificationsService')}
      */
-    static create({siteUrl, isEnabled, webhookUrl}) {
-        const {
-            SlackNotificationsService,
-            SlackNotifications
-        } = require('@tryghost/slack-notifications');
+    static create({siteUrl, isEnabled, webhookUrl, minThreshold}) {
+        const SlackNotificationsService = require('./SlackNotificationsService');
+        const SlackNotifications = require('./SlackNotifications');
 
         const slackNotifications = new SlackNotifications({
             webhookUrl,
@@ -32,7 +31,8 @@ class SlackNotificationsServiceWrapper {
             logging,
             config: {
                 isEnabled,
-                webhookUrl
+                webhookUrl,
+                minThreshold
             },
             slackNotifications
         });
@@ -49,8 +49,9 @@ class SlackNotificationsServiceWrapper {
         const siteUrl = urlUtils.getSiteUrl();
         const isEnabled = !!(hostSettings?.milestones?.enabled && hostSettings?.milestones?.url);
         const webhookUrl = hostSettings?.milestones?.url;
+        const minThreshold = hostSettings?.milestones?.minThreshold ? parseInt(hostSettings.milestones.minThreshold) : 0;
 
-        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl});
+        this.#api = SlackNotificationsServiceWrapper.create({siteUrl, isEnabled, webhookUrl, minThreshold});
 
         this.#api.subscribeEvents();
     }

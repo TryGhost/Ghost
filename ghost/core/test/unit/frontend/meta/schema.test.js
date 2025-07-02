@@ -72,7 +72,7 @@ describe('getSchema', function () {
                 sameAs: [
                     'http://myblogsite.com/',
                     'https://www.facebook.com/testuser',
-                    'https://twitter.com/testuser'
+                    'https://x.com/testuser'
                 ],
                 url: 'http://mysite.com/author/me/'
             },
@@ -173,7 +173,7 @@ describe('getSchema', function () {
                 sameAs: [
                     'http://myblogsite.com/',
                     'https://www.facebook.com/testuser',
-                    'https://twitter.com/testuser'
+                    'https://x.com/testuser'
                 ],
                 url: 'http://mysite.com/author/me/'
             },
@@ -278,7 +278,7 @@ describe('getSchema', function () {
                 sameAs: [
                     'http://myblogsite.com/',
                     'https://www.facebook.com/testuser',
-                    'https://twitter.com/testuser'
+                    'https://x.com/testuser'
                 ],
                 url: 'http://mysite.com/author/me/'
             },
@@ -426,7 +426,7 @@ describe('getSchema', function () {
                 sameAs: [
                     'http://myblogsite.com/',
                     'https://www.facebook.com/testuser',
-                    'https://twitter.com/testuser'
+                    'https://x.com/testuser'
                 ],
                 url: 'http://mysite.com/author/me/'
             },
@@ -487,6 +487,7 @@ describe('getSchema', function () {
                 height: 500
             },
             mainEntityOfPage: 'http://mysite.com/post/my-post-slug/',
+            name: 'Site Title',
             publisher: {
                 '@type': 'Organization',
                 name: 'Site Title',
@@ -586,7 +587,7 @@ describe('getSchema', function () {
             name: 'Author Name',
             sameAs: [
                 'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
-                'https://twitter.com/testuser'
+                'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
         });
@@ -641,7 +642,7 @@ describe('getSchema', function () {
             name: 'Author Name',
             sameAs: [
                 'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
-                'https://twitter.com/testuser'
+                'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
         });
@@ -689,7 +690,7 @@ describe('getSchema', function () {
             name: 'Author Name',
             sameAs: [
                 'http://myblogsite.com/?user&#x3D;bambedibu&amp;a&#x3D;&lt;script&gt;alert(&quot;bambedibu&quot;)&lt;/script&gt;',
-                'https://twitter.com/testuser'
+                'https://x.com/testuser'
             ],
             url: 'http://mysite.com/author/me/'
         });

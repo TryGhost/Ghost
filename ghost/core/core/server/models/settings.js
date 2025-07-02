@@ -1,5 +1,4 @@
 const _ = require('lodash');
-const uuid = require('uuid');
 const crypto = require('crypto');
 const keypair = require('keypair');
 const ObjectID = require('bson-objectid').default;
@@ -9,6 +8,7 @@ const errors = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const urlUtils = require('../../shared/url-utils');
 const {WRITABLE_KEYS_ALLOWLIST} = require('../../shared/labs');
+const {getOrGenerateSiteUuid} = require('../services/settings/settings-utils');
 
 const messages = {
     valueCannotBeBlank: 'Value in [settings.key] cannot be blank.',
@@ -50,7 +50,7 @@ function parseDefaultSettings() {
     const defaultSettingsFlattened = {};
 
     const dynamicDefault = {
-        db_hash: () => uuid.v4(),
+        db_hash: () => crypto.randomUUID(),
         public_hash: () => crypto.randomBytes(15).toString('hex'),
         admin_session_secret: () => crypto.randomBytes(32).toString('hex'),
         theme_session_secret: () => crypto.randomBytes(32).toString('hex'),
@@ -58,7 +58,8 @@ function parseDefaultSettings() {
         members_private_key: () => getMembersKey('private'),
         members_email_auth_secret: () => crypto.randomBytes(64).toString('hex'),
         ghost_public_key: () => getGhostKey('public'),
-        ghost_private_key: () => getGhostKey('private')
+        ghost_private_key: () => getGhostKey('private'),
+        site_uuid: () => getOrGenerateSiteUuid()
     };
 
     _.each(defaultSettingsInCategories, function each(settings, categoryName) {
@@ -324,16 +325,6 @@ Settings = ghostBookshelf.Model.extend({
         return allSettings;
     },
 
-    permissible: function permissible(modelId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        if (hasUserPermission && hasApiKeyPermission) {
-            return Promise.resolve();
-        }
-
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.notEnoughPermission)
-        }));
-    },
-
     validators: {
         async all(model) {
             const settingName = model.get('key');
@@ -463,5 +454,6 @@ Settings = ghostBookshelf.Model.extend({
 });
 
 module.exports = {
-    Settings: ghostBookshelf.model('Settings', Settings)
+    Settings: ghostBookshelf.model('Settings', Settings),
+    getOrGenerateSiteUuid: getOrGenerateSiteUuid
 };

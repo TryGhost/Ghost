@@ -6,7 +6,8 @@ const messages = {
     offerNotFound: 'Offer not found.'
 };
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'offers',
 
     read: {
@@ -29,3 +30,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

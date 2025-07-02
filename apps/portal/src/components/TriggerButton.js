@@ -9,7 +9,7 @@ import {ReactComponent as ButtonIcon3} from '../images/icons/button-icon-3.svg';
 import {ReactComponent as ButtonIcon4} from '../images/icons/button-icon-4.svg';
 import {ReactComponent as ButtonIcon5} from '../images/icons/button-icon-5.svg';
 import TriggerButtonStyle from './TriggerButton.styles';
-import {isInviteOnlySite, isSigninAllowed} from '../utils/helpers';
+import {hasAvailablePrices, isInviteOnly, isSigninAllowed} from '../utils/helpers';
 import {hasMode} from '../utils/check-mode';
 
 const ICON_MAPPING = {
@@ -176,7 +176,7 @@ class TriggerButtonContent extends React.Component {
         }
 
         if (isSigninAllowed({site})) {
-            const page = isInviteOnlySite({site}) ? 'signin' : 'signup';
+            const page = isInviteOnly({site}) || !hasAvailablePrices({site}) ? 'signin' : 'signup';
             this.context.onAction('openPopup', {page});
             return;
         }
@@ -221,8 +221,35 @@ export default class TriggerButton extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            width: null
+            width: null,
+            isMobile: window.innerWidth < 640
         };
+        this.buttonRef = React.createRef();
+        this.handleResize = this.handleResize.bind(this);
+    }
+
+    componentDidMount() {
+        window.addEventListener('resize', this.handleResize);
+        this.handleResize();
+        
+        setTimeout(() => {
+            if (this.buttonRef.current) {
+                const iframeElement = this.buttonRef.current.node;
+                if (iframeElement) {
+                    this.buttonMargin = window.getComputedStyle(iframeElement).getPropertyValue('margin-right');
+                }
+            }
+        }, 0);
+    }
+
+    componentWillUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    }
+
+    handleResize() {
+        this.setState({
+            isMobile: window.innerWidth < 640
+        });
     }
 
     onWidthChange(width) {
@@ -251,7 +278,11 @@ export default class TriggerButton extends React.Component {
     render() {
         const site = this.context.site;
         const {portal_button: portalButton} = site;
-        const {showPopup} = this.context;
+        const {showPopup, scrollbarWidth} = this.context;
+
+        if (this.state.isMobile) {
+            return null;
+        }
 
         if (!portalButton || !isSigninAllowed({site}) || hasMode(['offerPreview'])) {
             return null;
@@ -268,8 +299,12 @@ export default class TriggerButton extends React.Component {
             frameStyle.width = `${updatedWidth}px`;
         }
 
+        if (scrollbarWidth && showPopup) {
+            frameStyle.marginRight = `calc(${scrollbarWidth}px + ${this.buttonMargin})`;
+        }
+
         return (
-            <Frame dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
+            <Frame ref={this.buttonRef} dataTestId='portal-trigger-frame' className='gh-portal-triggerbtn-iframe' style={frameStyle} title="portal-trigger" head={this.renderFrameStyles()}>
                 <TriggerButtonContent isPopupOpen={showPopup} updateWidth={width => this.onWidthChange(width)} />
             </Frame>
         );

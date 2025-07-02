@@ -1,8 +1,9 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/PortalFrame';
-// import useFeatureFlag from '../../../../hooks/useFeatureFlag';
+import toast from 'react-hot-toast';
 import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
 import {createRedemptionFilterUrl} from './OffersIndex';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
@@ -66,7 +67,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    message: 'Offer archived successfully'
+                                    title: 'Offer archived'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {
@@ -87,7 +88,7 @@ const Sidebar: React.FC<{
                                 modal?.remove();
                                 showToast({
                                     type: 'success',
-                                    message: 'Offer reactivated successfully'
+                                    title: 'Offer reactivated'
                                 });
                                 updateRoute('offers/edit');
                             } catch (e) {
@@ -249,6 +250,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
 
     const iframe = <PortalFrame
         href={href || ''}
+        portalParent='offers'
     />;
 
     return offerById ? <PreviewModalContent
@@ -279,11 +281,25 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             }
         }}
         onOk={async () => {
-            if (!(await handleSave({fakeWhenUnchanged: true}))) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
-                });
+            try {
+                if (await handleSave({force: true})) {
+                    return;
+                }
+            } catch (e) {
+                let message;
+
+                if (e instanceof JSONError && e.data && e.data.errors[0]) {
+                    message = e.data.errors[0].context || e.data.errors[0].message;
+                }
+
+                toast.remove();
+                if (message) {
+                    showToast({
+                        title: 'Can\'t save offer',
+                        type: 'error',
+                        message: 'Please try again later'
+                    });
+                }
             }
         }} /> : null;
 };

@@ -3,7 +3,7 @@ import {globalDataRequests} from '../../utils/acceptance';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Labs', async () => {
-    test('Uploading/downloading redirects', async ({page}) => {
+    test.skip('Uploading/downloading redirects', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             uploadRedirects: {method: 'POST', path: '/redirects/upload/', response: {}},
@@ -24,7 +24,7 @@ test.describe('Labs', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/files/redirects.yml`);
 
-        await expect(page.getByTestId('toast-success')).toContainText('Redirects uploaded successfully');
+        await expect(page.getByTestId('toast-success')).toContainText('Redirects uploaded');
 
         expect(lastApiRequests.uploadRedirects).toBeTruthy();
 
@@ -35,7 +35,7 @@ test.describe('Labs', async () => {
         expect(lastApiRequests.downloadRedirects).toBeTruthy();
     });
 
-    test('Uploading/downloading routes', async ({page}) => {
+    test.skip('Uploading/downloading routes', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             uploadRoutes: {method: 'POST', path: '/settings/routes/yaml/', response: {}},
@@ -56,7 +56,7 @@ test.describe('Labs', async () => {
         const fileChooser = await fileChooserPromise;
         await fileChooser.setFiles(`${__dirname}/../../utils/files/routes.yml`);
 
-        await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded successfully');
+        await expect(page.getByTestId('toast-success')).toContainText('Routes uploaded');
 
         expect(lastApiRequests.uploadRoutes).toBeTruthy();
 

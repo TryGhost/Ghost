@@ -3,6 +3,7 @@
  * They contain minimum filters for public accessibility of resources.
  */
 
+// TODO: switch exclude lists to include lists to make this more explicit
 module.exports = [
     {
         type: 'posts',
@@ -32,6 +33,10 @@ module.exports = [
                 'twitter_description',
                 'custom_template',
                 'locale',
+                'newsletter_id',
+                'show_title_and_feature_image',
+                'email_recipient_filter',
+                'comment_id',
                 'tiers'
             ],
             withRelated: ['tags', 'authors'],
@@ -81,6 +86,10 @@ module.exports = [
                 'authors',
                 'primary_tag',
                 'primary_author',
+                'newsletter_id',
+                'show_title_and_feature_image',
+                'email_recipient_filter',
+                'comment_id',
                 'tiers'
             ],
             filter: 'status:published+type:page'

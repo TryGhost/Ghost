@@ -6,7 +6,8 @@ const models = require('../../models');
 const events = require('../../lib/common/events');
 const {settingsCache} = require('../../services/settings-helpers');
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'themes',
 
     browse: {
@@ -91,7 +92,7 @@ module.exports = {
                 const {theme, themeOverridden} = await themeService.api.installFromGithub(frame.options.ref);
 
                 if (themeOverridden) {
-                    this.headers.cacheInvalidate = true;
+                    frame.setHeader('X-Cache-Invalidate', '/*');
                 }
 
                 events.emit('theme.uploaded', {name: theme.name});
@@ -122,15 +123,12 @@ module.exports = {
                 name: frame.file.originalname
             };
 
-            return themeService.api.setFromZip(zip)
-                .then(({theme, themeOverridden}) => {
-                    if (themeOverridden) {
-                        // CASE: clear cache
-                        this.headers.cacheInvalidate = true;
-                    }
-                    events.emit('theme.uploaded', {name: theme.name});
-                    return theme;
-                });
+            const {theme, themeOverridden} = await themeService.api.setFromZip(zip);
+            if (themeOverridden) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+            events.emit('theme.uploaded', {name: theme.name});
+            return theme;
         }
     },
 
@@ -181,3 +179,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

@@ -1,7 +1,9 @@
 import PortalFrame from '../../membership/portal/PortalFrame';
+import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
 import {Form, Icon, PreviewModalContent, Select, SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, offerPortalPreviewUrlTypes} from '../../../../utils/getOffersPortalPreviewUrl';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -34,7 +36,7 @@ const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick: () => 
     return (
         <button className='text-left' type='button' onClick={onClick}>
             <div className='flex gap-3'>
-                <div className={`mt-0.5 flex h-4 w-4 items-center justify-center rounded-full ${checkboxClass}`}>
+                <div className={`mt-0.5 flex size-4 items-center justify-center rounded-full ${checkboxClass}`}>
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='flex flex-col'>
@@ -403,7 +405,7 @@ const AddOfferModal = () => {
                 newErrors.amount = 'Enter an amount greater than 0.';
             }
 
-            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount >= 100)) {
+            if (formState.type === 'percent' && (formState.percentAmount < 0 || formState.percentAmount > 100)) {
                 newErrors.amount = 'Amount must be between 0 and 100%.';
             }
 
@@ -452,7 +454,7 @@ const AddOfferModal = () => {
     const handleAmountTypeChange = (amountType: string) => {
         updateForm(state => ({
             ...state,
-            type: amountType === 'percent' ? 'percent' : 'fixed' || state.type
+            type: amountType === 'percent' ? 'percent' : 'fixed'
         }));
     };
 
@@ -611,6 +613,7 @@ const AddOfferModal = () => {
 
     const iframe = <PortalFrame
         href={href || ''}
+        portalParent='offers'
     />;
     return <PreviewModalContent
         afterClose={() => {
@@ -635,17 +638,34 @@ const AddOfferModal = () => {
             validate();
             const isErrorsEmpty = Object.values(errors).every(error => !error);
             if (!isErrorsEmpty) {
+                toast.remove();
                 showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields correctly'
+                    title: 'Can\'t save offer',
+                    type: 'info',
+                    message: 'Make sure you filled all required fields'
                 });
                 return;
             }
-            if (!(await handleSave())) {
-                showToast({
-                    type: 'pageError',
-                    message: 'Can\'t save offer, please double check that you\'ve filled all mandatory fields.'
-                });
+
+            try {
+                if (await handleSave({force: true})) {
+                    return;
+                }
+            } catch (e) {
+                let message;
+
+                if (e instanceof JSONError && e.data && e.data.errors[0]) {
+                    message = e.data.errors[0].context || e.data.errors[0].message;
+                }
+
+                toast.remove();
+                if (message) {
+                    showToast({
+                        title: 'Can\'t save offer',
+                        type: 'error',
+                        message: message || 'Please try again later'
+                    });
+                }
             }
         }}
     />;

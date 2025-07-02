@@ -2,7 +2,7 @@
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs-extra');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const KnexMigrator = require('knex-migrator');
 const {sequence} = require('@tryghost/promise');
@@ -11,7 +11,6 @@ const knexMigrator = new KnexMigrator();
 // Ghost Internals
 const models = require('../../core/server/models');
 const {fixtureManager} = require('../../core/server/data/schema/fixtures');
-const emailAnalyticsService = require('../../core/server/services/email-analytics');
 const permissions = require('../../core/server/services/permissions');
 const settingsService = require('../../core/server/services/settings/settings-service');
 const labsService = require('../../core/shared/labs');
@@ -64,12 +63,12 @@ const fixtures = {
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {
+        // Creates two posts per staff member.
+        // (It used to create 10, but then other tests assumed two per staff member)
+
         let i;
         let k = 0;
         let posts = [];
-
-        // NOTE: this variable should become a parameter as test logic depends on it
-        const count = 10;
 
         // insert users of different roles
         return Promise.resolve(fixtures.createUsersWithRoles()).then(function () {
@@ -83,6 +82,7 @@ const fixtures = {
             ]);
         }).then(function (results) {
             let users = results[0];
+            const count = users.length * 2;
             let tags = results[1];
 
             tags = tags.toJSON();
@@ -90,7 +90,7 @@ const fixtures = {
             users = users.toJSON();
             users = _.map(users, 'id');
 
-            // Let's insert posts with random authors
+            // Let's insert posts for each staff member, two each.
             for (i = 0; i < count; i += 1) {
                 const author = users[i % users.length];
                 posts.push(DataGenerator.forKnex.createGenericPost(k, null, null, [{id: author}]));
@@ -147,6 +147,38 @@ const fixtures = {
             });
     },
 
+    insertGatedPosts: async function insertGatedPosts() {
+        const owner = await models.User.getOwnerUser(context.internal);
+        const tier = await models.Product.findOne({slug: 'silver'}, context.internal);
+
+        const gatedPosts = [{
+            id: '618ba1ffbe2896088840a6ef',
+            title: 'This has a paywall',
+            slug: 'paywall',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            visibility: 'paid',
+            authors: [owner.toJSON()]
+        }, {
+            id: '618ba1ffbe2896088840a6ff',
+            title: 'This has a tiered paywall',
+            slug: 'paywall-tiered',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c906',
+            visibility: 'tiers',
+            tiers: [tier.toJSON()],
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            authors: [owner.toJSON()]
+        }];
+
+        for (const post of gatedPosts) {
+            await models.Post.add(post, context.internal);
+        }
+    },
+
     insertTags: function insertTags() {
         return Promise.all(DataGenerator.forKnex.tags.map((tag) => {
             return models.Tag.add(tag, context.internal);
@@ -160,7 +192,7 @@ const fixtures = {
         let i;
 
         for (i = 0; i < max; i += 1) {
-            tagName = uuid.v4().split('-')[0];
+            tagName = crypto.randomUUID().split('-')[0];
             tags.push(DataGenerator.forKnex.createBasic({name: tagName, slug: tagName}));
         }
 
@@ -227,17 +259,26 @@ const fixtures = {
         return models.User.add(user, context.internal);
     },
 
-    overrideOwnerUser: function overrideOwnerUser(slug) {
-        return models.User.getOwnerUser(context.internal)
-            .then(function (ownerUser) {
-                const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+    overrideOwnerUser: async function overrideOwnerUser(slug) {
+        const ownerUser = await models.User.getOwnerUser({...context.internal, withRelated: ['apiKeys']});
 
-                if (slug) {
-                    user.slug = slug;
-                }
+        const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
-                return models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
-            });
+        if (slug) {
+            user.slug = slug;
+        }
+
+        await models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
+
+        // Check if user already has an API key using the related data we already fetched
+        const existingApiKeys = ownerUser.related('apiKeys');
+        if (existingApiKeys.length === 0) {
+            const userApiKey = {...DataGenerator.forKnex.user_api_keys[0], user_id: ownerUser.id};
+            // Only insert a new API key if one doesn't exist
+            await models.ApiKey.add(userApiKey, context.internal);
+        }
+
+        return ownerUser;
     },
 
     changeOwnerUserStatus: function changeOwnerUserStatus(options) {
@@ -270,7 +311,7 @@ const fixtures = {
         let roles = await models.Role.fetchAll();
         roles = roles.toJSON();
 
-        return Promise.all(usersWithoutOwner.map((user) => {
+        const users = await Promise.all(usersWithoutOwner.map((user) => {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
 
             userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
@@ -281,6 +322,14 @@ const fixtures = {
 
             return models.User.add(user, context.internal);
         }));
+
+        // // Add API key for each user
+        await Promise.all(users.map((user) => {
+            const userApiKey = _.find(DataGenerator.forKnex.user_api_keys, {user_id: user.id});
+            return models.ApiKey.add(userApiKey, context.internal);
+        }));
+
+        return users;
     },
 
     createInactiveUser() {
@@ -375,7 +424,8 @@ const fixtures = {
             Author: DataGenerator.Content.roles[2].id,
             Owner: DataGenerator.Content.roles[3].id,
             Contributor: DataGenerator.Content.roles[4].id,
-            'Admin Integration': DataGenerator.Content.roles[5].id
+            'Admin Integration': DataGenerator.Content.roles[5].id,
+            'Super Editor': DataGenerator.Content.roles[6].id
         };
 
         // CASE: if empty db will throw SQLITE_MISUSE, hard to debug
@@ -427,10 +477,16 @@ const fixtures = {
         }));
     },
 
-    insertWebhook: function (attributes) {
+    insertWebhook: function (attributes, options = {}) {
+        let integration = DataGenerator.forKnex.integrations[0];
+        if (options.integrationType) {
+            integration = DataGenerator.forKnex.integrations.find(
+                props => props.type === options.integrationType
+            );
+        }
         const webhook = DataGenerator.forKnex.createWebhook(
             Object.assign(attributes, {
-                integration_id: DataGenerator.forKnex.integrations[0].id
+                integration_id: integration.id
             })
         );
 
@@ -491,7 +547,7 @@ const fixtures = {
 
     insertExtraTiers: async function insertExtraTiers() {
         const extraTier = DataGenerator.forKnex.createProduct({});
-        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        const extraTier2 = DataGenerator.forKnex.createProduct({id: '6834edbcd2e19501e29e9537', slug: 'silver', name: 'Silver'});
         await models.Product.add(extraTier, context.internal);
         await models.Product.add(extraTier2, context.internal);
     },
@@ -630,6 +686,9 @@ const fixtures = {
     },
 
     insertEmailsAndRecipients: function insertEmailsAndRecipients(withFailed = false) {
+        // NOTE: This require results in the jobs service being loaded prematurely, which breaks any tests relevant to it.
+        //  This MUST be done in here and not at the top of the file to prevent that from happening as test setup is being performed.
+        const emailAnalyticsService = require('../../core/server/services/email-analytics');
         return sequence(_.cloneDeep(DataGenerator.forKnex.emails).map(email => () => {
             return models.Email.add(email, context.internal);
         })).then(function () {
@@ -713,7 +772,8 @@ const fixtures = {
     },
 
     async enableAllLabsFeatures() {
-        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST.map(key => [key, true]));
+        const labsValue = Object.fromEntries(labsService.WRITABLE_KEYS_ALLOWLIST
+            .map(key => [key, true]));
         const labsSetting = DataGenerator.forKnex.createSetting({
             key: 'labs',
             group: 'labs',

@@ -36,6 +36,11 @@ async function runAndStream(command, args, options) {
         return;
     }
 
+    if (process.env.DEVCONTAINER === 'true') {
+        console.log(chalk.yellow(`Devcontainer detected, skipping setup`));
+        return;
+    }
+
     const coreFolder = path.join(__dirname, '../../ghost/core');
     const rootFolder = path.join(__dirname, '../..');
     const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
@@ -119,7 +124,11 @@ async function runAndStream(command, args, options) {
 
     console.log(chalk.blue(`Running knex-migrator init`));
     await runAndStream('yarn', ['knex-migrator', 'init'], {cwd: coreFolder});
-
+    if (process.argv.includes('--no-seed')) {
+        console.log(chalk.yellow(`Skipping seed data`));
+        console.log(chalk.yellow(`Done`));
+        return;
+    }
     if (resetData) {
         const xxl = process.argv.includes('--xxl');
 

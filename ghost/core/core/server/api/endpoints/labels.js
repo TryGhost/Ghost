@@ -9,7 +9,8 @@ const messages = {
 
 const ALLOWED_INCLUDES = ['count.members'];
 
-module.exports = {
+/** @type {import('@tryghost/api-framework').Controller} */
+const controller = {
     docName: 'labels',
 
     browse: {
@@ -58,17 +59,15 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Label.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.labelNotFound)
-                        }));
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Label.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.labelNotFound)
                 });
+            }
+
+            return model;
         }
     },
 
@@ -119,23 +118,19 @@ module.exports = {
             }
         },
         permissions: true,
-        query(frame) {
-            return models.Label.edit(frame.data.labels[0], frame.options)
-                .then((model) => {
-                    if (!model) {
-                        return Promise.reject(new errors.NotFoundError({
-                            message: tpl(messages.labelNotFound)
-                        }));
-                    }
-
-                    if (model.wasChanged()) {
-                        this.headers.cacheInvalidate = true;
-                    } else {
-                        this.headers.cacheInvalidate = false;
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Label.edit(frame.data.labels[0], frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.labelNotFound)
                 });
+            }
+
+            if (model.wasChanged()) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+
+            return model;
         }
     },
 
@@ -163,3 +158,5 @@ module.exports = {
         }
     }
 };
+
+module.exports = controller;

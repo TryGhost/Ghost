@@ -2,6 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
 import useSettingGroup from '../../../hooks/useSettingGroup';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {FacebookLogo, ImageUpload, SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
@@ -43,7 +44,11 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
             const imageUrl = getImageUrl(await uploadImage({file}));
             updateSetting('og_image', imageUrl);
         } catch (e) {
-            handleError(e);
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
         }
     };
 
@@ -59,7 +64,7 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
         <div className="md:mx-[52px]">
             <div className="mb-4 flex items-center gap-2">
                 <div>
-                    <FacebookLogo className='h-10 w-10' />
+                    <FacebookLogo className='size-10' />
                 </div>
                 <div>
                     <div className="mb-1 font-semibold leading-none text-grey-900 dark:text-grey-300">{siteTitle}</div>
@@ -95,12 +100,14 @@ const Facebook: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className="flex flex-col gap-x-6 gap-y-7 px-4 pb-7">
                         <TextField
                             inputRef={focusRef}
+                            maxLength={300}
                             placeholder={siteTitle}
                             title="Facebook title"
                             value={facebookTitle}
                             onChange={handleTitleChange}
                         />
                         <TextField
+                            maxLength={300}
                             placeholder={siteDescription}
                             title="Facebook description"
                             value={facebookDescription}

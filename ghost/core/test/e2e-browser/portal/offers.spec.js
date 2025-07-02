@@ -3,6 +3,7 @@ const test = require('../fixtures/ghost-test');
 const {deleteAllMembers, createTier, createOffer, completeStripeSubscription} = require('../utils');
 
 test.describe('Portal', () => {
+    test.setTimeout(90000); // override the default 60s in the config as these retries can run close to 60s
     test.describe('Offers', () => {
         test('Creates and uses a free-trial Offer', async ({sharedPage}) => {
             // reset members by deleting all existing
@@ -33,16 +34,18 @@ test.describe('Portal', () => {
             await sharedPage.goto(offerLink);
 
             // Wait for the load state to ensure the page has loaded completely
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await portalFrameLocator.locator('.gh-portal-offer-title').waitFor();
 
-            await expect(await portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
-            await expect(await portalFrameLocator.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
+            await expect(portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with free-trial offer').toBeVisible();
+            await expect(portalFrameLocator.getByRole('heading', {name: offerName}), 'URL should open Portal with free-trial offer').toBeVisible();
 
             // fill member details and click start trial
             await portalFrameLocator.locator('[data-test-input="input-name"]').fill('Testy McTesterson');
@@ -113,16 +116,19 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await portalFrameLocator.locator('.gh-portal-offer-title').waitFor();
 
             // check offer title is visible on portal page
-            await expect(await portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrameLocator.locator('#input-name').fill('Testy McTesterson');
@@ -141,7 +147,7 @@ test.describe('Portal', () => {
             // wait for site to load and open portal
             await portalTriggerButton.click();
             // Discounted price should not be visible for member for one-time offers
-            await expect(await portalFrameLocator.locator('text=$5.40/month'), 'Portal should not show discounted price').not.toBeVisible();
+            await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should not show discounted price').not.toBeVisible();
 
             // go to members list on admin
             await sharedPage.goto('/ghost');
@@ -184,18 +190,21 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await portalFrameLocator.locator('.gh-portal-offer-title').waitFor();
 
             // check offer details are shown on portal page
-            await expect(await portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(await portalFrameLocator.locator('text=10% off for first 3 months.'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(await portalFrameLocator.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('text=10% off for first 3 months.'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrameLocator.locator('#input-name').fill('Testy McTesterson');
@@ -215,7 +224,7 @@ test.describe('Portal', () => {
             await portalTriggerButton.click();
 
             // Discounted price should not be visible for member for one-time offers
-            await expect(await portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
+            await expect(portalFrameLocator.locator('text=$5.40/month'), 'Portal should show discounted price').toBeVisible();
             await sharedPage.goto('/ghost');
             await sharedPage.locator('.gh-nav a[href="#/members/"]').click();
 
@@ -256,18 +265,21 @@ test.describe('Portal', () => {
             // Wait for the load state to ensure the page has loaded completely
             await sharedPage.waitForLoadState('load');
 
-            const portalTriggerButton = await sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            // Wait for the load state to ensure the page has loaded completely
+            let portalTriggerButton = sharedPage.frameLocator('[data-testid="portal-trigger-frame"]').locator('[data-testid="portal-trigger-button"]');
+            await expect(portalTriggerButton).toBeVisible();
+
             // Wait for the iframe to be attached to the DOM
-            await sharedPage.waitForSelector('[data-testid="portal-popup-frame"]', {state: 'attached'});
+            await expect(sharedPage.locator('[data-testid="portal-popup-frame"]')).toBeAttached({timeout: 1000});
 
             // Use the frameLocator to interact with elements inside the frame
             const portalFrameLocator = await sharedPage.frameLocator('[data-testid="portal-popup-frame"]');
             await portalFrameLocator.locator('.gh-portal-offer-title').waitFor();
 
             // check offer details are shown on portal page
-            await expect(await portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(await portalFrameLocator.locator('text=10% off forever.'), 'URL should open Portal with discount offer').toBeVisible();
-            await expect(await portalFrameLocator.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('.gh-portal-offer-title'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('text=10% off forever.'), 'URL should open Portal with discount offer').toBeVisible();
+            await expect(portalFrameLocator.locator('text=$5.40'), 'URL should open Portal with discount offer').toBeVisible();
 
             // fill member details and continue
             await portalFrameLocator.locator('#input-name').fill('Testy McTesterson');

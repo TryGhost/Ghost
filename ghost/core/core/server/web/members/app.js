@@ -16,6 +16,9 @@ const api = require('../../api').endpoints;
 const commentRouter = require('../comments');
 const announcementRouter = require('../announcement');
 
+/**
+ * @returns {import('express').Application}
+ */
 module.exports = function setupMembersApp() {
     debug('Members App setup start');
     const membersApp = express('members');
@@ -37,14 +40,28 @@ module.exports = function setupMembersApp() {
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
-    // Manage newsletter subscription via unsubscribe link
-    membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
-    membersApp.put('/api/member/newsletters', bodyParser.json({limit: '50mb'}), middleware.updateMemberNewsletters);
+    // Manage newsletter subscription via unsubscribe link - these should be authenticated by uuid and hashed key
+    membersApp.get('/api/member/newsletters', 
+        middleware.authMemberByUuid,
+        middleware.getMemberNewsletters
+    );
+    membersApp.put('/api/member/newsletters',
+        bodyParser.json({limit: '50mb'}),
+        middleware.authMemberByUuid,
+        middleware.updateMemberNewsletters
+    );
 
     // Get and update member data
-    membersApp.get('/api/member', middleware.getMemberData);
+    // Caching members content is an experimental feature
+    const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
+    if (shouldCacheMembersContent) {
+        membersApp.get('/api/member', middleware.loadMemberSession, middleware.accessInfoSession, middleware.getMemberData);
+    } else {
+        membersApp.get('/api/member', middleware.getMemberData);
+    }
+    
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
-    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
+    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
 
     // Remove email from suppression list
     membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
@@ -53,19 +70,30 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
 
+    membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
+
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post(
         '/api/send-magic-link',
         bodyParser.json(),
+        middleware.verifyIntegrityToken,
         // Prevent brute forcing email addresses (user enumeration)
         shared.middleware.brute.membersAuthEnumeration,
         // Prevent brute forcing passwords for the same email address
         shared.middleware.brute.membersAuth,
-        (req, res, next) => membersService.api.middleware.sendMagicLink(req, res, next)
+        function lazySendMagicLinkMw(req, res, next) {
+            return membersService.api.middleware.sendMagicLink(req, res, next);
+        }
     );
-    membersApp.post('/api/create-stripe-checkout-session', (req, res, next) => membersService.api.middleware.createCheckoutSession(req, res, next));
-    membersApp.post('/api/create-stripe-update-session', (req, res, next) => membersService.api.middleware.createCheckoutSetupSession(req, res, next));
-    membersApp.put('/api/subscriptions/:id', (req, res, next) => membersService.api.middleware.updateSubscription(req, res, next));
+    membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
+        return membersService.api.middleware.createCheckoutSession(req, res, next);
+    });
+    membersApp.post('/api/create-stripe-update-session', function lazyCreateCheckoutSetupSessionMw(req, res, next) {
+        return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
+    });
+    membersApp.put('/api/subscriptions/:id', function lazyUpdateSubscriptionMw(req, res, next) {
+        return membersService.api.middleware.updateSubscription(req, res, next);
+    });
 
     // Comments
     membersApp.use('/api/comments', commentRouter());

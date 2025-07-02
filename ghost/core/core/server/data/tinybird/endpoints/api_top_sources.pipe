@@ -1,0 +1,24 @@
+TOKEN "stats_page" READ
+
+NODE top_sources
+SQL >
+    %
+    select
+        source,
+        count() as visits
+    from mv_session_data sd
+      inner join filtered_sessions fs
+         on fs.session_id = sd.session_id
+    where
+        site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
+        {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+            and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
+        {% else %}
+            {% if defined(date_from) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
+            {% if defined(date_to) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+        {% end %}
+    group by source
+    order by visits desc
+    limit {{ Int32(skip, 0) }},{{ Int32(limit, 50) }}
+
+TYPE ENDPOINT

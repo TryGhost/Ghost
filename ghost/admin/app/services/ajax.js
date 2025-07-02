@@ -23,6 +23,19 @@ function isJSONContentType(header) {
     return header.indexOf(JSON_CONTENT_TYPE) === 0;
 }
 
+function getJSONPayload(payload) {
+    // ember-simple-auth prevents ember-ajax parsing response as JSON but
+    // we need a JSON object to test against
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (e) {
+            // do nothing
+        }
+    }
+    return payload;
+}
+
 /* Version mismatch error */
 
 export class VersionMismatchError extends AjaxError {
@@ -178,7 +191,24 @@ export function isEmailError(errorOrStatus, payload) {
     }
 }
 
-/* end: custom error types */
+/* 2FA required error */
+export class TwoFactorTokenRequiredError extends AjaxError {
+    constructor(payload) {
+        payload = getJSONPayload(payload);
+        super(payload, '2nd factor verification is required to sign in.');
+    }
+}
+
+export function isTwoFactorTokenRequiredError(errorOrStatus, payload) {
+    const twoFactorAuthCodes = ['2FA_TOKEN_REQUIRED', '2FA_NEW_DEVICE_DETECTED'];
+
+    if (isAjaxError(errorOrStatus)) {
+        return errorOrStatus instanceof TwoFactorTokenRequiredError || twoFactorAuthCodes.includes(getErrorCode(errorOrStatus));
+    } else {
+        payload = getJSONPayload(payload);
+        return twoFactorAuthCodes.includes(get(payload || {}, 'errors.firstObject.code'));
+    }
+}
 
 export class AcceptedResponse {
     constructor(data) {
@@ -318,7 +348,9 @@ class ajaxService extends AjaxService {
             }
         }
 
-        if (this.isVersionMismatchError(status, headers, payload)) {
+        if (this.isTwoFactorTokenRequiredError(status, headers, payload)) {
+            return new TwoFactorTokenRequiredError(payload);
+        } else if (this.isVersionMismatchError(status, headers, payload)) {
             return new VersionMismatchError(payload);
         } else if (this.isServerUnreachableError(status, headers, payload)) {
             return new ServerUnreachableError(payload);
@@ -376,6 +408,10 @@ class ajaxService extends AjaxService {
         }
 
         return super.normalizeErrorResponse(status, headers, payload);
+    }
+
+    isTwoFactorTokenRequiredError(status, headers, payload) {
+        return isTwoFactorTokenRequiredError(status, payload);
     }
 
     isVersionMismatchError(status, headers, payload) {

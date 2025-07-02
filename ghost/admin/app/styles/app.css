@@ -56,6 +56,7 @@
 @import "layouts/content.css";
 @import "layouts/editor.css";
 @import "layouts/whatsnew.css";
+@import "layouts/whatsnew-modal.css";
 @import "layouts/tags.css";
 @import "layouts/members.css";
 @import "layouts/posts.css";
@@ -67,7 +68,6 @@
 @import "layouts/post-preview.css";
 @import "layouts/dashboard.css";
 @import "layouts/tiers.css";
-@import "layouts/offers.css";
 @import "layouts/explore.css";
 @import "layouts/mentions.css";
 @import "layouts/migrate.css";
