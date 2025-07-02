@@ -70,9 +70,7 @@ describe('Unit: Model: user', function () {
         expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('isAdminOnly')).to.not.be.ok;
         expect(model.get('isOwnerOnly')).to.not.be.ok;
-        expect(model.get('isEitherEditor')).to.not.be.ok;
         expect(model.get('canManageMembers')).to.not.be.ok;
-        expect(model.get('isSuperEditor')).to.not.be.ok;
         expect(model.get('canManageComments')).to.not.be.ok;
     });
 
@@ -89,8 +87,6 @@ describe('Unit: Model: user', function () {
         expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('isAdminOnly')).to.not.be.ok;
         expect(model.get('isOwnerOnly')).to.not.be.ok;
-        expect(model.get('isEitherEditor')).to.not.be.ok;
-        expect(model.get('isSuperEditor')).to.not.be.ok;
         expect(model.get('canManageMembers')).to.not.be.ok;
         expect(model.get('canManageComments')).to.not.be.ok;
     });
@@ -108,10 +104,8 @@ describe('Unit: Model: user', function () {
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isAdminOnly')).to.not.be.ok;
         expect(model.get('isOwnerOnly')).to.not.be.ok;
-        expect(model.get('isEitherEditor')).to.be.ok;
-        expect(model.get('isSuperEditor')).to.not.be.ok;
-        expect(model.get('canManageMembers')).to.not.be.ok;
-        expect(model.get('canManageComments')).to.not.be.ok;
+        expect(model.get('canManageMembers')).to.be.ok;
+        expect(model.get('canManageComments')).to.be.ok;
     });
 
     it('Owner properties are correct', function () {
@@ -127,8 +121,7 @@ describe('Unit: Model: user', function () {
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isAdminOnly')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
-        expect(model.get('isEitherEditor')).to.not.be.ok;
-        expect(model.get('isSuperEditor')).to.not.be.ok;
+        expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('canManageMembers')).to.be.ok;
         expect(model.get('canManageComments')).to.be.ok;
     });
@@ -146,27 +139,7 @@ describe('Unit: Model: user', function () {
         expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
         expect(model.get('isOwnerOnly')).to.not.be.ok;
-        expect(model.get('isEitherEditor')).to.not.be.ok;
-        expect(model.get('isSuperEditor')).to.not.be.ok;
-        expect(model.get('canManageMembers')).to.be.ok;
-        expect(model.get('canManageComments')).to.be.ok;
-    });
-
-    it('isSuperEditor properties are correct', function () {
-        let model = store.createRecord('user');
-
-        run(() => {
-            let role = store.push({data: {id: 1, type: 'role', attributes: {name: 'Super Editor'}}});
-            model.set('role', role);
-        });
-        expect(model.get('isSuperEditor')).to.be.ok;
-        expect(model.get('isEitherEditor')).to.be.ok;
-        expect(model.get('isAdminOnly')).to.not.be.ok;
-        expect(model.get('isOwnerOnly')).to.not.be.ok;
         expect(model.get('isEditor')).to.not.be.ok;
-        expect(model.get('isAuthor')).to.not.be.ok;
-        expect(model.get('isContributor')).to.not.be.ok;
-        expect(model.get('isAuthorOrContributor')).to.not.be.ok;
         expect(model.get('canManageMembers')).to.be.ok;
         expect(model.get('canManageComments')).to.be.ok;
     });

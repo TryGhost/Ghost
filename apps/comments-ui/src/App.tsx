@@ -16,7 +16,7 @@ type AppProps = {
     scriptTag: HTMLElement;
 };
 
-const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
+const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Editor'];
 
 const App: React.FC<AppProps> = ({scriptTag}) => {
     const options = useOptions(scriptTag);

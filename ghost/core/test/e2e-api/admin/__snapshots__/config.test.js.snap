@@ -24,7 +24,6 @@ Object {
       "lexicalIndicators": true,
       "members": true,
       "stripeAutomaticTax": true,
-      "superEditors": true,
       "themeErrorsNotification": true,
       "trafficAnalytics": true,
       "trafficAnalyticsAlpha": true,
