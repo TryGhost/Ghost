@@ -11,6 +11,8 @@ describe('Twitter URLs', () => {
             assert.equal(validateTwitterUrl('x.com/username'), 'https://x.com/username');
             assert.equal(validateTwitterUrl('https://x.com/username'), 'https://x.com/username');
             assert.equal(validateTwitterUrl('@username'), 'https://x.com/username');
+            assert.equal(validateTwitterUrl('wwwUsername'), 'https://x.com/wwwUsername');
+            assert.equal(validateTwitterUrl('httpUsername'), 'https://x.com/httpUsername');
         });
 
         it('should reject invalid Twitter usernames', () => {
