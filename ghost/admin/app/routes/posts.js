@@ -22,7 +22,7 @@ class PostsWithAnalytics extends InfinityModel {
         const promises = [];
         
         // Fetch visitor counts if web analytics is enabled
-        if (this.settings.webAnalytics) {
+        if (this.settings.webAnalytics && this.feature.trafficAnalytics) {
             const postUuids = publishedPosts.map(post => post.uuid);
             promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
         }
@@ -77,7 +77,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
-        if (this.settings.webAnalytics || this.settings.membersTrackSources) {
+        if ((this.settings.webAnalytics && this.feature.trafficAnalytics) || this.settings.membersTrackSources) {
             this.postAnalytics.reset();
         }
 
@@ -164,7 +164,7 @@ export default class PostsRoute extends AuthenticatedRoute {
      */
     async _fetchAnalyticsForPosts(model) {
         // Early return if neither analytics feature is enabled
-        if (!this.settings.webAnalytics && !this.settings.membersTrackSources) {
+        if ((!this.settings.webAnalytics || !this.feature.trafficAnalytics) && !this.settings.membersTrackSources) {
             return;
         }
 
@@ -180,7 +180,7 @@ export default class PostsRoute extends AuthenticatedRoute {
         const promises = [];
         
         // Fetch visitor counts if web analytics is enabled
-        if (this.settings.webAnalytics) {
+        if (this.settings.webAnalytics && this.feature.trafficAnalytics) {
             const postUuids = posts.map(post => post.uuid);
             promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
         }
