@@ -18,10 +18,10 @@ module.exports = combineTransactionalMigrations(
             }
 
             // First convert any users with Super Editor role to regular Editors
-            const usersWithSuperEditorRole = await knex('users_roles')
-                .join('roles', 'users_roles.role_id', 'roles.id')
+            const usersWithSuperEditorRole = await knex('roles_users')
+                .join('roles', 'roles_users.role_id', 'roles.id')
                 .where('roles.name', 'Super Editor')
-                .select('users_roles.user_id');
+                .select('roles_users.user_id');
 
             if (usersWithSuperEditorRole.length > 0) {
                 logging.info(`Found ${usersWithSuperEditorRole.length} users with Super Editor role, converting to Editors`);
@@ -40,17 +40,17 @@ module.exports = combineTransactionalMigrations(
                 // Convert users with Super Editor role to regular Editors
                 await Promise.all(usersWithSuperEditorRole.map(async (userRole) => {
                     // Check if user already has Editor role
-                    const existingEditorRole = await knex('users_roles')
-                        .join('roles', 'users_roles.role_id', 'roles.id')
+                    const existingEditorRole = await knex('roles_users')
+                        .join('roles', 'roles_users.role_id', 'roles.id')
                         .where({
-                            'users_roles.user_id': userRole.user_id,
+                            'roles_users.user_id': userRole.user_id,
                             'roles.name': 'Editor'
                         })
                         .first();
 
                     if (!existingEditorRole) {
                         // Add Editor role to user
-                        await knex('users_roles').insert({
+                        await knex('roles_users').insert({
                             id: require('bson-objectid').default().toHexString(),
                             user_id: userRole.user_id,
                             role_id: editorRole.id
@@ -58,10 +58,10 @@ module.exports = combineTransactionalMigrations(
                     }
 
                     // Remove Super Editor role from user
-                    await knex('users_roles')
-                        .join('roles', 'users_roles.role_id', 'roles.id')
+                    await knex('roles_users')
+                        .join('roles', 'roles_users.role_id', 'roles.id')
                         .where({
-                            'users_roles.user_id': userRole.user_id,
+                            'roles_users.user_id': userRole.user_id,
                             'roles.name': 'Super Editor'
                         })
                         .del();
