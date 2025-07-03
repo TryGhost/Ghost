@@ -50,6 +50,7 @@ module.exports = function foreach(items, options) {
     let output = '';
     let frame;
     let contextPath;
+    let shouldBreak = false;
 
     limit = parseInt(limit, 10) || length;
     from = parseInt(from, 10) || 1;
@@ -67,6 +68,9 @@ module.exports = function foreach(items, options) {
 
     if (data) {
         frame = createFrame(data);
+        frame.break = () => {
+            shouldBreak = true;
+        };
     }
 
     function execIteration(field, index, last) {
@@ -98,6 +102,10 @@ module.exports = function foreach(items, options) {
         // For each post, if it is a post number that fits within the from and to
         // send the key to execIteration to set to be added to the page
         _.each(context, (value, key) => {
+            if (shouldBreak) {
+                return;
+            }
+
             if (current < from) {
                 current += 1;
                 return;

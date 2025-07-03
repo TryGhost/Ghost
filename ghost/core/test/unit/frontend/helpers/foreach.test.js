@@ -111,6 +111,9 @@ describe('{{#foreach}} helper', function () {
                 resultData[index].data.should.have.property('key', index);
                 resultData[index].data.should.have.property('index', index);
                 resultData[index].data.should.have.property('number', index + 1);
+                
+                // Break property
+                resultData[index].data.should.have.property('break').which.is.a.Function();
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -153,6 +156,9 @@ describe('{{#foreach}} helper', function () {
                 resultData[index].data.should.have.property('key', value);
                 resultData[index].data.should.have.property('index', index);
                 resultData[index].data.should.have.property('number', index + 1);
+
+                // Break property
+                resultData[index].data.should.have.property('break').which.is.a.Function();
             });
 
             resultData[_.size(context) - 1].data.should.eql(options.fn.lastCall.args[1].data);
@@ -537,6 +543,79 @@ describe('{{#foreach}} helper', function () {
         it('@first in foreach with to 4 and limit 3', function () {
             const templateString = '<ul>{{#foreach posts to="4" limit="3"}}{{#if @first}}<li>{{title}}</li>{{/if}}{{/foreach}}</ul>';
             const expected = '<ul><li>first</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('@break', function () {
+            registerHelper('match');
+
+            const templateString = `
+                <ul>
+                    {{~#foreach posts~}}
+                        {{~#match @number 3 ~}}
+                            {{@break}}
+                        {{~/match~}}
+                        <li>{{@number}} {{title}}</li>
+                    {{~/foreach~}}
+                </ul>            
+            `.trim();
+            const expected = '<ul><li>1 first</li><li>2 second</li><li>3 third</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });        
+
+        it('nested @break', function () {
+            registerHelper('match');
+
+            const templateString = `
+                <ul>
+                    {{~#foreach posts~}}
+                        {{~#match @number 3 ~}}
+                            {{@break}}
+                        {{~/match~}}                    
+                        <li>Loop 1: {{@number}} {{title}}</li>
+
+                        {{~#foreach ../posts~}}
+                            {{~#match @number 2 ~}}
+                                {{@break}}
+                            {{~/match~}}                            
+                            <li>Loop 2: {{@number}} {{title}}</li>                           
+                        {{~/foreach~}}
+                    {{~/foreach~}}
+                </ul>           
+            `.trim();
+            const expected = '<ul><li>Loop 1: 1 first</li><li>Loop 2: 1 first</li><li>Loop 2: 2 second</li><li>Loop 1: 2 second</li><li>Loop 2: 1 first</li><li>Loop 2: 2 second</li><li>Loop 1: 3 third</li><li>Loop 2: 1 first</li><li>Loop 2: 2 second</li></ul>';
+
+            shouldCompileToExpected(templateString, arrayHash, expected);
+            shouldCompileToExpected(templateString, objectHash, expected);
+        });
+
+        it('nested @break with @../break', function () {
+            registerHelper('match');
+
+            const templateString = `
+                <ul>
+                    {{~#foreach posts~}}                 
+                        <li>Loop 1: {{@number}} {{title}}</li>
+
+                        {{~#foreach ../posts~}}
+                            {{~#match @number 2 ~}}
+                                {{@../break}}
+                            {{~/match~}}
+
+                            {{~#match @number 3  ~}}
+                                {{@break}}
+                            {{~/match~}}  
+
+                            <li>Loop 2: {{@number}} {{title}}</li>                           
+                        {{~/foreach~}}
+                    {{~/foreach~}}
+                </ul>           
+            `.trim();
+            const expected = '<ul><li>Loop 1: 1 first</li><li>Loop 2: 1 first</li><li>Loop 2: 2 second</li><li>Loop 2: 3 third</li></ul>';
 
             shouldCompileToExpected(templateString, arrayHash, expected);
             shouldCompileToExpected(templateString, objectHash, expected);
