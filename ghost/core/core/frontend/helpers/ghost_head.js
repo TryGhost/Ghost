@@ -53,7 +53,6 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
     }
-
     let membersHelper = '';
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
