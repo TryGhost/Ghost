@@ -7,6 +7,7 @@ import {cva, type VariantProps} from 'class-variance-authority';
 import {X} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
 
 const Sheet = SheetPrimitive.Root;
 
@@ -59,7 +60,7 @@ const SheetContent = React.forwardRef<
     SheetContentProps
 >(({side = 'right', className, children, ...props}, ref) => (
     <SheetPortal>
-        <div className='shade shade-activitypub shade-stats shade-posts'>
+        <div className={SHADE_APP_NAMESPACES}>
             <SheetOverlay />
             <SheetPrimitive.Content
                 ref={ref}
