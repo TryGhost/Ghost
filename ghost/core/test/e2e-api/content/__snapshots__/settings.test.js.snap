@@ -6,6 +6,7 @@ Object {
   "settings": Object {
     "accent_color": "#FF1A75",
     "allow_self_signup": true,
+    "bluesky": null,
     "codeinjection_foot": null,
     "codeinjection_head": null,
     "comments_enabled": "off",
@@ -17,10 +18,13 @@ Object {
     "facebook": "ghost",
     "firstpromoter_account": null,
     "icon": null,
+    "instagram": null,
     "labs": Any<Object>,
     "lang": "en",
+    "linkedin": null,
     "locale": "en",
     "logo": null,
+    "mastodon": null,
     "members_enabled": true,
     "members_invite_only": false,
     "members_signup_access": "all",
@@ -82,6 +86,8 @@ Object {
     ],
     "site_uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
     "support_email_address": "noreply@127.0.0.1",
+    "threads": null,
+    "tiktok": null,
     "timezone": "Etc/UTC",
     "title": "Ghost",
     "twitter": "@ghost",
@@ -90,6 +96,7 @@ Object {
     "twitter_title": null,
     "url": "http://127.0.0.1:2369/",
     "version": Any<String>,
+    "youtube": null,
   },
 }
 `;
