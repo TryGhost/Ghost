@@ -7,13 +7,12 @@ import StatsView from '../layout/StatsView';
 import World from '@svg-maps/world';
 import countries from 'i18n-iso-countries';
 import enLocale from 'i18n-iso-countries/langs/en.json';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Flag, Icon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Card, CardContent, CardDescription, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, Flag, Icon, LucideIcon, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPages, SimplePaginationPreviousButton, SkeletonTable, cn, formatNumber, formatPercentage, formatQueryDate, getRangeDates, useSimplePagination} from '@tryghost/shade';
+import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 import {SVGMap} from 'react-svg-map';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useQuery} from '@tinybirdco/charts';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
@@ -56,11 +55,11 @@ interface ProcessedLocationData {
 }
 
 const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
+    const {appSettings} = useAppContext();
 
     const params = {
         site_uuid: statsConfig?.id || '',
@@ -70,9 +69,9 @@ const Locations:React.FC = () => {
         member_status: getAudienceQueryParam(audience)
     };
 
-    const {data, loading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_locations'),
-        token: getToken(statsConfig),
+    const {data, loading} = useTinybirdQuery({
+        endpoint: 'api_top_locations',
+        statsConfig,
         params
     });
 
@@ -141,31 +140,31 @@ const Locations:React.FC = () => {
             // We have to do this manually because dynamic classnames are not interpreted by TailwindCSS
             switch (currentData.relativeValue) {
             case 10:
-                opacity = 'opacity-10';
-                break;
-            case 20:
-                opacity = 'opacity-20';
-                break;
-            case 30:
-                opacity = 'opacity-30';
-                break;
-            case 40:
                 opacity = 'opacity-40';
                 break;
-            case 50:
+            case 20:
+                opacity = 'opacity-40';
+                break;
+            case 30:
+                opacity = 'opacity-45';
+                break;
+            case 40:
                 opacity = 'opacity-50';
                 break;
-            case 60:
+            case 50:
                 opacity = 'opacity-60';
+                break;
+            case 60:
+                opacity = 'opacity-65';
                 break;
             case 70:
                 opacity = 'opacity-70';
                 break;
             case 80:
-                opacity = 'opacity-80';
+                opacity = 'opacity-75';
                 break;
             case 90:
-                opacity = 'opacity-90';
+                opacity = 'opacity-95';
                 break;
             }
             return cn('fill-[hsl(var(--chart-blue))]', opacity);
@@ -198,20 +197,26 @@ const Locations:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
+    if (!appSettings?.analytics.webAnalytics) {
+        return (
+            <Navigate to='/' />
+        );
+    }
+
     return (
         <StatsLayout>
             <StatsHeader>
                 <AudienceSelect />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView data={data} isLoading={false}>
+            <StatsView isLoading={false}>
                 <Card className='p-0'>
                     <CardHeader className='border-b'>
                         <CardTitle>Top Locations</CardTitle>
                         <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
                     </CardHeader>
                     <CardContent className='p-0'>
-                        <div className='grid grid-cols-3 items-stretch'>
+                        <div className='flex flex-col lg:grid lg:grid-cols-3 lg:items-stretch'>
                             <div className='svg-map-container relative col-span-2 mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
                                 <SVGMap
                                     locationClassName={getLocationClassName}
@@ -239,71 +244,71 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='group/datalist flex flex-col justify-between border-l px-6'>
-                                {isLoading
-                                    ?
-                                    <DataList>
-                                        <DataListHeader className='py-4'>
-                                            <DataListHead>Country</DataListHead>
-                                            <DataListHead>Visitors</DataListHead>
-                                        </DataListHeader>
+                            <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6'>
+                                <DataList className='grow'>
+                                    <DataListHeader className='py-4'>
+                                        <DataListHead>Country</DataListHead>
+                                        <DataListHead>Visitors</DataListHead>
+                                    </DataListHeader>
+                                    {isLoading
+                                        ?
                                         <SkeletonTable className='mt-5' />
-                                    </DataList>
-                                    :
-                                    <>
-                                        <DataList>
-                                            <DataListHeader className='py-4'>
-                                                <DataListHead>Country</DataListHead>
-                                                <DataListHead>Visitors</DataListHead>
-                                            </DataListHeader>
-                                            <DataListBody>
-                                                {tableData?.map((row) => {
-                                                    const countryName = getCountryName(`${row.location}`) || 'Unknown';
-                                                    return (
-                                                        <DataListRow key={row.location || 'unknown'}>
-                                                            <DataListBar
-                                                                className='bg-gradient-to-r from-[hsl(var(--chart-blue))]/40 to-[hsl(var(--chart-blue))]/80  opacity-20 transition-all'
-                                                                style={{
+                                        :
+                                        tableData && tableData.length > 0 ?
+                                            <>
+                                                <DataListBody>
+                                                    {tableData.map((row) => {
+                                                        const countryName = getCountryName(`${row.location}`) || 'Unknown';
+                                                        return (
+                                                            <DataListRow key={row.location || 'unknown'}>
+                                                                <DataListBar style={{
                                                                     width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
-                                                                }}
-                                                            />
-                                                            <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
-                                                                <div className='flex items-center space-x-3 overflow-hidden'>
-                                                                    <Flag
-                                                                        countryCode={`${normalizeCountryCode(row.location as string)}`}
-                                                                        fallback={
-                                                                            <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
-                                                                                <Icon.SkullAndBones className='size-3' />
-                                                                            </span>
-                                                                        }
-                                                                    />
-                                                                    <div className='truncate font-medium'>{countryName}</div>
-                                                                </div>
-                                                            </DataListItemContent>
-                                                            <DataListItemValue>
-                                                                <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
-                                                                <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
-                                                            </DataListItemValue>
-                                                        </DataListRow>
-                                                    );
-                                                })}
-                                            </DataListBody>
-                                        </DataList>
-                                        <SimplePagination className='mt-5'>
-                                            <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
-                                            <SimplePaginationNavigation>
-                                                <SimplePaginationPreviousButton
-                                                    disabled={!hasPreviousPage}
-                                                    onClick={previousPage}
-                                                />
-                                                <SimplePaginationNextButton
-                                                    disabled={!hasNextPage}
-                                                    onClick={nextPage}
-                                                />
-                                            </SimplePaginationNavigation>
-                                        </SimplePagination>
-                                    </>
-                                }
+                                                                }}/>
+                                                                <DataListItemContent className='group-hover/data:max-w-[calc(100%-140px)]'>
+                                                                    <div className='flex items-center space-x-3 overflow-hidden'>
+                                                                        <Flag
+                                                                            countryCode={`${normalizeCountryCode(row.location as string)}`}
+                                                                            data-testid='country-flag'
+                                                                            fallback={
+                                                                                <span className='flex h-[14px] w-[22px] items-center justify-center rounded-[2px] bg-black text-white'>
+                                                                                    <Icon.SkullAndBones className='size-3' />
+                                                                                </span>
+                                                                            }
+                                                                        />
+                                                                        <div className='truncate font-medium' data-testid='country-name'>{countryName}</div>
+                                                                    </div>
+                                                                </DataListItemContent>
+                                                                <DataListItemValue>
+                                                                    <DataListItemValueAbs>{formatNumber(Number(row.visits))}</DataListItemValueAbs>
+                                                                    <DataListItemValuePerc>{formatPercentage(row.percentage)}</DataListItemValuePerc>
+                                                                </DataListItemValue>
+                                                            </DataListRow>
+                                                        );
+                                                    })}
+                                                </DataListBody>
+                                                <SimplePagination className='mt-5'>
+                                                    <SimplePaginationPages currentPage={currentPage.toString()} totalPages={totalPages.toString()} />
+                                                    <SimplePaginationNavigation>
+                                                        <SimplePaginationPreviousButton
+                                                            disabled={!hasPreviousPage}
+                                                            onClick={previousPage}
+                                                        />
+                                                        <SimplePaginationNextButton
+                                                            disabled={!hasNextPage}
+                                                            onClick={nextPage}
+                                                        />
+                                                    </SimplePaginationNavigation>
+                                                </SimplePagination>
+                                            </>
+                                            :
+                                            <EmptyIndicator
+                                                className='size-full py-20'
+                                                title={`No visitors ${getPeriodText(range)}`}
+                                            >
+                                                <LucideIcon.MapPin strokeWidth={1.5} />
+                                            </EmptyIndicator>
+                                    }
+                                </DataList>
                             </div>
 
                         </div>

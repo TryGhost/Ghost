@@ -45,15 +45,13 @@ const PRIVATE_FEATURES = [
     'trafficAnalytics',
     'importMemberTier',
     'urlCache',
-    'emailCustomization',
-    'emailCustomizationAlpha',
     'mailEvents',
-    'collectionsCard',
     'lexicalIndicators',
     'trafficAnalyticsAlpha',
-    'updatedMainNav',
+    'ui60',
     'contentVisibilityAlpha',
-    'explore'
+    'explore',
+    'emailCustomization'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

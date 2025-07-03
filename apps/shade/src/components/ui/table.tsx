@@ -2,6 +2,7 @@ import * as React from 'react';
 
 import {cn} from '@/lib/utils';
 import {Button} from './button';
+import {cva, VariantProps} from 'class-variance-authority';
 
 const Table = React.forwardRef<
     HTMLTableElement,
@@ -21,7 +22,7 @@ const TableHeader = React.forwardRef<
     HTMLTableSectionElement,
     React.HTMLAttributes<HTMLTableSectionElement>
 >(({className, ...props}, ref) => (
-    <thead ref={ref} className={cn('[&_tr]:border-transparent [&_tr:hover:before]:bg-transparent', className)} {...props} />
+    <thead ref={ref} className={cn('[&_tr:hover:before]:bg-transparent', className)} {...props} />
 ));
 TableHeader.displayName = 'TableHeader';
 
@@ -44,7 +45,7 @@ const TableFooter = React.forwardRef<
     <tfoot
         ref={ref}
         className={cn(
-            'border-t bg-muted/50 font-medium [&>tr]:last:border-b-0',
+            'border-b bg-muted/50 font-medium [&>tr]:last:border-b-0',
             className
         )}
         {...props}
@@ -59,7 +60,7 @@ const TableRow = React.forwardRef<
     <tr
         ref={ref}
         className={cn(
-            'group relative border-t data-[state=selected]:bg-muted',
+            'group relative border-b data-[state=selected]:bg-muted',
             className
         )}
         {...props}
@@ -67,16 +68,31 @@ const TableRow = React.forwardRef<
 ));
 TableRow.displayName = 'TableRow';
 
-const TableHead = React.forwardRef<
-    HTMLTableCellElement,
-    React.ThHTMLAttributes<HTMLTableCellElement>
->(({className, ...props}, ref) => (
+const headVariants = cva(
+    'relative align-middle',
+    {
+        variants: {
+            variant: {
+                default: 'h-10 px-2 text-left text-xs font-medium uppercase tracking-wide text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
+                cardhead: 'text-base font-normal [&>div]:px-0'
+            }
+        },
+        defaultVariants: {
+            variant: 'default'
+        }
+    }
+);
+
+export interface TableHeadProps
+    extends React.ThHTMLAttributes<HTMLTableCellElement>,
+    VariantProps<typeof headVariants> {
+    asChild?: boolean
+}
+
+const TableHead = React.forwardRef<HTMLTableCellElement, TableHeadProps>(({className, variant, ...props}, ref) => (
     <th
         ref={ref}
-        className={cn(
-            'relative h-10 px-2 text-left text-sm align-middle font-medium text-gray-700 [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]',
-            className
-        )}
+        className={cn(headVariants({variant, className}))}
         {...props}
     />
 ));
@@ -86,7 +102,7 @@ type TableHeadButtonProps = React.ComponentProps<typeof Button>;
 
 const TableHeadButton: React.FC<TableHeadButtonProps> = ({className, children, ...props}) => {
     const buttonClassName = cn(
-        'text-sm leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
+        'text-xs uppercase tracking-wide leading-4 text-right text-gray-700 hover:bg-transparent px-0 [&_svg]:size-4 gap-1',
         className
     );
     return (
@@ -104,7 +120,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            'relative p-2 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
+            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
             className
         )}
         {...props}

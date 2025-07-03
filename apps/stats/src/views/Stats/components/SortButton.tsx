@@ -16,13 +16,13 @@ const SortButton = <T extends string>({
 }: SortButtonProps<T>) => {
     return (
         <TableHeadButton
-            className={`${sortBy === activeSortBy && 'text-black'}`}
+            className={`${sortBy === activeSortBy && 'text-foreground'}`}
             onClick={() => {
                 setSortBy(sortBy);
             }}
         >
             {children}
-            {sortBy === activeSortBy && <LucideIcon.ArrowUp />}
+            {sortBy === activeSortBy && <LucideIcon.ArrowUpDown />}
         </TableHeadButton>
     );
 };

@@ -1,6 +1,12 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
+import {inject as service} from '@ember/service';
+
+const CACHE_TIME = 1000 * 60 * 5; // 5 minutes
 
 export default class TagsRoute extends AuthenticatedRoute {
+    @service infinity;
+    @service tagsManager;
+
     queryParams = {
         type: {
             refreshModel: true,
@@ -17,22 +23,37 @@ export default class TagsRoute extends AuthenticatedRoute {
         }
     }
 
-    // set model to a live array so all tags are shown and created/deleted tags
-    // are automatically added/removed. Also load all tags in the background,
-    // pausing to show the loading spinner if no tags have been loaded yet
-    model() {
-        let promise = this.store.query('tag', {limit: 'all', include: 'count.posts'});
-        let tags = this.store.peekAll('tag');
-        if (this.store.peekAll('tag').get('length') === 0) {
-            return promise.then(() => tags);
-        } else {
-            return tags;
-        }
+    model(params) {
+        const filterParams = {
+            visibility: params.type
+        };
+
+        const paginationParams = {
+            perPage: 100,
+            perPageParam: 'limit',
+            totalPagesParam: 'meta.pagination.pages',
+            order: 'name asc',
+            include: 'count.posts'
+        };
+
+        this.tagsManager.tagsScreenInfinityModel = this.infinity.model('tag', {
+            ...paginationParams,
+            filter: this._filterString({...filterParams}),
+            infinityCache: CACHE_TIME
+        });
+
+        return this.tagsManager.tagsScreenInfinityModel;
     }
 
     buildRouteInfoMetadata() {
         return {
             titleToken: 'Tags'
         };
+    }
+
+    _filterString(filter) {
+        return Object.entries(filter).map(([key, value]) => {
+            return `${key}:${value}`;
+        }).join(',');
     }
 }

@@ -9,6 +9,7 @@ export type TopContentItem = {
     post_uuid?: string;
     post_id?: string;
     post_type?: string;
+    url_exists?: boolean;
 }
 
 export type TopContentResponseType = {
@@ -38,10 +39,15 @@ export type MemberCountHistoryResponseType = {
 
 export type TopPostStatItem = {
     post_id: string;
+    attribution_url: string;
+    attribution_type: string;
+    attribution_id: string;
     title: string;
     free_members: number;
     paid_members: number;
     mrr: number;
+    published_at: string;
+    url_exists?: boolean;
 };
 
 export type TopPostsStatsResponseType = {
@@ -88,7 +94,10 @@ export type MrrTotalItem = {
 export type MrrHistoryResponseType = {
     stats: MrrHistoryItem[];
     meta: {
-        totals: MrrTotalItem[];
+        totals: {
+            mrr: number;
+            currency: string;
+        }[];
     };
 };
 
@@ -122,23 +131,19 @@ export type NewsletterSubscriberStatsResponseType = {
     stats: NewsletterSubscriberStats[];
 };
 
-export type LatestPostStats = {
+export interface PostStats {
     id: string;
-    title: string;
-    slug: string;
-    feature_image: string | null;
-    published_at: string;
-    email_count: number | null;
+    recipient_count: number | null;
     opened_count: number | null;
     open_rate: number | null;
     member_delta: number;
     free_members: number;
     paid_members: number;
     visitors: number;
-};
+}
 
-export type LatestPostStatsResponseType = {
-    stats: LatestPostStats[];
+export type PostStatsResponseType = {
+    stats: PostStats[];
 };
 
 export type TopPostViewsStats = {
@@ -146,13 +151,46 @@ export type TopPostViewsStats = {
     title: string;
     published_at: string;
     feature_image: string;
+    status: string;
+    authors: string;
     views: number;
+    sent_count: number | null;
+    opened_count: number | null;
     open_rate: number | null;
+    clicked_count: number;
+    click_rate: number | null;
     members: number;
+    free_members: number;
+    paid_members: number;
 };
 
 export type TopPostViewsResponseType = {
     stats: TopPostViewsStats[];
+};
+
+// Types for subscription stats
+export type SubscriptionStatItem = {
+    date: string;
+    tier: string;
+    cadence: string;
+    positive_delta: number;
+    negative_delta: number;
+    signups: number;
+    cancellations: number;
+    count: number;
+};
+
+export type SubscriptionStatsResponseType = {
+    stats: SubscriptionStatItem[];
+    meta: {
+        tiers: string[];
+        cadences: string[];
+        totals: {
+            tier: string;
+            cadence: string;
+            count: number;
+        }[];
+    };
 };
 
 // Requests
@@ -166,8 +204,8 @@ const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType
 
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
-const latestPostStatsDataType = 'LatestPostStatsResponseType';
 const topPostViewsDataType = 'TopPostViewsResponseType';
+const subscriptionStatsDataType = 'SubscriptionStatsResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -198,9 +236,14 @@ export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     path: '/stats/mrr/'
 });
 
-export const useLatestPostStats = createQuery<LatestPostStatsResponseType>({
-    dataType: latestPostStatsDataType,
-    path: '/stats/latest-post/'
+export const useSubscriptionStats = createQuery<SubscriptionStatsResponseType>({
+    dataType: subscriptionStatsDataType,
+    path: '/stats/subscriptions/'
+});
+
+export const usePostStats = createQueryWithId<PostStatsResponseType>({
+    dataType: 'PostStatsResponseType',
+    path: id => `/stats/posts/${id}/stats/`
 });
 
 export const useTopPostsViews = createQuery<TopPostViewsResponseType>({
@@ -249,11 +292,11 @@ export const useNewsletterClickStats = createQuery<NewsletterStatsResponseType>(
 // Hook wrapper to accept a newsletterId parameter
 export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options: Partial<NewsletterStatsSearchParams> = {}, queryOptions: {enabled?: boolean} = {}) => {
     const searchParams: Record<string, string> = {};
-    
+
     if (newsletterId) {
         searchParams.newsletter_id = newsletterId;
     }
-    
+
     // Add any additional search params
     if (options.date_from) {
         searchParams.date_from = options.date_from;
@@ -267,7 +310,7 @@ export const useNewsletterStatsByNewsletterId = (newsletterId?: string, options:
     if (options.limit) {
         searchParams.limit = options.limit.toString();
     }
-    
+
     return useNewsletterStats({searchParams, enabled: queryOptions.enabled});
 };
 
@@ -282,11 +325,11 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
 // Hook wrapper to accept a newsletterId parameter
 export const useSubscriberCountByNewsletterId = (newsletterId?: string, options: Partial<SubscriberCountSearchParams> = {}) => {
     const searchParams: Record<string, string> = {};
-    
+
     if (newsletterId) {
         searchParams.newsletter_id = newsletterId;
     }
-    
+
     // Add any additional search params
     if (options.date_from) {
         searchParams.date_from = options.date_from;
@@ -294,6 +337,6 @@ export const useSubscriberCountByNewsletterId = (newsletterId?: string, options:
     if (options.date_to) {
         searchParams.date_to = options.date_to;
     }
-    
+
     return useSubscriberCount({searchParams});
 };

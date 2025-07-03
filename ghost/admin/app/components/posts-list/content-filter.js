@@ -1,11 +1,12 @@
 import Component from '@glimmer/component';
-import {get} from '@ember/object';
+import {action, get} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class PostsListContentFilter extends Component {
     @service customViews;
     @service feature;
     @service router;
+    @service tagsManager;
 
     get showCustomViewManagement() {
         let isAdmin = get(this.args.currentUser || {}, 'isAdmin');
@@ -31,5 +32,16 @@ export default class PostsListContentFilter extends Component {
         };
 
         return {style};
+    }
+
+    @action
+    registerTagsPowerSelect(api) {
+        this.tagsPowerSelectApi = api;
+    }
+
+    @action
+    onLastReached() {
+        const search = this.tagsPowerSelectApi?.searchText;
+        this.args.loadMoreTagsTask.perform(!!search);
     }
 }

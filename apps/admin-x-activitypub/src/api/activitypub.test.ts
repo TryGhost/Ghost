@@ -101,7 +101,7 @@ describe('ActivityPubAPI', function () {
                 [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
-                        expect(init?.body).toEqual('{"content":"Hello, world!","imageUrl":"https://example.com/image.jpg"}');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Test alt text"}}');
                     },
                     response: JSONResponse({
                         post: {
@@ -120,7 +120,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const result = await api.note('Hello, world!', 'https://example.com/image.jpg');
+            const result = await api.note('Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Test alt text'});
 
             expect(result).toEqual({
                 id: 'https://example.com/note/abc123',
@@ -163,7 +163,7 @@ describe('ActivityPubAPI', function () {
                 [`https://activitypub.api/.ghost/activitypub/actions/reply/123`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
-                        expect(init?.body).toEqual('{"content":"Hello, world!","imageUrl":"https://example.com/image.jpg"}');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Reply image alt text"}}');
                     },
                     response: JSONResponse({
                         id: 'https://example.com/reply/abc123',
@@ -181,7 +181,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const result = await api.reply('123', 'Hello, world!', 'https://example.com/image.jpg');
+            const result = await api.reply('123', 'Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Reply image alt text'});
 
             expect(result).toEqual({
                 id: 'https://example.com/reply/abc123',
@@ -315,7 +315,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -358,7 +358,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -388,7 +388,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -429,7 +429,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -459,7 +459,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
                     response: JSONResponse({})
                 }
             });
@@ -489,7 +489,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -518,7 +518,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -561,7 +561,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -592,7 +592,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -633,7 +633,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -663,7 +663,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
                     response: JSONResponse({})
                 }
             });
@@ -693,7 +693,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1502,6 +1502,98 @@ describe('ActivityPubAPI', function () {
             );
 
             await api.updateAccount(data);
+        });
+    });
+
+    describe('getNotificationsCount', function () {
+        test('It returns the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/notifications/unread/count`]: {
+                    response: JSONResponse({
+                        count: 5
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 5
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns zero count when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/notifications/unread/count`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 0
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('resetNotificationsCount', function () {
+        test('It resets the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/notifications/unread/reset`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.resetNotificationsCount();
+            expect(result).toBe(true);
         });
     });
 });
