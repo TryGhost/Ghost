@@ -18,6 +18,7 @@ export const searchKeywords5x = {
 
 export const searchKeywords = {
     network: ['network', 'social web', 'social', 'web', 'activitypub', 'activity pub', 'fediverse', 'federated'],
+    explore: ['explore', 'web', 'social', 'web', 'growth', 'list'],
     tips: ['growth', 'tips', 'donations', 'one time', 'payment'],
     embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
     recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
