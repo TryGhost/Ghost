@@ -25,8 +25,7 @@ export const searchKeywords = {
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
-    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site'],
-    spamFilters: ['membership', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email']
+    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site']
 };
 
 const AdvancedSettings: React.FC = () => {
