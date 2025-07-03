@@ -1,5 +1,4 @@
 // x.com URLs with 1-15 characters, alphanumeric and underscores
-
 const X_URL_REGEX = /^x\.com\/([a-zA-Z0-9_]{1,15})$/;
 
 export function validateTwitterUrl(newUrl: string) {
