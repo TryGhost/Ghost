@@ -27,6 +27,7 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,
+      "themeTranslation": true,
       "trafficAnalytics": true,
       "trafficAnalyticsAlpha": true,
       "ui60": true,
