@@ -8,17 +8,17 @@ export function validateTwitterUrl(newUrl: string) {
         if (newUrl.match(/(?:x\.com\/)(\S+)/)) {
             [, username] = newUrl.match(/(?:x\.com\/)(\S+)/);
         } else {
-            [username] = newUrl.match(/([^/]+)\/?$/mi);
+            [username] = newUrl.match(/([^/]+)\/?$/i);
         }
 
         if (username.startsWith('@')) {
             username = username.slice(1);
         }
 
-        if (!username.match(/^[a-z\d_]{1,15}$/mi)) {
+        if (!username.match(/^[a-z\d_]{1,15}$/i)) {
             throw new Error('Your Username is not a valid Twitter Username');
         }
-        
+
         return `https://x.com/${username}`;
     } else {
         const message = 'The URL must be in a format like https://x.com/yourUsername';
