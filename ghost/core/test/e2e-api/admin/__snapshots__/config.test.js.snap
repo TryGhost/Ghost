@@ -28,7 +28,6 @@ Object {
       "superEditors": true,
       "themeErrorsNotification": true,
       "trafficAnalytics": true,
-      "trafficAnalyticsAlpha": true,
       "ui60": true,
       "urlCache": true,
       "webmentions": true,

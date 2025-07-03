@@ -14,11 +14,6 @@ const features = [{
     flag: 'trafficAnalytics',
     limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
 }, {
-    title: 'Traffic Analytics (alpha)',
-    description: 'Enables alpha stage analytics features',
-    flag: 'trafficAnalyticsAlpha',
-    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
-}, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
     flag: 'emailCustomization'

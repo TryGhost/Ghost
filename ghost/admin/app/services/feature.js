@@ -71,7 +71,6 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
-    @feature('trafficAnalyticsAlpha') trafficAnalyticsAlpha;
     @feature('ui60') ui60;
     @feature('trafficAnalytics') trafficAnalytics;
 
