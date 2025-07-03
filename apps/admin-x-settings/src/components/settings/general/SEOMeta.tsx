@@ -344,7 +344,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const tabs = [
         {
             id: 'metadata',
-            title: 'Meta data',
+            title: 'Search',
             contents: metadataTabContent
         },
         {
@@ -361,13 +361,13 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description='Extra content for search engines'
+            description='Extra content for search engines and social accounts'
             isEditing={isEditing}
             keywords={keywords}
             navid='metadata'
             saveState={saveState}
             testId='seometa'
-            title='SEO meta'
+            title='Meta data'
             hideEditButton
             onCancel={handleCancel}
             onEditingChange={handleEditingChange}
