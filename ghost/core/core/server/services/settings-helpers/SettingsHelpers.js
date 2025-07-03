@@ -1,3 +1,4 @@
+const net = require('net');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const EmailAddressParser = require('../email-address/EmailAddressParser');
@@ -9,11 +10,12 @@ const messages = {
 };
 
 class SettingsHelpers {
-    constructor({settingsCache, urlUtils, config, labs}) {
+    constructor({settingsCache, urlUtils, config, labs, limitService}) {
         this.settingsCache = settingsCache;
         this.urlUtils = urlUtils;
         this.config = config;
         this.labs = labs;
+        this.limitService = limitService;
     }
 
     isMembersEnabled() {
@@ -220,16 +222,46 @@ class SettingsHelpers {
     }
 
     /**
-     * Social web (ActivityPub) is enabled if:
-     * - Social web is enabled in the settings
-     * - 'ActivityPub' flag is enabled in the labs, for compatibility with Ghost 5.x
-     * - Config allows it (TODO)
-     * - Billing allows it (TODO)
+     * Calculated setting for Social web (ActivityPub)
      *
      * @returns {boolean}
      */
     isSocialWebEnabled() {
-        return this.settingsCache.get('social_web') === true && this.labs.isSet('ActivityPub');
+        // UI setting
+        if (this.settingsCache.get('social_web') !== true) {
+            logging.warn('Social web is disabled in settings');
+            return false;
+        }
+
+        // Labs setting
+        if (!this.labs.isSet('ActivityPub')) {
+            logging.warn('Social web is disabled in labs');
+            return false;
+        }
+
+        // Ghost (Pro) limits
+        if (this.limitService.limits.limitSocialWeb?.disabled) {
+            logging.warn('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
+            return false;
+        }
+
+        // Social web (ActivityPub) currently does not support Ghost sites hosted on a subdirectory, e.g. https://example.com/blog/
+        const subdirectory = this.urlUtils.getSubdir();
+        if (subdirectory) {
+            logging.warn('Social web is not available for Ghost sites hosted on a subdirectory');
+            return false;
+        }
+
+        // Self-hosters cannot connect to production ActivityPub servers from localhost or IPs addresses
+        const siteUrl = new URL(this.urlUtils.getSiteUrl());
+        const isLocalhost = siteUrl.hostname === 'localhost' || siteUrl.hostname === '127.0.0.1' || siteUrl.hostname === '::1';
+        const isIP = net.isIP(siteUrl.hostname);
+        if (process.env.NODE_ENV === 'production' && (isLocalhost || isIP)) {
+            logging.warn('Social web is not available for localhost or IPs addresses in production');
+            return false;
+        }
+
+        return true;
     }
 
     // PRIVATE
