@@ -29670,10 +29670,10 @@ socks@^2.6.2, socks@^2.7.1:
     ip "^2.0.0"
     smart-buffer "^4.2.0"
 
-sonner@2.0.5:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/sonner/-/sonner-2.0.5.tgz#ffb70a6ffe3207c4302cffd3ee46a25242953477"
-  integrity sha512-YwbHQO6cSso3HBXlbCkgrgzDNIhws14r4MO87Ofy+cV2X7ES4pOoAK3+veSmVTvqNx1BWUxlhPmZzP00Crk2aQ==
+sonner@2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/sonner/-/sonner-2.0.6.tgz#623b73faec55229d63ec35226d42021f2119bfa7"
+  integrity sha512-yHFhk8T/DK3YxjFQXIrcHT1rGEeTLliVzWbO0xN8GberVun2RiBnxAjXAYpZrqwEVHBG9asI/Li8TAAhN9m59Q==
 
 sort-keys@^5.0.0:
   version "5.0.0"
