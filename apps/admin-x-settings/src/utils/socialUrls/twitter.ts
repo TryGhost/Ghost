@@ -1,12 +1,16 @@
+// x.com URLs with 1-15 characters, alphanumeric and underscores
+
+const X_URL_REGEX = /^x\.com\/([a-zA-Z0-9_]{1,15})$/;
+
 export function validateTwitterUrl(newUrl: string) {
     if (!newUrl) {
         return '';
     }
-    if (newUrl.match(/(?:x\.com\/)(\S+)/) || newUrl.match(/([a-z\d.]+)/i)) {
+    if (newUrl.match(X_URL_REGEX) || newUrl.match(/([a-z\d.]+)/i)) {
         let username = [];
 
-        if (newUrl.match(/(?:x\.com\/)(\S+)/)) {
-            [, username] = newUrl.match(/(?:x\.com\/)(\S+)/);
+        if (newUrl.match(X_URL_REGEX)) {
+            [, username] = newUrl.match(X_URL_REGEX);
         } else {
             [username] = newUrl.match(/([^/]+)\/?$/i);
         }
