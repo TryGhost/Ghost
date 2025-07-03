@@ -348,14 +348,14 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
             contents: metadataTabContent
         },
         {
-            id: 'facebook',
-            title: 'Facebook card',
-            contents: facebookTabContent
-        },
-        {
             id: 'twitter',
             title: 'X card',
             contents: twitterTabContent
+        },
+        {
+            id: 'facebook',
+            title: 'Facebook card',
+            contents: facebookTabContent
         }
     ];
 
