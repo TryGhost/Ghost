@@ -1,6 +1,6 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {limitRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Analytics settings', async () => {
     test('Supports toggling analytics settings', async ({page}) => {
@@ -80,5 +80,47 @@ test.describe('Analytics settings', async () => {
         await expect(newsletterClicksToggle).not.toBeChecked();
 
         await expect(newsletterClicksToggle).toBeDisabled();
+    });
+
+    test('Hides web analytics toggle when limitAnalytics is disabled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config.labs,
+                            trafficAnalytics: true // Feature flag enabled
+                        },
+                        hostSettings: {
+                            limits: {
+                                limitAnalytics: {
+                                    disabled: true,
+                                    error: 'Your current plan doesn\'t support web analytics.'
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await expect(section).toBeVisible();
+
+        // Web analytics toggle should not be present when limit is applied
+        await expect(section.getByLabel('Web analytics')).not.toBeVisible();
+
+        // Other analytics toggles should still be visible
+        await expect(section.getByLabel('Newsletter opens')).toBeVisible();
+        await expect(section.getByLabel('Newsletter clicks')).toBeVisible();
+        await expect(section.getByLabel('Member sources')).toBeVisible();
+        await expect(section.getByLabel('Outbound link tagging')).toBeVisible();
     });
 });

@@ -9,11 +9,10 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
-import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
@@ -21,6 +20,7 @@ const Overview: React.FC = () => {
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -73,15 +73,15 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
-    const {data, loading: tbLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data, loading: tbLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
-    const {data: chartData, loading: chartLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data: chartData, loading: chartLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: chartParams
     });
 
@@ -109,9 +109,9 @@ const Overview: React.FC = () => {
     });
 
     // Get sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
@@ -119,8 +119,15 @@ const Overview: React.FC = () => {
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(post as Post);
+    const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
+
+    // Redirect to Growth tab if this is a published-only post with web analytics disabled
+    useEffect(() => {
+        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
+            navigate(`/analytics/beta/${postId}/growth`);
+        }
+    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
 
     return (
         <>

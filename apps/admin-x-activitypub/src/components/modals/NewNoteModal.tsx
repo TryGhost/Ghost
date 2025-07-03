@@ -3,7 +3,7 @@ import APAvatar from '@components/global/APAvatar';
 import FeedItem from '@components/feed/FeedItem';
 import getUsername from '@utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
@@ -29,12 +29,15 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
     const [isOpen, setIsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
+    const altTextInputRef = useRef<HTMLInputElement>(null);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [isImageUploading, setIsImageUploading] = useState(false);
     const imageInputRef = useRef<HTMLInputElement>(null);
 
     const [content, setContent] = useState('');
     const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+    const [altText, setAltText] = useState('');
+    const [showAltInput, setShowAltInput] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
     const navigate = useNavigate();
@@ -76,12 +79,13 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 await replyMutation.mutateAsync({
                     inReplyTo: replyTo.object.id,
                     content: trimmedContent,
-                    imageUrl: uploadedImageUrl || undefined
+                    imageUrl: uploadedImageUrl || undefined,
+                    altText: altText || undefined
                 });
                 onReply?.();
             } else {
-                await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined});
-                navigate('/feed');
+                await noteMutation.mutateAsync({content: trimmedContent, imageUrl: uploadedImageUrl || undefined, altText: altText || undefined});
+                navigate('/notes');
             }
 
             setIsOpen(false);
@@ -98,7 +102,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         } finally {
             setIsPosting(false);
         }
-    }, [content, user, replyTo, replyMutation, noteMutation, uploadedImageUrl, onReply, onReplyError, setIsOpen, navigate, onOpenChange]);
+    }, [content, user, replyTo, replyMutation, noteMutation, uploadedImageUrl, altText, onReply, onReplyError, setIsOpen, navigate, onOpenChange]);
 
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         setContent(e.target.value);
@@ -122,6 +126,16 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
             return () => clearTimeout(timeoutId);
         }
     }, [isOpen, props.open]);
+
+    // Focus alt text input when it becomes visible
+    useEffect(() => {
+        if (showAltInput && altTextInputRef.current) {
+            const timeoutId = setTimeout(() => {
+                altTextInputRef.current?.focus();
+            }, 100);
+            return () => clearTimeout(timeoutId);
+        }
+    }, [showAltInput]);
 
     useEffect(() => {
         const handleKeyDown = (e: KeyboardEvent) => {
@@ -225,6 +239,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         e.stopPropagation();
         setImagePreview(null);
         setUploadedImageUrl(null);
+        setAltText('');
+        setShowAltInput(false);
         if (imagePreview) {
             URL.revokeObjectURL(imagePreview);
         }
@@ -232,6 +248,11 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
         if (imageInputRef.current) {
             imageInputRef.current.value = '';
         }
+    };
+
+    const handleToggleAltInput = (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowAltInput(!showAltInput);
     };
 
     const handleContentClick = () => {
@@ -261,6 +282,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 setContent('');
                 setImagePreview(null);
                 setUploadedImageUrl(null);
+                setAltText('');
+                setShowAltInput(false);
                 if (imagePreview) {
                     URL.revokeObjectURL(imagePreview);
                 }
@@ -337,14 +360,27 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     </FormPrimitive.Root>
                 </div>
                 {imagePreview &&
-                    <div className='group relative mt-6 flex min-h-[200px] w-fit grow items-center justify-center'>
-                        <img alt='Image attachment preview' className={`max-h-[420px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                    <div className='group relative mt-6 flex min-h-[200px] w-full items-center justify-center'>
+                        <img alt='Image attachment preview' className={`max-h-[320px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
                         {isImageUploading &&
                             <div className='absolute leading-[0]'>
                                 <LoadingIndicator size='md' />
                             </div>
                         }
                         <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={handleClearImage}><LucideIcon.Trash2 /></Button>
+                        {!isImageUploading && <Button className={`absolute bottom-3 left-3 h-6 px-2 py-0 ${!showAltInput ? 'bg-black/60 hover:bg-black/80' : 'bg-green-500 hover:bg-green-500'}`} onClick={handleToggleAltInput}>Alt</Button>}
+                    </div>
+                }
+                {imagePreview && !isImageUploading && showAltInput &&
+                    <div className='mt-1'>
+                        <Input
+                            ref={altTextInputRef}
+                            className='w-full border-0 bg-transparent px-0 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
+                            placeholder='Type alt text for image (optional)'
+                            type='text'
+                            value={altText}
+                            onChange={e => setAltText(e.target.value)}
+                        />
                     </div>
                 }
                 <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 bg-background py-6 dark:bg-[#101114]`}>

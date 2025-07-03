@@ -156,7 +156,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     description='Number of individual people who visited your website'
                     diffDirection='empty'
                     formattedValue={kpiValues.visits}
-                    iconName='Eye'
+                    iconName='Globe'
                     linkto='/web/'
                     title='Unique visitors'
                     onClick={() => {

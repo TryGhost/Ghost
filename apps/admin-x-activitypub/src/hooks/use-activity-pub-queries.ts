@@ -1318,11 +1318,12 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
     const queryClient = useQueryClient();
 
     return useMutation({
-        async mutationFn({inReplyTo, content, imageUrl}: {inReplyTo: string, content: string, imageUrl?: string}) {
+        async mutationFn({inReplyTo, content, imageUrl, altText}: {inReplyTo: string, content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.reply(inReplyTo, content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.reply(inReplyTo, content, image);
         },
         onMutate: ({inReplyTo}) => {
             if (!actorProps) {
@@ -1383,11 +1384,12 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
     const queryKeyPostsByAccount = QUERY_KEYS.profilePosts('index');
 
     return useMutation({
-        async mutationFn({content, imageUrl}: {content: string, imageUrl?: string}) {
+        async mutationFn({content, imageUrl, altText}: {content: string, imageUrl?: string, altText?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
 
-            return api.note(content, imageUrl);
+            const image = imageUrl ? {url: imageUrl, altText} : undefined;
+            return api.note(content, image);
         },
         onMutate: ({content, imageUrl}) => {
             if (!actorProps) {
@@ -2157,13 +2159,17 @@ export function useResetNotificationsCountForUser(handle: string) {
 
 function useFilteredAccountsFromJSON(options: {
     excludeFollowing?: boolean;
+    excludeCurrentUser?: boolean;
 } = {}) {
     const {
-        excludeFollowing = true
+        excludeFollowing = true,
+        excludeCurrentUser = false
     } = options;
     const {data: followingData, hasNextPage, fetchNextPage, isLoading: isLoadingFollowing} = useAccountFollowsForUser('me', 'following');
     const {data: blockedAccountsData, hasNextPage: hasNextBlockedAccounts, fetchNextPage: fetchNextBlockedAccounts, isLoading: isLoadingBlockedAccounts} = useBlockedAccountsForUser('me');
     const {data: blockedDomainsData, hasNextPage: hasNextBlockedDomains, fetchNextPage: fetchNextBlockedDomains, isLoading: isLoadingBlockedDomains} = useBlockedDomainsForUser('me');
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser, isLoading: isLoadingCurrentUser} = currentAccountQuery;
 
     useEffect(() => {
         if (hasNextPage && !isLoadingFollowing) {
@@ -2247,6 +2253,10 @@ function useFilteredAccountsFromJSON(options: {
                     return false;
                 }
 
+                if (excludeCurrentUser && currentUser && account.handle === currentUser.handle) {
+                    return false;
+                }
+
                 const parts = account.handle.split('@').filter(part => part.length > 0);
                 const accountDomain = parts.length > 1 ? parts[parts.length - 1] : null;
                 if (accountDomain && blockedDomains.has(accountDomain)) {
@@ -2267,20 +2277,24 @@ function useFilteredAccountsFromJSON(options: {
         } catch (error) {
             return [];
         }
-    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing]);
+    }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
-    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains;
+    const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
+    
+    // Track if we have finished loading all following data
+    const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
     return {
         fetchAndFilterAccounts,
-        isLoading
+        isLoading,
+        isFollowingDataComplete
     };
 }
 
 export function useExploreProfilesForUser(handle: string) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.exploreProfiles(handle);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
         excludeFollowing: false
     });
 
@@ -2305,7 +2319,7 @@ export function useExploreProfilesForUser(handle: string) {
         queryFn: () => fetchExploreProfilesFromJSON(),
         getNextPageParam: () => undefined,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateExploreProfile = (id: string, updated: Partial<Account>) => {
@@ -2353,8 +2367,9 @@ export function useExploreProfilesForUser(handle: string) {
 export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     const queryClient = useQueryClient();
     const queryKey = QUERY_KEYS.suggestedProfiles(handle, limit);
-    const {fetchAndFilterAccounts, isLoading} = useFilteredAccountsFromJSON({
-        excludeFollowing: true
+    const {fetchAndFilterAccounts, isLoading, isFollowingDataComplete} = useFilteredAccountsFromJSON({
+        excludeFollowing: true,
+        excludeCurrentUser: true
     });
 
     const suggestedProfilesQuery = useQuery({
@@ -2370,7 +2385,7 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
         },
         retry: false,
         staleTime: 60 * 60 * 1000,
-        enabled: !isLoading
+        enabled: !isLoading && isFollowingDataComplete
     });
 
     const updateSuggestedProfile = (id: string, updated: Partial<Account>) => {

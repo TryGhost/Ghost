@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, PostShareModal, Skeleton, cn, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
 
 import {Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
@@ -13,6 +13,16 @@ interface LatestPostProps {
     isLoading: boolean;
 }
 
+const getPostStatusText = (latestPostStats: LatestPostWithStats) => {
+    if (latestPostStats.email_only) {
+        return 'Sent';
+    } else if (latestPostStats.email) {
+        return 'Published and sent';
+    } else {
+        return 'Published';
+    }
+};
+
 const LatestPost: React.FC<LatestPostProps> = ({
     latestPostStats,
     isLoading
@@ -21,19 +31,22 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const [isShareOpen, setIsShareOpen] = useState(false);
     const {site, settings} = useGlobalData();
     const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Get site title from settings or site data
     const siteTitle = site.title || String(settings.find(setting => setting.key === 'title')?.value || 'Ghost Site');
 
     // Calculate metrics to show outside of JSX
-    const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post) : null;
+    const metricsToShow = latestPostStats ? getPostMetricsToDisplay(latestPostStats as Post, {
+        membersTrackSources: appSettings?.analytics.membersTrackSources
+    }) : null;
 
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     return (
         <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
             <CardHeader>
-                <CardTitle className='flex items-baseline justify-between leading-snug text-muted-foreground'>
+                <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
@@ -76,7 +89,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                     <>
                         <div className='flex flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
                             {latestPostStats.feature_image &&
-                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[50%] lg:max-w-[260px] xl:max-w-[232px]' style={{
+                                    <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[170px] lg:max-w-[170px] xl:max-w-[232px]' style={{
                                         backgroundImage: `url(${latestPostStats.feature_image})`
                                     }}></div>
                             }
@@ -85,12 +98,19 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     if (!isLoading && latestPostStats) {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
                                     }
-                                }}>{latestPostStats.title}</div>
-                                <div className='mt-1 text-sm text-muted-foreground'>
+                                }}>
+                                    {latestPostStats.title}
+                                </div>
+                                <div className='mt-0.5 text-sm text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
-                                        <span>By {latestPostStats.authors.map(author => author.name).join(', ')} • </span>
+                                        <div>
+                                            By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash;
+                                            {formatDisplayDate(latestPostStats.published_at)}
+                                        </div>
                                     )}
-                                    Published {formatDisplayDate(latestPostStats.published_at)}
+                                    <div className='mt-0.5'>
+                                        {getPostStatusText(latestPostStats)}
+                                    </div>
                                 </div>
                                 <div className='mt-6 flex items-center gap-2'>
                                     {!latestPostStats.email_only && (
@@ -126,7 +146,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm sidebar:max-w-[320px] xl:h-full xl:max-w-none'>
+                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
@@ -134,7 +154,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                            <LucideIcon.Eye size={16} strokeWidth={1.25} />
+                                            <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
                                                 Visitors
                                             </span>
@@ -145,7 +165,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     </div>
                                 }
 
-                                {/* Member growth - always show if available */}
+                                {/* Member growth - show if available and member tracking is enabled */}
                                 {metricsToShow.showMemberGrowth &&
                                     <div className={
                                         cn(
@@ -171,49 +191,59 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 }
 
                                 {/* Email metrics - show for email posts */}
-                                {metricsToShow.showEmailMetrics && appSettings?.newslettersEnabled && latestPostStats.email && (
+                                {metricsToShow.showEmailMetrics && latestPostStats.email && (
                                     <>
-                                        {/* Show open rate - always display if email exists */}
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
-                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Open rate</span>
+                                        {emailTrackOpensEnabled && (
+                                            <div className={metricClassName} onClick={() => {
+                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                            }}>
+                                                <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                    <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Opens</span>
+                                                </div>
+                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                    {latestPostStats.email.email_count ?
+                                                        formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
+                                                        : '0%'
+                                                    }
+                                                </span>
                                             </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {latestPostStats.email.email_count ?
-                                                    formatPercentage((latestPostStats.email.opened_count || 0) / latestPostStats.email.email_count)
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
-
-                                        {/* Show click rate - display if email exists and has clicks data */}
-                                        <div className={metricClassName} onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
-                                        }}>
-                                            <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
-                                                <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
-                                                <span className='hidden whitespace-nowrap md:!visible md:!block'>Click rate</span>
+                                        )}
+                                        {emailTrackClicksEnabled && (
+                                            <div className={metricClassName} onClick={() => {
+                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                            }}>
+                                                <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                                    <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />
+                                                    <span className='hidden whitespace-nowrap md:!visible md:!block'>Clicks</span>
+                                                </div>
+                                                <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
+                                                    {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
+                                                        formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
+                                                        : '0%'
+                                                    }
+                                                </span>
                                             </div>
-                                            <span className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
-                                                {latestPostStats.email.email_count && latestPostStats.count?.clicks ?
-                                                    formatPercentage((latestPostStats.count.clicks || 0) / latestPostStats.email.email_count)
-                                                    : '0%'
-                                                }
-                                            </span>
-                                        </div>
+                                        )}
                                     </>
                                 )}
                             </div>
                         </div>
                     </>
                 ) : !isLoading && (
-                    <div className='col-span-3 flex flex-col items-center justify-center gap-4 py-8 text-center text-muted-foreground'>
-                        <LucideIcon.FileText size={32} strokeWidth={1.5} />
-                        <div>No published posts yet</div>
-                    </div>
+
+                    <EmptyIndicator
+                        actions={<Button variant='secondary' onClick={() => {
+                            navigate('/editor/post', {crossApp: true});
+                        }}>
+                            New post
+                        </Button>}
+                        className='w-full pb-10 xl:col-span-3'
+                        description={`Once it's live, you can track performance here`}
+                        title='Publish your first post'
+                    >
+                        <LucideIcon.FileText strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
         </Card>
