@@ -274,4 +274,127 @@ describe('Stats API', function () {
                 });
         });
     });
+
+    describe('Posts Visitor Counts', function () {
+        it('Can fetch visitor counts for multiple posts', async function () {
+            const post1 = fixtureManager.get('posts', 0);
+            const post2 = fixtureManager.get('posts', 1);
+            
+            await agent
+                .post('/stats/posts-visitor-counts')
+                .body({
+                    postUuids: [post1.uuid, post2.uuid]
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                    assert.equal(body.stats.length, 1, 'Should return one stats object');
+                    assert.ok(body.stats[0].data, 'Stats should contain data');
+                    assert.ok(body.stats[0].data.visitor_counts, 'Data should contain visitor_counts');
+                });
+        });
+
+        it('Returns empty visitor counts for invalid UUIDs', async function () {
+            await agent
+                .post('/stats/posts-visitor-counts')
+                .body({
+                    postUuids: ['invalid-uuid-1', 'invalid-uuid-2']
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                    assert.equal(body.stats.length, 1, 'Should return one stats object');
+                    assert.ok(body.stats[0].data, 'Stats should contain data');
+                    assert.ok(body.stats[0].data.visitor_counts, 'Data should contain visitor_counts');
+                });
+        });
+
+        it('Returns empty results when postUuids parameter is missing', async function () {
+            await agent
+                .post('/stats/posts-visitor-counts')
+                .body({})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [{
+                        data: {
+                            visitor_counts: {}
+                        }
+                    }]
+                });
+        });
+
+        it('Returns empty results when postUuids is not an array', async function () {
+            await agent
+                .post('/stats/posts-visitor-counts')
+                .body({
+                    postUuids: 'not-an-array'
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [{
+                        data: {
+                            visitor_counts: {}
+                        }
+                    }]
+                });
+        });
+    });
+
+    describe('Posts Member Counts', function () {
+        it('Can fetch member counts for multiple posts', async function () {
+            const post1 = fixtureManager.get('posts', 0);
+            const post2 = fixtureManager.get('posts', 1);
+            
+            await agent
+                .post('/stats/posts-member-counts')
+                .body({
+                    postIds: [post1.id, post2.id]
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                    assert.equal(body.stats.length, 1, 'Should return one stats object');
+                    // Member counts might be empty if no attribution data exists
+                });
+        });
+
+        it('Returns empty member counts for invalid IDs', async function () {
+            await agent
+                .post('/stats/posts-member-counts')
+                .body({
+                    postIds: ['invalid-id-1', 'invalid-id-2']
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.ok(body.stats, 'Response should contain a stats property');
+                    assert.ok(Array.isArray(body.stats), 'body.stats should be an array');
+                    assert.equal(body.stats.length, 1, 'Should return one stats object');
+                });
+        });
+
+        it('Returns empty results when postIds parameter is missing', async function () {
+            await agent
+                .post('/stats/posts-member-counts')
+                .body({})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [{}]
+                });
+        });
+
+        it('Returns empty results when postIds is not an array', async function () {
+            await agent
+                .post('/stats/posts-member-counts')
+                .body({
+                    postIds: 'not-an-array'
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    stats: [{}]
+                });
+        });
+    });
 });

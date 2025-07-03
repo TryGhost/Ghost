@@ -7,12 +7,14 @@ module.exports = {
         preflight: false // we're providing our own scoped CSS reset
     },
     // darkMode: 'selector',
-    darkMode: ['variant', [':is(.dark &):not(.light &)']],
+    darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
     theme: {
         screens: {
             sm: '480px',
             md: '640px',
+            sidebar: '800px',
             lg: '1024px',
+            sidebarlg: '1240px',
             xl: '1320px',
             xxl: '1440px',
             xxxl: '1600px',

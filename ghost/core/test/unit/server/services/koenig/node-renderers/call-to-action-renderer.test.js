@@ -73,141 +73,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
 
     describe('email', function () {
         it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData());
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-card kg-cta-card kg-cta-bg-none kg-cta-minimal kg-cta-has-img" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-sponsor-label">
-                                                <p><span style="white-space: pre-wrap">SPONSORED</span></p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="kg-cta-content">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-image-container" width="64">
-                                                <a href="http://blog.com/post1">
-                                                    <img src="http://blog.com/image1.jpg" alt="CTA Image" class="kg-cta-image" width="64" height="64"/>
-                                                </a>
-                                            </td>
-                                            <td class="kg-cta-content-inner">
-                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="kg-cta-text">This is a cool advertisement</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="kg-cta-button-container">
-                                                                <table border="0" cellpadding="0" cellspacing="0" class="kg-cta-button-wrapper">
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td class="" style="background-color: #000000; color: #ffffff;">
-                                                                                <a href="http://blog.com/post1" class="kg-cta-button" style="background-color: #000000; color: #ffffff;">
-                                                                                    click me
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-    });
-
-    describe('email (emailCustomization)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomization: true}});
-
-            assert.ok(result.html);
-
-            assertPrettifiesTo(result.html, html`
-                <table class="kg-card kg-cta-card kg-cta-bg-none kg-cta-minimal kg-cta-has-img" border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-sponsor-label">
-                                                <p><span style="white-space: pre-wrap">SPONSORED</span></p>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="kg-cta-content">
-                                <table border="0" cellpadding="0" cellspacing="0" width="100%" class="kg-cta-content-wrapper">
-                                    <tbody>
-                                        <tr>
-                                            <td class="kg-cta-image-container" width="64">
-                                                <a href="http://blog.com/post1">
-                                                    <img src="http://blog.com/image1.jpg" alt="CTA Image" class="kg-cta-image" width="64" height="64"/>
-                                                </a>
-                                            </td>
-                                            <td class="kg-cta-content-inner">
-                                                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="kg-cta-text">This is a cool advertisement</td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td class="kg-cta-button-container">
-                                                                <table class="btn" border="0" cellspacing="0" cellpadding="0">
-                                                                    <tbody>
-                                                                        <tr>
-                                                                            <td align="center" style="background-color: #000000;">
-                                                                                <a href="http://blog.com/post1" style="color: #ffffff !important;">
-                                                                                    click me
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    </tbody>
-                                                                </table>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            `);
-        });
-    });
-
-    describe('email (emailCustomizationAlpha)', function () {
-        it('matches snapshot for default test data', function () {
-            const result = renderForEmail(getTestData(), {feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(getTestData(), {feature: {}});
 
             assert.ok(result.html);
 
@@ -273,7 +139,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
 
         it('handles accent button color', function () {
             const data = getTestData({buttonColor: 'accent'});
-            const result = renderForEmail(data, {feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(data, {feature: {}});
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn btn-accent" border="0" cellspacing="0" cellpadding="0">
@@ -292,13 +158,13 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
 
         it('handles outline buttons', function () {
             const data = getTestData();
-            const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {emailCustomizationAlpha: true}});
+            const result = renderForEmail(data, {design: {buttonStyle: 'outline'}, feature: {}});
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="border: 1px solid #000000; background-color: transparent; color: #000000 !important;">
+                            <td align="center" style="color: #000000 !important; border: 1px solid #000000; border-color: currentColor; background-color: transparent;">
                                 <a href="http://blog.com/post1" style="color: #000000 !important;">
                                     click me
                                 </a>
@@ -316,7 +182,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -341,7 +207,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -366,14 +232,14 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: white;">
+                            <td align="center" style="background-color: #ffffff;">
                                 <a href="http://blog.com/post1" style="color: #000000 !important;">
                                     click me
                                 </a>
@@ -391,7 +257,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -416,7 +282,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
@@ -437,18 +303,18 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
         it('does not convert black button when background is not dark', function () {
             const data = getTestData({
                 backgroundColor: 'none',
-                buttonColor: 'black'
+                buttonColor: '#000000'
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: false},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: black;">
+                            <td align="center" style="background-color: #000000;">
                                 <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                     click me
                                 </a>
@@ -462,18 +328,18 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
         it('does not convert black button when CTA background is not transparent or white', function () {
             const data = getTestData({
                 backgroundColor: 'blue',
-                buttonColor: 'black'
+                buttonColor: '#000000'
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
-                feature: {emailCustomizationAlpha: true}
+                feature: {}
             });
 
             assertPrettifiedIncludes(result.html, html`
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: black;">
+                            <td align="center" style="background-color: #000000;">
                                 <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                     click me
                                 </a>

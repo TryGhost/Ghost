@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -10,20 +10,23 @@ interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
     range?: number;
     defaultSourceIconUrl?: string;
+    tableHeader: boolean;
 }
 
-const SourcesTable: React.FC<SourcesTableProps> = ({data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
-            <DataListHeader>
-                <DataListHead>Source</DataListHead>
-                <DataListHead>Visitors</DataListHead>
-            </DataListHeader>
+            {tableHeader &&
+                <DataListHeader>
+                    <DataListHead>Source</DataListHead>
+                    <DataListHead>Visitors</DataListHead>
+                </DataListHeader>
+            }
             <DataListBody>
                 {data?.map((row) => {
                     return (
                         <DataListRow key={row.source} className='group/row'>
-                            <DataListBar className='bg-gradient-to-r from-muted-foreground/40 to-muted-foreground/60 opacity-20 transition-all group-hover/row:opacity-40' style={{
+                            <DataListBar style={{
                                 width: `${row.percentage ? Math.round(row.percentage * 100) : 0}%`
                             }} />
                             <DataListItemContent className='group-hover/datalist:max-w-[calc(100%-140px)]'>
@@ -104,7 +107,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
     const title = 'Top sources';
@@ -126,33 +129,47 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist'>
-            <CardHeader>
-                <CardTitle>{title}</CardTitle>
-                <CardDescription>{description}</CardDescription>
-            </CardHeader>
-            <CardContent>
+            <div className='flex items-center justify-between gap-6 p-6'>
+                <CardHeader className='p-0'>
+                    <CardTitle>{title}</CardTitle>
+                    <CardDescription>{description}</CardDescription>
+                </CardHeader>
+                <HTable className='mr-2'>Visitors</HTable>
+            </div>
+            <CardContent className='overflow-hidden'>
                 <Separator />
                 {topSources.length > 0 ? (
-                    <SourcesTable data={topSources} defaultSourceIconUrl={defaultSourceIconUrl} range={range} />
+                    <SourcesTable
+                        data={topSources}
+                        defaultSourceIconUrl={defaultSourceIconUrl}
+                        range={range}
+                        tableHeader={false} />
                 ) : (
-                    <div className='py-20 text-center text-sm text-gray-700'>
-                            No sources data available.
-                    </div>
+                    <EmptyIndicator
+                        className='mt-8 w-full py-20'
+                        title={`No visitors ${getPeriodText(range)}`}
+                    >
+                        <LucideIcon.Globe strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
-            {extendedData.length > 10 &&
+            {extendedData.length > 11 &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>
                             <div className='group/datalist'>
-                                <SourcesTable data={extendedData} defaultSourceIconUrl={defaultSourceIconUrl} range={range} />
+                                <SourcesTable
+                                    data={extendedData}
+                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                    range={range}
+                                    tableHeader={true} />
                             </div>
                         </SheetContent>
                     </Sheet>

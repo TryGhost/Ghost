@@ -731,6 +731,17 @@ export const Reader: React.FC<ReaderProps> = ({
                                 </div>
                             </div>
                         </div>
+                        <div className='relative flex-1'>
+                            <div className='mx-auto mt-11 w-full max-w-[640px]'>
+                                <div className='mb-6 flex flex-col gap-2'>
+                                    <Skeleton className='h-8' />
+                                    <Skeleton className='h-8 w-full max-w-md' />
+                                </div>
+                                <Skeleton className='mt-2 h-4' count={4} randomize={true} />
+                                <Skeleton className='mt-8 h-[400px]' />
+                                <Skeleton className='mt-2 h-4' containerClassName='block mt-7 mb-4' count={8} randomize={true} />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -782,7 +793,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
                                 <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                    <div className='relative z-10 pt-[3px]'>
+                                    <div className='relative z-10 pt-0.5'>
                                         <APAvatar author={actor}/>
                                     </div>
                                     <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
@@ -889,7 +900,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -910,7 +921,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -937,7 +948,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

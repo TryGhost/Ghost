@@ -1,4 +1,5 @@
 import {Post} from '../api/posts';
+import {TopPostViewsStats} from '../api/stats';
 
 /**
  * Determines if a post has been sent as a newsletter
@@ -39,3 +40,21 @@ export function hasBeenEmailed(post: Post): boolean {
         && hasEmail 
         && (validEmailStatus || hasEmailCount);
 } 
+
+// Utility function to generate post status text
+export function getPostStatusText(post: TopPostViewsStats): string {
+    const hasEmail = post.open_rate !== null;
+
+    if (post.status === 'sent') {
+        return 'Email only';
+    }
+
+    if (post.status === 'published') {
+        if (hasEmail) {
+            return 'Published and sent';
+        }
+        return 'Published';
+    }
+
+    return post.status;
+};
