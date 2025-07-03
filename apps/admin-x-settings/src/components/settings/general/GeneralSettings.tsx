@@ -65,8 +65,6 @@ const GeneralSettings: React.FC = () => {
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
             <Users keywords={searchKeywords.users} />
             <SEOMeta keywords={searchKeywords.metadata} />
-            <Twitter keywords={searchKeywords5x.twitter} />
-            <Facebook keywords={searchKeywords5x.facebook} />
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <Analytics keywords={searchKeywords.analytics} />
             <LockSite keywords={searchKeywords.lockSite} />
