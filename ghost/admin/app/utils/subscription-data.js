@@ -17,7 +17,7 @@ export function getSubscriptionData(sub) {
         price: {
             ...sub.price,
             currencySymbol: getSymbol(sub.price.currency),
-            nonDecimalAmount: getNonDecimal(sub.price.amount)
+            nonDecimalAmount: getNonDecimal(sub.price.amount, sub.price.currency)
         },
         isComplimentary: isComplimentary(sub),
         compExpiry: compExpiry(sub),
