@@ -3,11 +3,12 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, visit, waitFor, waitUntil} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
 function setupVerificationRequired(server, responseCode = 403) {
     server.post('/session', function () {
@@ -177,7 +178,7 @@ describe('Acceptance: Authentication', function () {
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
             await visit('/');
-
+            
             expect(currentURL(), 'current url').to.equal('/signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
