@@ -1,6 +1,6 @@
 import FeedItemMenu from './FeedItemMenu';
 import React, {useEffect, useRef, useState} from 'react';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {Activity, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
 import {toast} from 'sonner';
 
@@ -203,6 +203,7 @@ interface FeedItemProps {
     onClick?: () => void;
     onDelete?: () => void;
     showStats?: boolean;
+    reposts?: Activity[];
 }
 
 const noop = () => {};
@@ -228,7 +229,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
-    showStats = true
+    showStats = true,
+    reposts = []
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
@@ -334,17 +336,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
         ? (author ? getUsername(author) : null)
         : (actor ? getUsername(actor) : null);
 
+    const isAuthorCurrentUser = object.authored;
+
     const followedByMe = type === 'Announce'
         ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
         : (actor?.followedByMe || false);
-
-    const isAuthorCurrentUser = type === 'Announce'
-        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
-            ? (object.attributedTo as {authored: boolean}).authored
-            : (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) &&
-               typeof actor === 'object' && actor &&
-               (object.attributedTo as {id: string}).id === actor.id))
-        : object.authored;
 
     const handleFollow = () => {
         if (authorHandle) {
@@ -385,6 +381,20 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 reposted
                             </div>
                         </div>}
+                        {reposts.length > 0 && (
+                            <div className='z-10 mb-2 flex items-center gap-1.5 text-gray-700 dark:text-gray-600'>
+                                {repostIcon}
+                                <div className='flex min-w-0 items-center gap-1 text-sm'>
+                                    <span className='truncate break-anywhere hover:underline' title={getUsername(reposts[0].actor)} onClick={(e) => {
+                                        handleProfileClick(reposts[0].actor, navigate, e);
+                                    }}>{reposts[0].actor.name}</span>
+                                    {reposts.length > 1 && (
+                                        <span>and {reposts.length - 1} other{reposts.length > 2 ? 's' : ''}</span>
+                                    )}
+                                    reposted
+                                </div>
+                            </div>
+                        )}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
                                 <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />

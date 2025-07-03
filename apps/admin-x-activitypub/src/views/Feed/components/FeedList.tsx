@@ -34,6 +34,49 @@ const FeedList:React.FC<FeedListProps> = ({
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
     const endLoadMoreRef = useRef<HTMLDivElement | null>(null);
 
+    // Group activities by their original post content
+    type GroupedActivity = { mainActivity: Activity; reposters: { actor: Activity['actor']; activity: Activity }[] };
+    const groupedActivities = activities.reduce((acc, activity) => {
+        // Use the post content URL as the grouping key since all reposts share the same base post
+        const groupKey = activity.object.url || activity.id;
+
+        if (!acc[groupKey]) {
+            acc[groupKey] = {
+                mainActivity: activity,
+                reposters: []
+            };
+
+            if (activity.type === 'Announce' && activity.actor) {
+                acc[groupKey].reposters.push({
+                    actor: activity.actor,
+                    activity: activity
+                });
+            }
+        } else {
+            if (activity.type === 'Announce' && activity.actor) {
+                acc[groupKey].reposters.push({
+                    actor: activity.actor,
+                    activity: activity
+                });
+            } else if (activity.type === 'Create') {
+                acc[groupKey].mainActivity = activity;
+            }
+        }
+
+        return acc;
+    }, {} as Record<string, GroupedActivity>);
+
+    const consolidatedActivities = (Object.values(groupedActivities) as GroupedActivity[])
+        .map((group: GroupedActivity) => ({
+            mainActivity: group.mainActivity,
+            reposts: group.reposters.map(r => r.activity),
+            mostRecentDate: Math.max(
+                new Date(group.mainActivity.object.published || 0).getTime(),
+                ...group.reposters.map(r => new Date(r.activity.object.published || 0).getTime())
+            )
+        }))
+        .sort((a, b) => b.mostRecentDate - a.mostRecentDate);
+
     useEffect(() => {
         if (observerRef.current) {
             observerRef.current.disconnect();
@@ -60,42 +103,43 @@ const FeedList:React.FC<FeedListProps> = ({
         };
     }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-    const loadMoreIndex = Math.max(0, Math.floor(activities.length * 0.75) - 1);
+    const loadMoreIndex = Math.max(0, Math.floor(consolidatedActivities.length * 0.75) - 1);
 
     return (
         <Layout>
             <div className='flex w-full flex-col'>
                 <div className='w-full'>
-                    {activities.length > 0 ? (
+                    {consolidatedActivities.length > 0 ? (
                         <div className='my-4'>
                             <div className='mx-auto flex items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
                                         <FeedInput user={user} />
                                         <ul className='mx-auto flex w-full flex-col px-4' data-testid="feed-list">
-                                            {activities.map((activity, index) => (
+                                            {consolidatedActivities.map((group, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key
-                                                    key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
+                                                    key={`${group.mainActivity.id}-${group.mainActivity.type}-${index}`}
                                                     data-testid="feed-item"
                                                     data-test-view-article
                                                 >
                                                     <FeedItem
-                                                        actor={activity.actor}
-                                                        allowDelete={activity.object.authored}
-                                                        commentCount={activity.object.replyCount ?? 0}
+                                                        actor={group.mainActivity.object.attributedTo || group.mainActivity.actor}
+                                                        allowDelete={group.mainActivity.object.authored}
+                                                        commentCount={group.mainActivity.object.replyCount ?? 0}
                                                         isLoading={isLoading}
-                                                        isPending={isPendingActivity(activity.id)}
+                                                        isPending={isPendingActivity(group.mainActivity.id)}
                                                         layout={'feed'}
-                                                        likeCount={activity.object.likeCount ?? 0}
-                                                        object={activity.object}
-                                                        repostCount={activity.object.repostCount ?? 0}
-                                                        type={activity.type}
+                                                        likeCount={group.mainActivity.object.likeCount ?? 0}
+                                                        object={group.mainActivity.object}
+                                                        repostCount={group.mainActivity.object.repostCount ?? 0}
+                                                        reposts={group.reposts}
+                                                        type={group.reposts.length > 0 ? 'Create' : group.mainActivity.type}
                                                         onClick={() => {
-                                                            navigate(`/notes/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/notes/${encodeURIComponent(group.mainActivity.id)}`);
                                                         }}
                                                     />
-                                                    {index < activities.length - 1 && (
+                                                    {index < consolidatedActivities.length - 1 && (
                                                         <Separator />
                                                     )}
                                                     {index === 3 && (
