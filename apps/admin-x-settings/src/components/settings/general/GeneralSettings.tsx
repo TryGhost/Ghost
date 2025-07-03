@@ -5,6 +5,7 @@ import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
+import SEOMeta from './SEOMeta';
 import SearchableSection from '../../SearchableSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
@@ -63,7 +64,9 @@ const GeneralSettings: React.FC = () => {
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
             <Users keywords={searchKeywords.users} />
-            <Metadata keywords={searchKeywords.metadata} />
+            <SEOMeta keywords={searchKeywords.metadata} />
+            <Twitter keywords={searchKeywords5x.twitter} />
+            <Facebook keywords={searchKeywords5x.facebook} />
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <Analytics keywords={searchKeywords.analytics} />
             <LockSite keywords={searchKeywords.lockSite} />
