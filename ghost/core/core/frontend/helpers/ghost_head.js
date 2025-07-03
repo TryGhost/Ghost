@@ -58,7 +58,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
-        if (!scriptUrl) {
+        if (!scriptUrl || scriptUrl === 'false') {
             return '';
         }
         
