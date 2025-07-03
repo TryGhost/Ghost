@@ -7,6 +7,7 @@ export default class GhMigrateIframe extends Component {
     @service router;
     @service feature;
     @service notifications;
+    @service billing;
 
     willDestroy() {
         super.willDestroy(...arguments);
@@ -56,6 +57,7 @@ export default class GhMigrateIframe extends Component {
 
     async _handleUrlRequest() {
         const theToken = await this.migrate.apiToken();
+        const theOwner = await this.billing.getOwnerUser();
 
         this.migrate.getMigrateIframe().contentWindow.postMessage({
             request: 'initialData',
@@ -64,7 +66,8 @@ export default class GhMigrateIframe extends Component {
                 apiToken: theToken,
                 darkMode: this.feature.nightShift,
                 stripe: this.migrate.isStripeConnected,
-                ghostVersion: this.migrate.ghostVersion
+                ghostVersion: this.migrate.ghostVersion,
+                ownerEmail: theOwner.email
             }
         }, new URL(this.migrate.getIframeURL()).origin);
     }

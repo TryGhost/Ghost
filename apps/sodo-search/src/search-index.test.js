@@ -8,15 +8,15 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         const scope = nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: []
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: []
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: []
             });
@@ -38,7 +38,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -47,7 +47,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -63,7 +63,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
@@ -115,7 +115,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -130,7 +130,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/awesome-barcelona-life2/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -146,7 +146,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
@@ -191,7 +191,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -212,7 +212,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/a-post-in-chinese/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -228,7 +228,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',
@@ -272,7 +272,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'post',
@@ -281,7 +281,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/khdshvt-nyv-yvrq/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'author',
@@ -290,7 +290,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/svpr/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: [{
                     id: 'tag',
@@ -344,7 +344,7 @@ describe('search index', function () {
         const searchIndex = new SearchIndex({adminUrl, apiKey, dir: 'ltr', storage: localStorage});
 
         nock('http://localhost:3000/ghost/api/content')
-            .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+            .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 posts: [{
                     id: 'sounique',
@@ -365,7 +365,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/some-other-hash/'
                 }]
             })
-            .get('/authors/?key=69010382388f9de5869ad6e558&limit=10000&fields=id,slug,name,url,profile_image&order=updated_at%20DESC')
+            .get('/search-index/authors/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 authors: [{
                     id: 'different_uniq',
@@ -381,7 +381,7 @@ describe('search index', function () {
                     url: 'http://localhost/ghost/authors/bob/'
                 }]
             })
-            .get('/tags/?key=69010382388f9de5869ad6e558&&limit=10000&fields=id,slug,name,url&order=updated_at%20DESC&filter=visibility%3Apublic')
+            .get('/search-index/tags/?key=69010382388f9de5869ad6e558')
             .reply(200, {
                 tags: [{
                     id: 'uniq_tag',

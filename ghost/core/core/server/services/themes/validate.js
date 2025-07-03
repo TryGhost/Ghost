@@ -48,7 +48,8 @@ const check = async function check(themeName, theme, options = {}) {
     debug('Begin: Check');
     // gscan can slow down boot time if we require on boot, for now nest the require.
     const gscan = require('gscan');
-    const checkedVersion = 'v5';
+    const ghostVersion = require('@tryghost/version');
+    const checkedVersion = `v${ghostVersion.safe.split('.')[0]}`;
     let checkedTheme;
 
     if (options.isZip === true) {

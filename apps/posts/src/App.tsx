@@ -41,7 +41,7 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
         >
             <PostsAppContext.Provider value={appContextValue}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                    <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                    <ShadeApp className="shade-posts" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                         <Outlet />
                     </ShadeApp>
                 </RouterProvider>

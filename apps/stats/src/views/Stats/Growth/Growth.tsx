@@ -6,7 +6,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, Tabs, TabsList, TabsTrigger, centsToDollars, formatDisplayDate, formatNumber} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentTitle, getGrowthContentDescription} from '@src/utils/content-helpers';
 import {getClickHandler} from '@src/utils/url-helpers';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -50,7 +50,7 @@ const Growth: React.FC = () => {
     const initialTab = searchParams.get('tab') || 'total-members';
 
     // Get stats from custom hook once
-    const {isLoading, chartData, totals, currencySymbol} = useGrowthStats(range);
+    const {isLoading, chartData, totals, currencySymbol, subscriptionData} = useGrowthStats(range);
 
     // Get growth data with post_type filtering - only call when not on Sources tab
     const {data: topPostsData} = useTopPostsStatsWithRange(
@@ -134,6 +134,7 @@ const Growth: React.FC = () => {
                             currencySymbol={currencySymbol}
                             initialTab={initialTab}
                             isLoading={isPageLoading}
+                            subscriptionData={subscriptionData}
                             totals={totals}
                         />
                     </CardContent>
@@ -205,7 +206,23 @@ const Growth: React.FC = () => {
                                     />
                                     :
                                     <TableBody>
-                                        {transformedTopPosts.length > 0 ? (
+                                        {!appSettings?.analytics.membersTrackSources ? (
+                                            <TableRow className='last:border-none'>
+                                                <TableCell className='border-none py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
+                                                    <EmptyIndicator
+                                                        actions={
+                                                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                                                Open settings
+                                                            </Button>
+                                                        }
+                                                        description='Enable member source tracking in settings to see which content drives member growth.'
+                                                        title='Member sources have been disabled'
+                                                    >
+                                                        <LucideIcon.Activity />
+                                                    </EmptyIndicator>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : transformedTopPosts.length > 0 ? (
                                             transformedTopPosts.map((post, index) => (
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
@@ -245,23 +262,14 @@ const Growth: React.FC = () => {
                                                 </TableRow>
                                             ))
                                         ) : (
-                                            <TableRow>
+                                            <TableRow className='border-none'>
                                                 <TableCell className='py-12 group-hover:!bg-transparent' colSpan={appSettings?.paidMembersEnabled ? 4 : 2}>
-                                                    <div className='flex flex-col items-center justify-center space-y-3 text-center'>
-                                                        <div className='flex size-12 items-center justify-center rounded-full bg-muted'>
-                                                            <svg className='size-6 text-muted-foreground' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                                                                <path d='M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z' strokeLinecap='round' strokeLinejoin='round' strokeWidth={1.5} />
-                                                            </svg>
-                                                        </div>
-                                                        <div className='space-y-1'>
-                                                            <h3 className='text-sm font-medium text-foreground'>
-                                                                No conversions {selectedContentType === CONTENT_TYPES.PAGES ? 'on pages' : selectedContentType === CONTENT_TYPES.POSTS ? 'on posts' : ''} {getPeriodText(range).toLowerCase()}
-                                                            </h3>
-                                                            <p className='text-sm text-muted-foreground'>
-                                                                Try adjusting your date range to see more data.
-                                                            </p>
-                                                        </div>
-                                                    </div>
+                                                    <EmptyIndicator
+                                                        description='Try adjusting your date range to see more data.'
+                                                        title={`No conversions ${getPeriodText(range)}`}
+                                                    >
+                                                        <LucideIcon.ChartColumnIncreasing strokeWidth={1.5} />
+                                                    </EmptyIndicator>
                                                 </TableCell>
                                             </TableRow>
                                         )}

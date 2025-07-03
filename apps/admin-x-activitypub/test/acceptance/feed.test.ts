@@ -13,7 +13,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             getActivityPubUser: {
@@ -49,7 +49,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed to load
         const feedList = page.getByRole('list');
@@ -86,12 +86,12 @@ test.describe('Feed', async () => {
         await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -118,7 +118,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             likePost: {
@@ -128,7 +128,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -165,7 +165,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             repostPost: {
@@ -175,7 +175,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');
@@ -207,7 +207,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed',
+                path: '/feed/notes',
                 response: feedFixture
             },
             getPost: {
@@ -247,7 +247,7 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/feed');
+        await page.goto('#/notes');
 
         // Wait for the feed list to be visible
         const feedList = page.getByTestId('feed-list');

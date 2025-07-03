@@ -168,9 +168,16 @@ describe('ghost-stats.js', function () {
     });
 
     describe('GhostStats Configuration', function () {
-        it('should initialize with required configuration', function () {
+        it('should initialize with host and token', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
             mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            expect(ghostStats.initConfig()).to.be.true;
+        });
+
+        it('should initialize with host and no token', function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
             
             expect(ghostStats.initConfig()).to.be.true;
         });
@@ -341,6 +348,19 @@ describe('ghost-stats.js', function () {
             expect(innerPayload.locale).to.be.a('string');
             expect(innerPayload.location).to.be.a('string');
             expect(innerPayload.site_uuid).to.be.a('string');
+            expect(innerPayload.event_id).to.be.a('string');
+        });
+
+        it('should handle missing token gracefully', async function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
+            ghostStats.initConfig();
+            await ghostStats.trackEvent('test', {});
+
+            expect(mockFetch.calledOnce).to.be.true;
+            
+            // Verify request structure
+            const [url] = mockFetch.firstCall.args;
+            expect(url).to.equal('https://test.com?name=analytics_events');
         });
     });
 
@@ -478,6 +498,20 @@ describe('ghost-stats.js', function () {
             // Test the global API works
             mockWindow.Tinybird.trackEvent('test', {data: 'value'});
             expect(mockFetch.calledOnce).to.be.true;
+        });
+    });
+
+    describe('GhostStats UUID Generation', function () {
+        it('should generate a valid UUID', function () {
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        });
+
+        it('should generate a valid UUID with fallback', function () {
+            mockWindow.crypto = undefined;
+
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
     });
 });

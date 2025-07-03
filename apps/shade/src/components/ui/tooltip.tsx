@@ -2,6 +2,7 @@ import * as React from 'react';
 import * as TooltipPrimitive from '@radix-ui/react-tooltip';
 
 import {cn} from '@/lib/utils';
+import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
 
 const TooltipProvider = TooltipPrimitive.Provider;
 
@@ -14,7 +15,7 @@ const TooltipContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof TooltipPrimitive.Content>
 >(({className, sideOffset = 4, ...props}, ref) => (
     <TooltipPrimitive.Portal>
-        <div className='shade'>
+        <div className={SHADE_APP_NAMESPACES}>
             <TooltipPrimitive.Content
                 ref={ref}
                 className={cn(

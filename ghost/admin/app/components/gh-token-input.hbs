@@ -57,7 +57,9 @@
     as |option|
 >
     {{#if option.__isSuggestion__}}
-        <GhTokenInput::SuggestedOption @option={{option}} />
+        {{#unless this.searchAndSuggestTask.isRunning}}
+            <GhTokenInput::SuggestedOption @option={{option}} />
+        {{/unless}}
     {{else}}
         {{#if (has-block)}}
             {{yield option}}

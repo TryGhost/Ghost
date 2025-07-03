@@ -12,7 +12,6 @@ export const SEARCHABLES = [
     {
         name: 'Staff',
         model: 'user',
-        fields: ['id', 'slug', 'url', 'name', 'profile_image'],
         pathField: 'slug',
         titleField: 'name',
         index: ['name']
@@ -20,7 +19,6 @@ export const SEARCHABLES = [
     {
         name: 'Tags',
         model: 'tag',
-        fields: ['id', 'slug', 'url', 'name'],
         pathField: 'slug',
         titleField: 'name',
         index: ['name']
@@ -28,8 +26,6 @@ export const SEARCHABLES = [
     {
         name: 'Posts',
         model: 'post',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
-        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
         pathField: 'id',
         titleField: 'title',
         index: ['title']
@@ -37,8 +33,6 @@ export const SEARCHABLES = [
     {
         name: 'Pages',
         model: 'page',
-        fields: ['id', 'url', 'title', 'status', 'published_at', 'visibility'],
-        order: 'updated_at desc', // ensure we use a simple rather than default order for faster response
         pathField: 'id',
         titleField: 'title',
         index: ['title']
@@ -48,7 +42,7 @@ export const SEARCHABLES = [
 export default class SearchProviderFlexService extends Service {
     @service ajax;
     @service notifications;
-    @service store;
+    @service ghostPaths;
 
     indexes = SEARCHABLES.reduce((indexes, searchable) => {
         indexes[searchable.model] = new Document({
@@ -119,8 +113,8 @@ export default class SearchProviderFlexService extends Service {
     }
 
     async #loadSearchable(searchable) {
-        const url = `${this.store.adapterFor(searchable.model).urlForQuery({}, searchable.model)}/`;
-        const query = {fields: searchable.fields, limit: 10000, order: searchable.order};
+        const url = this.ghostPaths.url.api(`search-index/${pluralize(searchable.model)}`);
+        const query = {};
 
         try {
             const response = await this.ajax.request(url, {data: query});

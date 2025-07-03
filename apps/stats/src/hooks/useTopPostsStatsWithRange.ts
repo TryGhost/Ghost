@@ -1,4 +1,4 @@
-import {getRangeDates} from './useGrowthStats';
+import {formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {useMemo} from 'react';
 import {useTopPostsStats} from '@tryghost/admin-x-framework/api/stats';
 
@@ -24,13 +24,13 @@ export const useTopPostsStatsWithRange = (range?: number, order?: TopPostsOrder,
     const currentOrder = order ?? 'mrr desc'; // Default to MRR descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {dateFrom, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
 
     // Construct searchParams including the order and post_type parameters
     const searchParams = useMemo(() => {
         const params: Record<string, string> = {
-            date_from: dateFrom,
-            date_to: endDate,
+            date_from: formatQueryDate(startDate),
+            date_to: formatQueryDate(endDate),
             order: currentOrder
         };
 
@@ -43,7 +43,7 @@ export const useTopPostsStatsWithRange = (range?: number, order?: TopPostsOrder,
         // For 'posts_and_pages' or undefined, don't add post_type filter to get both
 
         return params;
-    }, [dateFrom, endDate, currentOrder, contentType]);
+    }, [startDate, endDate, currentOrder, contentType]);
 
     // Call the original hook passing searchParams within an options object
     // Filter out undefined values (although not expected for these params)

@@ -67,7 +67,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
 
         const currentRoute = this.router.currentRouteName || '';
         // Fetch notifications count if not on activitypub-x route
-        if (!currentRoute.startsWith('activitypub-x')) {
+        if (this.settings.socialWebEnabled && !currentRoute.startsWith('activitypub-x')) {
             this.notificationsCount.fetchCount();
         }
 
@@ -75,7 +75,7 @@ export default class Main extends Component.extend(ShortcutsMixin) {
             const current = this.router.currentRouteName || '';
             const prev = this.previousRoute || '';
 
-            if (prev.startsWith('activitypub-x') && !current.startsWith('activitypub-x')) {
+            if (this.settings.socialWebEnabled && prev.startsWith('activitypub-x') && !current.startsWith('activitypub-x')) {
                 this.notificationsCount.fetchCount();
             }
 

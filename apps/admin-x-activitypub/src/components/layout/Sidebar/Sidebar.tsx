@@ -48,13 +48,13 @@ const Sidebar: React.FC = () => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='/inbox'>
-                            <LucideIcon.Inbox size={18} strokeWidth={1.5} />
-                            Inbox
+                        <SidebarMenuLink to='/reader'>
+                            <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
+                            Reader
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/feed'>
-                            <LucideIcon.Hash size={18} strokeWidth={1.5} />
-                            Feed
+                        <SidebarMenuLink to='/notes'>
+                            <LucideIcon.MessageCircle size={18} strokeWidth={1.5} />
+                            Notes
                         </SidebarMenuLink>
                         <SidebarMenuLink
                             count={location.pathname !== '/notifications' ? notificationsCount : undefined}

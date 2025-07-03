@@ -45,6 +45,7 @@ module.exports = function apiRoutes() {
     router.get('/comments/:id', mw.authAdminApi, http(api.commentReplies.read));
     router.get('/comments/:id/replies', mw.authAdminApi, http(api.commentReplies.browse));
     router.get('/comments/post/:post_id', mw.authAdminApi, http(api.comments.browse));
+    router.post('/comments', mw.authAdminApi, http(api.comments.add));
     router.put('/comments/:id', mw.authAdminApi, http(api.comments.edit));
 
     // ## Pages
@@ -242,6 +243,9 @@ module.exports = function apiRoutes() {
     // ## Slack
     router.post('/slack/test', mw.authAdminApi, http(api.slack.sendTest));
 
+    // ## Tinybird
+    router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
+
     // ## Sessions
     router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
@@ -374,6 +378,12 @@ module.exports = function apiRoutes() {
 
     // Feedback
     router.get('/feedback/:id', mw.authAdminApi, http(api.feedbackMembers.browse));
+
+    // Search index
+    router.get('/search-index/posts', mw.authAdminApi, http(api.searchIndex.fetchPosts));
+    router.get('/search-index/pages', mw.authAdminApi, http(api.searchIndex.fetchPages));
+    router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
+    router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
 
     return router;
 };

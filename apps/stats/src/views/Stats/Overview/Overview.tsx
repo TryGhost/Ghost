@@ -6,14 +6,13 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopPosts from './components/TopPosts';
-import {GhAreaChartDataItem, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {GhAreaChartDataItem, H3, LucideIcon, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
 import {getAudienceQueryParam} from '../components/AudienceSelect';
-import {getStatEndpointUrl, getToken} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 import {useGrowthStats} from '@src/hooks/useGrowthStats';
 import {useLatestPostStats} from '@src/hooks/useLatestPostStats';
-import {useQuery} from '@tinybirdco/charts';
+import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
@@ -33,7 +32,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 }) => {
     return (
         <a className={cn(
-            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent group/card',
+            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent/50 group/card',
             className
         )} href={url} rel='noreferrer' target='_blank'>
             <div className='flex items-center gap-6'>
@@ -65,8 +64,7 @@ type GrowthChartDataItem = {
 
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
-    const {statsConfig, isLoading: isConfigLoading} = useGlobalData();
-    const {range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -89,9 +87,9 @@ const Overview: React.FC = () => {
         member_status: getAudienceQueryParam(audience)
     };
 
-    const {data: visitorsData, loading: isVisitorsLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data: visitorsData, loading: isVisitorsLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig,
         params: visitorsParams
     });
 
@@ -107,7 +105,24 @@ const Overview: React.FC = () => {
             };
         });
     }, [visitorsData, range]);
-    const visitorsYRange: [number, number] = [0, Math.max(...(visitorsChartData?.map((item: GhAreaChartDataItem) => item.value) || [0]))];
+    const visitorsYRange: [number, number] = useMemo(() => {
+        const defaultRange: [number, number] = [0, 1];
+        if (!visitorsChartData || visitorsChartData.length === 0) {
+            return defaultRange; // Default range when no data
+        }
+
+        // Extract values and filter out negative values
+        const values = visitorsChartData
+            .map((item: GhAreaChartDataItem) => item.value)
+            .filter((value: number) => value >= 0); // Only keep non-negative values
+
+        if (values.length === 0) {
+            return defaultRange; // Default range if no valid values
+        }
+
+        const maxValue = Math.max(...values);
+        return [0, maxValue || defaultRange[1]]; // Use 10 as minimum if maxValue is 0
+    }, [visitorsChartData]);
 
     /* Get members
     /* ---------------------------------------------------------------------- */
@@ -180,7 +195,7 @@ const Overview: React.FC = () => {
     return (
         <StatsLayout>
             <StatsHeader>
-                <DateRangeSelect />
+                <DateRangeSelect excludeRanges={['today']} />
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
                 <OverviewKPIs
@@ -201,25 +216,25 @@ const Overview: React.FC = () => {
                     isLoading={isTopPostsLoading}
                     topPostsData={topPostsData}
                 />
-                {/* <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
+                <div className='grid grid-cols-1 gap-8 lg:grid-cols-2'>
                     <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
                         title='Understanding analytics in Ghost'
                         url='https://ghost.org/help/post-analytics/'>
-                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
-                            <LucideIcon.ChartColumnIncreasing className='text-muted-foreground' size={40} strokeWidth={1} />
+                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                            <LucideIcon.ChartColumnIncreasing className='text-[#00BBA7]' size={20} strokeWidth={1.5} />
                         </div>
                     </HelpCard>
                     <HelpCard
                         description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
                         title='How to get your content seen online'
                         url='https://ghost.org/resources/content-distribution/'>
-                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-r from-muted-foreground/15 to-muted-foreground/10 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
-                            <LucideIcon.Sprout className='text-muted-foreground' size={40} strokeWidth={1} />
+                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                            <LucideIcon.Globe className='text-[#FE9A00]' size={20} strokeWidth={1.5} />
                         </div>
                     </HelpCard>
-                </div> */}
+                </div>
             </StatsView>
         </StatsLayout>
     );

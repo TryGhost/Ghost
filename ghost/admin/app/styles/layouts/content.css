@@ -214,7 +214,7 @@
     z-index: 10;
 }
 
-.gh-posts-list-item-group:after {
+.gh-posts-list-item-group:before {
     opacity: 0;
     display: block;
     position: absolute;
@@ -232,7 +232,7 @@
     display: none !important;
 }
 
-.gh-posts-list-item-group:hover:after {
+.gh-posts-list-item-group:hover:before {
     opacity: 1;
 }
 
@@ -249,12 +249,12 @@
     border-color: transparent;
 }
 
-.posts-list[data-ctrl] .gh-posts-list-item-group:hover::after {
+.posts-list[data-ctrl] .gh-posts-list-item-group:hover::before {
     opacity: 0.05;
     background: #6E78E5;
 }
 
-.gh-posts-list-item-group[data-selected]::after {
+.gh-posts-list-item-group[data-selected]::before {
     opacity: 0.1 !important;
     background: #6E78E5;
 }
@@ -368,6 +368,69 @@
     margin-left: 6px;
     opacity: 0;
 }
+
+.gh-post-with-feature-image {
+    display: flex !important;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.gh-post-list-feature-image {
+    flex-shrink: 0;
+    background-color: #F8F8FA;
+    width: 100px;
+    aspect-ratio: 16/10;
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    background-size: cover;
+    background-position: center;
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-feature-image {
+    background-color: var(--whitegrey-l1);
+}
+
+.gh-post-list-feature-image-placeholder {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    opacity: 0.5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--midgrey);
+}
+
+.gh-post-list-feature-image-placeholder svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* .gh-post-list-feature-image-placeholder:before,
+.gh-post-list-feature-image-placeholder:after {
+    position: absolute;
+    display: block;
+    content: "";
+    height: 3px;
+    left: 0;
+    background-color: var(--lightgrey);
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-feature-image-placeholder {
+    opacity: 1.0;
+}
+
+.gh-post-list-feature-image-placeholder:before {
+    top: 8px;
+    right: 12px;
+}
+
+.gh-post-list-feature-image-placeholder:after {
+    top: 16px;
+    right: 8px;
+} */
 
 .gh-post-list-external path {
     fill: var(--midgrey);
@@ -592,6 +655,11 @@
         padding-right: 12px;
     }
 
+    .gh-post-list-analytics .gh-post-list-status,
+    .gh-post-list-analytics .gh-post-list-metrics {
+        padding-left: 0px;
+    }
+
     .feature-memberAttribution .gh-posts-signups-header,
     .feature-memberAttribution .gh-posts-conversions-header,
     .feature-memberAttribution .gh-posts-sends-header {
@@ -622,6 +690,10 @@
 
     .gh-posts-list-item .gh-post-list-metrics {
         width: 0;
+    }
+
+    .gh-post-list-analytics .gh-post-list-metrics-container {
+        display: none;
     }
 
     .gh-posts-list-item .gh-post-list-metrics > * {
@@ -2221,6 +2293,11 @@ span.dropdown .gh-post-list-cta > span {
     grid-template-rows: auto auto;
 }
 
+.gh-list-analytics-icon {
+    width: 16px;
+    height: 16px;
+}
+
 .gh-post-list-button {
     flex: 0 0 auto;
 }
@@ -2431,4 +2508,144 @@ span.dropdown .gh-post-list-cta > span {
         grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
         gap: 8px;
     }
+}
+
+/* Post list with analytics */
+.gh-posts-list-item-group .gh-list-row.gh-post-list-analytics .gh-list-data:not(.gh-post-list-title) {
+    display: flex;
+    align-items: center;
+}
+
+.gh-post-list-analytics-right {
+    display: flex;
+    align-items: center;
+}
+
+.gh-post-list-analytics-metric {
+    display: flex;
+    gap: 5px;
+    align-items: center;
+    color: var(--midgrey);
+    padding: 3px 8px;
+    border-radius: 5px;
+}
+
+.gh-post-list-analytics-metric:hover {
+    background-color: var(--whitegrey);
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-analytics-metric {
+    color: var(--black) !important;
+}
+
+.gh-list .gh-post-list-analytics .gh-content-entry-title {
+    font-size: 1.5rem;
+}
+
+.gh-post-list-analytics .gh-content-email-stats-value {
+    font-size: 1.3rem;
+    font-weight: 500;
+    margin: 0;
+    color: var(--middarkgrey);
+    font-family: var(--font-family-mono);
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-analytics .gh-content-email-stats-value {
+    color: var(--black);
+}
+
+.gh-post-list-analytics .gh-post-list-metrics {
+    width: 92px;
+}
+
+.gh-post-list-analytics-tt-container {
+    position: relative;
+}
+
+.gh-post-list-analytics-tooltip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(calc(-50%));
+    background: var(--white);
+    padding: 12px;
+    border-radius: 7px;
+    transition: all 0.2s ease;
+    opacity: 0;
+    pointer-events: none;
+    font-size: 1.3rem;
+    min-width: 160px;
+    z-index: 9999;
+    box-shadow: 0px 0px 1px 0px rgba(0, 0, 0, 0.28), 0px 100px 80px 0px rgba(0, 0, 0, 0.01), 0px 41.778px 33.422px 0px rgba(0, 0, 0, 0.02), 0px 22.336px 17.869px 0px rgba(0, 0, 0, 0.02), 0px 12.522px 10.017px 0px rgba(0, 0, 0, 0.02), 0px 6.65px 5.32px 0px rgba(0, 0, 0, 0.03), 0px 2.767px 2.214px 0px rgba(0, 0, 0, 0.04);
+}
+
+/* Above positioning (default) */
+.gh-post-list-analytics-tooltip.above {
+    bottom: calc(100% - 10px);
+}
+
+.gh-post-list-analytics-tt-container:hover .gh-post-list-analytics-tooltip.above {
+    bottom: calc(100% - 2px);
+    opacity: 1.0;
+}
+
+/* Below positioning */
+.gh-post-list-analytics-tooltip.below {
+    top: calc(100%);
+}
+
+.gh-post-list-analytics-tt-container:hover .gh-post-list-analytics-tooltip.below {
+    top: calc(100% - 8px);
+    opacity: 1.0;
+}
+
+.gh-post-list-analytics-tooltip h3 {
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: var(--middarkgrey);
+    padding-bottom: 10px;
+    padding-right: 20px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid var(--whitegrey);
+    white-space: nowrap;
+}
+
+.gh-post-list-analytics-tooltip .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.gh-post-list-analytics-tooltip .metric {
+    height: 20px;
+    display: flex;
+    justify-content: space-between;
+}
+
+.gh-post-list-analytics-tooltip .metric .data {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.gh-post-list-analytics-tooltip .metric svg {
+    width: 16px;
+    height: 16px;
+    color: var(--midgrey);
+}
+
+.gh-post-list-analytics-tooltip .metric span {
+    font-family: var(--font-family-mono);
+}
+
+.gh-post-analytics-email-metrics {
+    display: flex;
+    align-items: center;
+}
+
+.gh-post-list-analytics {
+    z-index: unset;
+}
+
+.gh-post-list-analytics > * {
+    z-index: unset;
 }

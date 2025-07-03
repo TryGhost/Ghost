@@ -1,99 +1,127 @@
+import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {createTestWrapper, setupStatsAppMocks} from '../../utils/test-helpers';
+import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
 import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@src/hooks/useTopPostsStatsWithRange';
 
-// Mock the dependencies
-vi.mock('@src/hooks/useGrowthStats', () => ({
-    getRangeDates: vi.fn((range: number) => ({
-        dateFrom: `2024-01-${String(31 - range).padStart(2, '0')}`,
-        endDate: '2024-01-31'
-    }))
-}));
-
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@src/providers/GlobalDataProvider');
+vi.mock('@tryghost/shade', () => ({
+    formatQueryDate: vi.fn(),
+    getRangeDates: vi.fn()
+}));
 
 const mockUseTopPostsStats = vi.mocked(await import('@tryghost/admin-x-framework/api/stats')).useTopPostsStats;
+const {formatQueryDate, getRangeDates} = await import('@tryghost/shade');
+const mockFormatQueryDate = vi.mocked(formatQueryDate);
+const mockGetRangeDates = vi.mocked(getRangeDates);
 
 describe('useTopPostsStatsWithRange', () => {
     let mocks: ReturnType<typeof setupStatsAppMocks>;
+    let dateMocking: ReturnType<typeof setupDateMocking>;
 
     beforeEach(() => {
         vi.clearAllMocks();
         mocks = setupStatsAppMocks();
+        dateMocking = setupDateMocking();
+        
+        // Mock the date functions with consistent behavior
+        mockGetRangeDates.mockImplementation((range: number) => {
+            const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
+            return {
+                startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
+                endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+                timezone: 'UTC'
+            };
+        });
+        
+        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
         
         // Apply the mocks to the actual imported modules
         mockUseTopPostsStats.mockImplementation(mocks.mockUseTopPostsStats);
     });
 
+    afterEach(function () {
+        dateMocking.cleanup();
+    });
+
     it('uses default range of 30 days when no range provided', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(), {wrapper});
+        
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
     });
 
     it('uses default order of "mrr desc" when no order provided', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(7), {wrapper});
+        
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(7);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-24',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
     });
 
     it('accepts custom range parameter', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(14), {wrapper});
+        
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(14);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-17',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'mrr desc'
             }
         });
     });
 
     it('accepts custom order parameter', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(30, 'free_members desc'), {wrapper});
+        
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'free_members desc'
             }
         });
     });
 
     it('accepts paid_members desc order', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(30, 'paid_members desc'), {wrapper});
+        
+        const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(30);
         
         expect(mockUseTopPostsStats).toHaveBeenCalledWith({
             searchParams: {
-                date_from: '2024-01-01',
-                date_to: '2024-01-31',
+                date_from: expectedDateFrom,
+                date_to: expectedDateTo,
                 order: 'paid_members desc'
             }
         });
     });
 
     it('filters out undefined values from search params', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         renderHook(() => useTopPostsStatsWithRange(7, 'mrr desc'), {wrapper});
         
         const calledWith = mockUseTopPostsStats.mock.calls[0]?.[0];
@@ -110,7 +138,7 @@ describe('useTopPostsStatsWithRange', () => {
     });
 
     it('returns the result from useTopPostsStats', () => {
-        const wrapper = createTestWrapper();
+        const wrapper = TestWrapper;
         const {result} = renderHook(() => useTopPostsStatsWithRange(), {wrapper});
         
         // Just verify that the hook returns something (the mocked result)

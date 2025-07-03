@@ -6,9 +6,10 @@ const logging = require('@tryghost/logging');
  * @param {object} deps.config - Ghost configuration
  * @param {object} deps.request - HTTP request client
  * @param {object} deps.settingsCache - Settings cache client
+ * @param {object} deps.tinybirdService - Tinybird service client
  * @returns {Object} Tinybird client with methods
  */
-const create = ({config, request, settingsCache}) => {
+const create = ({config, request, settingsCache, tinybirdService}) => {
     /**
      * Builds a Tinybird API request
      * @param {string} pipeName - The name of the Tinybird pipe to query
@@ -29,7 +30,8 @@ const create = ({config, request, settingsCache}) => {
         const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
         const localEnabled = statsConfig?.local?.enabled ?? false;
         const endpoint = localEnabled ? statsConfig.local.endpoint : statsConfig.endpoint;
-        const token = localEnabled ? statsConfig.local.token : statsConfig.token;
+        const tokenData = tinybirdService.getToken();
+        const token = tokenData?.token;
 
         // Use tbVersion if provided for constructing the URL
         const pipeUrl = (options.tbVersion && !localEnabled) ? 

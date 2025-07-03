@@ -18,7 +18,7 @@ const App: React.FC<BaseAppProps> = ({framework, designSystem, appSettings}) => 
             <AppProvider appSettings={appSettings}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
                     <GlobalDataProvider>
-                        <ShadeApp darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                        <ShadeApp className="shade-stats" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
                             <Outlet />
                         </ShadeApp>
                     </GlobalDataProvider>

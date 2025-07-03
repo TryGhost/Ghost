@@ -1,7 +1,9 @@
 import Route from '@ember/routing/route';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class HomeRoute extends Route {
+    @inject config;
     @service feature;
     @service modals;
     @service router;
@@ -15,10 +17,21 @@ export default class HomeRoute extends Route {
             return this.router.transitionTo('setup.done');
         }
 
-        if (this.settings.socialWebEnabled && this.session.user.isAdmin) {
+        // Redirect to Analytics if trafficAnalytics is enabled and user has access
+        if (this.config.stats && this.feature.trafficAnalytics && this.session.user?.isAdmin) {
+            return this.router.transitionTo('stats-x');
+        }
+
+        if (this.settings.socialWebEnabled && this.session.user?.isAdmin) {
             this.router.transitionTo('activitypub-x');
         } else {
-            this.router.transitionTo('dashboard');
+            // stats-x currently redirects back to home if analytics is not enabled
+            // we need to check that here to avoid an infinite loop
+            if (this.config.labs?.ui60 && (this.config.stats && this.feature.trafficAnalytics)) {
+                this.router.transitionTo('stats-x');
+            } else {
+                this.router.transitionTo('dashboard');
+            }
         }
     }
 

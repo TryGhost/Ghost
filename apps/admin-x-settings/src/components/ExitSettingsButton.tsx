@@ -6,11 +6,15 @@ import {useGlobalData} from './providers/GlobalDataProvider';
 
 const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
-    const {settings, currentUser} = useGlobalData();
+    const {settings, currentUser, config} = useGlobalData();
     const [hasActivityPub] = getSettingValues(settings, ['social_web_enabled']) as [boolean];
 
     const navigateAway = () => {
-        window.location.hash = (hasActivityPub && hasAdminAccess(currentUser)) ? '/activitypub' : '/dashboard';
+        if (config.labs.ui60) {
+            window.location.hash = '/analytics';
+        } else {
+            window.location.hash = (hasActivityPub && hasAdminAccess(currentUser)) ? '/activitypub' : '/dashboard';
+        }
     };
 
     return (

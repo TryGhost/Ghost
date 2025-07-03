@@ -64,12 +64,14 @@ const notImplemented = function notImplemented(req, res, next) {
         schedules: ['PUT'],
         files: ['POST'],
         media: ['POST'],
-        db: ['POST'],
+        db: ['GET', 'POST'],
         settings: ['GET'],
-        oembed: ['GET']
+        comments: ['GET', 'POST', 'PUT'],
+        oembed: ['GET'],
+        'search-index': ['GET']
     };
 
-    const match = req.url.match(/^\/(\w+)\/?/);
+    const match = req.url.match(/^\/([^/?]+)\/?/);
 
     if (match) {
         const entity = match[1];

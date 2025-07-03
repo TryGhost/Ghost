@@ -139,5 +139,13 @@ module.exports = {
 
     get mail_events() {
         return require('./mail-events');
+    },
+
+    get search_index() {
+        return require('./search-index');
+    },
+
+    get tinybird() {
+        return require('./tinybird');
     }
 };

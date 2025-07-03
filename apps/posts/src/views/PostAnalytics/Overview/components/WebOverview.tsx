@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/Sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
@@ -93,9 +93,13 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :
-                                <div className='py-10 text-center text-sm text-muted-foreground'>
-                                    No data available.
-                                </div>
+                                <EmptyIndicator
+                                    className='h-full py-10'
+                                    description='Once someone visits this post, sources will show here'
+                                    title={`No visitors since you published this post`}
+                                >
+                                    <LucideIcon.Globe strokeWidth={1.5} />
+                                </EmptyIndicator>
                             }
                         </div>
                     }

@@ -19,7 +19,14 @@
                     <div class="gh-list-header gh-list-cellwidth-10">No. of posts</div>
                     <div class="gh-list-header gh-list-cellwidth-10"></div>
                 </li>
-                <VerticalCollection @items={{this.sortedTags}} @key="id" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |tag|>
+                <VerticalCollection
+                    @items={{this.sortedTags}}
+                    @key="id"
+                    @containerSelector=".gh-main"
+                    @estimateHeight={{60}}
+                    @bufferSize={{20}}
+                    @lastReached={{this.loadMoreTags}}
+                as |tag|>
                     <Tags::ListItem @tag={{tag}} data-test-tag={{tag.id}} />
                 </VerticalCollection>
             {{else}}
