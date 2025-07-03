@@ -177,7 +177,7 @@ const Growth: React.FC = () => {
                                                 Free members
                                                 </SortButton>
                                                 :
-                                                <>Free members</>
+                                                <>Members</>
                                             }
                                         </TableHead>
                                         {appSettings?.paidMembersEnabled &&
