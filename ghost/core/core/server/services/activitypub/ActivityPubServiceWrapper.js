@@ -42,6 +42,13 @@ module.exports = class ActivityPubServiceWrapper {
                     ActivityPubServiceWrapper.initialised = true;
                 }
             });
+
+            events.on('settings.social_web.edited', async () => {
+                if (settingsCache.get('social_web_enabled') && !ActivityPubServiceWrapper.initialised) {
+                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
+                    ActivityPubServiceWrapper.initialised = true;
+                }
+            });
         }
     }
 };
