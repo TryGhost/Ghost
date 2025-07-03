@@ -1347,7 +1347,7 @@ describe('{{ghost_head}} helper', function () {
                     context: ['home', 'index'],
                     safeVersion: '4.3'
                 }
-            })
+            });
             const rendered = (await ghost_head(options)).toString();
             should({rendered}).matchSnapshot();
             rendered.should.match(/<script[^>]*src="https:\/\/portal\.ghost\.org"[^>]*data-ghost=[^>]*>/);
