@@ -3,6 +3,7 @@ import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu';
 import {Check, ChevronRight, Circle} from 'lucide-react';
 
 import {cn} from '@/lib/utils';
+import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
 
 const DropdownMenu = DropdownMenuPrimitive.Root;
 
@@ -42,7 +43,7 @@ const DropdownMenuSubContent = React.forwardRef<
     React.ElementRef<typeof DropdownMenuPrimitive.SubContent>,
     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.SubContent>
 >(({className, ...props}, ref) => (
-    <div className='shade'>
+    <div className={SHADE_APP_NAMESPACES}>
         <DropdownMenuPrimitive.SubContent
             ref={ref}
             className={cn(
@@ -61,7 +62,7 @@ const DropdownMenuContent = React.forwardRef<
     React.ComponentPropsWithoutRef<typeof DropdownMenuPrimitive.Content>
 >(({className, sideOffset = 4, ...props}, ref) => (
     <DropdownMenuPrimitive.Portal>
-        <div className='shade'>
+        <div className={SHADE_APP_NAMESPACES}>
             <DropdownMenuPrimitive.Content
                 ref={ref}
                 className={cn(

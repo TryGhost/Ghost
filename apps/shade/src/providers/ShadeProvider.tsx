@@ -4,6 +4,7 @@ import {createPortal} from 'react-dom';
 // import {FetchKoenigLexical} from '../global/form/HtmlEditor';
 import {GlobalDirtyStateProvider} from '../hooks/use-global-dirty-state';
 import Icon from '../components/ui/icon';
+import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
 
 interface ShadeContextType {
     isAnyTextFieldFocused: boolean;
@@ -39,7 +40,7 @@ const ToasterPortal = () => {
 
     return mounted
         ? createPortal(
-            <div className='shade'>
+            <div className={SHADE_APP_NAMESPACES}>
                 <Toaster
                     icons={{
                         error: <Icon.ErrorFill className='text-red' />,
