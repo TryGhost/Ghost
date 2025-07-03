@@ -238,7 +238,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -276,7 +277,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: '',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -325,7 +327,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
     });
@@ -623,7 +626,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -657,7 +661,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: '',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
@@ -703,7 +708,8 @@ describe('Signup', () => {
                 emailType: 'signup',
                 name: 'Jamie Larsen',
                 plan: 'free',
-                integrityToken: 'testtoken'
+                integrityToken: 'testtoken',
+                locale: expect.any(String)
             });
         });
 
