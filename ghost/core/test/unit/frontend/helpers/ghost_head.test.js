@@ -1335,6 +1335,21 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+        it('includes portal when the portal URL is provided', async function () {
+            configUtils.set({'portal:url': 'https://portal.ghost.org'});
+
+            // not using testGhostHead here because the substitutions interfere with seeing the actual url.
+            const options = testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })
+            const rendered = (await ghost_head(options)).toString();
+
+            rendered.should.contain('https://portal.ghost.org');  
+        });
 
         it('skips portal when portal URL is set to false', async function () {
             getStub.withArgs('members_enabled').returns(true);
