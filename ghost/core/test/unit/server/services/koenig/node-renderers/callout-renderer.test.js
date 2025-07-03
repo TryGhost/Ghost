@@ -37,6 +37,26 @@ describe('services/koenig/node-renderers/callout-renderer', function () {
                 </div>
             `);
         });
+
+        it('can render without emoji', function () {
+            const result = renderForWeb(getTestData({calloutEmoji: ''}));
+            assert(!result.html.includes('kg-callout-emoji'));
+        });
+
+        it('reverts to white background when backgroundColor is invalid', function () {
+            const result = renderForWeb(getTestData({backgroundColor: 'rgba(0, 0, 0, 0)'}));
+            assert(result.html.includes('kg-callout-card-white'));
+        });
+
+        it('can render with inline code', function () {
+            const result = renderForWeb(getTestData({calloutText: '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>'}));
+            assert.equal(result.element.querySelector('.kg-callout-text').innerHTML.trim(), 'Does <code spellcheck="false" style="white-space: pre-wrap;">inline code</code> render properly?');
+        });
+
+        it('strips disallowed tags', function () {
+            const result = renderForWeb(getTestData({calloutText: '<ul><li>Hello</li></ul>'}));
+            assert.equal(result.element.querySelector('.kg-callout-text').innerHTML.trim(), 'Hello');
+        });
     });
 
     describe('email', function () {
@@ -56,6 +76,26 @@ describe('services/koenig/node-renderers/callout-renderer', function () {
                     </div>
                 </div>
             `);
+        });
+
+        it('can render without emoji', function () {
+            const result = renderForWeb(getTestData({calloutEmoji: ''}));
+            assert(!result.html.includes('kg-callout-emoji'));
+        });
+
+        it('reverts to white background when backgroundColor is invalid', function () {
+            const result = renderForWeb(getTestData({backgroundColor: 'rgba(0, 0, 0, 0)'}));
+            assert(result.html.includes('kg-callout-card-white'));
+        });
+
+        it('can render with inline code', function () {
+            const result = renderForWeb(getTestData({calloutText: '<p><span style="white-space: pre-wrap;">Does </span><code spellcheck="false" style="white-space: pre-wrap;"><span>inline code</span></code><span style="white-space: pre-wrap;"> render properly?</span></p>'}));
+            assert.equal(result.element.querySelector('.kg-callout-text').innerHTML.trim(), 'Does <code spellcheck="false" style="white-space: pre-wrap;">inline code</code> render properly?');
+        });
+
+        it('strips disallowed tags', function () {
+            const result = renderForWeb(getTestData({calloutText: '<ul><li>Hello</li></ul>'}));
+            assert.equal(result.element.querySelector('.kg-callout-text').innerHTML.trim(), 'Hello');
         });
     });
 });
