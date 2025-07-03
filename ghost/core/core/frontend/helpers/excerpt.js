@@ -40,7 +40,12 @@ module.exports = function excerpt(options) {
         }
     }
 
-    return new SafeString(
-        getMetaDataExcerpt(excerptText, truncateOptions)
-    );
+    let excerptResult = getMetaDataExcerpt(excerptText, truncateOptions);
+
+    const lastAmp = excerptResult.lastIndexOf('&');
+    if (lastAmp !== -1 && excerptResult.indexOf(';', lastAmp) === -1) {
+        excerptResult = excerptResult.substring(0, lastAmp);
+    }
+
+    return new SafeString(excerptResult);
 };
