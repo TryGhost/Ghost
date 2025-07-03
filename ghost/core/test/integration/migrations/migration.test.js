@@ -188,9 +188,9 @@ describe('Migrations', function () {
 
             permissions.should.havePermission('Browse labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
             permissions.should.havePermission('Read labels', ['Administrator', 'Editor', 'Author', 'Admin Integration']);
-            permissions.should.havePermission('Edit labels', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Add labels', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Delete labels', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Edit labels', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Add labels', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Delete labels', ['Administrator', 'Editor', 'Admin Integration']);
 
             permissions.should.havePermission('Read member signin urls');
             permissions.should.havePermission('Read identities');
