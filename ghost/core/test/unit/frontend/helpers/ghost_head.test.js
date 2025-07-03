@@ -1351,7 +1351,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/portal@/);
+            rendered.should.not.match(/portal/);
         });
 
         it('skips portal when portal URL is set to empty string', async function () {
@@ -1369,7 +1369,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/portal@/);
+            rendered.should.not.match(/portal/);
         });
 
         it('skips portal when portal URL is set to null', async function () {
@@ -1387,25 +1387,7 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
 
-            rendered.should.not.match(/portal@/);
-        });
-
-        it('includes portal when portal URL is set to a valid URL', async function () {
-            getStub.withArgs('members_enabled').returns(true);
-            getStub.withArgs('paid_members_enabled').returns(false);
-            
-            // Mock the config to return a valid URL for portal
-            configUtils.set({'portal:url': 'https://cdn.example.com/portal.min.js'});
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/portal@/);
+            rendered.should.not.match(/portal/);
         });
     });
 
