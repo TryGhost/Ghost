@@ -34,6 +34,11 @@ x-service-template: &service-template
     - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
     - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
     - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+    - tinybird__adminToken=${tinybird__adminToken:-}
+    - tinybird__workspaceId=${tinybird__workspaceId:-}
+    - tinybird__stats__endpoint=${tinybird__stats__endpoint:-}
+    - tinybird__tracker__endpoint=${tinybird__tracker__endpoint:-}
+    - tinybird__tracker__datasource=${tinybird__tracker__datasource:-}
 
 services:
   server:
@@ -189,6 +194,26 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
     restart: always
+  tinybird:
+    image: tinybirdco/tinybird-local:latest
+    container_name: ghost-tinybird
+    profiles: [ analytics]
+    ports:
+      - 7181:7181
+    restart: always
+  analytics-service:
+    image: ghost/traffic-analytics:edge
+    container_name: ghost-analytics-service
+    profiles: [ analytics ]
+    ports:
+      - 3000:3000
+    restart: always
+    environment:
+      - PROXY_TARGET=http://tinybird:7181/v0/events
+      - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN}
+    depends_on:
+      tinybird:
+        condition: service_healthy
 volumes:
   mysql-data: {}
   redis-data: {}
