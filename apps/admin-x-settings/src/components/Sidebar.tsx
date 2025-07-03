@@ -25,16 +25,22 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/useScrollSection';
 import {useSearch} from './providers/SettingsAppProvider';
 
-const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent'> & {keywords: string[]}> = ({keywords, navid, ...props}) => {
+const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'navid'> & {keywords: string[]; navid: string | string[]}> = ({keywords, navid, ...props}) => {
     const {ref, props: scrollProps} = useScrollSectionNav(navid);
     const {currentSection} = useScrollSectionContext();
     const {checkVisible} = useSearch();
 
+    // Convert navid to array if it's a string
+    const navids = Array.isArray(navid) ? navid : [navid];
+
+    // Check if any of the navids match the current section
+    const isCurrent = navids.includes(currentSection || '');
+
     return <SettingNavItem
         ref={ref}
-        isCurrent={currentSection === navid}
+        isCurrent={isCurrent}
         isVisible={checkVisible(keywords)}
-        navid={navid}
+        navid={Array.isArray(navid) ? navid[0] : navid} // Use first navid for backward compatibility
         {...scrollProps}
         {...props}
     />;
@@ -213,7 +219,7 @@ const Sidebar: React.FC = () => {
                         <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
                         <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
                         {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                        <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid='enable-newsletters' title="Newsletters" onClick={handleSectionClick} />
+                        <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                     </SettingNavSection>
                     :
                     <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords5x).flat())} title="Membership">
