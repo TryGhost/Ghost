@@ -1351,7 +1351,6 @@ describe('{{ghost_head}} helper', function () {
             const rendered = (await ghost_head(options)).toString();
             should({rendered}).matchSnapshot();
             rendered.should.match(/<script[^>]*src="https:\/\/portal\.ghost\.org"[^>]*data-ghost=[^>]*>/);
-
         });
 
         it('skips portal when portal URL is set to false', async function () {
@@ -1418,7 +1417,7 @@ describe('{{ghost_head}} helper', function () {
             getStub.withArgs('paid_members_enabled').returns(false);
             
             // Mock the config to return false for portal URL
-            configUtils.set({'portal:url': "false"});
+            configUtils.set({'portal:url': 'false'});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
