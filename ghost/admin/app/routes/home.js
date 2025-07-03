@@ -7,8 +7,13 @@ export default class HomeRoute extends AuthenticatedRoute {
     @service feature;
     @service router;
 
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+
+        // This is needed to initialize the checklist for sites that have been already set up
+        if (transition.to?.queryParams?.firstStart === 'true') {
+            return this.router.transitionTo('setup.done');
+        }
         
         if (this.config.labs?.ui60 && this.feature.trafficAnalytics) {
             this.router.transitionTo('stats-x');
