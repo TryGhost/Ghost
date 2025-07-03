@@ -225,15 +225,15 @@ describe('Migrations', function () {
 
             permissions.should.havePermission('Read explore data', ['Administrator', 'Admin Integration', 'Ghost Explore Integration']);
 
-            permissions.should.havePermission('Browse comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Read comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Edit comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Add comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Delete comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Moderate comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Like comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Unlike comments', ['Administrator', 'Admin Integration', 'Editor']);
-            permissions.should.havePermission('Report comments', ['Administrator', 'Admin Integration', 'Editor']);
+            permissions.should.havePermission('Browse comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Read comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Edit comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Add comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Delete comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Moderate comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Like comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Unlike comments', ['Administrator', 'Editor', 'Admin Integration']);
+            permissions.should.havePermission('Report comments', ['Administrator', 'Editor', 'Admin Integration']);
             permissions.should.havePermission('Browse links', ['Administrator', 'Admin Integration']);
             permissions.should.havePermission('Browse mentions', ['Administrator', 'Admin Integration']);
 
