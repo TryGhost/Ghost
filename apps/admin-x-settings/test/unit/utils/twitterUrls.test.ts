@@ -19,6 +19,7 @@ describe('Twitter URLs', () => {
             assert.throws(() => validateTwitterUrl('x.com/username@'), /Your Username is not a valid Twitter Username/);
             assert.throws(() => validateTwitterUrl('x.com/username!'), /Your Username is not a valid Twitter Username/);
             assert.throws(() => validateTwitterUrl('x.com/thisusernameistoolong'), /Your Username is not a valid Twitter Username/);
+            assert.throws(() => validateTwitterUrl('x.com/with\nnewline'), /Your Username is not a valid Twitter Username/);
         });
     });
 
