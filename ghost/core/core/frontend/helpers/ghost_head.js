@@ -57,6 +57,10 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
+        if (!scriptUrl || scriptUrl === 'false') {
+            return '';
+        }
+        
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
         const attributes = {
             i18n: labs.isSet('i18n'),
