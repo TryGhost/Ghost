@@ -229,13 +229,19 @@ export const useScrollSection = (id?: string) => {
     };
 };
 
-export const useScrollSectionNav = (id?: string) => {
+export const useScrollSectionNav = (id?: string | string[]) => {
     const {updateNav} = useScrollSectionContext();
     const ref = useRef<HTMLLIElement>(null);
 
     useEffect(() => {
         if (id && ref.current) {
-            updateNav(id, ref.current);
+            // Convert to array if it's a string
+            const ids = Array.isArray(id) ? id : [id];
+
+            // Register the nav element for all IDs
+            ids.forEach((navId) => {
+                updateNav(navId, ref.current!);
+            });
         }
     }, [id, updateNav]);
 
