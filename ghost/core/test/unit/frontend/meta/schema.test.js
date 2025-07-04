@@ -1,6 +1,31 @@
 const should = require('should');
 const getSchema = require('../../../../core/frontend/meta/schema');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
+const socialUrls = require('@tryghost/social-urls');
+
+// Shared between sameAs tests
+const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'linkedin'];
+
+// Re-usable social usernames for sameAs tests
+const USERNAMES = {
+    facebook: 'fbuser',
+    twitter: 'twuser',
+    threads: 'threadsuser',
+    bluesky: 'bskyuser',
+    mastodon: 'mastodonuser',
+    tiktok: 'tiktokuser',
+    youtube: 'youtubeuser',
+    instagram: 'instauser',
+    linkedin: 'linkedinuser'
+};
+
+function buildExpectedSameAs(website, usernames) {
+    const urls = [website];
+    SOCIAL_PLATFORMS.forEach((p) => {
+        urls.push(socialUrls[p](usernames[p]));
+    });
+    return urls;
+}
 
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {
@@ -694,6 +719,60 @@ describe('getSchema', function () {
             ],
             url: 'http://mysite.com/author/me/'
         });
+    });
+
+    it('should include all supported social links in sameAs', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title'
+            },
+            metaTitle: 'Post Title',
+            url: 'http://mysite.com/post/my-post-slug/',
+            authorUrl: 'http://mysite.com/author/me/',
+            publishedDate: '2015-12-25T05:35:01.234Z',
+            modifiedDate: '2016-01-21T22:13:05.412Z'
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Post Author',
+                    website: 'http://myblogsite.com/',
+                    ...USERNAMES
+                }
+            }
+        };
+
+        const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', USERNAMES);
+
+        const schema = getSchema(metadata, data);
+        should.deepEqual(schema.author.sameAs, expectedSameAs);
+    });
+
+    it('should include all supported social links in sameAs for author context', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title',
+                url: 'http://mysite.com'
+            },
+            authorUrl: 'http://mysite.com/author/me/',
+            metaDescription: 'This is the author description!'
+        };
+
+        const data = {
+            context: ['author'],
+            author: {
+                name: 'Author Name',
+                website: 'http://myblogsite.com/',
+                ...USERNAMES
+            }
+        };
+
+        const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', USERNAMES);
+
+        const schema = getSchema(metadata, data);
+        should.deepEqual(schema.sameAs, expectedSameAs);
     });
 
     it('should return null if not a supported type', function () {
