@@ -62,7 +62,7 @@
     "Where:": "Dónde:",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Recibes este mensaje porque tienes una suscripción <strong>%%{status}%%</strong> a {site}.",
     "You can also copy & paste this URL into your browser:": "También puedes copiar y pegar este enlace en tu navegador:",
-    "You can unsubscribe from these notifications at {profileUrl}.": "",
+    "You can unsubscribe from these notifications at {profileUrl}.": "Puedes darte de baja de estas notificaciones en {profileUrl}.",
     "You just tried to access your account from a new device.": "Acabas de intentar acceder a tu cuenta desde un nuevo dispositivo.",
     "You will not be signed up, and no account will be created for you.": "No te registrarás ni se creará ninguna cuenta para ti.",
     "You will not be subscribed.": "No serás suscrito.",
