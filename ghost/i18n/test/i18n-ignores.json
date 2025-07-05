@@ -69,36 +69,6 @@
                 "comment": "translated text doesn't fit on the button"
             },
             {
-                "file": "hu/comments.json",
-                "key": "Become a member of {publication} to start commenting.",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "hu/comments.json",
-                "key": "Become a paid member of {publication} to start commenting.",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "hu/ghost.json",
-                "key": "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "hu/ghost.json",
-                "key": "Welcome back! Use this link to securely sign in to your {siteTitle} account:",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "hu/ghost.json",
-                "key": "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
-                "file": "hu/portal.json",
-                "key": "Please enter {fieldName}",
-                "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
-            },
-            {
                 "file": "is/portal.json",
                 "key": "{trialDays} days free",
                 "comment": "FIXME: This error was automatically ignored. Please update the translation, or explain why a variable is ignored"
