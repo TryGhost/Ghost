@@ -1,5 +1,5 @@
 {
-    "{amount} characters left": "còn lại {amount} ký tự",
+    "{amount} characters left": "{amount} ký tự còn lại",
     "{amount} comments": "{amount} bình luận",
     "{amount} hrs ago": "{amount} giờ trước",
     "{amount} mins ago": "{amount} phút trước",
@@ -24,7 +24,7 @@
     "Deleting": "Đang xóa",
     "Discussion": "Thảo luận",
     "Edit": "Sửa",
-    "Edit this comment": "Sửa bình luận",
+    "Edit this comment": "Sửa bình luận này",
     "edited": "đã sửa",
     "Enter your name": "Nhập tên của bạn",
     "Expertise": "Chuyên môn",
