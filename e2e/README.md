@@ -65,7 +65,7 @@ yarn test specific/folder/testfile.spec.ts
 yarn test --grep "homepage"
 
 # With browser visible (for debugging)
-PLAYWRIGHT_DEBUG=1 yarn test:frontend
+PLAYWRIGHT_DEBUG=1 yarn test
 ```
 
 ## Test Development
@@ -93,9 +93,6 @@ Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework
 Aim to format tests in Arrange Act Assert style - it will help you with directions when writing your tests.
 
 ```typescript
-import {test, expect} from '@playwright/test';
-import {HomePage} from '../src/pages/HomePage';
-
 test.describe('Ghost Homepage', () => {
     test('loads correctly', async ({page}) => {
         // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed 
