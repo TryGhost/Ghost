@@ -158,13 +158,19 @@ class LinterContext {
     }
 
     /**
-     * @param {GhostI18nLintRule} rule
-     * @param {string} key
-     */
-    isIgnored(rule, key) {
-        const ignoreKey = `${rule}:${this.relativeFilePath}:${key}`;
+    * @param {string} message
+    * @param {string} key
+    * @param {GhostI18nLintRule} ruleName
+    * @param {number} line
+    * @param {number} column
+    * @param {(ignores: any) => void} [fix]
+    */
+    reportTranslationError(message, key, ruleName, line, column, fix = undefined) {
+        const ignoreKey = `${ruleName}:${this.relativeFilePath}:${key}`;
         this._unusedIgnores.delete(ignoreKey);
-        return this._ignoredRules.has(ignoreKey);
+        if (!this._ignoredRules.has(ignoreKey)) {
+            this._reportError(message, ruleName, line, column, fix);
+        }
     }
 
     /**
@@ -216,13 +222,14 @@ class LinterContext {
     }
 
     /**
+     * @private
      * @param {string} message
      * @param {GhostI18nLintRule} ruleName
      * @param {number} line
      * @param {number} column
      * @param {(ignores: any) => void} [fix]
      */
-    reportError(message, ruleName, line, column, fix = undefined) {
+    _reportError(message, ruleName, line, column, fix = undefined) {
         assert(this._currentResult, '`setFile` should have been called');
         this._currentResult.errorCount += 1;
         this._currentMessageIndex = this._currentResult.messages.length;
@@ -244,7 +251,7 @@ class LinterContext {
         this.setFile(this._ignoreFile);
         for (const [key, index] of this._unusedIgnores.entries()) {
             const [rule, file, translation] = key.split(':');
-            this.reportError(
+            this._reportError(
                 `Index ${index} for rule "${rule}" is not used.\n\tFile: ./locales/${file}\n\tkey: "${translation}"`,
                 'ghost/i18n/no-unused-ignores',
                 0,
@@ -401,14 +408,14 @@ function ignoreTranslationError(ignores, rule, file, key) {
  */
 function analyzeSingleTranslation(key, translated, context) {
     const {errors: keyErrors, variables: defines} = parseTranslationString(key);
-    const reportInvalidTranslations = !context.isIgnored('ghost/i18n/no-invalid-translations', key);
 
     // Report key parsing errors only for English translations.
     // I18next is responsible for keeping all other locales in sync.
-    if (reportInvalidTranslations && context.file?.locale === 'en') {
+    if (context.file?.locale === 'en') {
         const {line, column} = context.getPositionForText(key, 'key');
         for (const error of keyErrors) {
-            context.reportError(error.message, 'ghost/i18n/no-invalid-translations', line, column + error.column);
+            const rule = 'ghost/i18n/no-invalid-translations';
+            context.reportTranslationError(error.message, key, rule, line, column + error.column);
         }
     }
 
@@ -418,28 +425,23 @@ function analyzeSingleTranslation(key, translated, context) {
 
     const {errors, variables: used} = parseTranslationString(translated);
 
-    if (reportInvalidTranslations) {
+    {
         const {line, column} = context.getPositionForText(key, 'value');
         for (const error of errors) {
-            context.reportError(error.message, 'ghost/i18n/no-invalid-translations', line, column + error.column);
+            const rule = 'ghost/i18n/no-invalid-translations';
+            context.reportTranslationError(error.message, key, rule, line, column + error.column);
         }
-    }
-
-    const reportUnusedVariables = !context.isIgnored('ghost/i18n/no-unused-variables', key);
-    const reportUndefinedVariables = !context.isIgnored('ghost/i18n/no-undefined-variables', key);
-
-    if (!reportUndefinedVariables && !reportUnusedVariables) {
-        return;
     }
 
     for (const [define, columnInKey] of defines.entries()) {
         // Use delete to remove the variable so `used` will only contain unused variables after this loop
-        if (!used.delete(define) && reportUnusedVariables) {
+        if (!used.delete(define)) {
             const rule = 'ghost/i18n/no-unused-variables';
             const file = context.relativeFilePath;
             const {line, column} = context.getPositionForText(key, 'key');
-            context.reportError(
+            context.reportTranslationError(
                 `Translation does not use variable "${define}"`,
+                key,
                 rule,
                 line,
                 column + columnInKey,
@@ -448,16 +450,13 @@ function analyzeSingleTranslation(key, translated, context) {
         }
     }
 
-    if (!reportUndefinedVariables) {
-        return;
-    }
-
     const {line, column} = context.getPositionForText(translated, 'value');
     for (const [unknownVariable, columnInTranslation] of used.entries()) {
         const rule = 'ghost/i18n/no-undefined-variables';
         const file = context.relativeFilePath;
-        context.reportError(
+        context.reportTranslationError(
             `Translation uses unknown variable "${unknownVariable}"`,
+            key,
             rule,
             line,
             column + columnInTranslation,
