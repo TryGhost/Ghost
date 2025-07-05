@@ -2,6 +2,12 @@
 
 End-to-end testing for Ghost using Playwright. This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
 
+## Prerequisites
+
+- **Node.js**: Version specified in `.nvmrc`
+- **Ghost instance**: Running and accessible (see setup below)
+- **Dependencies**: Installed via `yarn` from repository root
+
 ## Quick Start
 
 From the repository root:
@@ -16,12 +22,6 @@ yarn dev
 # Run the e2e tests (in a separate terminal)
 yarn test:e2e
 ```
-
-## Prerequisites
-
-- **Node.js**: Version specified in `.nvmrc`
-- **Ghost instance**: Running and accessible (see setup below)
-- **Dependencies**: Installed via `yarn` from repository root
 
 ## Running Tests
 
@@ -55,19 +55,16 @@ GHOST_BASE_URL=http://localhost:3000 yarn test:e2e
 ### Running Specific Tests
 
 ```bash
-# Run all tests
+# All tests
 yarn test
 
-# Run frontend tests only
-yarn test:frontend
+# Specific test file
+yarn test specific/folder/testfile.spec.ts
 
-# Run a specific test file
-yarn test test/frontend/homepage.spec.ts
-
-# Run tests matching a pattern
+# Matching a pattern
 yarn test --grep "homepage"
 
-# Run with browser visible (for debugging)
+# With browser visible (for debugging)
 PLAYWRIGHT_DEBUG=1 yarn test:frontend
 ```
 
@@ -77,40 +74,45 @@ PLAYWRIGHT_DEBUG=1 yarn test:frontend
 
 ```
 e2e/
-├── test/                  # Test suites organized by area
-│   ├── frontend/          # Frontend/public site tests
+├── tests/                  
+│   ├── public/          # public site tests
 │   │   └── homepage.spec.ts
 │   └── .eslintrc.js      # Test-specific ESLint config
-├── src/                  # Test utilities and helpers
+├── helpers/              # Utilities, fixtures, page objects etc.
 │   ├── pages/            # Page Object Models
-│   │   └── HomePage.ts   # Home page interactions
+│   │   └── HomePage.ts   
 │   └── index.ts          # Main exports
 ├── playwright.config.mjs # Playwright configuration
-├── package.json         # Dependencies and scripts
-└── tsconfig.json        # TypeScript configuration
+├── package.json          # Dependencies and scripts
+└── tsconfig.json         # TypeScript configuration
 ```
 
 ### Writing Tests
 
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework with page objects:
+Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework with page objects.
+Aim to format tests in Arrange Act Assert style - it will help you with directions when writing your tests.
 
 ```typescript
 import {test, expect} from '@playwright/test';
 import {HomePage} from '../src/pages/HomePage';
 
 test.describe('Ghost Homepage', () => {
-    test('homepage loads correctly', async ({page}) => {
+    test('loads correctly', async ({page}) => {
+        // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed 
         const homePage = new HomePage(page);
         
+        // ACT - do the actions you need to do, to verify certain behaviour
         await homePage.goto();
-        await homePage.expectToBeLoaded();
+        
+        // ASSERT
+        await expect(homePage.title).toBeVisible();
     });
 });
 ```
 
 #### Using Page Objects
 
-Page objects encapsulate page interactions:
+Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/).
 
 ```typescript
 // Create a page object for admin login
@@ -128,9 +130,9 @@ export class AdminLoginPage {
 
 ### Best Practices
 
-1. **Use page object patterns** for complex interactions
-2. **Add meaningful assertions** beyond just page loads
-3. **Use data-testid attributes** for reliable element selection
+1. **Use page object patterns** to separate page elements, actions on the pages, complex logic from tests. They should help you make them more readable and UI elements reusable.
+2. **Add meaningful assertions** beyond just page loads. Keep assertions in tests.
+3. **Use data-testid attributes** for reliable element selection, in case you can not locate elements in a simple way. Simple looks like this: `page.getByLabel('User Name')`. Avoid, css, xpath locators, they make tests brittle. 
 4. **Clean up test data** when tests modify Ghost state
 5. **Group related tests** in describe blocks
 
@@ -165,9 +167,6 @@ From the e2e directory:
 ```bash
 # Run all tests
 yarn test
-
-# Run specific test suites
-yarn test:frontend
 
 # Run TypeScript type checking
 yarn test:types
@@ -218,28 +217,16 @@ kill -9 <PID>
 The test suite is organized into separate directories for different areas/functions:
 
 ### **Current Test Suites**
-- `test/frontend/` - Public-facing site tests (homepage, posts, etc.)
+- `tests/public/` - Public-facing site tests (homepage, posts, etc.)
 
 ### **Suggested Additional Test Suites**
-- `test/admin/` - Ghost admin panel tests (login, content creation, settings)
-- `test/members/` - Member-related functionality (signup, login, account management)
-- `test/api/` - API integration tests
-- `test/themes/` - Theme switching and customization tests
-- `test/analytics/` - Analytics-related tests (analytics tab, post analytics)
+- `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
 
-### **Creating New Test Suites**
-
-1. **Create a new directory** under `test/` (e.g., `test/admin/`)
-2. **Add corresponding npm script** in `package.json`:
-   ```json
-   "test:admin": "playwright test test/admin"
-   ```
-3. **Create page objects** in `src/pages/` for the new area
-4. **Write tests** using the established patterns
+We can decide on additional sub-folders as we go.
 
 Example structure for admin tests:
 ```
-test/admin/
+tests/admin/
 ├── login.spec.ts
 ├── posts.spec.ts
 └── settings.spec.ts
