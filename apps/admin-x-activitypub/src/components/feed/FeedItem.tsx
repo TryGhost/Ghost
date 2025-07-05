@@ -14,7 +14,7 @@ import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export function getAttachment(object: ObjectProperties) {
@@ -192,11 +192,14 @@ interface FeedItemProps {
     type: string;
     commentCount?: number;
     repostCount?: number;
+    likeCount?: number;
     showHeader?: boolean;
     last?: boolean;
     isLoading?: boolean;
     isPending?: boolean;
     isCompact?: boolean;
+    isChainContinuation?: boolean;
+    isChainParent?: boolean;
     onClick?: () => void;
     onDelete?: () => void;
     showStats?: boolean;
@@ -215,11 +218,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
     type,
     commentCount = 0,
     repostCount = 0,
+    likeCount = 0,
     showHeader = true,
     last,
     isLoading,
     isPending = false,
     isCompact = false,
+    isChainContinuation = false,
+    isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
     showStats = true
@@ -234,6 +240,26 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
+
+    const followMutation = useFollowMutationForUser(
+        'index',
+        () => {
+            toast.success(`Followed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to follow');
+        }
+    );
+
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.info(`Unfollowed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
 
     useEffect(() => {
         const element = contentRef.current;
@@ -304,6 +330,34 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
+    const authorHandle = type === 'Announce'
+        ? (author ? getUsername(author) : null)
+        : (actor ? getUsername(actor) : null);
+
+    const followedByMe = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
+        : (actor?.followedByMe || false);
+
+    const isAuthorCurrentUser = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
+            ? (object.attributedTo as {authored: boolean}).authored
+            : (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) &&
+               typeof actor === 'object' && actor &&
+               (object.attributedTo as {id: string}).id === actor.id))
+        : object.authored;
+
+    const handleFollow = () => {
+        if (authorHandle) {
+            followMutation.mutate(authorHandle);
+        }
+    };
+
+    const handleUnfollow = () => {
+        if (authorHandle) {
+            unfollowMutation.mutate(authorHandle);
+        }
+    };
+
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
             <LucideIcon.Ellipsis />
@@ -333,40 +387,44 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
+                                <div className='flex min-w-0 grow flex-col' onClick={(e) => {
                                     if (!isPending) {
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
-                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
+                                        <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
-                                        <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                        <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                             {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    authoredByMe={isAuthorCurrentUser}
                                     disabled={isPending}
+                                    followedByMe={followedByMe}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
+                                    onFollow={handleFollow}
+                                    onUnfollow={handleUnfollow}
                                 />
                             </div>
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, openLightbox)}
+                                            {renderFeedAttachment(object, onClick)}
                                             <div className='p-5'>
                                                 <div className='mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight break-anywhere' data-test-activity-heading>{object.name}</div>
                                                 <div className='line-clamp-3 leading-[1.4em] break-anywhere'>{object.preview?.content}</div>
@@ -406,7 +464,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -443,7 +501,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
-                                        <APAvatar author={author}/>
+                                        <APAvatar author={author} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
@@ -469,7 +527,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 actor={author}
                                                 commentCount={commentCount}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -497,10 +555,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className={`group/article relative ${isCompact ? 'pb-6' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
+                    <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author} disabled={isPending} />
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
@@ -519,16 +577,20 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
                                         disabled={isPending}
+                                        followedByMe={followedByMe}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
+                                        {(object.type === 'Article') && renderFeedAttachment(object, onClick)}
                                         {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
                                         {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
@@ -543,7 +605,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 commentCount={commentCount}
                                                 disabled={isPending}
                                                 layout={layout}
-                                                likeCount={1}
+                                                likeCount={likeCount}
                                                 object={object}
                                                 repostCount={repostCount}
                                                 onLikeClick={onLikeClick}
@@ -554,7 +616,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                         </div>
                         <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200`}></div>}
+                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : isChainContinuation ? 'bottom-[5px] top-[51px]' : isChainParent ? 'bottom-[5px] top-[71px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200 dark:bg-gray-950`}></div>}
                     </div>
                 )}
                 <ImageLightbox
@@ -619,17 +681,21 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                         actor={author}
                                         commentCount={commentCount}
                                         layout={layout}
-                                        likeCount={1}
+                                        likeCount={likeCount}
                                         object={object}
                                         repostCount={repostCount}
                                         onLikeClick={onLikeClick}
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
+                                        followedByMe={followedByMe}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />
                                 </div>
                             </div>

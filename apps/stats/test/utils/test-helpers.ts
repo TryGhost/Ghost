@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React from 'react';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {
     createErrorMock,
     createLoadingMock,
@@ -14,23 +12,6 @@ import {vi} from 'vitest';
 
 // Import types from API modules
 import type {NewsletterStatsResponseType, TopPostsStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
-
-// Create a test wrapper with QueryClient
-export const createTestWrapper = () => {
-    const queryClient = new QueryClient({
-        defaultOptions: {
-            queries: {retry: false},
-            mutations: {retry: false}
-        }
-    });
-    
-    const Wrapper = ({children}: {children: React.ReactNode}) => (
-        React.createElement(QueryClientProvider, {client: queryClient}, children)
-    );
-    Wrapper.displayName = 'TestWrapper';
-    
-    return Wrapper;
-};
 
 // Re-export centralized utilities for convenience
 export {
@@ -109,6 +90,28 @@ export const applyMocksToModules = (mocks: ReturnType<typeof setupStatsAppMocks>
     }));
 };
 
+// Mock sources data with for testing traffic
+export const createMockSourcesData = () => [
+    {source: 'Reddit', visits: 120},
+    {source: 'Google', visits: 100},
+    {source: 'twitter.com', visits: 80},
+    {source: 'ghost.org', visits: 60},
+    {source: '', visits: 50} // Already direct traffic
+];
+
+// Helper to create mock global data with custom site URL
+export const createMockGlobalData = (siteUrl = 'https://ghost.org') => ({
+    ...defaultMockData.globalData,
+    data: {
+        url: siteUrl
+    }
+});
+
 // Legacy compatibility
 export const setupUniversalMocks = setupStatsAppMocks;
-export const setupDefaultStatsMocks = setupStatsAppMocks; 
+export const setupDefaultStatsMocks = setupStatsAppMocks;
+
+// Re-export new testing utilities
+export * from './date-testing-utils';
+export * from './mock-factories';
+export * from './hook-testing-utils';

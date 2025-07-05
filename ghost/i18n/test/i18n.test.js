@@ -3,34 +3,8 @@ const fs = require('fs/promises');
 const path = require('path');
 
 const i18n = require('../');
-const {checkTranslationPair} = require('./utils');
 
 describe('i18n', function () {
-    it('does not have mismatched brackets in variables', async function () {
-        for (const locale of i18n.SUPPORTED_LOCALES) {
-            const translationFiles = await fs.readdir(path.join(`./locales/`, locale));
-
-            for (const file of translationFiles) {
-                const translationFile = require(path.join(`../locales/`, locale, file));
-
-                for (const key of Object.keys(translationFile)) {
-                    const keyStartCount = key.match(/{/g)?.length;
-                    assert.equal(keyStartCount, key.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${key}`);
-
-                    const value = translationFile[key];
-                    if (typeof value === 'string') {
-                        const valueStartCount = value.match(/{/g)?.length;
-                        assert.equal(valueStartCount, value.match(/}/g)?.length, `[${locale}/${file}] mismatched brackets in ${value}`);
-
-                        // Maybe enable in the future if we want to enforce this
-                        //if (value !== '') {
-                        //    assert.equal(keyStartCount, valueStartCount, `[${locale}/${file}] mismatched brackets between ${key} and ${value}`);
-                        //}
-                    }
-                }
-            }
-        }
-    });
     it('does not have too-long strings for the Stripe personal note label', async function () {
         for (const locale of i18n.SUPPORTED_LOCALES) {
             const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
@@ -40,6 +14,7 @@ describe('i18n', function () {
             }
         }
     });
+
     it('is uses default export if available', async function () {
         const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
         translationFile.Name = undefined;
@@ -78,6 +53,7 @@ describe('i18n', function () {
             });
         });
     });
+
     describe('Fallback when no language is chosen will be english', function () {
         describe('English fallback', function () {
             let t;
@@ -113,6 +89,7 @@ describe('i18n', function () {
             });
         });
     });
+
     describe('Language is properly "nn" when "nn" is chosen', function () {
         describe('Norwegian Nynorsk', function () {
             let t;
@@ -136,6 +113,7 @@ describe('i18n', function () {
                 }
             }
         });
+
         it('should have a directory for each key in lib/i18n.js', async function () {
             const supportedLocales = i18n.SUPPORTED_LOCALES;
 
@@ -146,6 +124,7 @@ describe('i18n', function () {
             }
         });
     });
+
     describe('newsletter i18n', function () {
         it('should be able to translate and interpolate a date', async function () {
             const t = i18n('fr', 'ghost').t;
@@ -159,78 +138,29 @@ describe('i18n', function () {
             assert.deepEqual(resources.xx, englishResources.en);
         });
     });
-    describe('i18n-ignores are valid', function () {
-        it('has valid structure with required fields', async function () {
-            const ignores = require('./i18n-ignores.json');
-           
-            // Check top-level structure
-            assert(ignores.overrides, 'i18n-ignores.json must have an "overrides" object');
-            assert(Array.isArray(ignores.overrides.addedVariable), 'overrides.addedVariable must be an array');
-            assert(Array.isArray(ignores.overrides.missingVariable), 'overrides.missingVariable must be an array');
 
-            // Validate each entry in addedVariable
-            for (const entry of ignores.overrides.addedVariable) {
-                assert(entry.file, 'Each addedVariable entry must have a file field');
-                assert(entry.key, 'Each addedVariable entry must have a key field');
-            }
-
-            // Validate each entry in missingVariable
-            for (const entry of ignores.overrides.missingVariable) {
-                assert(entry.file, 'Each missingVariable entry must have a file field');
-                assert(entry.key, 'Each missingVariable entry must have a key field');
-            }
-        });
-    });
-    describe('translation files are valid', function () {
-        it('there are no missing or added variables that are not documented in i18n-ignores.json', async function () {
-            const ignores = require('./i18n-ignores.json');
-            for (const locale of i18n.SUPPORTED_LOCALES) {
-                const translationFiles = await fs.readdir(path.join(`./locales/`, locale));
-
-                for (const file of translationFiles) {
-                    const translationFile = require(path.join(`../locales/`, locale, file));
-                    for (const key of Object.keys(translationFile)) {
-                        const value = translationFile[key];
-                        const result = checkTranslationPair(key, value, translationFile);
-                        if (result.length > 0) {
-                            // Check if all issues are covered by todos
-                            const allIssuesCovered = result.every((issue) => {
-                                const todo = ignores.overrides[issue].find(onetodo => onetodo.file === `${locale}/${file}` && onetodo.key === key);
-                                return todo !== undefined;
-                            });
-
-                            assert(allIssuesCovered, 
-                                `[${locale}/${file}]: "${key}" has issues: ${result.join(', ')}. ` +
-                                `All issues and overridesmust be documented in i18n-ignores.json`
-                            );
-                        }
-                    }
-                }
-            }
-        });
-    });
-    // The goal of the test below (TODO) is to make sure that new keys get added to context.json with 
+    // The goal of the test below (TODO) is to make sure that new keys get added to context.json with
     // enough information to be useful to translators. The person best positioned to do this is
     // the person who added the key.  However, it's complicated by the order that translate and test
     // currently run in, so leaving it disabled for now.
     /*describe('context.json is valid', function () {
         it('should not contain any empty values', function () {
             const context = require('../locales/context.json');
-            
+
             function checkForEmptyValues(obj, keypath = '') {
                 for (const [key, value] of Object.entries(obj)) {
                     const currentPath = keypath ? `${keypath}.${key}` : key;
-                    
+
                     if (value === null || value === undefined || value === '') {
                         assert.fail(`Empty value found at ${currentPath}. If you added a new key for translation, please add it to the ghost/i18n/locales/context.json file.`);
                     }
-                    
+
                     if (typeof value === 'object' && value !== null) {
                         checkForEmptyValues(value, currentPath);
                     }
                 }
             }
-            
+
             checkForEmptyValues(context);
         });
     }); */

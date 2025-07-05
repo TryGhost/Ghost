@@ -89,11 +89,12 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
                                                         layout={'inbox'}
+                                                        likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/reader/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
@@ -139,7 +140,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox');
+                            navigate('/reader');
                         }
                     }
                     setIsReaderOpen(open);
@@ -154,7 +155,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox');
+                            navigate('/reader');
                         }
                     }} />}
                 </DialogContent>

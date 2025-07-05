@@ -13,12 +13,12 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/inbox');
+        await page.goto('#/reader');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
@@ -45,23 +45,32 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             getPost: {
                 method: 'GET',
-                path: `/post/${encodeURIComponent(postFixture.id)}`,
+                path: `/replies/${encodeURIComponent(postFixture.id)}`,
                 response: {
                     ...postFixture,
                     // TODO: Add metadata to the post fixture
-                    metadata: {
-                        ghostAuthors: []
-                    }
+                    post: {
+                        ...postFixture,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
                 }
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/inbox');
+        await page.goto('#/reader');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
@@ -75,7 +84,7 @@ test.describe('Inbox', async () => {
         await posts.nth(postIndex).click();
 
         // Verify the route changed
-        await expect(page).toHaveURL(new RegExp(`/inbox/${encodeURIComponent(postFixture.id)}`));
+        await expect(page).toHaveURL(new RegExp(`/reader/${encodeURIComponent(postFixture.id)}`));
 
         // Wait for the modal to show
         await page.waitForSelector('[role="dialog"]', {timeout: 10000});
@@ -101,7 +110,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             likePost: {
@@ -111,7 +120,7 @@ test.describe('Inbox', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/inbox');
+        await page.goto('#/reader');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
@@ -147,7 +156,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             getPost: {
@@ -187,7 +196,7 @@ test.describe('Inbox', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/inbox');
+        await page.goto('#/reader');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');
@@ -236,7 +245,7 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/inbox',
+                path: '/feed/reader',
                 response: inboxFixture
             },
             repostPost: {
@@ -246,7 +255,7 @@ test.describe('Inbox', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await page.goto('#/inbox');
+        await page.goto('#/reader');
 
         // Wait for the inbox list to be visible
         const inboxList = page.getByTestId('inbox-list');

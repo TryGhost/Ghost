@@ -1,6 +1,7 @@
 import moment from 'moment';
+import {getSymbol} from '@tryghost/admin-x-framework';
 import {useMemo} from 'react';
-import {usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
+import {useMrrHistory, usePostGrowthStats as usePostGrowthStatsAPI, usePostReferrers as usePostReferrersAPI} from '@tryghost/admin-x-framework/api/stats';
 
 // Helper function to convert range to date parameters
 export const getRangeDates = (rangeInDays: number) => {
@@ -28,8 +29,14 @@ export const usePostReferrers = (postId: string) => {
     const {data: postReferrerResponse, isLoading: isPostReferrersLoading} = usePostReferrersAPI(postId);
     // API doesn't support date_from yet, so we fetch all data and filter on the client for now
     const {data: postGrowthStatsResponse, isLoading: isPostGrowthStatsLoading} = usePostGrowthStatsAPI(postId);
+    const {data: mrrHistoryResponse, isLoading: isMrrLoading} = useMrrHistory();
 
-    const stats = useMemo(() => postReferrerResponse?.stats || [], [postReferrerResponse]);
+    const stats = useMemo(() => {
+        const rawStats = postReferrerResponse?.stats || [];
+        // Backend now handles source normalization, so we can use the data directly
+        return rawStats;
+    }, [postReferrerResponse]);
+    
     const totals = useMemo(() => {
         if (postGrowthStatsResponse?.stats.length === 0) {
             return {
@@ -42,11 +49,38 @@ export const usePostReferrers = (postId: string) => {
         }
     }, [postGrowthStatsResponse]);
 
-    const isLoading = useMemo(() => isPostReferrersLoading || isPostGrowthStatsLoading, [isPostReferrersLoading, isPostGrowthStatsLoading]);
+    // Get site currency from MRR history (same logic as stats app)
+    const {selectedCurrency, currencySymbol} = useMemo(() => {
+        if (mrrHistoryResponse?.stats && mrrHistoryResponse?.meta?.totals) {
+            // Select the currency with the highest total MRR value (same logic as Dashboard)
+            const mrrTotals = mrrHistoryResponse.meta.totals;
+            let currentMax = mrrTotals[0];
+            if (!currentMax) {
+                return {selectedCurrency: 'usd', currencySymbol: getSymbol('usd')};
+            }
+
+            for (const total of mrrTotals) {
+                if (total.mrr > currentMax.mrr) {
+                    currentMax = total;
+                }
+            }
+
+            const useCurrency = currentMax.currency;
+            return {
+                selectedCurrency: useCurrency,
+                currencySymbol: getSymbol(useCurrency)
+            };
+        }
+        return {selectedCurrency: 'usd', currencySymbol: getSymbol('usd')};
+    }, [mrrHistoryResponse]);
+
+    const isLoading = useMemo(() => isPostReferrersLoading || isPostGrowthStatsLoading || isMrrLoading, [isPostReferrersLoading, isPostGrowthStatsLoading, isMrrLoading]);
 
     return {
         isLoading,
         stats,
-        totals
+        totals,
+        selectedCurrency,
+        currencySymbol
     };
 };

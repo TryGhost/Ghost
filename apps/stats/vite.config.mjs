@@ -1,10 +1,14 @@
 import adminXViteConfig from '@tryghost/admin-x-framework/vite';
 import pkg from './package.json';
+import svgr from 'vite-plugin-svgr';
 import {resolve} from 'path';
 
 export default (function viteConfig() {
     return adminXViteConfig({
         packageName: pkg.name,
+        plugins: [
+            svgr()
+        ],
         entry: resolve(__dirname, 'src/index.tsx'),
         overrides: {
             test: {

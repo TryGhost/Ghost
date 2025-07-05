@@ -2,10 +2,10 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
-import useFeatureFlag from './hooks/useFeatureFlag';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
 import {canAccessSettings, hasAdminAccess, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -22,10 +22,11 @@ const Page: React.FC<{children: ReactNode}> = ({children}) => {
 };
 
 const MainContent: React.FC = () => {
-    const {currentUser} = useGlobalData();
+    const {currentUser, config} = useGlobalData();
     const {route, updateRoute, loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
-    const hasActivityPub = useFeatureFlag('ActivityPub');
+    const {settings} = useGlobalData();
+    const [hasActivityPub] = getSettingValues(settings, ['social_web_enabled']) as [boolean];
 
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
@@ -35,10 +36,14 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    if (hasActivityPub && hasAdminAccess(currentUser)) {
-                        navigateAway('/activitypub');
+                    if (config.labs.ui60) {
+                        navigateAway('/analytics');
                     } else {
-                        navigateAway('/dashboard');
+                        if (hasActivityPub && hasAdminAccess(currentUser)) {
+                            navigateAway('/activitypub');
+                        } else {
+                            navigateAway('/dashboard');
+                        }
                     }
                 });
             }
@@ -49,7 +54,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty, hasActivityPub, currentUser]);
+    }, [isDirty, hasActivityPub, currentUser, config.labs.ui60]);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load
