@@ -18,8 +18,12 @@ const USERNAMES = {
 
 function buildExpectedSameAs(website, usernames) {
     const urls = [website];
-    SOCIAL_PLATFORMS.forEach((p) => {
-        urls.push(socialUrls[p](usernames[p]));
+    // we *could* loop usernames and it might be shorter, but in the real code we have to loop SOCIAL_PLATFORMS
+    // so we do the same here to make sure that the output order is the same
+    SOCIAL_PLATFORMS.forEach((platform) => {
+        if (usernames[platform]) {
+            urls.push(socialUrls[platform](usernames[platform]));
+        }
     });
     return urls;
 }
@@ -767,6 +771,31 @@ describe('getSchema', function () {
         };
 
         const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', USERNAMES);
+
+        const schema = getSchema(metadata, data);
+        should.deepEqual(schema.sameAs, expectedSameAs);
+    });
+
+    it('should escape special characters in social platform urls', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title',
+                url: 'http://mysite.com'
+            },
+            authorUrl: 'http://mysite.com/author/me/',
+            metaDescription: 'This is the author description!'
+        };
+
+        const data = {
+            context: ['author'],
+            author: {
+                name: 'Author Name',
+                website: 'http://myblogsite.com/',
+                facebook: 'user=name='
+            }
+        };
+
+        const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', {facebook: 'user&#x3D;name&#x3D;'});
 
         const schema = getSchema(metadata, data);
         should.deepEqual(schema.sameAs, expectedSameAs);

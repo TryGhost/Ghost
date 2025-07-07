@@ -71,7 +71,7 @@ function trimSameAs(author) {
 
     SOCIAL_PLATFORMS.forEach((platform) => {
         if (author[platform] && typeof socialUrls[platform] === 'function') {
-            sameAs.push(socialUrls[platform](author[platform]));
+            sameAs.push(escapeExpression(socialUrls[platform](author[platform])));
         }
     });
 
