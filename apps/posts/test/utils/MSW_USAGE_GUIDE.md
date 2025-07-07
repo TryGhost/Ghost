@@ -64,8 +64,8 @@ mockServer.setup({
         
         // Conditional responses
         when('get', '/ghost/api/admin/feedback/*', [
-            {if: req => req.url.includes('score=1'), then: {feedback: positiveFeedback}},
-            {if: req => req.url.includes('score=0'), then: {feedback: negativeFeedback}}
+            {if: req => req.url.includes('score=1'), response: {feedback: positiveFeedback}},
+            {if: req => req.url.includes('score=0'), response: {feedback: negativeFeedback}}
         ], {feedback: []})
     ]
 });

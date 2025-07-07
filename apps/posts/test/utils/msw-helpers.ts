@@ -221,7 +221,10 @@ export const mockServer = {
         }
         
         if (config.mrrHistory !== undefined) {
-            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/mrr/', mockData.mrrHistoryList(config.mrrHistory.items || [], config.mrrHistory.totals)));
+            const mrrData = config.mrrHistory.totals !== undefined 
+                ? mockData.mrrHistoryList(config.mrrHistory.items || [], config.mrrHistory.totals)
+                : mockData.mrrHistoryList(config.mrrHistory.items || []);
+            handlers.push(createGhostHandler('get', '/ghost/api/admin/stats/mrr/', mrrData));
         }
         
         // Stable APIs with defaults (always included)
@@ -267,13 +270,13 @@ export const when = (
     path: string,
     conditions: Array<{
         if: (request: Request) => boolean;
-        then: Record<string, unknown>;
+        response: Record<string, unknown>;
         status?: number;
     }>,
     fallback: Record<string, unknown> = {}
 ) => {
     return http[method](path, ({request}) => {
-        for (const {if: condition, then: response, status = 200} of conditions) {
+        for (const {if: condition, response, status = 200} of conditions) {
             if (condition(request)) {
                 return HttpResponse.json(response, {status});
             }

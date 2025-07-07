@@ -77,7 +77,7 @@ describe('usePostFeedback', () => {
                 when('get', '/ghost/api/admin/feedback/*', [
                     {
                         if: (req: Request) => new URL(req.url).searchParams.get('score') === '0',
-                        then: {feedback: negativeFeedback}
+                        response: {feedback: negativeFeedback}
                     }
                 ], {feedback: []})
             ]
