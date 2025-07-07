@@ -145,6 +145,19 @@ suites.forEach((suite) => {
             expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
         });
 
+        it('navigates to editor when highlighted text is clicked', async function () {
+            await visit('/dashboard');
+            await click('[data-test-button="search"]');
+            await typeInSearch('first post');
+            
+            // Find the highlighted text span and click on it specifically
+            const highlightedText = find('.ember-power-select-option[aria-current="true"] .highlight');
+            expect(highlightedText, 'highlighted text should exist').to.exist;
+            
+            await click(highlightedText);
+            expect(currentURL(), 'url after clicking highlighted text').to.equal(`/editor/post/${firstPost.id}`);
+        });
+
         it('navigates to editor when page selected', async function () {
             await visit('/dashboard');
             await click('[data-test-button="search"]');
