@@ -1,4 +1,4 @@
-# Ghost End To End Test Suite
+# Ghost End-To-End Test Suite
 
 This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
 
@@ -86,7 +86,7 @@ The test suite is organized into separate directories for different areas/functi
 We can decide on additional sub-folders as we go.
 
 Example structure for admin tests:
-```
+```text
 tests/admin/
 ├── login.spec.ts
 ├── posts.spec.ts
@@ -95,7 +95,7 @@ tests/admin/
 
 Project folder structure can be seen below: 
 
-```
+```text
 e2e/
 ├── tests/                      # All the tests
 │   ├── public/                 # Public site tests
@@ -163,7 +163,7 @@ export class AdminLoginPage {
 
 1. **Use page object patterns** to separate page elements, actions on the pages, complex logic from tests. They should help you make them more readable and UI elements reusable.
 2. **Add meaningful assertions** beyond just page loads. Keep assertions in tests.
-3. **Use data-testid attributes** for reliable element selection, in case you can not locate elements in a simple way. Simple looks like this: `page.getByLabel('User Name')`. Avoid, css, xpath locators, they make tests brittle. 
+3. **Use `data-testid` attributes** for reliable element selection, in case you **cannot** locate elements in a simple way. Example: `page.getByLabel('User Name')`. Avoid, css, xpath locators - they make tests brittle. 
 4. **Clean up test data** when tests modify Ghost state
 5. **Group related tests** in describe blocks
 
