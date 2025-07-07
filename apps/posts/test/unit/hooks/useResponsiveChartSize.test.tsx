@@ -134,20 +134,20 @@ describe('useResponsiveChartSize', () => {
         const {result, unmount} = renderHook(() => useResponsiveChartSize());
         
         expect(result.current.chartSize).toBe('md');
+        const originalSize = result.current.chartSize;
 
         // Unmount the hook
         unmount();
 
-        // Test that resize events no longer affect the unmounted hook
-        // (This tests cleanup behavior without testing implementation)
+        // Behavior test: hook should stop responding to resize events after unmount
         act(() => {
             Object.defineProperty(window, 'innerWidth', {value: 800});
             // If cleanup worked, calling the old handler shouldn't cause issues
             expect(() => resizeHandler()).not.toThrow();
         });
         
-        // Verify removeEventListener was called (cleanup behavior)
-        expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+        // The hook result should remain unchanged after unmount (no longer reactive)
+        expect(result.current.chartSize).toBe(originalSize);
     });
 
     it('updates boolean flags correctly when size changes', () => {

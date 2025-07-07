@@ -1,5 +1,5 @@
 import {STATS_RANGES} from '@src/utils/constants';
-import {describe, expect, it, vi} from 'vitest';
+import {describe, expect, it} from 'vitest';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 describe('getPeriodText', () => {
@@ -15,11 +15,9 @@ describe('getPeriodText', () => {
         expect(getPeriodText(-1)).toBe('');
     });
 
-    it('should return lowercase name for non-standard range', () => {
-        // Spy on Object.values and override its return value for testing
-        const objectValuesSpy = vi.spyOn(Object, 'values');
-        objectValuesSpy.mockReturnValue([{value: 999, name: 'Custom Range'}]);
-        expect(getPeriodText(999)).toBe('custom range');
-        objectValuesSpy.mockRestore();
+    it('should handle edge case ranges correctly', () => {
+        // Test ranges that fall through to the lowercase fallback
+        expect(getPeriodText(STATS_RANGES.TODAY.value)).toBe('today');
+        expect(getPeriodText(STATS_RANGES.YEAR_TO_DATE.value)).toBe('year to date');
     });
 }); 
