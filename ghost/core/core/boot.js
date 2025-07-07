@@ -101,7 +101,7 @@ async function initCore({ghostServer, config, frontend}) {
     debug('End: limits');
 
     // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
-    debug('Begin: settings-service');
+    debug('Begin: settings');
     const settings = require('./server/services/settings/settings-service');
     await settings.init();
     await settings.syncEmailSettings(config.get('hostSettings:emailVerification:verified'));
