@@ -16,10 +16,10 @@ describe('getPeriodText', () => {
     });
 
     it('should return lowercase name for non-standard range', () => {
-        // Mock Object.values to return a custom range
-        const spy = vi.spyOn(Object, 'values');
-        spy.mockReturnValue([{value: 999, name: 'Custom Range'}]);
+        // Spy on Object.values and override its return value for testing
+        const objectValuesSpy = vi.spyOn(Object, 'values');
+        objectValuesSpy.mockReturnValue([{value: 999, name: 'Custom Range'}]);
         expect(getPeriodText(999)).toBe('custom range');
-        spy.mockRestore();
+        objectValuesSpy.mockRestore();
     });
 }); 

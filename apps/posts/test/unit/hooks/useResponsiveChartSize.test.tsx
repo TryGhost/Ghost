@@ -1,5 +1,5 @@
 import {act, renderHook} from '@testing-library/react';
-import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import {useResponsiveChartSize} from '@src/hooks/useResponsiveChartSize';
 
 describe('useResponsiveChartSize', () => {
@@ -97,24 +97,10 @@ describe('useResponsiveChartSize', () => {
         expect(result2.current.chartSize).toBe('lg');
     });
 
-    it('adds resize event listener on mount', () => {
-        renderHook(() => useResponsiveChartSize());
-
-        expect(window.addEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
-    });
-
-    it('removes resize event listener on unmount', () => {
-        const {unmount} = renderHook(() => useResponsiveChartSize());
-
-        unmount();
-
-        expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
-    });
-
-    it('updates size when window is resized', () => {
+    it('responds to window resize events', () => {
         let resizeHandler: () => void;
         
-        // Capture the resize handler
+        // Capture the resize handler to test behavior
         window.addEventListener = vi.fn((event, handler) => {
             if (event === 'resize') {
                 resizeHandler = handler as () => void;
@@ -122,18 +108,46 @@ describe('useResponsiveChartSize', () => {
         });
 
         Object.defineProperty(window, 'innerWidth', {value: 1200});
-
         const {result} = renderHook(() => useResponsiveChartSize());
-
+        
         expect(result.current.chartSize).toBe('md');
 
-        // Simulate window resize
+        // Test that the hook actually responds to resize events
         act(() => {
             Object.defineProperty(window, 'innerWidth', {value: 800});
             resizeHandler();
         });
 
         expect(result.current.chartSize).toBe('sm');
+    });
+
+    it('cleans up properly when unmounted', () => {
+        let resizeHandler: () => void;
+        
+        window.addEventListener = vi.fn((event, handler) => {
+            if (event === 'resize') {
+                resizeHandler = handler as () => void;
+            }
+        });
+
+        Object.defineProperty(window, 'innerWidth', {value: 1200});
+        const {result, unmount} = renderHook(() => useResponsiveChartSize());
+        
+        expect(result.current.chartSize).toBe('md');
+
+        // Unmount the hook
+        unmount();
+
+        // Test that resize events no longer affect the unmounted hook
+        // (This tests cleanup behavior without testing implementation)
+        act(() => {
+            Object.defineProperty(window, 'innerWidth', {value: 800});
+            // If cleanup worked, calling the old handler shouldn't cause issues
+            expect(() => resizeHandler()).not.toThrow();
+        });
+        
+        // Verify removeEventListener was called (cleanup behavior)
+        expect(window.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
     });
 
     it('updates boolean flags correctly when size changes', () => {
