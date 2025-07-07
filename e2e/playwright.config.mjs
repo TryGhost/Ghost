@@ -10,8 +10,7 @@ const config = {
     use: {
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
-        browserName: 'chromium',
-        headless: !process.env.PLAYWRIGHT_DEBUG
+        browserName: 'chromium'
     },
     testDir: './tests'
 };

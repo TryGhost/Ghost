@@ -1,7 +1,7 @@
 import {Page, Locator} from '@playwright/test';
 
 export class HomePage {
-    readonly page: Page;
+    private readonly page: Page;
     readonly title: Locator;
     readonly navigation: Locator;
     readonly posts: Locator;

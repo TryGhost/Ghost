@@ -1,6 +1,6 @@
-# Ghost E2E Test Suite
+# Ghost End To End Test Suite
 
-End-to-end testing for Ghost using Playwright. This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
+This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
 
 ## Prerequisites
 
@@ -25,34 +25,39 @@ yarn test:e2e
 
 ## Running Tests
 
-### Locally with Development Ghost
+### Locally - with Development Ghost
 
 1. **Start Ghost in development mode:**
-   ```bash
-   # From repository root
-   yarn dev
-   ```
-   This starts Ghost on `http://localhost:2368`
+
+```bash
+# From repository root
+yarn dev
+```
+This starts Ghost on `http://localhost:2368`
 
 2. **Run e2e tests:**
-   ```bash
-   # From repository root
-   yarn test:e2e
-   
-   # Or directly from e2e directory
-   cd e2e
-   yarn test
-   ```
 
-### Locally with Custom Ghost Instance
+```bash
+# From repository root
+yarn test:e2e
+
+# Or directly from e2e directory
+cd e2e
+yarn test
+```
+
+### Locally - with Custom Ghost Instance
 
 If you have Ghost running on a different URL:
 
 ```bash
+# From repository root
 GHOST_BASE_URL=http://localhost:3000 yarn test:e2e
 ```
 
 ### Running Specific Tests
+
+Within `e2e` folder, run one of the following commands: 
 
 ```bash
 # All tests
@@ -65,26 +70,48 @@ yarn test specific/folder/testfile.spec.ts
 yarn test --grep "homepage"
 
 # With browser visible (for debugging)
-PLAYWRIGHT_DEBUG=1 yarn test
+yarn test --debug
 ```
 
-## Test Development
+## Tests Development
 
-### Project Structure
+The test suite is organized into separate directories for different areas/functions:
+
+### **Current Test Suites**
+- `tests/public/` - Public-facing site tests (homepage, posts, etc.)
+
+### **Suggested Additional Test Suites**
+- `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
+
+We can decide on additional sub-folders as we go.
+
+Example structure for admin tests:
+```
+tests/admin/
+├── login.spec.ts
+├── posts.spec.ts
+└── settings.spec.ts
+```
+
+Project folder structure can be seen below: 
 
 ```
 e2e/
-├── tests/                  
-│   ├── public/          # public site tests
-│   │   └── homepage.spec.ts
-│   └── .eslintrc.js      # Test-specific ESLint config
-├── helpers/              # Utilities, fixtures, page objects etc.
-│   ├── pages/            # Page Object Models
-│   │   └── HomePage.ts   
-│   └── index.ts          # Main exports
-├── playwright.config.mjs # Playwright configuration
-├── package.json          # Dependencies and scripts
-└── tsconfig.json         # TypeScript configuration
+├── tests/                      # All the tests
+│   ├── public/                 # Public site tests
+│   │   └── testname.spec.ts    # Test cases
+│   ├── admin/                  # Admin site tests
+│   │   └── testname.spec.ts    # Test cases
+│   └── .eslintrc.js            # Test-specific ESLint config
+├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
+│   ├── pages/                  # Page Object Models
+│   │   └── HomePage.ts         # Page Object
+│   ├── utils/                  # Utils
+│   │   └── math.ts             # Math related utils   
+│   └── index.ts                # Main exports
+├── playwright.config.mjs       # Playwright configuration
+├── package.json                # Dependencies and scripts
+└── tsconfig.json               # TypeScript configuration
 ```
 
 ### Writing Tests
@@ -95,7 +122,7 @@ Aim to format tests in Arrange Act Assert style - it will help you with directio
 ```typescript
 test.describe('Ghost Homepage', () => {
     test('loads correctly', async ({page}) => {
-        // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed 
+        // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed
         const homePage = new HomePage(page);
         
         // ACT - do the actions you need to do, to verify certain behaviour
@@ -107,17 +134,24 @@ test.describe('Ghost Homepage', () => {
 });
 ```
 
-#### Using Page Objects
+### Using Page Objects
 
 Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/).
 
 ```typescript
 // Create a page object for admin login
 export class AdminLoginPage {
-    constructor(private page: Page) {}
+    private pageUrl:string;
+    
+    constructor(private page: Page) {
+        this.pageUrl = '/ghost'
+    }
+
+    async goto(urlToVisit = this.pageUrl) {
+        await this.page.goto(urlToVisit);
+    }
     
     async login(email: string, password: string) {
-        await this.page.goto('/ghost/');
         await this.page.fill('[name="identification"]', email);
         await this.page.fill('[name="password"]', password);
         await this.page.click('button[type="submit"]');
@@ -176,6 +210,7 @@ yarn build
 yarn dev           # Watch mode for TypeScript compilation
 ```
 
+## Resolving issues
 
 ### Ghost Not Starting
 
@@ -193,7 +228,7 @@ tail -f ghost/core/content/logs/ghost-dev.log
 
 1. **Screenshots**: Playwright captures screenshots on failure
 2. **Traces**: Available in `test-results/` directory
-3. **Debug Mode**: Run with `PLAYWRIGHT_DEBUG=1` to see browser
+3. **Headed Mode**: Run with `yarn test --debug` or `yarn --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
 
 ### Port Conflicts
@@ -207,25 +242,5 @@ lsof -i :2369
 
 # Kill conflicting processes
 kill -9 <PID>
-```
-
-## Extending the Test Suite
-
-The test suite is organized into separate directories for different areas/functions:
-
-### **Current Test Suites**
-- `tests/public/` - Public-facing site tests (homepage, posts, etc.)
-
-### **Suggested Additional Test Suites**
-- `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
-
-We can decide on additional sub-folders as we go.
-
-Example structure for admin tests:
-```
-tests/admin/
-├── login.spec.ts
-├── posts.spec.ts
-└── settings.spec.ts
 ```
 
