@@ -32,6 +32,15 @@ export default class GhTagsTokenInput extends Component {
         return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedTags.includes(tag)));
     }
 
+    // if we only have one page of tags available or we've already loaded all tags
+    // then we can use the client-side search
+    get useServerSideSearch() {
+        const hasLoadedAnyTags = !!this._initialTagsMeta;
+        const hasLoadedAllTags = hasLoadedAnyTags && parseInt(this._initialTagsMeta.pagination.pages, 10) === parseInt(this._initialTagsMeta.pagination.page, 10);
+
+        return !hasLoadedAllTags;
+    }
+
     @action
     addInitialTags(tags) {
         const selectedTags = this.args.selected || [];
@@ -63,6 +72,10 @@ export default class GhTagsTokenInput extends Component {
     *loadMoreTagsTask() {
         const isSearch = !!this._powerSelectAPI.searchText;
         if (isSearch) {
+            if (!this.useServerSideSearch) {
+                return;
+            }
+
             if (this.searchTagsTask.isRunning) {
                 return;
             }

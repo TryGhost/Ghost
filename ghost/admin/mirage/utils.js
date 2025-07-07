@@ -19,6 +19,9 @@ export function paginatedResponse(modelName) {
 export function paginateModelCollection(modelName, collection, page, limit) {
     let pages, next, prev, models;
 
+    page = parseInt(page, 10);
+    limit = parseInt(limit, 10);
+
     if (limit === 'all') {
         pages = 1;
     } else {
