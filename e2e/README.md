@@ -136,7 +136,7 @@ test.describe('Ghost Homepage', () => {
 
 ### Using Page Objects
 
-Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/).
+Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/) and [this link](https://martinfowler.com/bliki/PageObject.html).
 
 ```typescript
 // Create a page object for admin login
