@@ -28,4 +28,4 @@ export function validateFacebookUrl(newUrl: string) {
 
 export const facebookHandleToUrl = (handle: string) => `https://www.facebook.com/${handle}`;
 
-export const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/mi)?.[1] || null; 
+export const facebookUrlToHandle = (url: string) => url.match(/(?:https:\/\/)(?:www\.)(?:facebook\.com)\/(?:#!\/)?(\w+\/?\S+)/i)?.[1] || null; 

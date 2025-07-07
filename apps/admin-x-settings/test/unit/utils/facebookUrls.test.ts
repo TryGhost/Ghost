@@ -18,6 +18,10 @@ describe('Facebook URLs', () => {
             assert.throws(() => validateFacebookUrl('https://twitter.com/myPage'), /The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
             assert.throws(() => validateFacebookUrl('http://example.com'), /The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
         });
+
+        it('should reject URLs containing newline characters', () => {
+            assert.throws(() => validateFacebookUrl('facebook.com/my\nPage'), /The URL must be in a format like https:\/\/www\.facebook\.com\/yourPage/);
+        });
     });
 
     describe('Handle to URL conversion', () => {
@@ -31,6 +35,7 @@ describe('Facebook URLs', () => {
             assert.equal(facebookUrlToHandle('https://www.facebook.com/myPage'), 'myPage');
             assert.equal(facebookUrlToHandle('https://www.facebook.com/myPage/'), 'myPage/');
             assert.equal(facebookUrlToHandle('invalid-url'), null);
+            assert.equal(facebookUrlToHandle('facebook.com/my\nPage'), null);
         });
     });
 }); 
