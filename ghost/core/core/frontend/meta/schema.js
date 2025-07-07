@@ -181,4 +181,4 @@ function getSchema(metaData, data) {
     return null;
 }
 
-module.exports = getSchema;
+module.exports = {getSchema, SOCIAL_PLATFORMS};

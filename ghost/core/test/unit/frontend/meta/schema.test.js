@@ -1,10 +1,7 @@
 const should = require('should');
-const getSchema = require('../../../../core/frontend/meta/schema');
+const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const markdownToMobiledoc = require('../../../utils/fixtures/data-generator').markdownToMobiledoc;
 const socialUrls = require('@tryghost/social-urls');
-
-// Shared between sameAs tests
-const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'linkedin'];
 
 // Re-usable social usernames for sameAs tests
 const USERNAMES = {
