@@ -4,7 +4,6 @@ import useSettingGroup from '../../../hooks/useSettingGroup';
 import { SelectOption, SelectWithOther, SettingGroupContent, withErrorBoundary } from '@tryghost/admin-x-design-system';
 import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 
-
 const LOCALE_DATA = [
     { code: 'af', label: 'Afrikaans' },
     { code: 'ar', label: 'Arabic' },
@@ -116,9 +115,19 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => 
             return 'Locale is required';
         }
 
-        // Basic BCP 47 validation: allow letters, numbers, and hyphens
-        const localePattern = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/;
-        if (!localePattern.test(value)) {
+        // Comprehensive BCP 47 validation pattern
+        // Supports:
+        // - 2-3 letter language codes (en, eng)
+        // - 4-letter script codes (Latn, Cyrl)
+        // - 2-letter region codes (US, GB)
+        // - 3-digit region codes (419 for Latin America)
+        // - Variants (valencia, 1996)
+        // - Extensions (u-ca-buddhist)
+        // - Private use (x-private)
+        // - Grandfathered tags (i-klingon, zh-min-nan)
+        const bcp47Pattern = /^(((en-GB-oed|i-ami|i-bnn|i-default|i-enochian|i-hak|i-klingon|i-lux|i-mingo|i-navajo|i-pwn|i-tao|i-tay|i-tsu|sgn-BE-FR|sgn-BE-NL|sgn-CH-DE)|(art-lojban|cel-gaulish|no-bok|no-nyn|zh-guoyu|zh-hakka|zh-min|zh-min-nan|zh-xiang))|((([a-z]{2,3}(-[a-z]{3}(-[a-z]{3}){0,2})?)|[a-z]{4}|[a-z]{5,8})(-[a-z]{4})?(-([a-z]{2}|[0-9]{3}))?(-([a-z0-9]{5,8}|[0-9][a-z0-9]{3}))*(-([0-9a-wy-z](-[a-z0-9]{2,8})+))*(-(x(-[a-z0-9]{1,8})+))?)|(x(-[a-z0-9]{1,8})+))$/i;
+
+        if (!bcp47Pattern.test(value)) {
             return errorMessage;
         }
 
