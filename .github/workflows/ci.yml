@@ -830,6 +830,9 @@ jobs:
         working-directory: ghost/core/core/server/data/tinybird
         run: tb build
 
+      - name: Get Tinybird configuration
+        run: .github/scripts/configure-tinybird.sh
+
       - name: Run migrations
         working-directory: ghost/core
         run: yarn knex-migrator init
@@ -839,7 +842,10 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: node --import=tsx index.js &
+        run: |
+          echo $tinybird__adminToken
+          echo $tinybird__workspaceId
+          echo $tinybird__stats__endpoint
 
       - name: Wait for Ghost to be ready
         run: |
