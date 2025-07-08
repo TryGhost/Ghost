@@ -1,4 +1,4 @@
-import FakeLogo from '../../../assets/images/portal-splash-logo.png';
+import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import UserAddIcon from '../../../assets/images/portal-splash-user-add.png';
@@ -7,7 +7,7 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
-const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({color, title, price}) => {
+const SignupOptionImage: React.FC<{color:string, title: string, price: string}> = ({title, color, price}) => {
     return (
         <div className='rounded-lg bg-grey-100/70 px-3 pb-3 pt-1.5'>
             <div className='font-space-grotesk text-[1.5rem] font-bold' style={{
@@ -26,7 +26,7 @@ const SignupOptionImage: React.FC<{color:string, title: string, price: string}> 
 const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {updateRoute} = useRouting();
     const {settings} = useGlobalData();
-    const [accentColor, membersSignupAccess] = getSettingValues<string>(settings, ['accent_color', 'members_signup_access']);
+    const [accentColor, icon, membersSignupAccess] = getSettingValues<string>(settings, ['accent_color', 'icon', 'members_signup_access']);
 
     const openPreviewModal = () => {
         updateRoute('portal/edit');
@@ -51,11 +51,18 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 </div>
                 <div className='grid w-full max-w-[440px] grid-cols-3 gap-5 rounded-t-xl bg-white px-9 py-6 shadow-xl'>
                     <div className='col-span-3 mb-1 flex flex-col items-center justify-center'>
-                        <div className='flex aspect-square items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
-                            backgroundColor: color
-                        }}>
-                            <img className='h-auto w-5' src={FakeLogo} />
-                        </div>
+                        {icon ?
+                            <div className='size-6 rounded-sm bg-cover bg-center' style={{
+                                backgroundImage: `url(${icon})`
+                            }} />
+                            // <img className='size-5' src={icon} />
+                            :
+                            <div className='flex aspect-square items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
+                                backgroundColor: color
+                            }}>
+                                <img className='h-auto w-5' src={FakeLogo} />
+                            </div>
+                        }
                         <div className='mt-1.5 font-space-grotesk text-lg font-bold'>
                             Sign up
                         </div>
