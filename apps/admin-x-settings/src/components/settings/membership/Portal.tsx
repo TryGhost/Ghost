@@ -1,3 +1,4 @@
+import PortalSettingsImg from '../../../assets/images/portal-settings.png';
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -21,8 +22,10 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='portal'
             testId='portal'
-            title="Portal settings"
-        />
+            title="Signup portal"
+        >
+            <img src={PortalSettingsImg} />
+        </TopLevelGroup>
     );
 };
 
