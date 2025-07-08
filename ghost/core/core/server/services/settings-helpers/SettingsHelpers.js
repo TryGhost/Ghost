@@ -240,7 +240,12 @@ class SettingsHelpers {
         }
 
         // Ghost (Pro) limits
-        if (this.limitService.limits.limitSocialWeb?.disabled) {
+        //
+        // Implementation note: we're only checking that the limit flag 'limitSocialWeb' exists and not awaiting for "this.limitService.checkWouldGoOverLimit('limitSocialWeb')"
+        // Reason:
+        // - calculated settings currently don't support async method calls
+        // - 'limitSocialWeb' config either exists with disabled:true (for sites that don't have access to social web), or doesn't exist at all
+        if (this.limitService.isLimited('limitSocialWeb')) {
             logging.warn('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
             return false;
         }

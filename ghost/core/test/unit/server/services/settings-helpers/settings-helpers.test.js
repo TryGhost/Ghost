@@ -275,11 +275,7 @@ describe('Settings Helpers', function () {
                 isSet: sinon.stub().withArgs('ActivityPub').returns(true)
             };
             limitService = {
-                limits: {
-                    limitSocialWeb: {
-                        disabled: false
-                    }
-                }
+                isLimited: sinon.stub().withArgs('limitSocialWeb').returns(false)
             };
         });
 
@@ -308,7 +304,7 @@ describe('Settings Helpers', function () {
         });
 
         it('returns false when social web is disabled for a Ghost (Pro) user', function () {
-            limitService.limits.limitSocialWeb.disabled = true;
+            limitService.isLimited.withArgs('limitSocialWeb').returns(true);
 
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
