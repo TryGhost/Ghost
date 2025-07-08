@@ -48,30 +48,32 @@ function trimSchema(schema) {
     return schemaObject;
 }
 
-function trimSameAs(data, context) {
+// note that website isn't included here
+const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'linkedin'];
+
+/**
+ * Build the `sameAs` array for schema.org Person objects.
+ *
+ * @param {Object} author   either `data.author` or `data.<post|page>.primary_author`.
+ *                          Expected to contain `website` plus any supported social usernames.
+ * @returns {string[]}      URLs for the author website and each populated social profile.
+ */
+function trimSameAs(author) {
+    if (!author || Object.keys(author).length === 0) {
+        return [];
+    }
+    
     const sameAs = [];
 
-    if (context === 'post' || context === 'page') {
-        if (data[context].primary_author.website) {
-            sameAs.push(escapeExpression(data[context].primary_author.website));
-        }
-        if (data[context].primary_author.facebook) {
-            sameAs.push(socialUrls.facebook(data[context].primary_author.facebook));
-        }
-        if (data[context].primary_author.twitter) {
-            sameAs.push(socialUrls.twitter(data[context].primary_author.twitter));
-        }
-    } else if (context === 'author') {
-        if (data.author.website) {
-            sameAs.push(escapeExpression(data.author.website));
-        }
-        if (data.author.facebook) {
-            sameAs.push(socialUrls.facebook(data.author.facebook));
-        }
-        if (data.author.twitter) {
-            sameAs.push(socialUrls.twitter(data.author.twitter));
-        }
+    if (author.website) {
+        sameAs.push(escapeExpression(author.website));
     }
+
+    SOCIAL_PLATFORMS.forEach((platform) => {
+        if (author[platform] && typeof socialUrls[platform] === 'function') {
+            sameAs.push(escapeExpression(socialUrls[platform](author[platform])));
+        }
+    });
 
     return sameAs;
 }
@@ -94,7 +96,7 @@ function getPostSchema(metaData, data) {
             name: escapeExpression(data[context].primary_author.name),
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
-            sameAs: trimSameAs(data, context),
+            sameAs: trimSameAs(data[context].primary_author),
             description: data[context].primary_author.metaDescription ?
                 escapeExpression(data[context].primary_author.metaDescription) :
                 null
@@ -150,7 +152,7 @@ function getAuthorSchema(metaData, data) {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'Person',
-        sameAs: trimSameAs(data, 'author'),
+        sameAs: trimSameAs(data.author),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
         image: schemaImageObject(metaData.authorImage) || schemaImageObject(metaData.coverImage),
@@ -179,4 +181,4 @@ function getSchema(metaData, data) {
     return null;
 }
 
-module.exports = getSchema;
+module.exports = {getSchema, SOCIAL_PLATFORMS};
