@@ -4,7 +4,7 @@ This is the web analytics implementation using [Tinybird Forward](https://www.ti
 
 ### Requirements
 
-In order to use Tinybird locally, make sure to install it. 
+In order to use Tinybird locally, make sure to install the Tinybird CLI.
 **Only for the first time, run:** `yarn tb:install` from the root folder.
 
 ### Using Tinybird locally
