@@ -14,6 +14,9 @@ test.describe('Publication language settings', async () => {
 
         const section = page.getByTestId('publication-language');
         
+        // Wait for the section to be visible
+        await expect(section).toBeVisible();
+        
         // Find the select element by its testId
         const select = section.getByTestId('locale-select');
 
@@ -52,12 +55,12 @@ test.describe('Publication language settings', async () => {
         await chooseOptionInSelect(select, 'Other...');
 
         // Now we should see a text input field
-        await section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en-GB').fill('en-GB');
+        await section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en').fill('en-GB');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         // Verify the custom value is saved
-        await expect(section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en-GB')).toHaveValue('en-GB');
+        await expect(section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en')).toHaveValue('en-GB');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
@@ -80,7 +83,7 @@ test.describe('Publication language settings', async () => {
         await chooseOptionInSelect(select, 'Other...');
 
         // Enter an invalid locale
-        const input = section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en-GB');
+        const input = section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en');
         await input.fill('English');
 
         // Wait for validation to be processed
@@ -137,7 +140,7 @@ test.describe('Publication language settings', async () => {
         const section = page.getByTestId('publication-language');
 
         // Should show the custom locale in the text input since en-AU is not in the predefined list
-        const input = section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en-GB');
+        const input = section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en');
         await expect(input).toBeVisible();
         await expect(input).toHaveValue('en-AU');
     });
