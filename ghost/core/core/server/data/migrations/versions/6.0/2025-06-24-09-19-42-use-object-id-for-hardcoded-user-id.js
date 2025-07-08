@@ -63,6 +63,14 @@ module.exports = createTransactionalMigration(
             .where('actor_type', 'user')
             .update({actor_id: newId});
 
+        // 5. Update user_id inside session_data JSON
+        await knex.raw(`
+            UPDATE sessions
+            SET session_data = JSON_SET(session_data, '$.user_id', ?)
+            WHERE JSON_VALID(session_data)
+            AND JSON_EXTRACT(session_data, '$.user_id') = ?
+        `, [newId, LEGACY_HARDCODED_USER_ID]);
+
         // Step 3: Clean up the now redundant user record identified by the
         // legacy user ID as there should be no references to it anymore
         await knex('users').where('id', LEGACY_HARDCODED_USER_ID).del();
