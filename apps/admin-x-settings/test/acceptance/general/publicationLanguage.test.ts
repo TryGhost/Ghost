@@ -86,12 +86,8 @@ test.describe('Publication language settings', async () => {
         const input = section.getByPlaceholder('e.g. pt-BR, sr-Cyrl, en');
         await input.fill('English');
 
-        // Wait for validation to be processed
-        await page.waitForTimeout(100);
-
-        // Validation should show immediately on change
-        // The error message should be visible somewhere in the section
-        await expect(section).toContainText('Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+        // Wait for the validation error message to appear
+        await expect(section.getByText('Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private')).toBeVisible();
     });
 
     test('Can switch back from custom input to dropdown', async ({page}) => {
