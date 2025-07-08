@@ -62,6 +62,7 @@
     "prepare": "husky install .github/hooks",
     "tb": "tb local start && cd ghost/core/core/server/data/tinybird && tb dev",
     "tb:install": "curl https://tinybird.co | sh",
+    "tb:configure": "source ./ghost/core/core/server/data/tinybird/scripts/configure-ghost.sh",
     "postinstall": "patch-package",
     "query:posts": "cd ghost/core/core/server/data/tinybird/scripts && ./query-posts.sh",
     "query:members": "cd ghost/core/core/server/data/tinybird/scripts && ./query-members.sh",
