@@ -17,9 +17,7 @@ function setIsRoles(loadedPermissions) {
         isAdmin: false,
         isEditor: false,
         isAuthor: false,
-        isContributor: false,
-        isSuperEditor: false,
-        isEitherEditor: false
+        isContributor: false
     };
     if (!loadedPermissions?.user?.roles) {
         return resultsObject;
@@ -29,8 +27,6 @@ function setIsRoles(loadedPermissions) {
     resultsObject.isEditor = checkUserPermissionsForRole(loadedPermissions, 'Editor');
     resultsObject.isAuthor = checkUserPermissionsForRole(loadedPermissions, 'Author');
     resultsObject.isContributor = checkUserPermissionsForRole(loadedPermissions, 'Contributor');
-    resultsObject.isSuperEditor = checkUserPermissionsForRole(loadedPermissions, 'Super Editor');
-    resultsObject.isEitherEditor = resultsObject.isEditor || resultsObject.isSuperEditor;
     return resultsObject;
 }
 

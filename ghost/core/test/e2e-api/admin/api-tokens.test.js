@@ -19,8 +19,8 @@ describe('Admin API', function () {
 
     describe('Switch Authentication Methods', function () {
         it('can use a restricted cookie session, then switch to a token', async function () {
-            // editor doesn't have permission to access /members, so this should fail
-            await agent.loginAsEditor();
+            // author doesn't have permission to access /members, so this should fail
+            await agent.loginAsAuthor();
             await agent.get('members').expectStatus(403);
             // the backup token has permission to access /members
             await agent.useBackupAdminAPIKey();

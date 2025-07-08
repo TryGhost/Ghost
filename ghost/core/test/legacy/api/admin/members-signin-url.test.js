@@ -69,7 +69,7 @@ describe('Members Sigin URL API', function () {
         });
     });
 
-    describe('As non-Owner and non-Admin', function () {
+    describe('As editor', function () {
         before(function () {
             return localUtils.startGhost()
                 .then(function () {
@@ -81,6 +81,36 @@ describe('Members Sigin URL API', function () {
                             email: 'test+editor@ghost.org'
                         }),
                         role: testUtils.DataGenerator.Content.roles[1].name
+                    });
+                })
+                .then((user) => {
+                    request.user = user;
+
+                    return localUtils.doAuth(request, 'member');
+                });
+        });
+
+        it('Can read', function () {
+            return request
+                .get(localUtils.API.getApiQuery(`members/${testUtils.DataGenerator.Content.members[0].id}/signin_urls/`))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(200);
+        });
+    });
+    describe('As author', function () {
+        before(function () {
+            return localUtils.startGhost()
+                .then(function () {
+                    request = supertest.agent(config.get('url'));
+                })
+                .then(function () {
+                    return testUtils.createUser({
+                        user: testUtils.DataGenerator.forKnex.createUser({
+                            email: 'test+author@ghost.org'
+                        }),
+                        role: testUtils.DataGenerator.Content.roles[2].name
                     });
                 })
                 .then((user) => {

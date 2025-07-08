@@ -1384,7 +1384,7 @@ Post = ghostBookshelf.Model.extend({
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
+        let {isContributor, isOwner, isAdmin, isEditor} = setIsRoles(loadedPermissions);
         let isIntegration;
         let isEdit;
         let isAdd;
@@ -1424,7 +1424,7 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
-        } else if (!(isOwner || isAdmin || isEitherEditor || isIntegration)) {
+        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
             hasUserPermission = !isChanging('visibility');
         }
 

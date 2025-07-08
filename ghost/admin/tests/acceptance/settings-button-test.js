@@ -26,10 +26,5 @@ describe('Acceptance: Settings button', function () {
             await visit('site');
             expect(find('[data-test-nav="settings"]')).to.be.null;
         });
-        it('is present for super editors', async function () {
-            await loginAsRole('Super Editor', this.server);
-            await visit('site');
-            expect(find('[data-test-nav="settings"]')).to.exist;
-        });
     });
 });

@@ -24,13 +24,6 @@ describe('setIsRoles function behavior', function () {
             }]
         }
     };
-    const loadedPermissionsSuperEditor = {
-        user: {
-            roles: [{
-                name: 'Super Editor'
-            }]
-        }
-    };
     const loadedPermissionsWithMultipleRoles = {
         user: {
             roles: [{
@@ -71,8 +64,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(true);
         result.isAuthor.should.equal(false);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(true);
     });
 
     it('returns the correct object for Administrator', function () {
@@ -83,8 +74,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(false);
         result.isAuthor.should.equal(false);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(false);
     });
 
     it('returns the correct object for Author', function () {
@@ -95,20 +84,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(false);
         result.isAuthor.should.equal(true);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(false);
-    });
-
-    it('returns the correct object for Super Editor', function () {
-        let result = setIsRoles(loadedPermissionsSuperEditor);
-        result.should.be.an.Object();
-        result.isOwner.should.equal(false);
-        result.isAdmin.should.equal(false);
-        result.isEditor.should.equal(false);
-        result.isAuthor.should.equal(false);
-        result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(true);
-        result.isEitherEditor.should.equal(true);
     });
 
     it('returns the correct object for multiple roles', function () {
@@ -119,8 +94,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(true);
         result.isAuthor.should.equal(true);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(true);
     });
     it('returns the correct object for no roles', function () {
         let result = setIsRoles(loadedPermissionsWithNoRoles);
@@ -130,8 +103,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(false);
         result.isAuthor.should.equal(false);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(false);
     });
     it('returns the correct object for no user', function () {
         let result = setIsRoles(loadedPermissionsWithNoUser);
@@ -141,8 +112,6 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(false);
         result.isAuthor.should.equal(false);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(false);
     });
     it('returns the correct object for permissions without role', function () {
         let result = setIsRoles(loadedPermissionswithPermissions);
@@ -152,7 +121,5 @@ describe('setIsRoles function behavior', function () {
         result.isEditor.should.equal(false);
         result.isAuthor.should.equal(false);
         result.isContributor.should.equal(false);
-        result.isSuperEditor.should.equal(false);
-        result.isEitherEditor.should.equal(false);
     });
 });

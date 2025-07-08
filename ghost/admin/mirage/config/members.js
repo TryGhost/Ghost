@@ -12,7 +12,7 @@ import {underscore} from '@ember/string';
 const ALLOWED_ROLES = [
     'Owner',
     'Administrator',
-    'Super Editor'
+    'Editor'
 ];
 
 export function mockMembersStats(server) {

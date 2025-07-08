@@ -1,12 +1,9 @@
 import {Select} from '@tryghost/admin-x-design-system';
 import {User, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBrowseRoles} from '@tryghost/admin-x-framework/api/roles';
-import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }> = ({user, setUserData}) => {
     const {data: {roles} = {}} = useBrowseRoles();
-    const {config} = useGlobalData();
-    const editorBeta = config.labs.superEditors;
 
     let optionsArray = [
         {
@@ -30,20 +27,6 @@ const RoleSelector: React.FC<{ user: User; setUserData: (user: User) => void; }>
             value: 'administrator'
         }
     ];
-    // if the editor beta is enabled, replace the editor role with super editor
-    if (editorBeta) {
-        optionsArray = optionsArray.map((option) => {
-            if (option.value === 'editor') {
-                return {
-                    ...option,
-                    label: 'Editor (beta mode)',
-                    value: 'super editor',
-                    hint: 'Can invite and manage other Authors and Contributors, as well as edit and publish any posts on the site. Can manage members and moderate comments.'
-                };
-            }
-            return option;
-        });
-    }
 
     if (isOwnerUser(user)) {
         const ownerOption = {

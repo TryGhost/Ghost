@@ -265,18 +265,17 @@ describe('Backup Integration', function () {
                     });
             });
 
-            it('Cannot export members CSV', async function () {
+            it('Can export members CSV', async function () {
                 await agent
                     .get('members/upload/?limit=all')
-                    .expectStatus(403)
+                    .expectStatus(200)
+                    .expectEmptyBody()
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
-                        etag: anyEtag
+                        'content-disposition': stringMatching(/attachment; filename="members\./)
                     })
-                    .matchBodySnapshot({
-                        errors: [{
-                            id: anyErrorId
-                        }]
+                    .expect(({text}) => {
+                        assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers/);
                     });
             });
         });

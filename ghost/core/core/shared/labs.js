@@ -36,7 +36,6 @@ const GA_FEATURES = [
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
-    'superEditors',
     'editorExcerpt',
     'additionalPaymentMethods'
 ];
