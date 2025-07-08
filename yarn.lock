@@ -7820,10 +7820,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@0.2.8":
-  version "0.2.8"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.2.8.tgz#43b518326a7fdbaaad6f4ce2a86a50d4ae48ad8f"
-  integrity sha512-4IyzAvGmpMVJ3aXdyhJLHRz5Ymo26GOGdEOC3LMyQ4t4htiaMbigqR0136KoRIlyXBptmH8Plp+u1aGGdh2tBw==
+"@tryghost/color-utils@0.2.9":
+  version "0.2.9"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.2.9.tgz#fc4865153384af932a1c558ef73e1fbdfcc0d175"
+  integrity sha512-y1XLPvTOwistoqgmVJul0fPZKM8jmP8vjn1YW6WkTBOE2403GiP2MFiROm3F9JjJlccqU7b5YM6J5m0ACokXTg==
   dependencies:
     "@types/color" "3.0.6"
     color "^3.2.1"
@@ -8162,10 +8162,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.2.tgz#03de94b698b1071f17a1a8a053fe060ed9c4f785"
   integrity sha512-GqE03JX6277X9slx1WoXblw1Sd2mGW1zWhvKpifGbs/ePR4oaBtpaq3OpNmMvWqfAaE3hXnHxYPy8J9gs/HnvQ==
 
-"@tryghost/limit-service@1.3.2":
-  version "1.3.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.3.2.tgz#d60342f4f418e6e85b04bcfe73d78022594d3aa5"
-  integrity sha512-8IT/6DIFIZNwrxh2XAjoAmbcReyACpnI/R5N1XokLLLFcvS0cmI/91DsvhjD759digsedlwK+ndgA2ah1+mh2g==
+"@tryghost/limit-service@1.4.0":
+  version "1.4.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.4.0.tgz#31dc942c2f95dcdbf4020fc8202e026235d9ece6"
+  integrity sha512-hs0GMNJaHt6ab//8ivxCuFgbJzZylXOrUKEqbWiZz1BOPat9nPsHIlttOQusY2xKncCEXTShZFF5bbgMWW1tVw==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
@@ -8365,10 +8365,10 @@
     "@tryghost/debug" "^0.1.26"
     "@tryghost/logging" "^2.4.7"
 
-"@tryghost/social-urls@0.1.52":
-  version "0.1.52"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.52.tgz#6bc9703ab1fbc064d1cd259e82e9dd69c9c77a87"
-  integrity sha512-wyKWh/3eiZC+OK2kXvhhdWtOZWrN8/Oz9vxP71sTxAFAm35I1+FKjeIur1Cr/0rVYwOvPRNUlL6qSwkBhcBLuQ==
+"@tryghost/social-urls@0.1.53":
+  version "0.1.53"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.53.tgz#5e9e795795462521f39d52276dd6b7be67540c03"
+  integrity sha512-cax08uS4kNv0feOtr8X19DuGHdie/ernxGpRIS0r2Z0f1XQFHizIveqwVwRXGMeLi1YsPK/JBgWmZYGnEhAA7Q==
 
 "@tryghost/string@0.2.15":
   version "0.2.15"
@@ -8391,10 +8391,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.4.10":
-  version "0.4.10"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.10.tgz#5a9f605ad0039b5fbfefe754eb6310ec3ec24702"
-  integrity sha512-cny1OCAExcrJTEctB2gYIkLqQQ0EgJDObEtPZ8I2t6ZqjGVUaoozbxYhrJo4DNiyLsF9aZfp6sjLm3CIvlZOLw==
+"@tryghost/timezone-data@0.4.11":
+  version "0.4.11"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.11.tgz#2b2796747f9e36cf2b90b27020a0d38171059f11"
+  integrity sha512-SQtWtASak5+ZwQBizh8CsXmA1qOfG+egg3tP/d51RyuTUgBZ1VIXIXCfCMZhEOU1M8mF7aOL2ofWG8bp53hGvA==
 
 "@tryghost/tpl@0.1.35", "@tryghost/tpl@^0.1.35":
   version "0.1.35"
