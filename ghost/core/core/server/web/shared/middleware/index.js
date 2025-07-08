@@ -8,7 +8,7 @@ module.exports = {
     },
 
     get cacheControl() {
-        return require('@tryghost/mw-cache-control');
+        return require('./cache-control');
     },
 
     get prettyUrls() {

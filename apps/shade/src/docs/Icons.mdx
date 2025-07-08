@@ -1,0 +1,21 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Icons" />
+
+<div className="sb-doc">
+
+# Icons
+
+Shade uses Lucide Icons by default, following the standard in ShadCN/UI. To learn how to use them, read the [Lucide Icons docs](https://lucide.dev/guide/packages/lucide-react).
+
+For custom icons, use the `<Icon>` component. Custom icons are dynamically loaded from the `src/assets/icons` library, so to add a new custom icon you just need to create the corresponding SVG for it in this folder. Then you can use the Icon component like this:
+
+```
+<Icon.IconName size="md" />
+```
+
+If you check out the [Icons](/docs/components-icons--docs) component here in Storybook, you'll see a grid of all available custom icons in Shade. This list is dynamically loaded and if you click on an icon then the component code will be copied to your clipboard.
+
+<a href="/?path=/docs/components-icons--docs" className="button">Custom icons in Shade &rarr;</a>
+
+</div>

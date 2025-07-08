@@ -1,0 +1,14 @@
+TOKEN "tracker" APPEND
+
+
+SCHEMA >
+    `timestamp` DateTime `json:$.timestamp`,
+    `session_id` String `json:$.session_id`,
+    `action` LowCardinality(String) `json:$.action`,
+    `version` LowCardinality(String) `json:$.version`,
+    `payload` JSON(max_dynamic_types=4, max_dynamic_paths=32) `json:$.payload`,
+    `site_uuid` LowCardinality(String) `json:$.payload.site_uuid`
+
+ENGINE "MergeTree"
+ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
+ENGINE_SORTING_KEY "site_uuid, timestamp"

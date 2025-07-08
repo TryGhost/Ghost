@@ -12,10 +12,6 @@ module.exports = {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
 
-    get collections() {
-        return apiFramework.pipeline(require('./collections'), localUtils);
-    },
-
     get db() {
         return apiFramework.pipeline(require('./db'), localUtils);
     },
@@ -185,6 +181,10 @@ module.exports = {
         return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
     },
 
+    get tinybird() {
+        return apiFramework.pipeline(require('./tinybird'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
@@ -195,6 +195,10 @@ module.exports = {
 
     get comments() {
         return apiFramework.pipeline(require('./comments'), localUtils);
+    },
+
+    get commentReplies() {
+        return apiFramework.pipeline(require('./comment-replies'), localUtils);
     },
 
     get links() {
@@ -213,6 +217,10 @@ module.exports = {
         return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
     },
 
+    get searchIndex() {
+        return apiFramework.pipeline(require('./search-index'), localUtils);
+    },
+
     /**
      * Content API Controllers
      *
@@ -223,10 +231,6 @@ module.exports = {
      */
     get pagesPublic() {
         return apiFramework.pipeline(require('./pages-public'), localUtils, 'content');
-    },
-
-    get collectionsPublic() {
-        return apiFramework.pipeline(require('./collections-public'), localUtils);
     },
 
     get tagsPublic() {
@@ -267,5 +271,9 @@ module.exports = {
 
     get recommendationsPublic() {
         return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    },
+
+    get searchIndexPublic() {
+        return apiFramework.pipeline(require('./search-index-public'), localUtils, 'content');
     }
 };

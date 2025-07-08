@@ -28,7 +28,9 @@ export default class PublishManagement extends Component {
     // ensure we get a new PublishOptions instance when @post is replaced
     @use publishOptions = new PublishOptionsResource(() => [this.args.post]);
 
-    @tracked previewTab = 'browser';
+    @tracked previewFormat = 'browser';
+    @tracked previewSize = 'desktop';
+    @tracked previewAsSegment = 'free';
 
     publishFlowModal = null;
     updateFlowModal = null;
@@ -112,10 +114,13 @@ export default class PublishManagement extends Component {
                 publishOptions: this.publishOptions,
                 hasDirtyAttributes: this.args.hasUnsavedChanges,
                 saveTask: this.saveTask,
-                savePostTask: this.args.savePostTask,
                 togglePreviewPublish: this.togglePreviewPublish,
-                currentTab: this.previewTab,
-                changeTab: this.changePreviewTab,
+                initialPreviewFormat: this.previewFormat,
+                changePreviewFormat: this.changePreviewFormat,
+                initialPreviewSize: this.previewSize,
+                changePreviewSize: this.changePreviewSize,
+                initialPreviewAsSegment: this.previewAsSegment,
+                changePreviewAsSegment: this.changePreviewAsSegment,
                 skipAnimation
             });
         }
@@ -124,6 +129,9 @@ export default class PublishManagement extends Component {
     // triggered by ctrl/cmd+p
     @action
     togglePreview(event) {
+        if (event?.defaultPrevented) {
+            return;
+        }
         event?.preventDefault();
 
         if (!this.previewModal || this.previewModal.isClosing) {
@@ -138,8 +146,18 @@ export default class PublishManagement extends Component {
     }
 
     @action
-    changePreviewTab(tab) {
-        this.previewTab = tab;
+    changePreviewFormat(format) {
+        this.previewFormat = format;
+    }
+
+    @action
+    changePreviewSize(size) {
+        this.previewSize = size;
+    }
+
+    @action
+    changePreviewAsSegment(segment) {
+        this.previewAsSegment = segment;
     }
 
     @action

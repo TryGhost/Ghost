@@ -1,0 +1,192 @@
+@import "./preflight.css";
+
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+@import url(https://fonts.bunny.net/css?family=cardo:400,700);
+@import url(https://fonts.bunny.net/css?family=manrope:300,500,700);
+@import url(https://fonts.bunny.net/css?family=merriweather:300,700);
+@import url(https://fonts.bunny.net/css?family=nunito:400,600,700);
+@import url(https://fonts.bunny.net/css?family=old-standard-tt:400,700);
+@import url(https://fonts.bunny.net/css?family=prata:400);
+@import url(https://fonts.bunny.net/css?family=roboto:400,500,700);
+@import url(https://fonts.bunny.net/css?family=rufina:400,500,700);
+@import url(https://fonts.bunny.net/css?family=tenor-sans:400);
+@import url(https://fonts.bunny.net/css?family=space-grotesk:700);
+@import url(https://fonts.bunny.net/css?family=chakra-petch:400);
+@import url(https://fonts.bunny.net/css?family=noto-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=poppins:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-sans:400,700);
+@import url(https://fonts.bunny.net/css?family=inter:400,700);
+@import url(https://fonts.bunny.net/css?family=noto-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=lora:400,700);
+@import url(https://fonts.bunny.net/css?family=ibm-plex-serif:400,700);
+@import url(https://fonts.bunny.net/css?family=space-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=fira-mono:400,700);
+@import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700);
+
+/* Defaults */
+@layer base {
+    :root {
+        --background: 0 0% 100%;
+        --foreground: 216 11% 9%;
+        --muted: 200 12% 96%;
+        --muted-foreground: 210 13% 55%;
+        --popover: 0 0% 100%;
+        --popover-foreground: 216 11% 9%;
+        --border: 204 15% 91%;
+        --input: 204 14% 93%;
+        --card: 0 0% 100%;
+        --card-foreground: 216 11% 9%;
+        --primary: 216 11% 9%;
+        --primary-foreground: 0 0% 100%;
+        --secondary: 204 14% 93%;
+        --secondary-foreground: 216 11% 9%;
+        --accent: 240 11% 98%;
+        --accent-foreground: 216 11% 9%;
+        --destructive: 354 92% 50%;
+        --destructive-foreground: 0 0% 100%;
+        --ring: 215 13% 63%;
+        --radius: 9px;
+        --chart-1: 201 100% 50%;
+        --chart-2: 201 88% 70%;
+        --chart-3: 201 85% 80%;
+        --chart-4: 201 82% 90%;
+        --chart-5: 201 87% 94%;
+        --chart-gray: 210 13% 88%;
+        --chart-darkgray: 210 13% 79%;
+        --chart-rose: 345 100% 56%;
+        --chart-orange: 25 100% 50%;
+        --chart-amber: 36 100% 50%;
+        --chart-yellow: 47 100% 50%;
+        --chart-green: 144 100% 39%;
+        --chart-teal: 174 100% 37%;
+        --chart-blue: 198 100% 51%;
+        --chart-darkblue: 226 91% 61%;
+        --chart-purple: 273 100% 64%;
+        --sidebar-background: 0 0% 100%;
+        --sidebar-foreground: 216 11% 9%;
+        --sidebar-primary: 216 11% 9%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 200 12% 96%;
+        --sidebar-accent-foreground: 216 11% 9%;
+        --sidebar-border: 210 13% 88%;
+        --sidebar-ring: 215 13% 63%;
+    }
+
+    .dark {
+        --background: 216 11% 9%;
+        --foreground: 210 13% 88%;
+        --muted: 210 11% 25%;
+        --muted-foreground: 210 13% 63%;
+        --accent: 210 11% 25%;
+        --accent-foreground: 200 12% 96%;
+        --popover: 216 11% 9%;
+        --popover-foreground: 212 13% 72%;
+        --border: 216 7% 14%;
+        --input: 210 11% 25%;
+        --card: 216 11% 9%;
+        --card-foreground: 213 31% 91%;
+        --primary: 200 12% 96%;
+        --primary-foreground: 216 11% 9%;
+        --secondary: 210 11% 25%;
+        --secondary-foreground: 200 12% 96%;
+        --destructive: 354 81% 31%;
+        --destructive-foreground: 240 11% 98%;
+        --ring: 210 11% 25%;
+        --chart-1: 201 100% 50%;
+        --chart-2: 201 88% 70%;
+        --chart-3: 201 85% 80%;
+        --chart-4: 201 82% 90%;
+        --chart-5: 201 87% 94%;
+        --chart-gray: 210 13% 55%;
+        --sidebar-background: 216 11% 9%;
+        --sidebar-foreground: 200 12% 96%;
+        --sidebar-primary: 210 11% 25%;
+        --sidebar-primary-foreground: 0 0% 100%;
+        --sidebar-accent: 210 11% 25%;
+        --sidebar-accent-foreground: 200 12% 96%;
+        --sidebar-border: 210 11% 25%;
+        --sidebar-ring: 210 13% 55%;
+    }
+
+    /* This just serves as a placeholder; we actually load Inter from a font file in Ember admin */
+    @font-face {
+        font-family: "Inter";
+        src: local("Inter") format("truetype-variations");
+        font-weight: 100 900;
+    }
+
+    .shade {
+        & {
+            @apply font-sans text-black text-base leading-normal;
+        }
+    }
+}
+
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply font-sans antialiased bg-background text-foreground;
+    }
+}
+
+.shade {
+    line-height: 1.5;
+    -ms-text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%;
+
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    letter-spacing: unset;
+
+    height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+@media (max-width: 800px) {
+    .shade {
+        height: calc(100vh - 55px);
+    }
+}
+
+.dark .shade {
+    color: #fafafb;
+}
+
+.dark .shade .gh-loading-orb-container {
+    background-color: #000000;
+}
+
+.dark .shade .gh-loading-orb {
+    filter: invert(100%);
+}
+
+.shade .no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome */
+}
+
+.shade .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+}
+
+/* Prose classes are for formatting arbitrary HTML that comes from the API */
+.gh-prose-links a {
+    color: #30cf43;
+}
+@layer base {
+    * {
+        @apply border-border;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}

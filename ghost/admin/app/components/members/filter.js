@@ -137,6 +137,10 @@ class Filter {
         return this.properties.options ?? [];
     }
 
+    get group() {
+        return this.properties.group;
+    }
+
     get isValid() {
         if (Array.isArray(this.value)) {
             return !!this.value.length;
@@ -159,8 +163,17 @@ export default class MembersFilter extends Component {
     ]);
 
     newsletters;
+    tiersList;
+    offers;
+
+    @tracked isLoading = false;
 
     get filterProperties() {
+        // Ensure we have all required data before proceeding
+        if (!this.newsletters || !this.tiersList || !this.offers) {
+            return [];
+        }
+
         let availableFilters = FILTER_PROPERTIES;
 
         // Convert the method filters to properties
@@ -235,6 +248,8 @@ export default class MembersFilter extends Component {
         // we need to make sure all the filters are loaded before parsing the default filter
         // otherwise the filter will be parsed with the wrong properties
         try {
+            this.isLoading = true;
+
             await this.fetchTiers.perform();
             await this.fetchNewsletters.perform();
             await this.fetchOffers.perform();
@@ -245,6 +260,8 @@ export default class MembersFilter extends Component {
             }
 
             throw e;
+        } finally {
+            this.isLoading = false;
         }
 
         if (this.args.defaultFilterParam) {
@@ -623,7 +640,7 @@ export default class MembersFilter extends Component {
 
     @task({drop: true})
     *fetchOffers() {
-        const response = yield this.store.query('offer', {limit: 'all'});
+        const response = yield this.store.findAll('offer');
         this.offers = response;
         return response;
     }

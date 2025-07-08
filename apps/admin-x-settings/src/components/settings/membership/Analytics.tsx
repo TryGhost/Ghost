@@ -1,11 +1,15 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
+import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
+import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const [canHaveWebAnalytics, setCanHaveWebAnalytics] = useState(true);
+    const limiter = useLimiter();
     const {
         localSettings,
         isEditing,
@@ -16,9 +20,22 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging] = getSettingValues(localSettings, [
-        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging'
+    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, webAnalytics] = getSettingValues(localSettings, [
+        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics'
     ]) as boolean[];
+
+    const hasTrafficAnalytics = useFeatureFlag('trafficAnalytics');
+    const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
+
+    useEffect(() => {
+        if (limiter?.isLimited('limitAnalytics')) {
+            limiter.errorIfWouldGoOverLimit('limitAnalytics').catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setCanHaveWebAnalytics(false);
+                }
+            });
+        }
+    }, [limiter]);
 
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
@@ -48,31 +65,62 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     const inputs = (
-        <SettingGroupContent columns={2}>
+        <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
+            {hasTrafficAnalytics && canHaveWebAnalytics && (
+                <>
+                    <Toggle
+                        checked={webAnalytics}
+                        direction='rtl'
+                        gap='gap-0'
+                        label='Web analytics'
+                        labelClasses='py-4 w-full'
+                        onChange={(e) => {
+                            handleToggleChange('web_analytics', e);
+                        }}
+                    />
+                    <Separator className="border-grey-200 dark:border-grey-900" />
+                </>
+            )}
             <Toggle
                 checked={trackEmailOpens}
+                direction='rtl'
+                gap='gap-0'
                 label='Newsletter opens'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_opens', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackEmailClicks}
+                direction='rtl'
+                disabled={isEmailTrackClicksReadOnly}
+                gap='gap-0'
                 label='Newsletter clicks'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('email_track_clicks', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={trackMemberSources}
+                direction='rtl'
+                gap='gap-0'
                 label='Member sources'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('members_track_sources', e);
                 }}
             />
+            <Separator className="border-grey-200 dark:border-grey-900" />
             <Toggle
                 checked={outboundLinkTagging}
+                direction='rtl'
+                gap='gap-0'
                 label='Outbound link tagging'
+                labelClasses='py-4 w-full'
                 onChange={(e) => {
                     handleToggleChange('outbound_link_tagging', e);
                 }}
@@ -82,7 +130,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     return (
         <TopLevelGroup
-            description='Decide what data you collect from your members'
+            description='Decide what data you collect across your publication'
             isEditing={isEditing}
             keywords={keywords}
             navid='analytics'

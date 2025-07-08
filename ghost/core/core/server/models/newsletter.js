@@ -1,6 +1,6 @@
 const ghostBookshelf = require('./base');
 const ObjectID = require('bson-objectid').default;
-const uuid = require('uuid');
+const crypto = require('crypto');
 const urlUtils = require('../../shared/url-utils');
 
 const Newsletter = ghostBookshelf.Model.extend({
@@ -8,7 +8,7 @@ const Newsletter = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
-            uuid: uuid.v4(),
+            uuid: crypto.randomUUID(),
             sender_reply_to: 'newsletter',
             status: 'active',
             visibility: 'members',
@@ -27,10 +27,16 @@ const Newsletter = ghostBookshelf.Model.extend({
             show_subscription_details: false,
             show_latest_posts: false,
             background_color: 'light',
-            border_color: null,
-            title_color: null,
             feedback_enabled: false,
-            show_excerpt: false
+            show_excerpt: false,
+            button_corners: 'rounded',
+            button_style: 'fill',
+            button_color: 'accent',
+            title_font_weight: 'bold',
+            link_style: 'underline',
+            link_color: 'accent',
+            image_corners: 'square',
+            header_background_color: 'transparent'
         };
     },
 

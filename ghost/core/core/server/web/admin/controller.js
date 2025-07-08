@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const config = require('../../../shared/config');
-const updateCheck = require('../../update-check');
+const updateCheck = require('../../services/update-check');
 
 const messages = {
     templateError: {

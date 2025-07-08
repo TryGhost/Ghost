@@ -20,7 +20,9 @@ const {AsymmetricMatcher} = require('expect');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const uuid = require('uuid');
+const crypto = require('crypto');
+
+const assert = require('assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
 const redirectsUtils = require('./redirects');
@@ -64,7 +66,7 @@ const startGhost = async (options = {}) => {
      * We never use the root content folder for testing!
      * We use a tmp folder.
      */
-    const contentFolder = path.join(os.tmpdir(), uuid.v4(), 'ghost-test');
+    const contentFolder = path.join(os.tmpdir(), crypto.randomUUID(), 'ghost-test');
     await prepareContentFolder({contentFolder});
 
     // NOTE: need to pass this config to the server instance
@@ -132,7 +134,7 @@ const prepareContentFolder = async ({contentFolder, redirectsFile = true, routes
     );
 
     if (redirectsFile) {
-        redirectsUtils.setupFile(contentFolderForTests, '.yaml');
+        await redirectsUtils.setupFile(contentFolderForTests, '.yaml');
     }
 
     if (routesFile) {
@@ -409,10 +411,12 @@ const getAgentsWithFrontend = async () => {
     };
 };
 
-const insertWebhook = ({event, url}) => {
+const insertWebhook = ({event, url, integrationType = undefined}) => {
     return fixtureUtils.fixtures.insertWebhook({
         event: event,
         target_url: url
+    }, {
+        integrationType
     });
 };
 
@@ -440,6 +444,37 @@ class Nullable extends AsymmetricMatcher {
     toAsymmetricMatcher() {
         return `Nullable<${this.sample.toAsymmetricMatcher ? this.sample.toAsymmetricMatcher() : this.sample.toString()}>`;
     }
+}
+
+/*
+ * Assertion Helpers
+ */
+
+/**
+ * Assert that the x-cache-invalidate header not set
+ * @returns {Function}
+ */
+function cacheInvalidateHeaderNotSet() {
+    return ({headers}) => {
+        // Assert header should not exist
+        assert.equal(
+            headers['x-cache-invalidate'],
+            undefined,
+            'x-cache-invalidate header should not be present');
+    };
+}
+
+/**
+ * Assert that the x-cache-invalidate header is set to /*
+ * @returns {Function}
+ */
+function cacheInvalidateHeaderSetToWildcard() {
+    return ({headers}) => {
+        assert.equal(
+            headers['x-cache-invalidate'],
+            '/*',
+            'x-cache-invalidate header should be set to /*');
+    };
 }
 
 module.exports = {
@@ -493,12 +528,17 @@ module.exports = {
         anyLocationFor: (resource) => {
             return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
         },
-        anyGhostAgent: stringMatching(/Ghost\/\d+\.\d+\.\d+\s\(https:\/\/github.com\/TryGhost\/Ghost\)/),
+        anyGhostAgent: stringMatching(/Ghost\/\d+\.\d+\.\d+(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s\(https:\/\/github.com\/TryGhost\/Ghost\)/),
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
         anyLocalURL: stringMatching(/http:\/\/127.0.0.1:2369\/[A-Za-z0-9_-]+\//),
         stringMatching
+    },
+
+    assertions: {
+        cacheInvalidateHeaderNotSet,
+        cacheInvalidateHeaderSetToWildcard
     },
 
     // utilities

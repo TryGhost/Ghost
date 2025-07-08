@@ -11,9 +11,10 @@ import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import config from 'ghost-admin/config/environment';
 import isNumber from 'ghost-admin/utils/isNumber';
+import microdiff from 'microdiff';
 import moment from 'moment-timezone';
 import {GENERIC_ERROR_MESSAGE} from '../services/notifications';
-import {action, computed} from '@ember/object';
+import {action, computed, get} from '@ember/object';
 import {alias, mapBy} from '@ember/object/computed';
 import {capitalizeFirstLetter} from '../helpers/capitalize-first-letter';
 import {dropTask, enqueueTask, restartableTask, task, taskGroup, timeout} from 'ember-concurrency';
@@ -22,8 +23,9 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {isArray as isEmberArray} from '@ember/array';
 import {isHostLimitError, isServerUnreachableError, isVersionMismatchError} from 'ghost-admin/services/ajax';
-import {isInvalidError} from 'ember-ajax/errors';
+import {isInvalidError, isNotFoundError} from 'ember-ajax/errors';
 import {mobiledocToLexical} from '@tryghost/kg-converters';
+import {observes} from '@ember-decorators/object';
 import {inject as service} from '@ember/service';
 import {slugify} from '@tryghost/string';
 import {tracked} from '@glimmer/tracking';
@@ -157,6 +159,7 @@ export default class LexicalEditorController extends Controller {
     @service session;
     @service settings;
     @service ui;
+    @service localRevisions;
 
     @inject config;
 
@@ -182,6 +185,28 @@ export default class LexicalEditorController extends Controller {
     _leaveConfirmed = false;
     _saveOnLeavePerformed = false;
     _previousTagNames = null; // set by setPost and _postSaved, used in hasDirtyAttributes
+
+    /* debug properties ------------------------------------------------------*/
+
+    _setPostState = null;
+    _postStates = [];
+
+    // eslint-disable-next-line ghost/ember/no-observers
+    @observes('post.currentState.stateName')
+    _pushPostState() {
+        const post = this.post;
+
+        if (!post || !post.currentState) {
+            return;
+        }
+
+        const {stateName, isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid} = post.currentState;
+        if (stateName) {
+            const postState = [stateName, {isDeleted, isDirty, isEmpty, isLoading, isLoaded, isNew, isSaving, isValid}];
+            console.log('post state changed:', ...postState); // eslint-disable-line no-console
+            this._postStates.push(postState);
+        }
+    }
 
     /* computed properties ---------------------------------------------------*/
 
@@ -236,15 +261,10 @@ export default class LexicalEditorController extends Controller {
         });
     }
 
-    @computed
-    get collections() {
-        return this.store.peekAll('collection');
-    }
-
-    @computed('session.user.{isAdmin,isEditor}')
+    @computed('session.user.{isAdmin,isEitherEditor}')
     get canManageSnippets() {
         let {user} = this.session;
-        if (user.get('isAdmin') || user.get('isEditor')) {
+        if (user.get('isAdmin') || user.get('isEitherEditor')) {
             return true;
         }
         return false;
@@ -260,7 +280,7 @@ export default class LexicalEditorController extends Controller {
 
     @computed('post.isDraft')
     get _canAutosave() {
-        return config.environment !== 'test' && this.get('post.isDraft');
+        return this.post.isDraft;
     }
 
     TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
@@ -289,7 +309,13 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
-        this.set('post.lexicalScratch', JSON.stringify(lexical));
+        const lexicalString = JSON.stringify(lexical);
+        this.set('post.lexicalScratch', lexicalString);
+        try {
+            this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), lexical: lexicalString});
+        } catch (e) {
+            // ignore revision save errors
+        }
 
         // save 3 seconds after last edit
         this._autosaveTask.perform();
@@ -298,8 +324,18 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    updateSecondaryInstanceModel(lexical) {
+        this.set('post.secondaryLexicalState', JSON.stringify(lexical));
+    }
+
+    @action
     updateTitleScratch(title) {
         this.set('post.titleScratch', title);
+        try {
+            this.localRevisions.scheduleSave(this.post.displayName, {...this.post.serialize({includeId: true}), title: title});
+        } catch (e) {
+            // ignore revision save errors
+        }
     }
 
     @action
@@ -315,6 +351,13 @@ export default class LexicalEditorController extends Controller {
                 return;
             }
             throw e;
+        }
+    }
+
+    @task
+    *saveExcerptTask() {
+        if (this.post.status === 'draft') {
+            yield this.autosaveTask.perform();
         }
     }
 
@@ -424,6 +467,11 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    registerSecondaryEditorAPI(API) {
+        this.secondaryEditorAPI = API;
+    }
+
+    @action
     clearFeatureImage() {
         this.post.set('featureImage', null);
         this.post.set('featureImageAlt', null);
@@ -445,7 +493,9 @@ export default class LexicalEditorController extends Controller {
 
     @action
     setFeatureImageCaption(html) {
-        this.post.set('featureImageCaption', html);
+        if (!this.post.isDestroyed || !this.post.isDestroying) {
+            this.post.set('featureImageCaption', html);
+        }
     }
 
     @action
@@ -617,7 +667,7 @@ export default class LexicalEditorController extends Controller {
                 yield this.modals.open(ReAuthenticateModal);
 
                 if (this.session.isAuthenticated) {
-                    return this.saveTask.perform(options);
+                    return this.autosaveTask.perform();
                 }
             }
 
@@ -635,8 +685,27 @@ export default class LexicalEditorController extends Controller {
                 return;
             }
 
-            // re-throw if we have a general server error
+            // This shouldn't occur but we have a bug where a new post can get
+            // into a bad state where it's not saved but the store is treating
+            // it as saved and performing PUT requests with no id. We want to
+            // be noisy about this early to avoid data loss
+            if (isNotFoundError(error) && !this.post.id) {
+                const notFoundContext = this._getNotFoundErrorContext();
+                console.error('saveTask failed with 404', notFoundContext); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}, extra: notFoundContext});
+                this._showErrorAlert(prevStatus, this.post.status, 'Editor has crashed. Please copy your content and start a new post.');
+                return;
+            }
+            if (isNotFoundError(error) && this.post.id) {
+                const type = this.post.isPage ? 'page' : 'post';
+                Sentry.captureMessage(`Attempted to edit deleted ${type}`, {extra: {post_id: this.post.id}});
+                this._showErrorAlert(prevStatus, this.post.status, `${capitalizeFirstLetter(type)} has been deleted in a different session. If you need to keep this content, copy it and paste into a new ${type}.`);
+                return;
+            }
+
             if (error && !isInvalidError(error)) {
+                console.error(error); // eslint-disable-line no-console
+                Sentry.captureException(error, {tags: {savePostTask: true}});
                 this.send('error', error);
                 return;
             }
@@ -651,36 +720,34 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    _getNotFoundErrorContext() {
+        return {
+            setPostState: this._setPostState,
+            currentPostState: this.post.currentState.stateName,
+            allPostStates: this._postStates
+        };
+    }
+
     @task
-    *beforeSaveTask(options = {}) {
+    *beforeSaveTask() {
         if (this.post?.isDestroyed || this.post?.isDestroying) {
             return;
         }
 
-        // ensure we remove any blank cards when performing a full save
-        if (!options.backgroundSave) {
-            // TODO: not yet implemented in react editor
-            // if (this._koenig) {
-            //     this._koenig.cleanup();
-            //     this.set('hasDirtyAttributes', true);
-            // }
+        if (this.post.status === 'draft') {
+            if (this.post.titleScratch !== this.post.title) {
+                yield this.generateSlugTask.perform();
+            }
         }
 
-        // TODO: There's no need for (at least) most of these scratch values.
-        // Refactor so we're setting model attributes directly
-
-        // Set the properties that are indirected
-
-        // Set lexical equal to what's in the editor but create a copy so that
-        // nested objects/arrays don't keep references which can mean that both
-        // scratch and lexical get updated simultaneously
         this.set('post.lexical', this.post.lexicalScratch || null);
 
-        // Set a default title
-        if (!this.get('post.titleScratch').trim()) {
+        if (!this.post.titleScratch?.trim()) {
             this.set('post.titleScratch', DEFAULT_TITLE);
         }
 
+        // TODO: There's no need for most of these scratch values.
+        // Refactor so we're setting model attributes directly
         this.set('post.title', this.get('post.titleScratch'));
         this.set('post.customExcerpt', this.get('post.customExcerptScratch'));
         this.set('post.footerInjection', this.get('post.footerExcerptScratch'));
@@ -695,7 +762,6 @@ export default class LexicalEditorController extends Controller {
 
         if (!this.get('post.slug')) {
             this.saveTitleTask.cancelAll();
-
             yield this.generateSlugTask.perform();
         }
     }
@@ -718,8 +784,7 @@ export default class LexicalEditorController extends Controller {
             return;
         }
 
-        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug);
-
+        serverSlug = yield this.slugGenerator.generateSlug('post', newSlug, this.get('post.id'));
         // If after getting the sanitized and unique slug back from the API
         // we end up with a slug that matches the existing slug, abort the change
         if (serverSlug === slug) {
@@ -871,11 +936,11 @@ export default class LexicalEditorController extends Controller {
         this.ui.updateDocumentTitle();
     }
 
-    /* 
+    /*
         // sync the post slug with the post title, except when:
         // - the user has already typed a custom slug, which should not be overwritten
         // - the post has been published, so that published URLs are not broken
-    */ 
+    */
     @enqueueTask
     *generateSlugTask() {
         const currentTitle = this.get('post.title');
@@ -896,7 +961,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         try {
-            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle);
+            const newSlug = yield this.slugGenerator.generateSlug('post', newTitle, this.get('post.id'));
 
             if (!isBlank(newSlug)) {
                 this.set('post.slug', newSlug);
@@ -915,10 +980,6 @@ export default class LexicalEditorController extends Controller {
     @restartableTask
     *backgroundLoaderTask() {
         yield this.store.query('snippet', {limit: 'all'});
-
-        if (this.post.displayName === 'page' && this.feature.get('collections') && this.feature.get('collectionsCard')) {
-            yield this.store.query('collection', {limit: 'all'});
-        }
 
         this.search.refreshContentTask.perform();
         this.syncMobiledocSnippets();
@@ -1015,6 +1076,8 @@ export default class LexicalEditorController extends Controller {
         // reset everything ready for a new post
         this.reset();
 
+        this._setPostState = post.currentState.stateName;
+
         this.set('post', post);
         this.backgroundLoaderTask.perform();
 
@@ -1031,13 +1094,12 @@ export default class LexicalEditorController extends Controller {
 
         // triggered any time the admin tab is closed, we need to use a native
         // dialog here instead of our custom modal
-        window.onbeforeunload = () => {
+        window.onbeforeunload = (event) => {
             if (this.hasDirtyAttributes) {
-                return '==============================\n\n'
-                     + 'Hey there! It looks like you\'re in the middle of writing'
-                     + ' something and you haven\'t saved all of your content.'
-                     + '\n\nSave before you go!\n\n'
-                     + '==============================';
+                console.log('Preventing unload due to hasDirtyAttributes'); // eslint-disable-line
+                event.preventDefault();
+                // Included for legacy support, e.g. Chrome/Edge < 119
+                event.returnValue = true;
             }
         };
     }
@@ -1081,6 +1143,11 @@ export default class LexicalEditorController extends Controller {
 
         let hasDirtyAttributes = this.hasDirtyAttributes;
         let state = post.getProperties('isDeleted', 'isSaving', 'hasDirtyAttributes', 'isNew');
+
+        if (state.isDeleted) {
+            // if the post is deleted, we don't need to save it
+            hasDirtyAttributes = false;
+        }
 
         // Check if anything has changed since the last revision
         let postRevisions = post.get('postRevisions').toArray();
@@ -1131,7 +1198,15 @@ export default class LexicalEditorController extends Controller {
             if (this.post) {
                 Object.assign(this._leaveModalReason, {status: this.post.status});
             }
-            Sentry.captureMessage('showing leave editor modal', {extra: this._leaveModalReason});
+
+            if (this._leaveModalReason.code === 'SCRATCH_DIVERGED_FROM_SECONDARY') {
+                this._assignLexicalDiffToLeaveModalReason();
+            }
+
+            // don't push full lexical state to Sentry, it's too large, gets filtered often and not useful
+            const sentryContext = {...this._leaveModalReason.context, diff: JSON.stringify(this._leaveModalReason.context?.diff), secondaryLexical: undefined, scratch: undefined, lexical: undefined};
+            Sentry.captureMessage('showing leave editor modal', {extra: {...this._leaveModalReason, context: sentryContext}});
+
             console.log('showing leave editor modal', this._leaveModalReason); // eslint-disable-line
 
             const reallyLeave = await this.modals.open(ConfirmEditorLeaveModal);
@@ -1141,6 +1216,25 @@ export default class LexicalEditorController extends Controller {
             } else {
                 this._leaveConfirmed = true;
                 return transition.retry();
+            }
+        }
+
+        // Capture posts with untitled slugs and a title set; ref https://linear.app/ghost/issue/ONC-548/
+        if (this.post) {
+            const slug = this.post.get('slug');
+            const title = this.post.get('title');
+            const isDraft = this.post.get('status') === 'draft';
+            const slugContainsUntitled = slug.includes('untitled');
+            const isTitleSet = title && title.trim() !== '' && title !== DEFAULT_TITLE;
+
+            if (isDraft && slugContainsUntitled && isTitleSet) {
+                Sentry.captureException(new Error('Draft post has title set with untitled slug'), {
+                    extra: {
+                        slug: slug,
+                        title: title,
+                        titleScratch: this.post.get('titleScratch')
+                    }
+                });
             }
         }
 
@@ -1176,6 +1270,9 @@ export default class LexicalEditorController extends Controller {
         this._leaveConfirmed = false;
         this._saveOnLeavePerformed = false;
 
+        this._setPostState = null;
+        this._postStates = [];
+
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
         this.set('shouldFocusTitle', false);
@@ -1202,7 +1299,7 @@ export default class LexicalEditorController extends Controller {
             return this.autosaveTask.perform();
         }
 
-        yield timeout(AUTOSAVE_TIMEOUT);
+        yield timeout(config.environment === 'test' ? 100 : AUTOSAVE_TIMEOUT);
         this.autosaveTask.perform();
     }).restartable())
         _autosaveTask;
@@ -1222,6 +1319,46 @@ export default class LexicalEditorController extends Controller {
 
     /* Private methods -------------------------------------------------------*/
 
+    _assignLexicalDiffToLeaveModalReason() {
+        try {
+            const parsedSecondary = JSON.parse(this.post.secondaryLexicalState || JSON.stringify({}));
+            const parsedScratch = JSON.parse(this.post.scratch || JSON.stringify({}));
+
+            const diff = microdiff(parsedScratch, parsedSecondary, {cyclesFix: false});
+
+            // create a more useful path by showing the node types
+            diff.forEach((change) => {
+                if (change.path) {
+                // use path array to fill in node types from parsedScratch when path shows an index
+                    let humanPath = [];
+                    change.path.forEach((child, i) => {
+                        if (typeof child === 'number') {
+                            const partialPath = diff.path.slice(0, i + 1);
+                            const node = get(parsedScratch, partialPath.join('.'));
+                            if (node && node.type) {
+                                humanPath.push(`${child}[${node.type}]`);
+                            } else {
+                                humanPath.push(child);
+                            }
+                        } else {
+                            humanPath.push(child);
+                        }
+                    });
+                    change.path = humanPath.join('.');
+                }
+            });
+
+            if (!this._leaveModalReason.context) {
+                this._leaveModalReason.context = {};
+            }
+
+            Object.assign(this._leaveModalReason.context, {diff});
+        } catch (error) {
+            console.error(error); // eslint-disable-line
+            Sentry.captureException(error);
+        }
+    }
+
     _hasDirtyAttributes() {
         let post = this.post;
 
@@ -1229,10 +1366,13 @@ export default class LexicalEditorController extends Controller {
             return false;
         }
 
-        // if the Adapter failed to save the post isError will be true
-        // and we should consider the post still dirty.
+        // If the Adapter failed to save the post, isError will be true, and we should consider the post still dirty.
         if (post.get('isError')) {
-            this._leaveModalReason = {reason: 'isError', context: post.errors.messages};
+            this._leaveModalReason = {
+                reason: 'isError',
+                code: 'POST_HAS_ERROR',
+                context: post.errors.messages
+            };
             return true;
         }
 
@@ -1241,57 +1381,84 @@ export default class LexicalEditorController extends Controller {
         let currentTags = (this._tagNames || []).join(', ');
         let previousTags = (this._previousTagNames || []).join(', ');
         if (currentTags !== previousTags) {
-            this._leaveModalReason = {reason: 'tags are different', context: {currentTags, previousTags}};
+            this._leaveModalReason = {
+                reason: 'tags are different',
+                code: 'POST_TAGS_DIVERGED',
+                context: {currentTags, previousTags}
+            };
             return true;
         }
 
-        // titleScratch isn't an attr so needs a manual dirty check
-        if (post.titleScratch !== post.title) {
-            this._leaveModalReason = {reason: 'title is different', context: {current: post.title, scratch: post.titleScratch}};
+        // Title scratch comparison
+        if (post.titleScratch.trim() !== post.title.trim()) {
+            this._leaveModalReason = {
+                reason: 'title is different',
+                code: 'POST_TITLE_DIVERGED',
+                context: {current: post.title, scratch: post.titleScratch}
+            };
             return true;
         }
 
-        // scratch isn't an attr so needs a manual dirty check
+        // Lexical and scratch comparison
         let lexical = post.get('lexical');
         let scratch = post.get('lexicalScratch');
-        // additional guard in case we are trying to compare null with undefined
-        if (scratch || lexical) {
-            if (scratch !== lexical) {
-                // lexical can dynamically set direction on loading editor state (e.g. "rtl"/"ltr") per the DOM context
-                //  and we need to ignore this as a change from the user; see https://github.com/facebook/lexical/issues/4998
-                const scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
-                const lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        let secondaryLexical = post.get('secondaryLexicalState');
 
-                // // nullling is typically faster than delete
-                scratchChildNodes.forEach(child => child.direction = null);
-                lexicalChildNodes.forEach(child => child.direction = null);
+        let lexicalChildNodes = lexical ? JSON.parse(lexical).root?.children : [];
+        let scratchChildNodes = scratch ? JSON.parse(scratch).root?.children : [];
+        let secondaryLexicalChildNodes = secondaryLexical ? JSON.parse(secondaryLexical).root?.children : [];
 
-                if (JSON.stringify(scratchChildNodes) === JSON.stringify(lexicalChildNodes)) {
-                    return false;
+        lexicalChildNodes.forEach(child => child.direction = null);
+        scratchChildNodes.forEach(child => child.direction = null);
+        secondaryLexicalChildNodes.forEach(child => child.direction = null);
+
+        // Determine if main editor (scratch) has diverged from secondary editor
+        // (i.e. manual changes have been made since opening the editor)
+        const isSecondaryDirty = secondaryLexical && scratch && JSON.stringify(secondaryLexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+
+        // Determine if main editor (scratch) has diverged from saved lexical
+        // (i.e. changes have been made since last save)
+        const isLexicalDirty = lexical && scratch && JSON.stringify(lexicalChildNodes) !== JSON.stringify(scratchChildNodes);
+
+        // If both comparisons are dirty, consider the post dirty
+        if (isSecondaryDirty && isLexicalDirty) {
+            this._leaveModalReason = {
+                reason: 'main editor content has diverged from both hidden editor and saved content',
+                code: 'SCRATCH_DIVERGED_FROM_SECONDARY',
+                context: {
+                    secondaryLexical,
+                    lexical,
+                    scratch
                 }
+            };
 
-                this._leaveModalReason = {reason: 'lexical is different', context: {current: lexical, scratch}};
-                return true;
-            }
+            return true;
         }
 
-        // new+unsaved posts always return `hasDirtyAttributes: true`
+        // New+unsaved posts always return `hasDirtyAttributes: true`
         // so we need a manual check to see if any
         if (post.get('isNew')) {
-            let changedAttributes = Object.keys(post.changedAttributes());
-
+            let changedAttributes = Object.keys(post.changedAttributes() || {});
             if (changedAttributes.length) {
-                this._leaveModalReason = {reason: 'post.changedAttributes.length > 0', context: post.changedAttributes()};
+                this._leaveModalReason = {
+                    reason: 'post.changedAttributes.length > 0',
+                    code: 'NEW_POST_HAS_CHANGED_ATTRIBUTES',
+                    context: post.changedAttributes()
+                };
             }
             return changedAttributes.length ? true : false;
         }
 
-        // we've covered all the non-tracked cases we care about so fall
+        // We've covered all the non-tracked cases we care about so fall
         // back on Ember Data's default dirty attribute checks
         let {hasDirtyAttributes} = post;
-
         if (hasDirtyAttributes) {
-            this._leaveModalReason = {reason: 'post.hasDirtyAttributes === true', context: post.changedAttributes()};
+            this._leaveModalReason = {
+                reason: 'post.hasDirtyAttributes === true',
+                code: 'POST_HAS_DIRTY_ATTRIBUTES',
+                context: post.changedAttributes()
+            };
+            return true;
         }
 
         return hasDirtyAttributes;

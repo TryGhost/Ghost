@@ -3,7 +3,7 @@ const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
 const glob = require('glob');
-const uuid = require('uuid');
+const crypto = require('crypto');
 const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
 const tpl = require('@tryghost/tpl');
@@ -11,12 +11,12 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
-const ImporterContentFileHandler = require('@tryghost/importer-handler-content-files');
+const ImporterContentFileHandler = require('./handlers/ImporterContentFileHandler');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
 const ContentFileImporter = require('./importers/ContentFileImporter');
-const RevueImporter = require('@tryghost/importer-revue');
+const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
 const {GhostMailer} = require('../../services/mail');
@@ -220,11 +220,15 @@ class ImportManager {
      * @returns {Promise<string>} full path to the extracted folder
      */
     async extractZip(filePath) {
-        const tmpDir = path.join(os.tmpdir(), uuid.v4());
+        const tmpDir = path.join(os.tmpdir(), crypto.randomUUID());
         this.fileToDelete = tmpDir;
 
         try {
             await extract(filePath, tmpDir);
+
+            // Set permissions for all extracted files
+            const files = glob.sync('**/*', {cwd: tmpDir, nodir: true});
+            await Promise.all(files.map(file => fs.chmod(path.join(tmpDir, file), 0o644)));
         } catch (err) {
             if (err.message.startsWith('ENAMETOOLONG:')) {
                 // The file was probably zipped with MacOS zip utility. Which doesn't correctly set UTF-8 encoding flag.

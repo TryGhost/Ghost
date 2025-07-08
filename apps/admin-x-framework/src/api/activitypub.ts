@@ -9,27 +9,41 @@ export type FollowItem = {
 
 export type ObjectProperties = {
     '@context': string | (string | object)[];
-    type: 'Article' | 'Link';
+    type: 'Article' | 'Link' | 'Note' | 'Tombstone';
     name: string;
-    content: string;
+    content: string | null;
+    summary: string | null;
     url?: string | undefined;
-    attributedTo?: string | object[] | undefined;
-    image?: string;
+    attributedTo?: object | string | object[] | undefined;
+    image?: string | {
+        url: string;
+        mediaType?: string;
+        type?: string;
+    };
     published?: string;
-    preview?: {type: string, content: string};
+    preview?: {type: string, content: string | null};
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     [x: string]: any;
 }
 
 export type ActorProperties = {
     '@context': string | (string | object)[];
-    attachment: object[];
+    attachment?: {
+        type: string;
+        name: string;
+        value: string;
+    }[];
     discoverable: boolean;
     featured: string;
     followers: string;
     following: string;
     id: string | null;
-    image: string;
+    image: {
+        url: string;
+    };
+    icon: {
+        url: string;
+    };
     inbox: string;
     manuallyApprovesFollowers: boolean;
     name: string;
@@ -98,7 +112,7 @@ export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
     headers: {
         Accept: 'application/activity+json'
     },
-    path: id => `/inbox/${id}`
+    path: id => `/reader/${id}`
 });
 
 // This is a frontend root, not using the Ghost admin API

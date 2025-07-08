@@ -1,12 +1,11 @@
 import AppContext from '../../AppContext';
 import ActionButton from '../common/ActionButton';
 import {useContext, useEffect, useState} from 'react';
-import {getSiteNewsletters} from '../../utils/helpers';
+import {getSiteNewsletters,hasNewsletterSendingEnabled} from '../../utils/helpers';
 import NewsletterManagement from '../common/NewsletterManagement';
 import CloseButton from '../common/CloseButton';
 import {ReactComponent as WarningIcon} from '../../images/icons/warning-fill.svg';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 import LoadingPage from './LoadingPage';
 
 function SiteLogo() {
@@ -32,9 +31,9 @@ function AccountHeader() {
     );
 }
 
-async function updateMemberNewsletters({api, memberUuid, newsletters, enableCommentNotifications}) {
+async function updateMemberNewsletters({api, memberUuid, key, newsletters, enableCommentNotifications}) {
     try {
-        return await api.member.updateNewsletters({uuid: memberUuid, newsletters, enableCommentNotifications});
+        return await api.member.updateNewsletters({uuid: memberUuid, key, newsletters, enableCommentNotifications});
     } catch (e) {
         // ignore auto unsubscribe error
     }
@@ -57,14 +56,20 @@ export default function UnsubscribePage() {
     const {comments_enabled: commentsEnabled} = site;
     const {enable_comment_notifications: enableCommentNotifications = false} = member || {};
 
+    const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
+
     const updateNewsletters = async (newsletters) => {
         if (loggedInMember) {
-            // when we have a member logged in, we need to update the newsletters in the context
             onAction('updateNewsletterPreference', {newsletters});
         } else {
-            await updateMemberNewsletters({api, memberUuid: pageData.uuid, newsletters});
+            await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, newsletters});
         }
         setSubscribedNewsletters(newsletters);
+        const notification = {
+            action: `updated:success`,
+            message: t('Email preferences updated.')
+        };
+        onAction('showPopupNotification', notification);
     };
 
     const updateCommentNotifications = async (enabled) => {
@@ -74,9 +79,13 @@ export default function UnsubscribePage() {
             await onAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
             updatedData = {...loggedInMember, enable_comment_notifications: enabled};
         } else {
-            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, enableCommentNotifications: enabled});
+            updatedData = await updateMemberNewsletters({api, memberUuid: pageData.uuid, key: pageData.key, enableCommentNotifications: enabled});
         }
         setMember(updatedData);
+        onAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Comment preferences updated.')
+        });
     };
 
     const unsubscribeAll = async () => {
@@ -87,7 +96,7 @@ export default function UnsubscribePage() {
             updatedMember.newsletters = [];
             updatedMember.enable_comment_notifications = false;
         } else {
-            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, newsletters: [], enableCommentNotifications: false});
+            updatedMember = await api.member.updateNewsletters({uuid: pageData.uuid, key: pageData.key, newsletters: [], enableCommentNotifications: false});
         }
         setSubscribedNewsletters([]);
         setMember(updatedMember);
@@ -102,7 +111,7 @@ export default function UnsubscribePage() {
         (async () => {
             let memberData;
             try {
-                memberData = await api.member.newsletters({uuid: pageData.uuid});
+                memberData = await api.member.newsletters({uuid: pageData.uuid, key: pageData.key});
                 setMember(memberData ?? null);
                 setLoading(false);
             } catch (e) {
@@ -178,8 +187,7 @@ export default function UnsubscribePage() {
                 <div>
                     <p className='gh-portal-text-center'>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
-                            string={t('{{memberEmail}} will no longer receive this newsletter.')}
+                            string={t('{memberEmail} will no longer receive this newsletter.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
                             }}
@@ -187,7 +195,6 @@ export default function UnsubscribePage() {
                     </p>
                     <p className='gh-portal-text-center'>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
                             string={t('Didn\'t mean to do this? Manage your preferences <button>here</button>.')}
                             mapping={{
                                 button: <button
@@ -211,8 +218,7 @@ export default function UnsubscribePage() {
                 <>
                     <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                         <Interpolate
-                            syntax={SYNTAX_I18NEXT}
-                            string={t('{{memberEmail}} will no longer receive emails when someone replies to your comments.')}
+                            string={t('{memberEmail} will no longer receive emails when someone replies to your comments.')}
                             mapping={{
                                 memberEmail: <strong>{member?.email}</strong>
                             }}
@@ -234,8 +240,7 @@ export default function UnsubscribePage() {
             <>
                 <p className={`gh-portal-text-center gh-portal-header-message ${hideClassName}`}>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
-                        string={t('{{memberEmail}} will no longer receive {{newsletterName}} newsletter.')}
+                        string={t('{memberEmail} will no longer receive {newsletterName} newsletter.')}
                         mapping={{
                             memberEmail: <strong>{member?.email}</strong>,
                             newsletterName: <strong>{unsubscribedNewsletter?.name}</strong>
@@ -248,6 +253,7 @@ export default function UnsubscribePage() {
 
     return (
         <NewsletterManagement
+            hasNewslettersEnabled={hasNewslettersEnabled}
             notification={HeaderNotification}
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={async (newsletters) => {

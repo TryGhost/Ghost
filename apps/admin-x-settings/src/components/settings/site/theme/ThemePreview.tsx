@@ -1,6 +1,5 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {OfficialTheme, ThemeVariant} from '../../../providers/SettingsAppProvider';
 import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -34,7 +33,6 @@ const ThemePreview: React.FC<{
     isInstalling,
     installedTheme,
     onBack,
-    onClose,
     onInstall
 }) => {
     const [previewMode, setPreviewMode] = useState('desktop');
@@ -72,26 +70,8 @@ const ThemePreview: React.FC<{
     }
 
     const handleInstall = () => {
-        if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
-            NiceModal.show(ConfirmationModal, {
-                title: 'Overwrite theme',
-                prompt: (
-                    <>
-                        This will overwrite your existing version of {selectedTheme.name}{installedTheme?.active ? ', which is your active theme' : ''}. All custom changes will be lost.
-                    </>
-                ),
-                okLabel: 'Overwrite',
-                okRunningLabel: 'Installing...',
-                cancelLabel: 'Cancel',
-                okColor: 'red',
-                onOk: async (confirmModal) => {
-                    await onInstall?.();
-                    confirmModal?.remove();
-                }
-            });
-        } else {
-            onInstall?.();
-        }
+        // The parent component handles all limit checks and confirmation modals
+        onInstall?.();
     };
 
     const left =
@@ -101,7 +81,6 @@ const ThemePreview: React.FC<{
                 containerClassName='whitespace-nowrap'
                 itemClassName='hidden md:!block md:!visible'
                 items={[
-                    {label: 'Design', onClick: onClose},
                     {label: 'Change theme', onClick: onBack},
                     {label: selectedTheme.name}
                 ]}
@@ -163,11 +142,11 @@ const ThemePreview: React.FC<{
     return (
         <div className='absolute inset-0 z-[100]'>
             <PageHeader containerClassName='bg-grey-50 dark:bg-black z-[100]' left={left} right={right} sticky={false} />
-            <div className='flex h-[calc(100%-74px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
+            <div className='flex h-[calc(100%-92px)] grow flex-col items-center justify-center bg-grey-50 dark:bg-black'>
                 {previewMode === 'desktop' ?
                     <DesktopChrome>
                         <iframe
-                            className='h-full w-full'
+                            className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />
@@ -175,7 +154,7 @@ const ThemePreview: React.FC<{
                     :
                     <MobileChrome>
                         <iframe
-                            className='h-full w-full'
+                            className='size-full'
                             src={previewUrl}
                             title='Theme preview'
                         />

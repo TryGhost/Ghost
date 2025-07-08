@@ -4,9 +4,8 @@
 
 const fs = require('fs');
 const path = require('path');
-const util = require('util');
-const exec = util.promisify(require('node:child_process').exec);
 
+const concurrently = require('concurrently');
 const detectIndent = require('detect-indent');
 const detectNewline = require('detect-newline');
 const findRoot = require('find-root');
@@ -106,10 +105,13 @@ function getWorkspaces(from) {
     const workspaces = getWorkspaces(cwd)
         .filter(w => !w.startsWith(cwd) && fs.existsSync(path.join(w, 'package.json')))
         .filter(w => !w.includes('apps/'))
-        .filter(w => !w.includes('ghost/admin'));
+        .filter(w => !w.includes('/admin/'))
+        .filter(w => !w.includes('/e2e/'));
 
     console.log('workspaces', workspaces);
     console.log('\n-------------------------\n');
+
+    const packagesToPack = [];
 
     for (const w of workspaces) {
         const workspacePkgInfo = JSONFile.for(path.join(w, 'package.json'));
@@ -118,8 +120,6 @@ function getWorkspaces(from) {
             continue;
         }
 
-        console.log(`packaging ${w}\n`);
-
         workspacePkgInfo.pkg.version = pkgInfo.pkg.version;
         workspacePkgInfo.write();
 
@@ -127,33 +127,40 @@ function getWorkspaces(from) {
         const packedFilename = `file:` + path.join(bundlePath, `${slugifiedName}-${workspacePkgInfo.pkg.version}.tgz`);
 
         if (pkgInfo.pkg.dependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- dependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] dependencies override => ${packedFilename}`);
             pkgInfo.pkg.dependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
         if (pkgInfo.pkg.devDependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- devDependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] devDependencies override => ${packedFilename}`);
             pkgInfo.pkg.devDependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
         if (pkgInfo.pkg.optionalDependencies[workspacePkgInfo.pkg.name]) {
-            console.log(`- optionalDependencies override for ${workspacePkgInfo.pkg.name} to ${packedFilename}`);
+            console.log(`[${workspacePkgInfo.pkg.name}] optionalDependencies override => ${packedFilename}`);
             pkgInfo.pkg.optionalDependencies[workspacePkgInfo.pkg.name] = packedFilename;
         }
 
-        console.log(`- resolution override for ${workspacePkgInfo.pkg.name} to ${packedFilename}\n`);
+        console.log(`[${workspacePkgInfo.pkg.name}] resolution override => ${packedFilename}\n`);
         pkgInfo.pkg.resolutions[workspacePkgInfo.pkg.name] = packedFilename;
 
-        const command = `npm pack --pack-destination ../core/components`;
-        console.log(`running '${command}' in ${w}\n`);
-
-        const {stdout, stderr} = await exec(command, {cwd: w});
-        console.log('stdout', stdout);
-        console.log('stderr', stderr);
-        console.log('\n-------------------------\n');
+        packagesToPack.push(w);
     }
 
     pkgInfo.write();
+
+    const {result} = concurrently(packagesToPack.map(w => ({
+        name: w,
+        cwd: w,
+        command: 'npm pack --pack-destination ../core/components'
+    })));
+
+    try {
+        await result;
+    } catch (e) {
+        console.error(e);
+        throw e;
+    }
 
     const filesToCopy = [
         'README.md',

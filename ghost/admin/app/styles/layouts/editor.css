@@ -313,7 +313,7 @@
     justify-content: space-between;
     height: 34px;
     padding: 0;
-    margin: 30px;
+    margin: 24px;
     z-index: 799;
 }
 
@@ -330,19 +330,20 @@
 }
 
 .gh-btn-editor {
-    background: var(--white) !important;
+    background: var(--white);
+    border-color: transparent;
 }
 
-.gh-btn-editor:not(.gh-publish-trigger) span {
+.gh-btn-editor:not(.gh-publish-trigger):not(.gh-tooltip-trigger) span {
     color: var(--darkgrey);
 }
 
 .gh-btn-editor:hover {
-    background: var(--whitegrey) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.active {
-    background: var(--whitegrey) !important;
+    background: var(--whitegrey-l1);
 }
 
 .gh-btn-editor.green span {
@@ -437,7 +438,7 @@
     bottom: 22px;
     display: flex;
     align-items: center;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     background: #fff;
     cursor: pointer;
 }
@@ -448,7 +449,7 @@
 
 .gh-editor-feedback-dropdown {
     min-width: 400px;
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     box-shadow: 0 0 0 1px rgba(0, 0, 0, .04), 0 8px 20px -3px rgba(0, 0, 0, .2);
     padding: 20px;
     background-color: #fff;
@@ -878,7 +879,7 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     line-height: 34px;
     white-space: nowrap;
     background: var(--white);
-    border-radius: 3px;
+    border-radius: var(--border-radius);
     transition: all 0.25s ease;
     transition-property: color, border-color, background, width, height, box-shadow;
 }
@@ -921,7 +922,8 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     letter-spacing: .2px;
     line-height: 34px;
     background: var(--white);
-    border-radius: 3px;
+    border-radius: var(--border-radius);
+    margin-left: 8px;
 }
 
 @media (max-width: 500px) {
@@ -1008,14 +1010,18 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-preview-trigger {
+    height: 34px;
     background: var(--white);
     font-size: 1.35rem;
     font-weight: 500;
-    margin-right: 8px;
     outline: none;
     border: none;
     white-space: nowrap;
     transition: all 0.25s ease;
+}
+
+.gh-post-preview-header .gh-editor-preview-trigger {
+    margin-left: 4px;
 }
 
 .gh-editor-preview-trigger:hover {

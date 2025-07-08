@@ -2,22 +2,34 @@ import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {click, currentURL, find, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
-import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {getPosts} from '../../mirage/config/posts';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {typeInSearch} from 'ember-power-select/test-support/helpers';
 
+// we have two search providers
+// - "flex" which uses the flexsearch engine but is limited to english only
+// - "basic" which uses exact string matches in a less performant way but is language agnostic
 const suites = [{
-    name: 'Acceptance: Search',
+    name: 'Acceptance: Search (flex)',
     beforeEach() {
-        // noop
+        // noop - default locale is 'en'
+    },
+    confirmProvider() {
+        const searchService = this.owner.lookup('service:search');
+        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderFlexService');
     }
 }, {
-    name: 'Acceptance: Search (beta)',
+    name: 'Acceptance: Search (basic)',
     beforeEach() {
-        enableLabsFlag(this.server, 'internalLinking');
+        this.server.db.settings.update({key: 'locale'}, {value: 'de'});
+    },
+    confirmProvider() {
+        const settingsService = this.owner.lookup('service:settings');
+        expect(settingsService.locale, 'settings.locale').to.equal('de');
+        const searchService = this.owner.lookup('service:search');
+        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderBasicService');
     }
 }];
 
@@ -45,7 +57,12 @@ suites.forEach((suite) => {
 
             suite.beforeEach.bind(this)();
 
-            return await authenticateSession();
+            await authenticateSession();
+        });
+
+        it('is using correct provider', async function () {
+            await visit('/dashboard');
+            suite.confirmProvider.bind(this)();
         });
 
         it('opens search modal when clicking icon', async function () {
@@ -126,6 +143,19 @@ suites.forEach((suite) => {
             await typeInSearch('first post');
             await click('.ember-power-select-option[aria-current="true"]');
             expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
+        });
+
+        it('navigates to editor when highlighted text is clicked', async function () {
+            await visit('/dashboard');
+            await click('[data-test-button="search"]');
+            await typeInSearch('first post');
+            
+            // Find the highlighted text span and click on it specifically
+            const highlightedText = find('.ember-power-select-option[aria-current="true"] .highlight');
+            expect(highlightedText, 'highlighted text should exist').to.exist;
+            
+            await click(highlightedText);
+            expect(currentURL(), 'url after clicking highlighted text').to.equal(`/editor/post/${firstPost.id}`);
         });
 
         it('navigates to editor when page selected', async function () {

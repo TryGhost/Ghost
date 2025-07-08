@@ -2,7 +2,7 @@ const _ = require('lodash');
 const {ValidationError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
-const AnnouncementBarSettings = require('@tryghost/announcement-bar-settings');
+const AnnouncementBarSettings = require('../../../../../services/announcement-bar-service/AnnouncementBarSettings');
 
 const messages = {
     invalidEmailReceived: 'Please send a valid email',

@@ -8,7 +8,8 @@ const ALLOWED_READ_ROLES = [
     'Owner',
     'Administrator',
     'Editor',
-    'Author'
+    'Author',
+    'Super Editor'
 ];
 
 export default function mockTiers(server) {

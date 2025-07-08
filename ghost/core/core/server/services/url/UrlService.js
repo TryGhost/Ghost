@@ -1,7 +1,8 @@
-const _debug = require('@tryghost/debug')._base;
-const debug = _debug('ghost:services:url:service');
+const debug = require('@tryghost/debug')('services:url:service');
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
+const metrics = require('@tryghost/metrics');
 const labs = require('../../../shared/labs');
 const UrlGenerator = require('./UrlGenerator');
 const Queue = require('./Queue');
@@ -16,6 +17,8 @@ const resourcesConfig = require('./config');
  * It will tell you if the url generation is in progress or not.
  */
 class UrlService {
+    lastInitStartTime = null;
+
     /**
      *
      * @param {Object} [options]
@@ -26,7 +29,6 @@ class UrlService {
     constructor({cache} = {}) {
         this.utils = urlUtils;
         this.cache = cache;
-        this.onFinished = null;
         this.finished = false;
         this.urlGenerators = [];
 
@@ -52,7 +54,7 @@ class UrlService {
         this.queue.addListener('started', this._onQueueStartedListener);
 
         this._onQueueEndedListener = this._onQueueEnded.bind(this);
-        this.queue.addListener('ended', this._onQueueEnded.bind(this));
+        this.queue.addListener('ended', this._onQueueEndedListener);
     }
 
     /**
@@ -66,6 +68,7 @@ class UrlService {
      */
     _onQueueStarted(event) {
         if (event === 'init') {
+            this.lastInitStartTime = Date.now();
             this.finished = false;
         }
     }
@@ -78,9 +81,10 @@ class UrlService {
     _onQueueEnded(event) {
         if (event === 'init') {
             this.finished = true;
-            if (this.onFinished) {
-                this.onFinished();
-            }
+
+            const now = Date.now();
+            logging.info(`URL Service ready in ${now - this.lastInitStartTime}ms`);
+            metrics.metric('url-service', now - this.lastInitStartTime);
         }
     }
 
@@ -92,7 +96,7 @@ class UrlService {
      * @param {String} permalink
      */
     onRouterAddedType(identifier, filter, resourceType, permalink) {
-        debug('Registering route: ', filter, resourceType, permalink);
+        debug('Registering route:', filter, resourceType, permalink);
 
         let urlGenerator = new UrlGenerator({
             identifier,
@@ -259,17 +263,7 @@ class UrlService {
     owns(routerId, id) {
         debug('owns', routerId, id);
 
-        let urlGenerator;
-
-        this.urlGenerators.every((_urlGenerator) => {
-            if (_urlGenerator.identifier === routerId) {
-                urlGenerator = _urlGenerator;
-                return false;
-            }
-
-            return true;
-        });
-
+        const urlGenerator = this.urlGenerators.find(g => g.identifier === routerId);
         if (!urlGenerator) {
             return false;
         }
@@ -304,12 +298,9 @@ class UrlService {
     /**
      * @description Initializes components needed for the URL Service to function
      * @param {Object} options
-     * @param {Function} [options.onFinished] - callback when url generation is finished
      * @param {Boolean} [options.urlCache] - whether to init using url cache or not
      */
-    async init({onFinished, urlCache} = {}) {
-        this.onFinished = onFinished;
-
+    async init({urlCache} = {}) {
         let persistedUrls;
         let persistedResources;
 

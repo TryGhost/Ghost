@@ -1,10 +1,10 @@
 const _ = require('lodash');
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
-const MembersSSR = require('@tryghost/members-ssr');
+const MembersSSR = require('./members-ssr');
 const db = require('../../data/db');
 const MembersConfigProvider = require('./MembersConfigProvider');
-const makeMembersCSVImporter = require('@tryghost/members-importer');
+const makeMembersCSVImporter = require('./importer');
 const MembersStats = require('./stats/MembersStats');
 const memberJobs = require('./jobs');
 const logging = require('@tryghost/logging');
@@ -16,9 +16,10 @@ const models = require('../../models');
 const {GhostMailer} = require('../mail');
 const jobsService = require('../jobs');
 const tiersService = require('../tiers');
-const VerificationTrigger = require('@tryghost/verification-trigger');
+const VerificationTrigger = require('../VerificationTrigger');
 const DatabaseInfo = require('@tryghost/database-info');
 const settingsHelpers = require('../settings-helpers');
+const RequestIntegrityTokenProvider = require('./RequestIntegrityTokenProvider');
 
 const messages = {
     noLiveKeysInDevelopment: 'Cannot use live stripe keys in development. Please restart in production mode.',
@@ -91,13 +92,8 @@ const initVerificationTrigger = () => {
         isVerificationRequired: () => settingsCache.get('email_verification_required') === true,
         sendVerificationEmail: async ({subject, message, amountTriggered}) => {
             const escalationAddress = config.get('hostSettings:emailVerification:escalationAddress');
-            let fromAddress = config.get('user_email');
-            let replyTo = undefined;
-
-            if (settingsHelpers.useNewEmailAddresses()) {
-                replyTo = fromAddress;
-                fromAddress = settingsHelpers.getNoReplyAddress();
-            }
+            const replyTo = config.get('user_email');
+            const fromAddress = settingsHelpers.getDefaultEmailAddress();
 
             if (escalationAddress) {
                 await ghostMailer.send({
@@ -140,6 +136,7 @@ module.exports = {
                 });
             }
         }
+
         if (!membersApi) {
             membersApi = createMembersApiInstance(membersConfig);
 
@@ -192,6 +189,11 @@ module.exports = {
 
     ssr: null,
     verificationTrigger: null,
+
+    requestIntegrityTokenProvider: new RequestIntegrityTokenProvider({
+        themeSecret: settingsCache.get('theme_session_secret'),
+        tokenDuration: 1000 * 60 * 5
+    }),
 
     stripeConnect: require('./stripe-connect'),
 

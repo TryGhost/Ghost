@@ -53,6 +53,9 @@ export const OfferPageStyles = () => {
     margin: 0 110px 0 0;
     width: 100%;
 }
+html[dir="rtl"] .gh-portal-offer-title h4 {
+    margin: 0 0 0 110px;
+}
 
 .gh-portal-offer-title h4.placeholder {
     opacity: 0.4;
@@ -75,7 +78,7 @@ export const OfferPageStyles = () => {
 
 .gh-portal-offer-details .gh-portal-plan-name,
 .gh-portal-offer-details p {
-    margin-right: 8px;
+    margin-inline-end: 8px;
 }
 
 .gh-portal-offer .footnote {
@@ -166,7 +169,7 @@ export default class OfferPage extends React.Component {
         const checkboxError = checkboxRequired && !state.termsCheckboxChecked;
 
         return {
-            ...ValidateInputForm({fields: this.getInputFields({state})}),
+            ...ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t}),
             checkbox: checkboxError
         };
     }
@@ -201,7 +204,7 @@ export default class OfferPage extends React.Component {
             fields.unshift({
                 type: 'text',
                 value: member?.name || state.name,
-                placeholder: 'Jamie Larson',
+                placeholder: t('Jamie Larson'),
                 label: t('Name'),
                 name: 'name',
                 disabled: !!member,
@@ -282,12 +285,15 @@ export default class OfferPage extends React.Component {
             };
         }, () => {
             const {onAction} = this.context;
-            const {name, email, errors} = this.state;
+            const {name, email, phonenumber, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
                 const signupData = {
-                    name, email, plan: price?.id,
-                    offerId: offer?.id
+                    name,
+                    email,
+                    plan: price?.id,
+                    offerId: offer?.id,
+                    phonenumber
                 };
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
@@ -375,7 +381,7 @@ export default class OfferPage extends React.Component {
         let label = t('Continue');
 
         if (offer.type === 'trial') {
-            label = t('Start {{amount}}-day free trial', {amount: offer.amount});
+            label = t('Start {amount}-day free trial', {amount: offer.amount});
         }
 
         let isRunning = false;
@@ -436,7 +442,7 @@ export default class OfferPage extends React.Component {
 
         if (offer.type === 'fixed') {
             return (
-                <h5 className="gh-portal-discount-label">{t('{{amount}} off', {
+                <h5 className="gh-portal-discount-label">{t('{amount} off', {
                     amount: `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`
                 })}</h5>
             );
@@ -444,12 +450,12 @@ export default class OfferPage extends React.Component {
 
         if (offer.type === 'trial') {
             return (
-                <h5 className="gh-portal-discount-label">{t('{{amount}} days free', {amount: offer.amount})}</h5>
+                <h5 className="gh-portal-discount-label">{t('{amount} days free', {amount: offer.amount})}</h5>
             );
         }
 
         return (
-            <h5 className="gh-portal-discount-label">{t('{{amount}} off', {amount: offer.amount + '%'})}</h5>
+            <h5 className="gh-portal-discount-label">{t('{amount} off', {amount: offer.amount + '%'})}</h5>
         );
     }
 
@@ -514,21 +520,21 @@ export default class OfferPage extends React.Component {
 
     renderOfferMessage({offer, product, t}) {
         const offerMessages = {
-            forever: t(`{{amount}} off forever.`, {
+            forever: t(`{amount} off forever.`, {
                 amount: this.getOffAmount({offer})
             }),
-            firstPeriod: t(`{{amount}} off for first {{period}}.`, {
+            firstPeriod: t(`{amount} off for first {period}.`, {
                 amount: this.getOffAmount({offer}),
                 period: offer.cadence
             }),
-            firstNMonths: t(`{{amount}} off for first {{number}} months.`, {
+            firstNMonths: t(`{amount} off for first {number} months.`, {
                 amount: this.getOffAmount({offer}),
                 number: offer.duration_in_months || ''
             })
         };
 
         const originalPrice = this.getOriginalPrice({offer, product});
-        const renewsLabel = t(`Renews at {{price}}.`, {price: originalPrice, interpolation: {escapeValue: false}});
+        const renewsLabel = t(`Renews at {price}.`, {price: originalPrice, interpolation: {escapeValue: false}});
 
         let offerLabel = '';
         let useRenewsLabel = false;
@@ -549,7 +555,7 @@ export default class OfferPage extends React.Component {
         }
         if (discountDuration === 'trial') {
             return (
-                <p className="footnote">{t('Try free for {{amount}} days, then {{originalPrice}}.', {
+                <p className="footnote">{t('Try free for {amount} days, then {originalPrice}.', {
                     amount: offer.amount,
                     originalPrice: originalPrice,
                     interpolation: {escapeValue: false}

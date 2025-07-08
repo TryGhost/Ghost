@@ -17,7 +17,7 @@ interface TierCardProps {
 }
 
 const cardContainerClasses = clsx(
-    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm dark:bg-grey-950 dark:hover:border-grey-800 min-[900px]:min-h-[200px]'
+    'group/tiercard flex cursor-pointer flex-col items-start justify-between gap-4 self-stretch rounded-sm border border-transparent bg-grey-100 p-4 transition-all hover:border-grey-100 hover:bg-grey-75 hover:shadow-sm min-[900px]:min-h-[200px] dark:bg-grey-950 dark:hover:border-grey-800'
 );
 
 const TierCard: React.FC<TierCardProps> = ({tier}) => {
@@ -30,7 +30,7 @@ const TierCard: React.FC<TierCardProps> = ({tier}) => {
             <div className='w-full grow' onClick={() => {
                 updateRoute({route: `tiers/${tier.id}`});
             }}>
-                <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-pink'>{tier.name}</div>
+                <div className='text-[1.65rem] font-bold leading-tight tracking-tight text-black dark:text-white'>{tier.name}</div>
                 <div className='mt-2 flex items-baseline'>
                     <span className="ml-1 translate-y-[-3px] text-md font-bold uppercase">{currencySymbol}</span>
                     <span className='text-xl font-bold tracking-tighter'>{numberWithCommas(currencyToDecimal(tier.monthly_price || 0))}</span>
@@ -76,7 +76,7 @@ const TiersList: React.FC<TiersListProps> = ({
                 <button className={`${cardContainerClasses} group cursor-pointer`} type='button' onClick={() => {
                     openTierModal();
                 }}>
-                    <div className='flex h-full w-full flex-col items-center justify-center'>
+                    <div className='flex size-full flex-col items-center justify-center'>
                         <div className='flex flex-col items-center justify-center'>
                             <div className='translate-y-[15px] transition-all group-hover:translate-y-0'><Icon colorClass='text-green' name='add' /></div>
                             <div className='mt-2 translate-y-[-10px] text-sm font-semibold text-green opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100'>Add tier</div>

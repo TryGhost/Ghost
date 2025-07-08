@@ -40,9 +40,16 @@ module.exports = function setupMembersApp() {
     // Initializes members specific routes as well as assigns members specific data to the req/res objects
     // We don't want to add global bodyParser middleware as that interferes with stripe webhook requests on - `/webhooks`.
 
-    // Manage newsletter subscription via unsubscribe link
-    membersApp.get('/api/member/newsletters', middleware.getMemberNewsletters);
-    membersApp.put('/api/member/newsletters', bodyParser.json({limit: '50mb'}), middleware.updateMemberNewsletters);
+    // Manage newsletter subscription via unsubscribe link - these should be authenticated by uuid and hashed key
+    membersApp.get('/api/member/newsletters', 
+        middleware.authMemberByUuid,
+        middleware.getMemberNewsletters
+    );
+    membersApp.put('/api/member/newsletters',
+        bodyParser.json({limit: '50mb'}),
+        middleware.authMemberByUuid,
+        middleware.updateMemberNewsletters
+    );
 
     // Get and update member data
     // Caching members content is an experimental feature
@@ -54,7 +61,7 @@ module.exports = function setupMembersApp() {
     }
     
     membersApp.put('/api/member', bodyParser.json({limit: '50mb'}), middleware.updateMemberData);
-    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res) => membersService.api.middleware.updateEmailAddress(req, res));
+    membersApp.post('/api/member/email', bodyParser.json({limit: '50mb'}), (req, res, next) => membersService.api.middleware.updateEmailAddress(req, res, next));
 
     // Remove email from suppression list
     membersApp.delete('/api/member/suppression', middleware.deleteSuppression);
@@ -63,10 +70,13 @@ module.exports = function setupMembersApp() {
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
 
+    membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
+
     // NOTE: this is wrapped in a function to ensure we always go via the getter
     membersApp.post(
         '/api/send-magic-link',
         bodyParser.json(),
+        middleware.verifyIntegrityToken,
         // Prevent brute forcing email addresses (user enumeration)
         shared.middleware.brute.membersAuthEnumeration,
         // Prevent brute forcing passwords for the same email address

@@ -113,7 +113,7 @@ function ping(post) {
     });
 }
 
-function listener(model, options) {
+function xmlrpcListener(model, options) {
     // CASE: do not rpc ping if we import a database
     // TODO: refactor post.published events to never fire on importing
     if (options && options.importing) {
@@ -124,7 +124,9 @@ function listener(model, options) {
 }
 
 function listen() {
-    events.on('post.published', listener);
+    events
+        .removeListener('post.published', xmlrpcListener)
+        .on('post.published', xmlrpcListener);
 }
 
 module.exports = {

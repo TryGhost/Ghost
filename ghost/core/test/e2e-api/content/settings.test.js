@@ -1,8 +1,10 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyEtag, anyContentLength, anyContentVersion} = matchers;
+const {anyEtag, anyContentLength, anyContentVersion, anyUuid, anyString, anyObject} = matchers;
 
 const settingsMatcher = {
-    version: matchers.anyString
+    version: anyString,
+    labs: anyObject,
+    site_uuid: anyUuid
 };
 
 describe('Settings Content API', function () {

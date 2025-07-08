@@ -7,7 +7,6 @@ import {MultipleProductsPlansSection} from '../common/PlansSection';
 import {getDateString} from '../../utils/date-time';
 import {allowCompMemberUpgrade, formatNumber, getAvailablePrices, getFilteredPrices, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
-import {SYNTAX_I18NEXT} from '@doist/react-interpolate';
 
 export const AccountPlanPageStyles = `
     .account-plan.full-size .gh-portal-main-title {
@@ -52,7 +51,7 @@ function getConfirmationPageTitle({confirmationType, t}) {
 
 const Header = ({showConfirmation, confirmationType}) => {
     const {member, t} = useContext(AppContext);
-    let title = isPaidMember({member}) ? 'Change plan' : 'Choose a plan';
+    let title = isPaidMember({member}) ? t('Change plan') : t('Choose a plan');
     if (showConfirmation) {
         title = getConfirmationPageTitle({confirmationType, t});
     }
@@ -117,12 +116,12 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const label = t('Confirm');
     const planStartDate = getDateString(subscription.current_period_end);
     const currentActivePlan = getMemberActivePrice({member});
-    let planStartingMessage = t('Starting {{startDate}}', {startDate: planStartDate});
+    let planStartingMessage = t('Starting {startDate}', {startDate: planStartDate});
     if (currentActivePlan.id !== plan.id) {
         planStartingMessage = t('Starting today');
     }
     const priceString = formatNumber(plan.price);
-    const planStartMessage = `${plan.currency_symbol}${priceString}/${plan.interval} – ${planStartingMessage}`;
+    const planStartMessage = `${plan.currency_symbol}${priceString}/${t(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
     const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
     if (type === 'changePlan') {
@@ -161,8 +160,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
             <div className="gh-portal-logged-out-form-container gh-portal-cancellation-form">
                 <p>
                     <Interpolate
-                        syntax={SYNTAX_I18NEXT}
-                        string={t(`If you cancel your subscription now, you will continue to have access until {{periodEnd}}.`)}
+                        string={t(`If you cancel your subscription now, you will continue to have access until {periodEnd}.`)}
                         mapping={{
                             periodEnd: <strong>{getDateString(subscription.current_period_end)}</strong>
                         }}

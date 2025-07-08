@@ -1,4 +1,5 @@
 const should = require('should');
+const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -13,9 +14,15 @@ describe('Actions API', function () {
         await localUtils.doAuth(request, 'integrations', 'api_keys');
     });
 
+    after(async function () {
+        sinon.restore();
+    });
+
     // @NOTE: This test runs a little slower, because we store Dates without milliseconds.
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
+
+        const clock = sinon.useFakeTimers();
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))
@@ -53,9 +60,7 @@ describe('Actions API', function () {
         res2.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
         res2.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-        await new Promise((resolve) => {
-            setTimeout(resolve, 1000);
-        });
+        clock.tick(1000);
 
         const res3 = await request
             .put(localUtils.API.getApiQuery(`posts/${postId}/`))
@@ -93,9 +98,7 @@ describe('Actions API', function () {
         res4.body.actions[0].actor.name.should.eql(testUtils.DataGenerator.Content.users[0].name);
         res4.body.actions[0].actor.slug.should.eql(testUtils.DataGenerator.Content.users[0].slug);
 
-        await new Promise((resolve) => {
-            setTimeout(resolve, 1000);
-        });
+        clock.tick(1000);
 
         const integrationRequest = supertest.agent(config.get('url'));
         await integrationRequest

@@ -1,5 +1,6 @@
 const {isPlainObject} = require('lodash');
 const config = require('../../../shared/config');
+const settingsCache = require('../../../shared/settings-cache');
 const labs = require('../../../shared/labs');
 const databaseInfo = require('../../data/db/info');
 const ghostVersion = require('@tryghost/version');
@@ -19,15 +20,19 @@ module.exports = function getConfigProperties() {
         emailAnalytics: config.get('emailAnalytics'),
         hostSettings: config.get('hostSettings'),
         tenor: config.get('tenor'),
-        editor: config.get('editor'),
         pintura: config.get('pintura'),
-        adminX: config.get('adminX'),
-        signupForm: config.get('signupForm')
+        signupForm: config.get('signupForm'),
+        security: config.get('security')
     };
 
-    const billingUrl = config.get('hostSettings:billing:enabled') ? config.get('hostSettings:billing:url') : '';
-    if (billingUrl) {
-        configProperties.billingUrl = billingUrl;
+    // WIP tinybird stats feature - it's entirely config driven instead of using an alpha flag for now
+    if (config.get('tinybird') && config.get('tinybird:stats')) {
+        const statsConfig = config.get('tinybird:stats');
+        const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
+        configProperties.stats = {
+            ...statsConfig,
+            id: siteUuid
+        };
     }
 
     return configProperties;

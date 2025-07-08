@@ -1,6 +1,6 @@
+import {chooseOptionInSelect, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../../utils/acceptance';
-import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {
@@ -44,8 +44,8 @@ test.describe('User roles', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
-            browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
-            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
+            browseRoles: {method: 'GET', path: '/roles/?limit=100', response: responseFixtures.roles},
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=100&permissions=assign', response: responseFixtures.roles},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
                     ...userToEdit,
@@ -57,7 +57,7 @@ test.describe('User roles', async () => {
         await page.goto('/');
 
         const section = page.getByTestId('users');
-        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+        const activeTab = section.locator('[role=tabpanel]:not([hidden])');
 
         await section.getByRole('tab', {name: 'Authors'}).click();
 
@@ -67,7 +67,7 @@ test.describe('User roles', async () => {
 
         const modal = page.getByTestId('user-detail-modal');
 
-        await modal.locator('input[value=editor]').check();
+        await chooseOptionInSelect(modal.getByTestId('role-select'), 'Editor');
 
         await modal.getByRole('button', {name: 'Save'}).click();
 

@@ -1,6 +1,8 @@
 import Component from '@ember/component';
 import config from 'ghost-admin/config/environment';
 import {action, computed} from '@ember/object';
+import {htmlSafe} from '@ember/template';
+import {inject} from 'ghost-admin/decorators/inject';
 import {isBlank} from '@ember/utils';
 import {reads} from '@ember/object/computed';
 import {task, timeout} from 'ember-concurrency';
@@ -25,7 +27,7 @@ const GhTaskButton = Component.extend({
         'isSuccessClass',
         'isFailureClass'
     ],
-    attributeBindings: ['disabled', 'form', 'type', 'tabindex', 'data-test-button'],
+    attributeBindings: ['disabled', 'form', 'type', 'tabindex', 'data-test-button', 'style'],
 
     task: null,
     taskArgs: undefined,
@@ -33,6 +35,7 @@ const GhTaskButton = Component.extend({
     defaultClick: false,
     buttonText: 'Save',
     idleClass: '',
+    idleIcon: '',
     runningClass: '',
     showIcon: true,
     showSuccess: true, // set to false if you want the spinner to show until a transition occurs
@@ -47,6 +50,8 @@ const GhTaskButton = Component.extend({
 
     // Allowed actions
     action: () => {},
+
+    config: inject(),
 
     runningText: reads('buttonText'),
 
@@ -110,6 +115,13 @@ const GhTaskButton = Component.extend({
 
     isIdle: computed('isRunning', 'isSuccess', 'isFailure', function () {
         return !this.isRunning && !this.isSuccess && !this.isFailure;
+    }),
+
+    style: computed('useAccentColor', 'isFailure', function () {
+        if (this.useAccentColor && !this.isFailure) {
+            return htmlSafe(`background-color: ${this.config.accent_color}`);
+        }
+        return null;
     }),
 
     init() {

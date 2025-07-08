@@ -35,7 +35,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
     const visibilityCheckboxes = [
         {
-            label: 'Logged out visitors',
+            label: 'Public visitors',
             onChange: (e:boolean) => {
                 toggleVisibility('visitors', e);
             },

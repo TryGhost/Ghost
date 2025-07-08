@@ -36,7 +36,7 @@ body {
 
 /* Blockquotes */
 .gh-comment-content blockquote {
-    border-left: 3px solid rgba(13,13,13,.1);
+    border-left: 3px solid var(--gh-accent-color);
     padding-left: 1rem;
     margin: 0 0 1.2rem;
 }
@@ -49,6 +49,14 @@ body {
 .gh-comment-content p:last-child,
 .gh-comment-content blockquote:last-child {
     margin: 0;
+}
+
+.gh-comment-content p.is-editor-empty:first-child::before {
+    color: rgba(0,0,0,.3) !important;
+}
+
+.dark .gh-comment-content p.is-editor-empty:first-child::before {
+    color: rgba(255,255,255,.4) !important;
 }
 
 /* The following lines are needed for the editor */

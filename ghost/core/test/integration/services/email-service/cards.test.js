@@ -1,5 +1,7 @@
+const sinon = require('sinon');
 const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e-framework');
 const models = require('../../../../core/server/models');
+const labs = require('../../../../core/shared/labs');
 const assert = require('assert/strict');
 const configUtils = require('../../../utils/configUtils');
 const {sendEmail, matchEmailSnapshot} = require('../../../utils/batch-email-utils');
@@ -8,6 +10,23 @@ const fs = require('fs-extra');
 const {DEFAULT_NODES} = require('@tryghost/kg-default-nodes');
 
 const goldenPost = fs.readJsonSync('./test/utils/fixtures/email-service/golden-post.json');
+
+// some nodes are not cards or will never be emailed so we exclude them from tests
+// that check if all default nodes are rendered or have associated renderers called
+const excludedNodes = [
+    // only used in pages, will never be emailed
+    'collection',
+    // non-card nodes
+    'paragraph',
+    'aside',
+    'extended-text',
+    'extended-quote',
+    'extended-heading',
+    'tk',
+    'at-link',
+    'at-link-search',
+    'zwnj'
+];
 
 /**
  * Remove the preheader span from the email html and put it in a separate field called preheader
@@ -76,6 +95,7 @@ describe('Can send cards via email', function () {
             value: false
         }], {context: {internal: true}});
         mockManager.restore();
+        sinon.restore();
     });
 
     before(async function () {
@@ -143,14 +163,40 @@ describe('Can send cards via email', function () {
         await matchEmailSnapshot();
     });
 
-    it('renders the golden post correctly', async function () {
-        const data = await sendEmail(agent, {
-            lexical: JSON.stringify(goldenPost)
+    // Run the tests for a free and non-free member
+    // NOTE: this is to workaround the email snapshot utils not handling slight discrepancies in email body, but it
+    // means we can have snapshots for both free and non-free members
+    ['status:free', 'status:-free'].forEach(function (status) {
+        it(`renders the golden post correctly (no labs flags) (${status})`, async function () {
+            sinon.stub(labs, 'isSet').returns(false);
+
+            const data = await sendEmail(agent, {
+                lexical: JSON.stringify(goldenPost)
+            }, status);
+
+            splitPreheader(data);
+
+            await matchEmailSnapshot();
         });
 
-        splitPreheader(data);
+        ['contentVisibility'].forEach(function (flag) {
+            it(`renders the golden post correctly (labs flag(s): ${flag}) (${status})`, async function () {
+                sinon.stub(labs, 'isSet').callsFake((key) => {
+                    if (flag.split(',').includes(key)) {
+                        return true;
+                    }
+                    return false;
+                });
 
-        await matchEmailSnapshot();
+                const data = await sendEmail(agent, {
+                    lexical: JSON.stringify(goldenPost)
+                }, status);
+
+                splitPreheader(data);
+
+                await matchEmailSnapshot();
+            });
+        });
     });
 
     it('renders all of the default nodes in the golden post', async function () {
@@ -164,18 +210,6 @@ describe('Can send cards via email', function () {
             return child.type;
         });
 
-        const excludedCards = [
-            'collection', // only used in pages, will never be emailed
-            'extended-text', // not a card
-            'extended-quote', // not a card
-            'extended-heading', // not a card
-            // not a card and shouldn't be present in published posts / emails
-            'tk',
-            'at-link',
-            'at-link-search',
-            'zwnj'
-        ];
-
         const cardsInDefaultNodes = DEFAULT_NODES.map((node) => {
             try {
                 return node.getType();
@@ -183,12 +217,48 @@ describe('Can send cards via email', function () {
                 return null;
             }
         }).filter((card) => {
-            return card !== null && !excludedCards.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
+            return card !== null && !excludedNodes.includes(card); // don't include extended versions of regular text type nodes, we only want the cards (decorator nodes)
         });
 
-        // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedCards above)
+        // Check that every card in DEFAULT_NODES are present in the golden post (with the exception of the excludedNodes above)
         for (const card of cardsInDefaultNodes) {
             assert.ok(cardsInGoldenPost.includes(card), `The golden post does not contain the ${card} card`);
         }
+    });
+
+    it('calls custom node renderers for all cards in golden post', async function () {
+        // get list of card nodes in the golden post
+        const nodesInGoldenPost = goldenPost.root.children.map((child) => {
+            return child.type;
+        }).filter(node => !excludedNodes.includes(node));
+
+        // we have a map of spies because some nodes have multiple versions
+        const spies = {};
+
+        // spy on the custom node renderers
+        const customNodeRenderers = require('../../../../core/server/services/koenig/node-renderers');
+        nodesInGoldenPost.forEach((node) => {
+            if (!customNodeRenderers[node]) {
+                throw new Error(`Custom node renderer for ${node} not found`);
+            }
+            if (typeof customNodeRenderers[node] === 'object') {
+                // select highest version of the node - we only want to test the latest version
+                // TODO: golden post should really contain a node with each version
+                const versions = Object.keys(customNodeRenderers[node]);
+                const highestVersion = versions.reduce((a, b) => {
+                    return parseInt(a) > parseInt(b) ? a : b;
+                });
+                spies[node] = sinon.spy(customNodeRenderers[node], highestVersion);
+            } else {
+                spies[node] = sinon.spy(customNodeRenderers, node);
+            }
+        });
+
+        await sendEmail(agent, {lexical: JSON.stringify(goldenPost)});
+
+        // check that all the custom node renderers were called
+        Object.keys(spies).forEach((node) => {
+            sinon.assert.called(spies[node]);
+        });
     });
 });

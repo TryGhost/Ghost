@@ -59,6 +59,11 @@
         "members_stripe_webhook_secret": {
             "defaultValue": null,
             "type": "string"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
@@ -80,6 +85,14 @@
                 }
             },
             "flags": "PUBLIC",
+            "type": "string"
+        },
+        "heading_font": {
+            "defaultValue": "",
+            "type": "string"
+        },
+        "body_font": {
+            "defaultValue": "",
             "type": "string"
         },
         "logo": {
@@ -251,7 +264,7 @@
             "defaultValue": "all",
             "validations": {
                 "isEmpty": false,
-                "isIn": [["all", "invite", "none"]]
+                "isIn": [["all", "paid", "invite", "none"]]
             },
             "type": "string"
         },
@@ -307,6 +320,10 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "blocked_email_domains": {
+            "defaultValue": "[]",
+            "type": "array"
         }
     },
     "portal": {
@@ -319,7 +336,7 @@
             "type": "boolean"
         },
         "portal_button": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
@@ -534,6 +551,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "web_analytics": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "pintura": {
@@ -567,7 +592,7 @@
             "type": "string"
         },
         "donations_suggested_amount": {
-            "defaultValue": 0,
+            "defaultValue": 500,
             "validations": {
                 "isEmpty": false
             },
@@ -580,6 +605,26 @@
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        }
+    },
+    "security": {
+        "require_email_mfa": {
+            "defaultValue": false,
+            "type": "boolean"
+        }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
             },
             "type": "boolean"
         }

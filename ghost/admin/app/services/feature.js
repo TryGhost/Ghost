@@ -59,26 +59,21 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('urlCache') urlCache;
-    @feature('lexicalMultiplayer') lexicalMultiplayer;
     @feature('audienceFeedback') audienceFeedback;
     @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
-    @feature('signupCard') signupCard;
-    @feature('collections') collections;
     @feature('mailEvents') mailEvents;
-    @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
-    @feature('tipsAndDonations') tipsAndDonations;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('adminXDemo') adminXDemo;
-    @feature('ActivityPub') ActivityPub;
-    @feature('internalLinking') internalLinking;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
+    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('trafficAnalyticsAlpha') trafficAnalyticsAlpha;
+    @feature('ui60') ui60;
+    @feature('trafficAnalytics') trafficAnalytics;
 
     _user = null;
 
@@ -155,11 +150,14 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
+
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
+            document.documentElement.classList.remove('dark');
         });
     }
 }

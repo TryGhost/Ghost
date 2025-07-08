@@ -1,6 +1,7 @@
 import InvalidThemeModal, {FatalErrors} from './InvalidThemeModal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
+import useCustomFonts from '../../../../hooks/useCustomFonts';
 import {Button, ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
@@ -48,11 +49,13 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
 }) => {
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {mutateAsync: deleteTheme} = useDeleteTheme();
+    const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
 
     const handleActivate = async () => {
         try {
             await activateTheme(theme.name);
+            refreshActiveThemeData();
             showToast({
                 title: 'Theme activated',
                 type: 'success',
@@ -158,7 +161,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     return (
         <div className='-mr-3 flex items-center gap-4'>
             {actions}
-            <Menu items={menuItems} position='left' triggerButtonProps={buttonProps} />
+            <Menu items={menuItems} position='end' triggerButtonProps={buttonProps} />
         </div>
     );
 };

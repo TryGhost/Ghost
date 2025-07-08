@@ -21,7 +21,9 @@ export default defineConfig((config) => {
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
         preview: {
-            port: 4175
+            host: '0.0.0.0',
+            port: 4175,
+            cors: true
         },
         server: {
             port: 5368
@@ -33,7 +35,7 @@ export default defineConfig((config) => {
         ],
         esbuild: {
             loader: 'jsx',
-            include: /src\/.*\.jsx?$/,
+            include: [/src\/.*\.jsx?$/, /__mocks__\/.*\.jsx?$/],
             exclude: []
         },
         optimizeDeps: {

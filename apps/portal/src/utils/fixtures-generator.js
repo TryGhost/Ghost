@@ -28,7 +28,6 @@ export function getSiteData({
     portalProducts = products.map(p => p.id),
     accentColor: accent_color = '#45C32E',
     portalPlans: portal_plans = ['free', 'monthly', 'yearly'],
-    allowSelfSignup: allow_self_signup = true,
     membersSignupAccess: members_signup_access = 'all',
     freePriceName: free_price_name = 'Free',
     freePriceDescription: free_price_description = 'Free preview',
@@ -39,7 +38,9 @@ export function getSiteData({
     portalButtonSignupText: portal_button_signup_text = 'Subscribe now',
     portalButtonStyle: portal_button_style = 'icon-and-text',
     membersSupportAddress: members_support_address = 'support@example.com',
+    editorDefaultEmailRecipients: editor_default_email_recipients = 'visibility',
     newsletters = [],
+    posts = getPostsData(),
     commentsEnabled,
     recommendations = [],
     recommendationsEnabled
@@ -54,7 +55,6 @@ export function getSiteData({
         plans,
         products,
         portal_products: portalProducts,
-        allow_self_signup,
         members_signup_access,
         free_price_name,
         free_price_description,
@@ -66,10 +66,12 @@ export function getSiteData({
         portal_button_signup_text,
         portal_button_style,
         members_support_address,
-        comments_enabled: !!commentsEnabled,
+        comments_enabled: commentsEnabled !== 'off',
         newsletters,
         recommendations,
-        recommendations_enabled: !!recommendationsEnabled
+        recommendations_enabled: !!recommendationsEnabled,
+        editor_default_email_recipients,
+        posts
     };
 }
 
@@ -173,6 +175,33 @@ export function getNewslettersData({numOfNewsletters = 3} = {}) {
     return newsletters.slice(0, numOfNewsletters);
 }
 
+export function getPostsData({numOfPosts = 3} = {}) {
+    const posts = [];
+    for (let i = 0; i < numOfPosts; i++) {
+        posts.push(getPostData({
+            title: `Post ${i + 1}`,
+            slug: `post-${i + 1}`
+        }));
+    }
+    return posts.slice(0, numOfPosts);
+}
+
+export function getPostData({
+    id = `post_${objectId()}`,
+    title = 'Post',
+    excerpt = 'Post excerpt',
+    slug = 'post',
+    featured = false
+} = {}) {
+    return {
+        id,
+        title,
+        excerpt,
+        slug,
+        featured
+    };
+}
+
 export function getProductsData({numOfProducts = 3} = {}) {
     const products = [
         getProductData({
@@ -261,16 +290,16 @@ export function getFreeProduct({
 }
 
 export function getBenefits({numOfBenefits}) {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 100);
+    // Generate a unique suffix for benefit names to avoid clashes across test runs
+    const uniqueId = objectId();
 
-    const beenfits = [
-        getBenefitData({name: `Limited early adopter pricing #${random}-${timestamp}`}),
-        getBenefitData({name: `Latest gear reviews #${random}-${timestamp}`}),
-        getBenefitData({name: `Weekly email newsletter #${random}-${timestamp}`}),
-        getBenefitData({name: `Listen to my podcast #$${random}-${timestamp}`})
+    const benefits = [
+        getBenefitData({name: `Limited early adopter pricing #${uniqueId.substring(0, 6)}`}),
+        getBenefitData({name: `Latest gear reviews #${uniqueId.substring(6, 12)}`}),
+        getBenefitData({name: `Weekly email newsletter #${uniqueId.substring(12, 18)}`}),
+        getBenefitData({name: `Listen to my podcast #${uniqueId.substring(18)}`})
     ];
-    return beenfits.slice(0, numOfBenefits);
+    return benefits.slice(0, numOfBenefits);
 }
 
 export function getBenefitData({

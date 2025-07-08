@@ -178,14 +178,17 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
         await page.goto('/');
         const section = page.getByTestId('offers');
-        await section.getByRole('button', {name: 'Manage offers'}).click();
+        const manageButton = section.getByRole('button', {name: 'Manage offers'});
+        await expect(manageButton).toBeVisible();
+        await manageButton.click();
         const modal = page.getByTestId('offers-modal');
+        await expect(modal).toBeVisible();
         await expect(modal.getByText('Active')).toHaveAttribute('aria-selected', 'true');
         await expect(modal).toContainText('First offer');
         await expect(modal).toContainText('Second offer');
@@ -196,7 +199,7 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
@@ -214,7 +217,7 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/?', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: {

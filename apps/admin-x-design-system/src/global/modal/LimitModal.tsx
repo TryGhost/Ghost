@@ -7,7 +7,9 @@ export interface LimitModalProps {
     prompt?: React.ReactNode;
     okLabel?: string;
     formSheet?: boolean;
-    onOk: () => void;
+    onOk?: (modal?: {
+        remove: () => void;
+    }) => void | Promise<void>;
 }
 
 export const LimitModalContent: React.FC<LimitModalProps> = ({
@@ -29,7 +31,11 @@ export const LimitModalContent: React.FC<LimitModalProps> = ({
             onOk={onOk}
         >
             <div className='py-4 leading-9'>
-                {prompt}
+                {typeof prompt === 'string' && prompt.includes('<') ? (
+                    <div dangerouslySetInnerHTML={{__html: prompt}} />
+                ) : (
+                    prompt
+                )}
             </div>
         </Modal>
     );
