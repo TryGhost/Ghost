@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import Select, { SelectOption, SelectProps } from './Select';
+import React, {useEffect, useState} from 'react';
+import Select, {SelectOption, SelectProps} from './Select';
 import TextField from './TextField';
 
 export interface SelectWithOtherProps extends Omit<SelectProps, 'onSelect' | 'selectedOption' | 'options' | 'defaultValue'> {
@@ -19,7 +19,7 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     selectedValue = '',
     onSelect,
     options = [],
-    otherOption = { value: 'other', label: 'Other...' },
+    otherOption = {value: 'other', label: 'Other...'},
     otherPlaceholder = 'Enter custom value',
     otherHint,
     backToListLabel = 'Choose from list',
@@ -32,7 +32,7 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     testId,
     ...restProps
 }) => {
-    const { defaultOptions, loadOptions, ...selectProps } = restProps as Record<string, unknown>;
+    const {...selectProps} = restProps as Record<string, unknown>;
     const [isOtherSelected, setIsOtherSelected] = useState(false);
     const [validationError, setValidationError] = useState<string | null>(null);
 
