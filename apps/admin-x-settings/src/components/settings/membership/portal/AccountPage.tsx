@@ -21,7 +21,9 @@ const AccountPage: React.FC<{
 
         if (!supportAddress) {
             setError('members_support_address', 'Enter an email address');
-        } else if (!validator.isEmail(supportAddress)) {
+            // @TODO: require_tld is automatically true in validator 13+
+            // this causes issues with localhost, so need to adjust based on NODE_ENV or another solution
+        } else if (!validator.isEmail(supportAddress, {require_tld: process.env.NODE_ENV === 'production'})) {
             setError('members_support_address', 'Enter a valid email address');
         } else {
             setError('members_support_address', '');
@@ -38,6 +40,7 @@ const AccountPage: React.FC<{
     }, [calculatedSupportAddress]);
 
     return <div className='mt-7'><Form>
+        {process.env.NODE_ENV}
         <TextField
             error={!!errors.members_support_address}
             hint={errors.members_support_address}

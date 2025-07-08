@@ -15,6 +15,8 @@ const SlackModal = NiceModal.create(() => {
         onValidate: () => {
             const newErrors: Record<string, string> = {};
 
+            // @TODO: works on validator 13+
+            // might want to strengthen the validation, right now https://google.com works
             if (slackUrl && !validator.isURL(slackUrl, {require_protocol: true})) {
                 newErrors.slackUrl = 'The URL must be in a format like https://hooks.slack.com/services/<your personal key>';
             }

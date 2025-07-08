@@ -90,6 +90,7 @@ const InviteUserModal = NiceModal.create(() => {
             return;
         }
 
+        // @TODO: works properly with validator 13+
         if (!validator.isEmail(email)) {
             setErrors({
                 email: 'Please enter a valid email address.'

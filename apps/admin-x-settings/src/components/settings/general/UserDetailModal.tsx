@@ -36,7 +36,10 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
-        const valid = !url || validator.isURL(url);
+        // @TODO: require_tld is automatically true in validator 13+
+        // this causes issues with localhost, so need to adjust based on NODE_ENV or another solution
+        // what's also weird is that i don't see a field for this, so it seems odd that it's validated
+        const valid = !url || validator.isURL(url, {require_tld: false});
         return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
@@ -412,7 +415,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
-            okLabel={okProps.label || 'Save'}
+            okLabel={okProps.label || 'Save!!!'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
