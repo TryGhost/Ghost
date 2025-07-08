@@ -302,7 +302,6 @@ Click Tracking → redirects → members_click_events
 1. Tinybird tracks anonymous page views
 2. MySQL tracks member signup with attribution
 3. MySQL tracks paid conversion with attribution
-4. Combined view shows complete funnel
 
 ## API Endpoints
 
@@ -348,6 +347,7 @@ Most endpoints support:
 - `limit` - Result count limiting  
 - `order` - Sort field and direction
 - `newsletter_id` - Newsletter-specific filtering
+- `timezone` 
 
 Response format:
 ```json
