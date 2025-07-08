@@ -1409,9 +1409,8 @@ describe('{{ghost_head}} helper', function () {
 
     describe('includes tinybird tracker script when config is set', function () {
         let labsStub;
-        function setAnalyticsFlags({analytics = false, tracking = false} = {}) {
+        function setAnalyticsFlags({analytics = false} = {}) {
             labsStub.withArgs('trafficAnalytics').returns(analytics);
-            labsStub.withArgs('trafficAnalyticsTracking').returns(tracking);
         }
         beforeEach(function () {
             configUtils.set({
@@ -1430,11 +1429,11 @@ describe('{{ghost_head}} helper', function () {
                 }
             });
             labsStub = sinon.stub(labs, 'isSet');
-            setAnalyticsFlags({analytics: true, tracking: false});
+            setAnalyticsFlags({analytics: true});
             labsStub.withArgs('i18n').returns(true);
         });
 
-        it('includes tracker script', async function () {
+        it('includes tracker script when trafficAnalytics is set', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
@@ -1447,49 +1446,7 @@ describe('{{ghost_head}} helper', function () {
         });
 
         it('does not include tracker script when trafficAnalytics is not set', async function () {
-            setAnalyticsFlags({analytics: false, tracking: false});
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
-        });
-
-        it('includes tracker script when trafficAnalyticsTracking is set', async function () {
-            setAnalyticsFlags({analytics: false, tracking: true});
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
-        });
-
-        it('includes tracker script when both trafficAnalytics and trafficAnalyticsTracking are set', async function () {
-            setAnalyticsFlags({analytics: true, tracking: true});
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
-        });
-
-        it('does not include tracker script when neither trafficAnalytics nor trafficAnalyticsTracking is set', async function () {
-            setAnalyticsFlags({analytics: false, tracking: false});
+            setAnalyticsFlags({analytics: false});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1624,6 +1581,33 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
+        });
+
+        it('does not include tracker token when it is not set', async function () {
+            configUtils.set('tinybird:tracker:token', undefined);
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/data-token=/);
+        });
+
+        it('does not include tracker token when env is production', async function () {
+            configUtils.set('tinybird:tracker:token', 'tinybird_token');
+            configUtils.set('env', 'production');
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            rendered.should.not.match(/data-token=/);
         });
     });
     describe('respects values from excludes: ', function () {

@@ -244,20 +244,20 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const followMutation = useFollowMutationForUser(
         'index',
         () => {
-            toast.success('User followed');
+            toast.success(`Followed ${author?.name}`);
         },
         () => {
-            toast.error('Failed to follow user');
+            toast.error('Failed to follow');
         }
     );
 
     const unfollowMutation = useUnfollowMutationForUser(
         'index',
         () => {
-            toast.success('User unfollowed');
+            toast.info(`Unfollowed ${author?.name}`);
         },
         () => {
-            toast.error('Failed to unfollow user');
+            toast.error('Failed to unfollow');
         }
     );
 
@@ -339,7 +339,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
         : (actor?.followedByMe || false);
 
     const isAuthorCurrentUser = type === 'Announce'
-        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo ? object.attributedTo.authored : false)
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
+            ? (object.attributedTo as {authored: boolean}).authored
+            : (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) &&
+               typeof actor === 'object' && actor &&
+               (object.attributedTo as {id: string}).id === actor.id))
         : object.authored;
 
     const handleFollow = () => {
@@ -383,22 +387,22 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
+                                <div className='flex min-w-0 grow flex-col' onClick={(e) => {
                                     if (!isPending) {
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
-                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
+                                        <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
-                                        <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                        <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                             {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
@@ -497,7 +501,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
-                                        <APAvatar author={author}/>
+                                        <APAvatar author={author} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
@@ -554,7 +558,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author} disabled={isPending} />
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>

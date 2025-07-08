@@ -112,7 +112,7 @@ export const useBrowseInboxForUser = createQueryWithId<InboxResponseData>({
     headers: {
         Accept: 'application/activity+json'
     },
-    path: id => `/inbox/${id}`
+    path: id => `/reader/${id}`
 });
 
 // This is a frontend root, not using the Ghost admin API

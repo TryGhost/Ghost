@@ -50,7 +50,7 @@ const useFilterableApi = <
         if (missingValues.length) {
             const additionalData = await fetchApi<{meta?: Meta} & {[k in ResponseKey]: Data[]}>(apiUrl(path, {
                 filter: `${key}:[${missingValues.join(',')}]`,
-                limit: 'all'
+                limit: '100'
             }));
 
             data.push(...additionalData[responseKey]);

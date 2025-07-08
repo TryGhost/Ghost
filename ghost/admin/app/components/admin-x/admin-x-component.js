@@ -116,7 +116,8 @@ const emberDataTypeMapping = {
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
-    UsersResponseType: {type: 'user'}
+    UsersResponseType: {type: 'user'},
+    CustomThemeSettingsResponseType: null // custom theme settings no longer exist in Admin
 };
 
 // Abstract class which AdminX components should inherit from
@@ -148,8 +149,13 @@ export default class AdminXComponent extends Component {
     }
 
     onUpdate = (dataType, response) => {
-        if (!emberDataTypeMapping[dataType]) {
+        if (!(dataType in emberDataTypeMapping)) {
             throw new Error(`A mutation updating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        // Skip processing if mapping is explicitly set to null
+        if (emberDataTypeMapping[dataType] === null) {
+            return;
         }
 
         const {type, singleton} = emberDataTypeMapping[dataType];
@@ -194,8 +200,13 @@ export default class AdminXComponent extends Component {
     };
 
     onInvalidate = (dataType) => {
-        if (!emberDataTypeMapping[dataType]) {
+        if (!(dataType in emberDataTypeMapping)) {
             throw new Error(`A mutation invalidating ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        // Skip processing if mapping is explicitly set to null
+        if (emberDataTypeMapping[dataType] === null) {
+            return;
         }
 
         const {type, singleton} = emberDataTypeMapping[dataType];
@@ -215,8 +226,13 @@ export default class AdminXComponent extends Component {
     };
 
     onDelete = (dataType, id) => {
-        if (!emberDataTypeMapping[dataType]) {
+        if (!(dataType in emberDataTypeMapping)) {
             throw new Error(`A mutation deleting ${dataType} succeeded in AdminX but there is no mapping to an Ember type. Add one to emberDataTypeMapping`);
+        }
+
+        // Skip processing if mapping is explicitly set to null
+        if (emberDataTypeMapping[dataType] === null) {
+            return;
         }
 
         const {type} = emberDataTypeMapping[dataType];

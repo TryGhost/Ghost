@@ -793,7 +793,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
                                 <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                    <div className='relative z-10 pt-[3px]'>
+                                    <div className='relative z-10 pt-0.5'>
                                         <APAvatar author={actor}/>
                                     </div>
                                     <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
@@ -900,7 +900,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -921,7 +921,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -948,7 +948,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

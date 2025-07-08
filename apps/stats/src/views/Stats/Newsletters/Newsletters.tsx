@@ -7,7 +7,7 @@ import SortButton from '../components/SortButton';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
-import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
 import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
@@ -43,79 +43,95 @@ const NewsletterTableRows: React.FC<{
         Boolean(shouldFetchStats)
     );
 
-    // Show loading rows while data is loading
-    if (isStatsLoading || !newsletterStatsData) {
-        return (
-            <>
-                {Array.from({length: 5}, (_, index) => (
-                    <TableRow key={`newsletter-loading-row-${index}`} className='last:border-none [&>td]:py-2.5'>
-                        <TableCell className="font-medium">
-                            <div className="h-4 w-48 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className="whitespace-nowrap text-sm">
-                            <div className="h-4 w-16 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                        <TableCell className='text-right font-mono text-sm'>
-                            <div className="ml-auto h-4 w-12 animate-pulse rounded bg-gray-200"></div>
-                        </TableCell>
-                    </TableRow>
-                ))}
-            </>
-        );
-    }
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Data is already sorted by the API based on sortBy
-    const sortedStats = newsletterStatsData?.stats || [];
+    const sortedStats = useMemo(() => newsletterStatsData?.stats || [], [newsletterStatsData]);
 
-    return (
+    const colSpan = emailTrackOpensEnabled && emailTrackClicksEnabled ? 5 : emailTrackOpensEnabled ? 4 : emailTrackClicksEnabled ? 4 : 3;
+
+    // Memoize loading rows to prevent recreation on every render
+    const loadingRows = useMemo(() => (
         <>
-            {sortedStats.map(post => (
-                <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
-                    <TableCell className="font-medium">
-                        <div className='group/link inline-flex items-center gap-2'>
-                            {post.post_id ?
-                                <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                    navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
-                                }}>
-                                    {post.post_title}
-                                </Button>
-                                :
-                                <>
-                                    {post.post_title}
-                                </>
+            <TableRow className='last:border-none [&>td]:py-2.5'>
+                <TableCell className="font-medium" colSpan={colSpan}>
+                    <SkeletonTable className='mt-5' />
+                </TableCell>
+            </TableRow>
+        </>
+    ), [colSpan]);
+
+    // Memoize the data rows based on the actual data and loading states
+    const dataRows = useMemo(() => {
+        return (
+            sortedStats.length > 0 ?
+                <>
+                    {sortedStats.map(post => (
+                        <TableRow key={post.post_id} className='last:border-none [&>td]:py-2.5'>
+                            <TableCell className="font-medium">
+                                <div className='group/link inline-flex items-center gap-2'>
+                                    {post.post_id ?
+                                        <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
+                                            navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
+                                        }}>
+                                            {post.post_title}
+                                        </Button>
+                                        :
+                                        <>
+                                            {post.post_title}
+                                        </>
+                                    }
+                                </div>
+                            </TableCell>
+                            <TableCell className="whitespace-nowrap text-sm">
+                                {formatDisplayDate(new Date(post.send_date))}
+                            </TableCell>
+                            <TableCell className='text-right font-mono text-sm'>
+                                {formatNumber(post.sent_to)}
+                            </TableCell>
+                            {emailTrackOpensEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
+                            <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
+                        </TableCell>
                             }
-                        </div>
-                    </TableCell>
-                    <TableCell className="whitespace-nowrap text-sm">
-                        {formatDisplayDate(new Date(post.send_date))}
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        {formatNumber(post.sent_to)}
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        <span className="group-hover:hidden">{formatPercentage(post.open_rate)}</span>
-                        <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_opens)}</span>
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
-                        {isClicksLoading ? (
-                            <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
-                        ) : (
-                            <>
-                                <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
-                                <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
-                            </>
-                        )}
+
+                            {emailTrackClicksEnabled &&
+                        <TableCell className='text-right font-mono text-sm'>
+                            {isClicksLoading ? (
+                                <span className="inline-block h-4 w-8 animate-pulse rounded bg-gray-200"></span>
+                            ) : (
+                                <>
+                                    <span className="group-hover:hidden">{formatPercentage(post.click_rate)}</span>
+                                    <span className="hidden group-hover:!visible group-hover:!block">{formatNumber(post.total_clicks)}</span>
+                                </>
+                            )}
+                        </TableCell>
+                            }
+                        </TableRow>
+                    ))}
+                </>
+                :
+                <TableRow className='border-none hover:bg-transparent'>
+                    <TableCell className='text-center group-hover:!bg-transparent' colSpan={5}>
+                        <EmptyIndicator
+                            className='size-full py-20'
+                            title={`No newsletters ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.Mail strokeWidth={1.5} />
+                        </EmptyIndicator>
                     </TableCell>
                 </TableRow>
-            ))}
-        </>
-    );
+        );
+    }, [sortedStats, isClicksLoading, navigate, emailTrackClicksEnabled, emailTrackOpensEnabled, range]);
+
+    // Show loading rows while data is loading
+    if (isStatsLoading || !newsletterStatsData) {
+        return loadingRows;
+    }
+
+    return dataRows;
 });
 
 NewsletterTableRows.displayName = 'NewsletterTableRows';
@@ -126,14 +142,21 @@ const NewsletterTableHeader: React.FC<{
     setSortBy: (sort: TopNewslettersOrder) => void;
     range: number;
 }> = React.memo(({sortBy, setSortBy, range}) => {
+    // Memoize the card header content since it only depends on range
+    const cardHeaderContent = useMemo(() => (
+        <CardHeader>
+            <CardTitle>Top newsletters</CardTitle>
+            <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
+        </CardHeader>
+    ), [range]);
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+
     return (
         <TableHeader>
             <TableRow>
-                <TableHead variant='cardhead'>
-                    <CardHeader>
-                        <CardTitle>Top newsletters</CardTitle>
-                        <CardDescription> Your best performing newsletters {getPeriodText(range)}</CardDescription>
-                    </CardHeader>
+                <TableHead className='min-w-[320px]' variant='cardhead'>
+                    {cardHeaderContent}
                 </TableHead>
                 <TableHead className='w-[65px]'>
                     <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='date desc'>
@@ -145,16 +168,20 @@ const NewsletterTableHeader: React.FC<{
                     Sent
                     </SortButton>
                 </TableHead>
-                <TableHead className='w-[90px] text-right'>
-                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
-                    Opens
-                    </SortButton>
-                </TableHead>
-                <TableHead className='w-[90px] text-right'>
-                    <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
-                    Clicks
-                    </SortButton>
-                </TableHead>
+                {emailTrackOpensEnabled &&
+                    <TableHead className='w-[90px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='open_rate desc'>
+                        Opens
+                        </SortButton>
+                    </TableHead>
+                }
+                {emailTrackClicksEnabled &&
+                    <TableHead className='w-[90px] text-right'>
+                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='click_rate desc'>
+                        Clicks
+                        </SortButton>
+                    </TableHead>
+                }
             </TableRow>
         </TableHeader>
     );
@@ -167,11 +194,11 @@ const TopNewslettersTable: React.FC<{
     range: number;
     selectedNewsletterId: string | null | undefined;
     shouldFetchStats: boolean;
-}> = ({range, selectedNewsletterId, shouldFetchStats}) => {
-    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('date desc');
+}> = React.memo(({range, selectedNewsletterId, shouldFetchStats}) => {
+    const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
     return (
-        <Card>
+        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
             <CardContent>
                 <Table>
                     <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />
@@ -187,7 +214,9 @@ const TopNewslettersTable: React.FC<{
             </CardContent>
         </Card>
     );
-};
+});
+
+TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
     const {range, selectedNewsletterId} = useGlobalData();
@@ -217,6 +246,15 @@ const Newsletters: React.FC = () => {
         shouldFetchStats || false
     );
 
+    // Get newsletter stats with click data to check if any newsletters were sent in the time period
+    // and to calculate averages - using the same data source as the table for consistency
+    const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
+        range,
+        'date desc',
+        selectedNewsletterId || undefined,
+        shouldFetchStats || false
+    );
+
     // Find the selected newsletter to get its active_members count
     const selectedNewsletter = useMemo(() => {
         if (!newslettersData?.newsletters || !selectedNewsletterId) {
@@ -225,38 +263,102 @@ const Newsletters: React.FC = () => {
         return newslettersData.newsletters.find(n => n.id === selectedNewsletterId) || null;
     }, [newslettersData, selectedNewsletterId]);
 
-    // Calculate totals for KPIs - we'll need a separate API call for newsletter stats just for averages
+    // Calculate totals for KPIs - now including proper averages from newsletter stats
     const totals = useMemo(() => {
         // Get total subscribers from the selected newsletter or all newsletters
         const totalSubscribers = selectedNewsletter?.count?.active_members ||
             subscriberStatsData?.stats?.[0]?.total ||
             0;
 
-        // For now, return basic totals - averages will be calculated in a separate component if needed
+        // Calculate averages from newsletter stats data
+        let avgOpenRate = 0;
+        let avgClickRate = 0;
+
+        if (newsletterStatsData?.stats && newsletterStatsData.stats.length > 0) {
+            const stats = newsletterStatsData.stats;
+            const totalOpenRate = stats.reduce((sum, stat) => sum + (stat.open_rate || 0), 0);
+            const totalClickRate = stats.reduce((sum, stat) => sum + (stat.click_rate || 0), 0);
+
+            avgOpenRate = totalOpenRate / stats.length;
+            avgClickRate = totalClickRate / stats.length;
+        }
+
         return {
             totalSubscribers,
-            avgOpenRate: 0,
-            avgClickRate: 0
+            avgOpenRate,
+            avgClickRate
         };
-    }, [selectedNewsletter, subscriberStatsData]);
+    }, [selectedNewsletter, subscriberStatsData, newsletterStatsData]);
 
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
         if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
-            return [];
+            // When there's no data, create zero points for each day spanning the range
+            const {startDate, endDate} = getRangeDates(range);
+
+            const dailyData = [];
+            const currentDate = new Date(startDate);
+
+            while (currentDate <= endDate) {
+                dailyData.push({
+                    date: currentDate.toISOString().split('T')[0],
+                    value: 0
+                });
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+
+            return dailyData;
+        }
+
+        const deltas = subscriberStatsData.stats[0].deltas;
+
+        // If we only have one data point, create two points spanning the range
+        if (deltas.length === 1) {
+            const singlePoint = deltas[0];
+            const now = new Date();
+            const rangeInDays = range;
+            const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
+
+            return [
+                {
+                    ...singlePoint,
+                    date: startDate.toISOString().split('T')[0] // Start of range
+                },
+                {
+                    ...singlePoint,
+                    date: now.toISOString().split('T')[0] // End of range (today)
+                }
+            ];
         }
 
         // Convert to the required format - already in the correct format
-        return subscriberStatsData.stats[0].deltas;
-    }, [subscriberStatsData]);
+        return deltas;
+    }, [subscriberStatsData, range]);
 
-    // For the KPIs component, we'll use empty avgsData since averages are calculated separately now
-    const avgsData: AvgsDataItem[] = [];
+    // Create avgsData from newsletter stats for the bar charts
+    const avgsData: AvgsDataItem[] = useMemo(() => {
+        if (!newsletterStatsData?.stats) {
+            return [];
+        }
+
+        return newsletterStatsData.stats.map(stat => ({
+            post_id: stat.post_id,
+            post_title: stat.post_title,
+            send_date: stat.send_date,
+            sent_to: stat.sent_to,
+            total_opens: stat.total_opens,
+            open_rate: stat.open_rate,
+            total_clicks: stat.total_clicks || 0,
+            click_rate: stat.click_rate || 0
+        }));
+    }, [newsletterStatsData]);
 
     // Separate loading states for different sections
-    const isKPIsLoading = isNewslettersLoading || isSubscriberStatsLoading;
+    const isKPIsLoading = isSubscriberStatsLoading || isClicksLoading || isNewsletterStatsLoading;
 
-    const pageData = isKPIsLoading ? undefined : (selectedNewsletterId && subscribersData.length > 1 ? ['data exists'] : []);
+    // Show data only if there are actual newsletters sent in the time period
+    // const hasNewslettersInPeriod = newsletterStatsData?.stats && newsletterStatsData.stats.length > 0;
+    // const pageData = isKPIsLoading || isNewsletterStatsLoading ? undefined : (hasNewslettersInPeriod ? ['data exists'] : []);
 
     if (!appSettings?.newslettersEnabled) {
         return (
@@ -270,24 +372,26 @@ const Newsletters: React.FC = () => {
                 <NewsletterSelect newsletters={newslettersData?.newsletters} />
                 <DateRangeSelect />
             </StatsHeader>
-            <StatsView data={pageData} isLoading={false} loadingComponent={<></>}>
-                <Card>
-                    <CardContent>
-                        <NewsletterKPIs
-                            avgsData={avgsData}
-                            initialTab={initialTab}
-                            isAvgsLoading={false}
-                            isLoading={isKPIsLoading}
-                            subscribersData={subscribersData}
-                            totals={totals}
-                        />
-                    </CardContent>
-                </Card>
-                <TopNewslettersTable
-                    range={range}
-                    selectedNewsletterId={selectedNewsletterId}
-                    shouldFetchStats={!!shouldFetchStats}
-                />
+            <StatsView isLoading={false} loadingComponent={<></>}>
+                <>
+                    <Card>
+                        <CardContent>
+                            <NewsletterKPIs
+                                avgsData={avgsData}
+                                initialTab={initialTab}
+                                isAvgsLoading={false}
+                                isLoading={isKPIsLoading}
+                                subscribersData={subscribersData}
+                                totals={totals}
+                            />
+                        </CardContent>
+                    </Card>
+                    <TopNewslettersTable
+                        range={range}
+                        selectedNewsletterId={selectedNewsletterId}
+                        shouldFetchStats={!!shouldFetchStats}
+                    />
+                </>
             </StatsView>
         </StatsLayout>
     );

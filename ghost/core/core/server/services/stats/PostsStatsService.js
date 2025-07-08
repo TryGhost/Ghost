@@ -79,10 +79,12 @@ class PostsStatsService {
      * @param {object} deps
      * @param {import('knex').Knex} deps.knex - Database client
      * @param {object} [deps.tinybirdClient] - Tinybird client for analytics
+     * @param {object} [deps.urlService] - URL service for checking URL existence
      */
     constructor(deps) {
         this.knex = deps.knex;
         this.tinybirdClient = deps.tinybirdClient;
+        this.urlService = deps.urlService;
     }
 
     /**
@@ -220,9 +222,26 @@ class PostsStatsService {
             return [];
         }
 
-        // Transform results and enrich with titles
+        // Transform results and enrich with titles and URL existence validation
         return results.map((row) => {
             const title = row.title || this._generateTitleFromPath(row.attribution_url);
+            
+            // Check if URL exists using the URL service
+            let urlExists = true; // Default to true for backward compatibility
+            
+            if (this.urlService && row.attribution_url) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(row.attribution_url);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
 
             return {
                 post_id: row.post_id,
@@ -234,7 +253,8 @@ class PostsStatsService {
                 free_members: row.free_members,
                 paid_members: row.paid_members,
                 mrr: row.mrr,
-                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null)
+                post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
+                url_exists: urlExists
             };
         });
     }
@@ -679,7 +699,7 @@ class PostsStatsService {
                 // Attempt to parse and validate the date
                 const fromDate = new Date(options.date_from);
                 if (!isNaN(fromDate.getTime())) {
-                    query.where(dateColumn, '>=', options.date_from);
+                    query.where(dateColumn, '>=', fromDate);
                 } else {
                     logging.warn(`Invalid date_from format: ${options.date_from}. Skipping filter.`);
                 }
@@ -691,8 +711,10 @@ class PostsStatsService {
             try {
                 const toDate = new Date(options.date_to);
                 if (!isNaN(toDate.getTime())) {
-                    // Include the whole day for the 'to' date
-                    query.where(dateColumn, '<=', options.date_to + ' 23:59:59');
+                    // Include the whole day for the 'to' date by setting to end of day
+                    const endOfDay = new Date(toDate);
+                    endOfDay.setHours(23, 59, 59, 999);
+                    query.where(dateColumn, '<=', endOfDay);
                 } else {
                     logging.warn(`Invalid date_to format: ${options.date_to}. Skipping filter.`);
                 }
@@ -750,9 +772,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             // Subquery to count clicks from members_click_events
@@ -782,7 +806,7 @@ class PostsStatsService {
                 .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                 .where('p.newsletter_id', newsletterId)
                 .whereIn('p.status', ['sent', 'published'])
-                .whereNotNull('e.id') // Ensure there is an associated email record
+                // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                 .whereRaw(dateFilter)
                 .orderBy(orderFieldMap[orderField], orderDirection)
                 .limit(limit);
@@ -844,9 +868,11 @@ class PostsStatsService {
                 dateFilter = this.knex.raw(`p.published_at >= ?`, [options.date_from]);
             }
             if (options.date_to) {
+                // Make date_to inclusive of the entire day by adding 23:59:59
+                const endOfDay = options.date_to + ' 23:59:59';
                 dateFilter = options.date_from
-                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, options.date_to])
-                    : this.knex.raw(`p.published_at <= ?`, [options.date_to]);
+                    ? this.knex.raw(`p.published_at >= ? AND p.published_at <= ?`, [options.date_from, endOfDay])
+                    : this.knex.raw(`p.published_at <= ?`, [endOfDay]);
             }
 
             let query;
@@ -880,7 +906,7 @@ class PostsStatsService {
                     .leftJoin(clicksSubquery, 'p.id', 'clicks.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
@@ -899,7 +925,7 @@ class PostsStatsService {
                     .leftJoin('emails as e', 'p.id', 'e.post_id')
                     .where('p.newsletter_id', newsletterId)
                     .whereIn('p.status', ['sent', 'published'])
-                    .whereNotNull('e.id') // Ensure there is an associated email record
+                    // Show all newsletters that were sent, even if no email record exists or has 0 engagement
                     .whereRaw(dateFilter)
                     .orderBy(orderFieldMap[orderField], orderDirection)
                     .limit(limit);
@@ -1159,7 +1185,7 @@ class PostsStatsService {
             // Filter out any rows without post_uuid and get unique UUIDs
             const postUuids = [...new Set(viewsData.filter(row => row.post_uuid).map(row => row.post_uuid))];
             
-            // Get posts data from Ghost DB for the posts we have views for
+            // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
             const posts = await this.knex('posts as p')
                 .select(
                     'p.id as post_id',
@@ -1167,14 +1193,45 @@ class PostsStatsService {
                     'p.title',
                     'p.published_at',
                     'p.feature_image',
+                    'p.status',
                     'emails.email_count',
                     'emails.opened_count'
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
-                .whereIn('p.uuid', postUuids);
+                .where('p.status', 'published')
+                .whereNotNull('p.published_at')
+                .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
+                .orderBy('p.published_at', 'desc')
+                .limit(limit);
 
-            // Get member attribution counts for these posts (model after GrowthStats logic)
-            const memberAttributionCounts = await this._getMemberAttributionCounts(posts.map(p => p.post_id), options);
+            // Get authors for all posts
+            const postIds = posts.map(p => p.post_id);
+            const authorsData = postIds.length > 0 ? await this.knex('posts_authors as pa')
+                .select('pa.post_id', 'u.name', 'pa.sort_order')
+                .leftJoin('users as u', 'u.id', 'pa.author_id')
+                .whereIn('pa.post_id', postIds)
+                .whereNotNull('u.name')
+                .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+            // Group authors by post_id
+            const authorsByPost = {};
+            authorsData.forEach((author) => {
+                if (!authorsByPost[author.post_id]) {
+                    authorsByPost[author.post_id] = [];
+                }
+                authorsByPost[author.post_id].push(author.name);
+            });
+
+            // Add authors to posts
+            posts.forEach((post) => {
+                post.authors = (authorsByPost[post.post_id] || []).join(', ');
+            });
+
+            // Get member attribution counts and click counts for these posts
+            const [memberAttributionCounts, clickCounts] = await Promise.all([
+                this._getMemberAttributionCounts(posts.map(p => p.post_id), options),
+                this.getPostsClickCounts(posts.map(p => p.post_id))
+            ]);
 
             // Process posts with views
             const postsWithViews = viewsData.map((row) => {
@@ -1187,15 +1244,24 @@ class PostsStatsService {
                 // Find the member attribution count for this post
                 const attributionCount = memberAttributionCounts.find(ac => ac.post_id === post.post_id);
                 const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+                const clickCount = clickCounts[post.post_id] || 0;
 
                 return {
                     post_id: post.post_id,
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: row.visits,
+                    sent_count: post.email_count || null,
+                    opened_count: post.opened_count || null,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                    members: memberCount
+                    clicked_count: clickCount,
+                    click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
+                    members: memberCount,
+                    free_members: attributionCount ? attributionCount.free_members : 0,
+                    paid_members: attributionCount ? attributionCount.paid_members : 0
                 };
             }).filter(Boolean);
 
@@ -1205,6 +1271,7 @@ class PostsStatsService {
             // If we need more posts, get the latest ones excluding the ones we already have
             let additionalPosts = [];
             let additionalMemberAttributionCounts = [];
+            let additionalClickCounts = {};
             if (remainingCount > 0) {
                 // Get post IDs that we already have to exclude them
                 const existingPostIds = postsWithViews.map(p => p.post_id);
@@ -1216,6 +1283,7 @@ class PostsStatsService {
                         'p.title',
                         'p.published_at',
                         'p.feature_image',
+                        'p.status',
                         'emails.email_count',
                         'emails.opened_count'
                     )
@@ -1227,9 +1295,35 @@ class PostsStatsService {
                     .orderBy('p.published_at', 'desc')
                     .limit(remainingCount);
 
-                // Get member attribution counts for additional posts
+                // Get authors for additional posts
+                const additionalPostIds = additionalPosts.map(p => p.post_id);
+                const additionalAuthorsData = additionalPostIds.length > 0 ? await this.knex('posts_authors as pa')
+                    .select('pa.post_id', 'u.name', 'pa.sort_order')
+                    .leftJoin('users as u', 'u.id', 'pa.author_id')
+                    .whereIn('pa.post_id', additionalPostIds)
+                    .whereNotNull('u.name')
+                    .orderBy(['pa.post_id', 'pa.sort_order']) : [];
+
+                // Group authors by post_id for additional posts
+                const additionalAuthorsByPost = {};
+                additionalAuthorsData.forEach((author) => {
+                    if (!additionalAuthorsByPost[author.post_id]) {
+                        additionalAuthorsByPost[author.post_id] = [];
+                    }
+                    additionalAuthorsByPost[author.post_id].push(author.name);
+                });
+
+                // Add authors to additional posts
+                additionalPosts.forEach((post) => {
+                    post.authors = (additionalAuthorsByPost[post.post_id] || []).join(', ');
+                });
+
+                // Get member attribution counts and click counts for additional posts
                 if (additionalPosts.length > 0) {
-                    additionalMemberAttributionCounts = await this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options);
+                    [additionalMemberAttributionCounts, additionalClickCounts] = await Promise.all([
+                        this._getMemberAttributionCounts(additionalPosts.map(p => p.post_id), options),
+                        this.getPostsClickCounts(additionalPosts.map(p => p.post_id))
+                    ]);
                 }
             }
 
@@ -1238,15 +1332,24 @@ class PostsStatsService {
                 // Find the member attribution count for this post
                 const attributionCount = additionalMemberAttributionCounts.find(ac => ac.post_id === post.post_id);
                 const memberCount = attributionCount ? (attributionCount.free_members + attributionCount.paid_members) : 0;
+                const clickCount = additionalClickCounts[post.post_id] || 0;
 
                 return {
                     post_id: post.post_id,
                     title: post.title,
                     published_at: post.published_at,
                     feature_image: post.feature_image ? urlUtils.transformReadyToAbsolute(post.feature_image) : post.feature_image,
+                    status: post.status,
+                    authors: post.authors,
                     views: 0,
+                    sent_count: post.email_count || null,
+                    opened_count: post.opened_count || null,
                     open_rate: post.email_count > 0 ? (post.opened_count / post.email_count) * 100 : null,
-                    members: memberCount
+                    clicked_count: clickCount,
+                    click_rate: post.email_count > 0 ? (clickCount / post.email_count) * 100 : null,
+                    members: memberCount,
+                    free_members: attributionCount ? attributionCount.free_members : 0,
+                    paid_members: attributionCount ? attributionCount.paid_members : 0
                 };
             });
 
@@ -1391,6 +1494,44 @@ class PostsStatsService {
             return visitorCounts;
         } catch (error) {
             logging.error('Error fetching visitor counts from Tinybird:', error);
+            return {};
+        }
+    }
+
+    /**
+     * Get click counts for multiple posts
+     * @param {string[]} postIds - Array of post IDs
+     * @returns {Promise<Object>} Map of post ID to click count
+     */
+    async getPostsClickCounts(postIds) {
+        try {
+            if (!postIds || !Array.isArray(postIds) || postIds.length === 0) {
+                return {};
+            }
+
+            // Query to count clicks from members_click_events for multiple posts
+            const clicksQuery = await this.knex
+                .select(
+                    'r.post_id',
+                    this.knex.raw('COALESCE(COUNT(DISTINCT mce.member_id), 0) as total_clicks')
+                )
+                .from('redirects as r')
+                .leftJoin('members_click_events as mce', 'r.id', 'mce.redirect_id')
+                .whereIn('r.post_id', postIds)
+                .whereNotNull('r.post_id')
+                .groupBy('r.post_id');
+
+            // Convert the response to a simple post_id -> count mapping
+            const clickCounts = {};
+            clicksQuery.forEach((row) => {
+                if (row.post_id) {
+                    clickCounts[row.post_id] = row.total_clicks || 0;
+                }
+            });
+
+            return clickCounts;
+        } catch (error) {
+            logging.error('Error fetching click counts:', error);
             return {};
         }
     }
