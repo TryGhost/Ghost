@@ -1,4 +1,5 @@
 import React, {useEffect, useState} from 'react';
+import Button from '../Button';
 import Select, {SelectOption, SelectProps} from './Select';
 import TextField from './TextField';
 
@@ -104,39 +105,40 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     const hasError = error || !!validationError;
     const errorText = validationError || (typeof hint === 'string' ? hint : '');
 
-    // Back to list button component
-    const BackToListButton = () => (
-        <button
-            aria-label="Switch back to dropdown selection"
-            className="text-green-400 hover:text-green-500"
-            type="button"
-            onClick={handleBackToList}
-        >
-            {backToListLabel}
-        </button>
-    );
-
     if (showCustomInput) {
-        const customInputHint = (
-            <>
-                {hasError ? errorText : (otherHint && typeof otherHint === 'string' ? otherHint : '')}
-                {' '}
-                <BackToListButton />
-            </>
-        );
+        const customInputHint = hasError ? errorText : (otherHint && typeof otherHint === 'string' ? otherHint : '');
 
         return (
-            <TextField
-                aria-describedby={`${testId}-hint`}
-                aria-label={title}
-                data-testid={testId}
-                error={hasError}
-                hint={customInputHint}
-                placeholder={otherPlaceholder}
-                title={title}
-                value={selectedValue}
-                onChange={handleTextChange}
-            />
+            <div className="relative">
+                {title && (
+                    <div className="mb-1.5 flex items-center justify-between">
+                        <label className="block text-sm font-medium text-black dark:text-white" htmlFor={testId}>
+                            {title}
+                        </label>
+                        <Button
+                            className="-mr-1 text-xs font-normal"
+                            color="green"
+                            label={backToListLabel}
+                            size="sm"
+                            link
+                            onClick={handleBackToList}
+                        />
+                    </div>
+                )}
+                <TextField
+                    aria-describedby={`${testId}-hint`}
+                    aria-label={title}
+                    data-testid={testId}
+                    error={hasError}
+                    hideTitle={true}
+                    hint={customInputHint}
+                    id={testId}
+                    placeholder={otherPlaceholder}
+                    title={title}
+                    value={selectedValue}
+                    onChange={handleTextChange}
+                />
+            </div>
         );
     }
 
