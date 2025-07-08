@@ -3,11 +3,12 @@
 require('./utils');
 const should = require('should');
 const sinon = require('sinon');
+const assert = require('node:assert').strict;
 
 const errors = require('./fixtures/errors');
 const {MaxLimit, AllowlistLimit, FlagLimit, MaxPeriodicLimit} = require('../lib/limit');
 
-describe('Limit Service', function () {
+describe('Limit', function () {
     describe('Flag Limit', function () {
         it('do nothing if is over limit', async function () {
             // NOTE: the behavior of flag limit in "is over limit" use case is flawed and should not be relied on
@@ -42,6 +43,35 @@ describe('Limit Service', function () {
                 should.exist(err.message);
                 should.equal(err.message, 'Your plan does not support flaggy. Please upgrade to enable flaggy.');
             }
+        });
+
+        describe('isDisabled', function () {
+            it('returns true if limit is disabled', function () {
+                const config = {
+                    disabled: true
+                };
+                const limit = new FlagLimit({name: 'flaggy', config, errors});
+
+                assert.equal(limit.isDisabled(), true);
+            });
+
+            it('returns false if limit is disabled', function () {
+                const config = {
+                    disabled: false
+                };
+                const limit = new FlagLimit({name: 'flaggy', config, errors});
+
+                assert.equal(limit.isDisabled(), false);
+            });
+
+            it('returns false if limit is not defined', function () {
+                const config = {
+                    disabled: undefined
+                };
+                const limit = new FlagLimit({name: 'flaggy', config, errors});
+
+                assert.equal(limit.isDisabled(), false);
+            });
         });
     });
 

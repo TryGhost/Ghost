@@ -2,6 +2,7 @@
 // const testUtils = require('./utils');
 require('./utils');
 const should = require('should');
+const assert = require('node:assert').strict;
 const LimitService = require('../lib/LimitService');
 const {MaxLimit, MaxPeriodicLimit, FlagLimit} = require('../lib/limit');
 const sinon = require('sinon');
@@ -542,6 +543,60 @@ describe('Limit Service', function () {
 
             sinon.assert.callCount(maxPeriodSpy, 1);
             sinon.assert.alwaysCalledWithExactly(maxPeriodSpy, options);
+        });
+    });
+
+    describe('isDisabled', function () {
+        it('returns undefined if limit is not configured', function () {
+            const limitService = new LimitService();
+
+            assert.equal(limitService.isDisabled('test'), undefined);
+        });
+
+        it('throws if the limit does not implement .isDisabled()', function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                staff: {
+                    max: 2,
+                    currentCountQuery: () => 1
+                }
+            };
+
+            limitService.loadLimits({limits, errors});
+
+            try {
+                limitService.isDisabled('staff');
+                assert.fail('Should have thrown an error');
+            } catch (err) {
+                assert.equal(err.message, `Limit staff does not support .isDisabled()`);
+            }
+        });
+
+        it('returns true if the limit is disabled', function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                limitSocialWeb: {
+                    disabled: true
+                }
+            };
+
+            limitService.loadLimits({limits, errors});
+            assert.equal(limitService.isDisabled('limitSocialWeb'), true);
+        });
+
+        it('returns false if the limit is not disabled', function () {
+            const limitService = new LimitService();
+
+            let limits = {
+                limitSocialWeb: {
+                    disabled: false
+                }
+            };
+
+            limitService.loadLimits({limits, errors});
+            assert.equal(limitService.isDisabled('limitSocialWeb'), false);
         });
     });
 });
