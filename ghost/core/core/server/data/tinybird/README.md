@@ -9,9 +9,9 @@ In order to use Tinybird locally, make sure to install the Tinybird CLI.
 
 ### Using Tinybird locally
 
-To run Tinybird locally, run `yarn tb` from root. This will start or install and start the TB Local Docker container. 
-To build projects, watch for changes, read tokens etc, run `tb dev`. Read more about the [command here](https://www.tinybird.co/docs/forward/dev-reference/commands/tb-dev).
-`tb dev` also automatically starts Tinybird Local and opens up tinybird shell environment. 
+To run Tinybird locally, run `yarn tb` from root. 
+
+This script will pull and start the `tinybird-local` Docker container, then run `tb dev` to deploy the Tinybird project to the `tinybird-local` container on file changes. The `tb dev` command also launches a Tinybird shell environment where you can run other `tb` CLI commands against the local container.  Read more about the [`tb dev` command here](https://www.tinybird.co/docs/forward/dev-reference/commands/tb-dev).
 
 ### Connecting Tinybird to Ghost config file
 
