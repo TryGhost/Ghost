@@ -804,7 +804,6 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
                 newErrors.name = 'A name is required for your newsletter';
             }
 
-            // @TODO: this and reply_to seem correct for validator 13+
             if (formState.sender_email && !validator.isEmail(formState.sender_email)) {
                 newErrors.sender_email = 'Enter a valid email address';
             } else if (formState.sender_email && hasSendingDomain(config) && formState.sender_email.split('@')[1] !== sendingDomain(config)) {

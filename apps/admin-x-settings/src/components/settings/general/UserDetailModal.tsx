@@ -415,7 +415,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
             okColor={okProps.color}
-            okLabel={okProps.label || 'Save!!!'}
+            okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'

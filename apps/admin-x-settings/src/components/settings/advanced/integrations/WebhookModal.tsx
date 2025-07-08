@@ -42,7 +42,6 @@ const WebhookModal: React.FC<WebhookModalProps> = ({webhook, integrationId}) => 
                 newErrors.target_url = 'Enter a target URL';
             }
 
-            // @TODO: works with validator 13+
             if (formState.target_url && !validator.isURL(formState.target_url)) {
                 newErrors.target_url = 'Enter a valid URL';
             }

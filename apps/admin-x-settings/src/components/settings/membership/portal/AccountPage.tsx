@@ -40,7 +40,6 @@ const AccountPage: React.FC<{
     }, [calculatedSupportAddress]);
 
     return <div className='mt-7'><Form>
-        {process.env.NODE_ENV}
         <TextField
             error={!!errors.members_support_address}
             hint={errors.members_support_address}
