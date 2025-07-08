@@ -831,7 +831,7 @@ jobs:
         run: tb build
 
       - name: Get Tinybird configuration
-        run: .github/scripts/configure-tinybird.sh
+        run: ghost/core/core/server/data/tinybird/scripts/configure-ghost.sh
 
       - name: Run migrations
         working-directory: ghost/core
@@ -842,10 +842,7 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: |
-          echo $tinybird__adminToken
-          echo $tinybird__workspaceId
-          echo $tinybird__stats__endpoint
+        run: node --import=tsx index.js &
 
       - name: Wait for Ghost to be ready
         run: |
