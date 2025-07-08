@@ -1,5 +1,5 @@
 export const validateLocale = (value: string): string | null => {
-    const errorMessage = 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private';
+    const errorMessage = 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private';
 
     if (!value) {
         return 'Locale is required';
@@ -9,7 +9,7 @@ export const validateLocale = (value: string): string | null => {
     const trimmedValue = value.trim();
     
     if (!trimmedValue) {
-        return 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private';
+        return errorMessage;
     }
 
     // Grandfathered irregular tags (exact matches, case insensitive)

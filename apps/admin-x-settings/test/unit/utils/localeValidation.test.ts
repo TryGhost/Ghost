@@ -90,37 +90,37 @@ describe('Locale Validation', () => {
 
     describe('Invalid locale formats', () => {
         it('should reject invalid language names', () => {
-            assert.equal(validateLocale('English'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('French'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('Spanish'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('English'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('French'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('Spanish'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
 
         it('should reject malformed locale codes', () => {
-            assert.equal(validateLocale('invalid-format'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en_US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en-'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('-US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en--US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('invalid-format'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en_US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en-'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('-US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en--US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
 
         it('should reject codes with invalid characters', () => {
-            assert.equal(validateLocale('en@US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en!US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en/US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en\\US'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('en@US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en!US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en/US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en\\US'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
 
         it('should reject codes with incorrect lengths', () => {
-            assert.equal(validateLocale('e'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('engl'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en-U'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en-USA'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('e'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('engl'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en-U'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en-USA'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
 
         it('should reject numeric-only codes', () => {
-            assert.equal(validateLocale('123'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('12-34'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('123'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('12-34'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
     });
 
@@ -130,9 +130,9 @@ describe('Locale Validation', () => {
         });
 
         it('should handle whitespace-only strings', () => {
-            assert.equal(validateLocale('   '), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('\t'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('\n'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('   '), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('\t'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('\n'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
     });
 
@@ -166,9 +166,9 @@ describe('Locale Validation', () => {
         });
 
         it('should reject locale codes that look valid but are not BCP 47 compliant', () => {
-            assert.equal(validateLocale('eng-USA'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('en-United-States'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
-            assert.equal(validateLocale('chinese-traditional'), 'Invalid locale format. Examples: en, en-US, zh-Hant, sr-Latn, x-private');
+            assert.equal(validateLocale('eng-USA'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('en-United-States'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
+            assert.equal(validateLocale('chinese-traditional'), 'Invalid locale format. Examples: en, pt-BR, zh-Hant, sr-Cyrl, x-private');
         });
     });
 });
