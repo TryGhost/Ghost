@@ -101,6 +101,16 @@ function getPostSchema(metaData, data) {
                 escapeExpression(data[context].primary_author.metaDescription) :
                 null
         },
+        contributor: data[context].authors.length > 1 ? data[context].authors.slice(1).map(author => ({
+            '@type': 'Person',
+            name: escapeExpression(author.name),
+            image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
+            url: metaData.authorUrl,
+            sameAs: trimSameAs(author),
+            description: author.meta_description ?
+                escapeExpression(author.meta_description) :
+                null
+        })) : null,
         headline: escapeExpression(metaData.metaTitle),
         url: metaData.url,
         datePublished: metaData.publishedDate,
