@@ -1,10 +1,75 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import { SelectOption, SelectWithOther, SettingGroupContent, withErrorBoundary } from '@tryghost/admin-x-design-system';
+import { getSettingValues } from '@tryghost/admin-x-framework/api/settings';
 
-const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
+
+const LOCALE_DATA = [
+    { code: 'af', label: 'Afrikaans' },
+    { code: 'ar', label: 'Arabic' },
+    { code: 'bg', label: 'Bulgarian' },
+    { code: 'bn', label: 'Bengali' },
+    { code: 'bs', label: 'Bosnian' },
+    { code: 'ca', label: 'Catalan' },
+    { code: 'cs', label: 'Czech' },
+    { code: 'da', label: 'Danish' },
+    { code: 'de', label: 'German' },
+    { code: 'de-CH', label: 'Swiss German' },
+    { code: 'el', label: 'Greek' },
+    { code: 'en', label: 'English' },
+    { code: 'eo', label: 'Esperanto' },
+    { code: 'es', label: 'Spanish' },
+    { code: 'et', label: 'Estonian' },
+    { code: 'fa', label: 'Persian/Farsi' },
+    { code: 'fi', label: 'Finnish' },
+    { code: 'fr', label: 'French' },
+    { code: 'gd', label: 'Gaelic (Scottish)' },
+    { code: 'he', label: 'Hebrew' },
+    { code: 'hi', label: 'Hindi' },
+    { code: 'hr', label: 'Croatian' },
+    { code: 'hu', label: 'Hungarian' },
+    { code: 'id', label: 'Indonesian' },
+    { code: 'is', label: 'Icelandic' },
+    { code: 'it', label: 'Italian' },
+    { code: 'ja', label: 'Japanese' },
+    { code: 'ko', label: 'Korean' },
+    { code: 'kz', label: 'Kazakh' },
+    { code: 'lt', label: 'Lithuanian' },
+    { code: 'lv', label: 'Latvian' },
+    { code: 'mk', label: 'Macedonian' },
+    { code: 'mn', label: 'Mongolian' },
+    { code: 'ms', label: 'Malay' },
+    { code: 'nb', label: 'Norwegian Bokmål' },
+    { code: 'ne', label: 'Nepali' },
+    { code: 'nl', label: 'Dutch' },
+    { code: 'nn', label: 'Norwegian Nynorsk' },
+    { code: 'pa', label: 'Punjabi' },
+    { code: 'pl', label: 'Polish' },
+    { code: 'pt', label: 'Portuguese' },
+    { code: 'pt-BR', label: 'Portuguese (Brazil)' },
+    { code: 'ro', label: 'Romanian' },
+    { code: 'ru', label: 'Russian' },
+    { code: 'si', label: 'Sinhala' },
+    { code: 'sk', label: 'Slovak' },
+    { code: 'sl', label: 'Slovenian' },
+    { code: 'sq', label: 'Albanian' },
+    { code: 'sr', label: 'Serbian' },
+    { code: 'sr-Cyrl', label: 'Serbian (Cyrillic)' },
+    { code: 'sv', label: 'Swedish' },
+    { code: 'sw', label: 'Swahili' },
+    { code: 'ta', label: 'Tamil' },
+    { code: 'th', label: 'Thai' },
+    { code: 'tr', label: 'Turkish' },
+    { code: 'uk', label: 'Ukrainian' },
+    { code: 'ur', label: 'Urdu' },
+    { code: 'uz', label: 'Uzbek' },
+    { code: 'vi', label: 'Vietnamese' },
+    { code: 'zh', label: 'Chinese' },
+    { code: 'zh-Hant', label: 'Traditional Chinese' }
+];
+
+const PublicationLanguage: React.FC<{ keywords: string[] }> = ({ keywords }) => {
     const {
         localSettings,
         isEditing,
@@ -13,7 +78,6 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleCancel,
         updateSetting,
         errors,
-        clearError,
         handleEditingChange
     } = useSettingGroup({
         onValidate: () => {
@@ -29,11 +93,36 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
-    const handleLanguageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('locale', e.target.value);
+    const localeOptions = React.useMemo(() => {
+        const options: SelectOption[] = LOCALE_DATA.map(locale => ({
+            value: locale.code,
+            label: `${locale.label} (${locale.code})`
+        }));
+
+        return options;
+    }, []);
+
+    const handleLanguageChange = (value: string) => {
+        updateSetting('locale', value);
         if (!isEditing) {
             handleEditingChange(true);
         }
+    };
+
+    const validateLocale = (value: string) => {
+        const errorMessage = 'Invalid locale format. Use format like: en, en-US, zh-Hant';
+
+        if (!value) {
+            return 'Locale is required';
+        }
+
+        // Basic BCP 47 validation: allow letters, numbers, and hyphens
+        const localePattern = /^[a-zA-Z]{2,3}(-[a-zA-Z0-9]{2,8})*$/;
+        if (!localePattern.test(value)) {
+            return errorMessage;
+        }
+
+        return null;
     };
 
     const hint = (
@@ -58,14 +147,18 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <SettingGroupContent columns={1}>
-                <TextField
+                <SelectWithOther
+                    defaultListValue="en"
                     error={!!errors.publicationLanguage}
                     hint={errors.publicationLanguage || hint}
-                    placeholder="Site language"
-                    title='Site language'
-                    value={publicationLanguage}
-                    onChange={handleLanguageChange}
-                    onKeyDown={() => clearError('password')}
+                    isSearchable
+                    options={localeOptions}
+                    otherHint="Enter a custom locale code."
+                    otherPlaceholder="e.g. en-GB, fr-CA"
+                    selectedValue={publicationLanguage}
+                    title="Site language"
+                    validate={validateLocale}
+                    onSelect={handleLanguageChange}
                 />
             </SettingGroupContent>
         </TopLevelGroup>
