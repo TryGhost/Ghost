@@ -65,7 +65,7 @@ const LOCALE_DATA = [
     {code: 'zh-Hant', label: 'Traditional Chinese'}
 ];
 
-// Export just the locale codes for backward compatibility
+// Export just the locale codes
 const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
 
 function generateResources(locales, ns) {
