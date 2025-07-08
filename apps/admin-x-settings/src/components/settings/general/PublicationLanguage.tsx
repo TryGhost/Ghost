@@ -137,7 +137,7 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     hint={errors.publicationLanguage || hint}
                     options={localeOptions}
                     otherHint="Enter a custom locale code."
-                    otherPlaceholder="e.g. en-GB, fr-CA"
+                    otherPlaceholder="e.g. pt-BR, sr-Cyrl, en-GB"
                     selectedValue={publicationLanguage}
                     testId="locale-select"
                     title="Site language"
