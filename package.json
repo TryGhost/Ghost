@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/limit-service",
-  "version": "1.3.2",
+  "version": "1.4.0",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/SDK.git",
