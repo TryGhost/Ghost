@@ -289,7 +289,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, false);
+            assert.equal(isEnabled, false);
             sinon.assert.calledWith(loggingSpy, 'Social web is disabled in settings');
         });
 
@@ -299,7 +299,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, false);
+            assert.equal(isEnabled, false);
             sinon.assert.calledWith(loggingSpy, 'Social web is disabled in labs');
         });
 
@@ -309,7 +309,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, false);
+            assert.equal(isEnabled, false);
             sinon.assert.calledWith(loggingSpy, 'Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
         });
 
@@ -319,7 +319,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, false);
+            assert.equal(isEnabled, false);
             sinon.assert.calledWith(loggingSpy, 'Social web is not available for Ghost sites hosted on a subdirectory');
         });
 
@@ -330,7 +330,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, false);
+            assert.equal(isEnabled, false);
             sinon.assert.calledWith(loggingSpy, 'Social web is not available for localhost or IPs addresses in production');
         });
 
@@ -338,7 +338,7 @@ describe('Settings Helpers', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
-            should.equal(isEnabled, true);
+            assert.equal(isEnabled, true);
         });
     });
 });
