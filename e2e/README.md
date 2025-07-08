@@ -228,7 +228,7 @@ tail -f ghost/core/content/logs/ghost-dev.log
 
 1. **Screenshots**: Playwright captures screenshots on failure
 2. **Traces**: Available in `test-results/` directory
-3. **Headed Mode**: Run with `yarn test --debug` or `yarn --ui` to see browser
+3. **Debug Mode**: Run with `yarn test --debug` or `yarn test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
 
 ### Port Conflicts
