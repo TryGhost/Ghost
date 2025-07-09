@@ -173,4 +173,18 @@ describe('Acceptance: Setup', function () {
                 .to.have.string('Access Denied from url: unknown.com. Please use the url configured in config.js.');
         });
     });
+
+    describe('?firstStart=true', function () {
+        beforeEach(async function () {
+            let role = this.server.create('role', {name: 'Owner'});
+            this.server.create('user', {roles: [role], slug: 'owner'});
+
+            await authenticateSession();
+        });
+
+        it('transitions to dashboard', async function () {
+            await visit('/?firstStart=true');
+            expect(currentURL()).to.equal('/dashboard');
+        });
+    });
 });
