@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.8.25",
+  "version": "0.8.26",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -70,6 +70,7 @@
     "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/shade": "0.0.0",
     "clsx": "2.1.1",
+    "html2canvas": "1.4.1",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "use-debounce": "10.0.5"
