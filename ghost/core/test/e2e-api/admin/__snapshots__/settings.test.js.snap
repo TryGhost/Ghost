@@ -297,6 +297,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1100,6 +1104,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1478,6 +1486,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1852,6 +1864,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -2695,6 +2711,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3073,6 +3093,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3448,6 +3472,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -3833,6 +3861,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -4207,6 +4239,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -4589,6 +4625,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -5338,6 +5378,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -5713,6 +5757,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -6095,6 +6143,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6471,6 +6523,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {
@@ -6912,6 +6968,10 @@ Object {
     },
     Object {
       "key": "outbound_link_tagging",
+      "value": true,
+    },
+    Object {
+      "key": "web_analytics",
       "value": true,
     },
     Object {

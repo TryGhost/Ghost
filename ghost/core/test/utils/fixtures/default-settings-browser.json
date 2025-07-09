@@ -514,6 +514,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "web_analytics": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "pintura": {
