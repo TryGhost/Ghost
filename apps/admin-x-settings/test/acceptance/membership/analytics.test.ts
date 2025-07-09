@@ -58,7 +58,8 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        const actualSettings = lastApiRequests.editSettings?.body?.settings || [];
+        const body = lastApiRequests.editSettings?.body as {settings: Array<{key: string, value: boolean}>} | undefined;
+        const actualSettings = body?.settings || [];
         const expectedSettings = [
             {key: 'web_analytics', value: false},
             {key: 'members_track_sources', value: false},
