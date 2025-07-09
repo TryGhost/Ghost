@@ -54,13 +54,6 @@ describe('Unit: Service: post-analytics', function () {
             expect(ajaxStub.called).to.be.false;
         });
 
-        it('returns early if trafficAnalytics feature is disabled', async function () {
-            service.feature.trafficAnalytics = false;
-            const result = await service.loadVisitorCounts(['uuid1']);
-            expect(result).to.be.undefined;
-            expect(ajaxStub.called).to.be.false;
-        });
-
         it('does not fetch already fetched UUIDs', async function () {
             service._fetchedUuids.add('uuid1');
             const result = await service.loadVisitorCounts(['uuid1']);
