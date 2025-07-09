@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button} from '@tryghost/admin-x-design-system';
 import {downloadAllContent} from '@tryghost/admin-x-framework/api/db';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const MigrationToolsExport: React.FC = () => {
@@ -10,19 +11,25 @@ const MigrationToolsExport: React.FC = () => {
         },
         enabled: false
     });
+    const handleError = useHandleError();
 
     const exportPosts = async () => {
-        const {data} = await postsData();
-        if (data) {
-            const blob = new Blob([data], {type: 'text/csv'});
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.setAttribute('hidden', '');
-            a.setAttribute('href', url);
-            a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+        try {
+            const {data} = await postsData();
+            if (data) {
+                const blob = new Blob([data], {type: 'text/csv'});
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.setAttribute('hidden', '');
+                a.setAttribute('href', url);
+                a.setAttribute('download', `post-analytics.${new Date().toISOString().split('T')[0]}.csv`);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            }
+        } catch (e) {
+            handleError(e);
         }
     };
 
