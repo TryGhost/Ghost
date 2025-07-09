@@ -22,7 +22,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {site, statsConfig, post, isPostLoading, postId, limitedByPlan} = useGlobalData();
 
     // Use the active visitors hook with post-specific filtering
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
@@ -30,19 +30,19 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false
     });
-    
+
     // Determine which tabs to show based on post type and settings
     const availableTabs = useMemo(() => {
         if (!post) {
             return [];
         }
         const tabs = [];
-        
+
         // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
-        const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
+        const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && (!appSettings?.analytics.webAnalytics || limitedByPlan);
         if (!isPublishedOnlyWithoutWebAnalytics) {
-            tabs.push('Overview');   
-            if (!post.email_only && appSettings?.analytics.webAnalytics) {
+            tabs.push('Overview');
+            if (!post.email_only && appSettings?.analytics.webAnalytics && !limitedByPlan) {
                 tabs.push('Web');
             }
         }
@@ -50,9 +50,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             tabs.push('Newsletter');
         }
         tabs.push('Growth');
-        
+
         return tabs;
-    }, [post, appSettings?.analytics.webAnalytics]);
+    }, [post, appSettings?.analytics.webAnalytics, limitedByPlan]);
+
+    const isSingleTab = availableTabs.length <= 1;
 
     const handleDeletePost = () => {
         if (!post) {
@@ -196,7 +198,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 </div>
             </header>
             <Navbar className='sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
-                {!isPostLoading && (
+                {!isPostLoading && !isSingleTab ? (
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
                             <PageMenuItem value="Overview" onClick={() => {
@@ -227,7 +229,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             </PageMenuItem>
                         )}
                     </PageMenu>
-                )}
+                ) : <div></div>}
                 {children &&
                     <NavbarActions>
                         {children}
