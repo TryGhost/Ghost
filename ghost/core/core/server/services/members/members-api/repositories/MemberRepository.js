@@ -947,10 +947,7 @@ module.exports = class MemberRepository {
             ghostProduct = await this._productRepository.get({stripe_product_id: subscriptionPriceData.product}, options);
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
-                ghostProduct = await this._productRepository.getDefaultProduct({
-                    forUpdate: true,
-                    ...options
-                });
+                ghostProduct = await this._productRepository.getDefaultProduct(options);
             }
 
             // Link Stripe Product & Price to Ghost Product

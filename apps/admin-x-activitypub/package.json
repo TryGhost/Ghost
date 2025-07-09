@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.8.25",
+  "version": "0.9.0",
   "license": "MIT",
   "repository": {
     "type": "git",
