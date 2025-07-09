@@ -105,96 +105,51 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     // Tab management
     const [selectedTab, setSelectedTab] = useState('metadata');
 
-    // Meta data handlers
-    const handleMetaTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('meta_title', e.target.value);
+    const createSettingHandler = (settingKey: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting(settingKey, e.target.value);
         if (!isEditing) {
             handleEditingChange(true);
         }
     };
 
-    const handleMetaDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('meta_description', e.target.value);
+    const createImageUploadHandler = (settingKey: string) => async (file: File) => {
+        try {
+            const imageUrl = getImageUrl(await uploadImage({file}));
+            updateSetting(settingKey, imageUrl);
+            if (!isEditing) {
+                handleEditingChange(true);
+            }
+        } catch (e) {
+            const error = e as APIError;
+            if (error.response!.status === 415) {
+                error.message = 'Unsupported file type';
+            }
+            handleError(error);
+        }
+    };
+
+    const createImageDeleteHandler = (settingKey: string) => () => {
+        updateSetting(settingKey, '');
         if (!isEditing) {
             handleEditingChange(true);
         }
     };
+
+    // Meta data handlers
+    const handleMetaTitleChange = createSettingHandler('meta_title');
+    const handleMetaDescriptionChange = createSettingHandler('meta_description');
 
     // Facebook handlers
-    const handleFacebookTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('og_title', e.target.value);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
-
-    const handleFacebookDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('og_description', e.target.value);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
-
-    const handleFacebookImageUpload = async (file: File) => {
-        try {
-            const imageUrl = getImageUrl(await uploadImage({file}));
-            updateSetting('og_image', imageUrl);
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
-        } catch (e) {
-            const error = e as APIError;
-            if (error.response!.status === 415) {
-                error.message = 'Unsupported file type';
-            }
-            handleError(error);
-        }
-    };
-
-    const handleFacebookImageDelete = () => {
-        updateSetting('og_image', '');
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
+    const handleFacebookTitleChange = createSettingHandler('og_title');
+    const handleFacebookDescriptionChange = createSettingHandler('og_description');
+    const handleFacebookImageUpload = createImageUploadHandler('og_image');
+    const handleFacebookImageDelete = createImageDeleteHandler('og_image');
 
     // Twitter handlers
-    const handleTwitterTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('twitter_title', e.target.value);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
-
-    const handleTwitterDescriptionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('twitter_description', e.target.value);
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
-
-    const handleTwitterImageUpload = async (file: File) => {
-        try {
-            const imageUrl = getImageUrl(await uploadImage({file}));
-            updateSetting('twitter_image', imageUrl);
-            if (!isEditing) {
-                handleEditingChange(true);
-            }
-        } catch (e) {
-            const error = e as APIError;
-            if (error.response!.status === 415) {
-                error.message = 'Unsupported file type';
-            }
-            handleError(error);
-        }
-    };
-
-    const handleTwitterImageDelete = () => {
-        updateSetting('twitter_image', '');
-        if (!isEditing) {
-            handleEditingChange(true);
-        }
-    };
+    const handleTwitterTitleChange = createSettingHandler('twitter_title');
+    const handleTwitterDescriptionChange = createSettingHandler('twitter_description');
+    const handleTwitterImageUpload = createImageUploadHandler('twitter_image');
+    const handleTwitterImageDelete = createImageDeleteHandler('twitter_image');
 
     // Tab contents
     const metadataTabContent = (
