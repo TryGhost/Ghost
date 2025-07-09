@@ -26,10 +26,14 @@ describe('Unit: Service: post-analytics', function () {
             webAnalytics: true,
             membersTrackSources: true
         };
+        const featureStub = {
+            trafficAnalytics: true
+        };
 
         service.ajax = {request: ajaxStub};
         service.ghostPaths = ghostPathsStub;
         service.settings = settingsStub;
+        service.feature = featureStub;
     });
 
     afterEach(function () {
@@ -45,6 +49,13 @@ describe('Unit: Service: post-analytics', function () {
 
         it('returns early if web analytics is disabled', async function () {
             settingsStub.webAnalytics = false;
+            const result = await service.loadVisitorCounts(['uuid1']);
+            expect(result).to.be.undefined;
+            expect(ajaxStub.called).to.be.false;
+        });
+
+        it('returns early if trafficAnalytics feature is disabled', async function () {
+            service.feature.trafficAnalytics = false;
             const result = await service.loadVisitorCounts(['uuid1']);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;
@@ -141,7 +152,7 @@ describe('Unit: Service: post-analytics', function () {
         });
 
         it('returns early if member tracking is disabled', async function () {
-            settingsStub.membersTrackSources = false;
+            service.settings.membersTrackSources = false;
             const result = await service.loadMemberCounts([{id: '1', uuid: 'uuid1'}]);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;
