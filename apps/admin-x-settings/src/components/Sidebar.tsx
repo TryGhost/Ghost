@@ -235,9 +235,6 @@ const Sidebar: React.FC = () => {
 
                 {ui60 ?
                     <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
-                        {/* These two sections are commented until we added the actual settings */}
-                        {/* <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
-                        <NavItem icon='globe' keywords={growthSearchKeywords.explore} navid='explore' title="Explore" onClick={handleSectionClick} /> */}
                         <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
                         <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
                         {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
