@@ -853,17 +853,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Nx cache
-        uses: actions/cache@v4
-        id: cache_nx
-        with:
-          path: .nxcache
-          key: nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-          restore-keys: |
-            nx-Linux-${{ github.ref }}-${{ env.HEAD_COMMIT }}
-            nx-Linux-${{ github.ref }}
-            nx-Linux
-
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
