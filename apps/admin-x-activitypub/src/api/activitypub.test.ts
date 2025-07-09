@@ -45,7 +45,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                'https://activitypub.api/.ghost/activitypub/actions/follow/@user@domain.com': {
+                'https://activitypub.api/.ghost/activitypub/v1/actions/follow/@user@domain.com': {
                     async assert(_resource, init) {
                         const headers = new Headers(init?.headers);
                         expect(headers.get('Authorization')).toContain('fake-token');
@@ -67,7 +67,7 @@ describe('ActivityPubAPI', function () {
     describe('note', function () {
         test('It creates a note and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
@@ -98,7 +98,7 @@ describe('ActivityPubAPI', function () {
 
         test('It creates a note with image and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Test alt text"}}');
@@ -133,7 +133,7 @@ describe('ActivityPubAPI', function () {
     describe('reply', function () {
         test('It creates a reply and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/reply/123`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
@@ -160,7 +160,7 @@ describe('ActivityPubAPI', function () {
 
         test('It creates a reply with image and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/reply/123`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Reply image alt text"}}');
@@ -204,7 +204,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
                         accounts: [
                             {
@@ -247,7 +247,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({})
                 }
             });
@@ -280,7 +280,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/thread/${encodeURIComponent(activityId)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/thread/${encodeURIComponent(activityId)}`]: {
                     response: JSONResponse({
                         id: activityId,
                         name: 'Foo Bar'
@@ -315,7 +315,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -358,7 +358,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -388,7 +388,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -429,7 +429,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -459,7 +459,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({})
                 }
             });
@@ -489,7 +489,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/notes`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -518,7 +518,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -561,7 +561,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -592,7 +592,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -633,7 +633,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -663,7 +663,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({})
                 }
             });
@@ -693,7 +693,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed/reader`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -723,7 +723,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -766,7 +766,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -797,7 +797,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -838,7 +838,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -868,7 +868,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({})
                 }
             });
@@ -898,7 +898,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -928,7 +928,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/${handle}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -992,7 +992,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/${handle}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1024,7 +1024,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1067,7 +1067,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -1098,7 +1098,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1139,7 +1139,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1169,7 +1169,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1199,7 +1199,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1229,7 +1229,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: [
                             {
@@ -1276,7 +1276,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: [],
                         next: 'abc123'
@@ -1307,7 +1307,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications?next=${next}`]: {
                     response: JSONResponse({
                         notifications: [
                             {
@@ -1350,7 +1350,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1380,7 +1380,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1410,7 +1410,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: []
                     })
@@ -1442,7 +1442,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/post/${encodeURIComponent(postId)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/post/${encodeURIComponent(postId)}`]: {
                     response: JSONResponse({
                         id: postId,
                         title: 'Foo Bar Baz'
@@ -1485,7 +1485,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/account`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/account`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('PUT');
                         expect(init?.body).toEqual(JSON.stringify(data));
@@ -1515,7 +1515,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications/unread/count`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
                     response: JSONResponse({
                         count: 5
                     })
@@ -1546,7 +1546,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications/unread/count`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1577,7 +1577,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications/unread/reset`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/reset`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('PUT');
                     },

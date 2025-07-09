@@ -16,7 +16,7 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
                 }
             }, options: {useActivityPub: true}});
@@ -56,12 +56,12 @@ test.describe('My Profile', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
                 },
                 deletePost: {
                     method: 'DELETE',
-                    path: `/post/${postToDeleteId}`,
+                    path: `/v1/post/${postToDeleteId}`,
                     response: {}
                 }
             }, options: {useActivityPub: true}});
@@ -113,12 +113,12 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
                 },
                 getMyProfileLiked: {
                     method: 'GET',
-                    path: '/posts/me/liked',
+                    path: '/v1/posts/me/liked',
                     response: myLikedPosts
                 }
             }, options: {useActivityPub: true}});
@@ -161,12 +161,12 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
                 },
                 getMyProfileFollowers: {
                     method: 'GET',
-                    path: '/account/me/follows/followers',
+                    path: '/v1/account/me/follows/followers',
                     response: myFollowers
                 }
             }, options: {useActivityPub: true}});
@@ -221,12 +221,12 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
                 },
                 getMyProfileFollowing: {
                     method: 'GET',
-                    path: '/account/me/follows/following',
+                    path: '/v1/account/me/follows/following',
                     response: myFollowing
                 }
             }, options: {useActivityPub: true}});
