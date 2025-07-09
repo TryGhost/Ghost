@@ -846,7 +846,8 @@ jobs:
         run: tb build
 
       - name: Get Tinybird configuration
-        run: ghost/core/core/server/data/tinybird/scripts/configure-ghost.sh
+        working-directory: ghost/core/core/server/data/tinybird
+        run: ./scripts/configure-ghost.sh
 
       - name: Run migrations
         working-directory: ghost/core
