@@ -798,13 +798,28 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: E2E tests
-    env:
-      CI: true
     services:
       tinybird:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_USER: ghost
+          MYSQL_PASSWORD: ghost
+        ports:
+          - 3306:3306
+    env:
+      CI: true
+      database__client: mysql
+      database__connection__host: localhost
+      database__connection__port: 3306
+      database__connection__user: ghost
+      database__connection__password: ghost
+      database__connection__database: ghost_testing
     steps:
       - uses: actions/checkout@v4
         with:
