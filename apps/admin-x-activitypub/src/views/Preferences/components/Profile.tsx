@@ -4,6 +4,7 @@ import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
 import {takeScreenshot} from '@src/utils/screenshot';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useRef, useState} from 'react';
 
 type ProfileProps = {
@@ -17,6 +18,7 @@ type ProfileCardProps = {
 }
 
 const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
+    const {isEnabled} = useFeatureFlags();
     const {data: siteData} = useBrowseSite();
     const accentColor = siteData?.site?.accent_color;
     const profileCardRef = useRef<HTMLDivElement>(null);
@@ -137,6 +139,27 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             </div>
         );
     };
+
+    if (!isEnabled('share')) {
+        return (
+            <div className='flex flex-col items-center'>
+                <APAvatar
+                    author={
+                        {
+                            icon: {
+                                url: account?.avatarUrl || ''
+                            },
+                            name: account?.name || '',
+                            handle: account?.handle
+                        }
+                    }
+                    size='lg'
+                />
+                <H2 className='mb-0.5 mt-4'>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
+                <span className='text-[1.5rem] text-gray-700'>{!isLoading ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
+            </div>
+        );
+    }
 
     return (
         <div className='flex flex-col gap-5'>
