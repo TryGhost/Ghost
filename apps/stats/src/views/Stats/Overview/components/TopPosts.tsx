@@ -58,11 +58,11 @@ const TopPosts: React.FC<TopPostsProps> = ({
     isLoading
 }) => {
     const navigate = useNavigate();
-    const {range} = useGlobalData();
+    const {range, limitedByPlan} = useGlobalData();
     const {appSettings} = useAppContext();
 
     // Show open rate if newsletters are enabled and email tracking is enabled
-    const showWebAnalytics = appSettings?.analytics.webAnalytics;
+    const showWebAnalytics = appSettings?.analytics.webAnalytics && !limitedByPlan;
     const showOpenRate = appSettings?.newslettersEnabled && appSettings?.analytics.emailTrackOpens;
 
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';

@@ -22,6 +22,7 @@ interface GlobalData {
     settings: Setting[];
     selectedNewsletterId: string | null;
     setSelectedNewsletterId: (id: string | null) => void;
+    limitedByPlan?: boolean;
 }
 
 const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
@@ -71,7 +72,8 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         setAudience,
         settings: settings.data?.settings || [],
         selectedNewsletterId,
-        setSelectedNewsletterId
+        setSelectedNewsletterId,
+        limitedByPlan: true
     }}>
         {children}
     </GlobalDataContext.Provider>;

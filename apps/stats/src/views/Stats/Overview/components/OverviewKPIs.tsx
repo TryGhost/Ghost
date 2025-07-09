@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, cn, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
@@ -18,6 +18,7 @@ interface OverviewKPICardProps {
     trendingFromValue?: string;
     children?: React.ReactNode;
     onClick?: () => void;
+    className?: string;
 }
 
 const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
@@ -31,7 +32,8 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     formattedValue,
     trendingFromValue,
     children,
-    onClick
+    onClick,
+    className
 }) => {
     // const navigate = useNavigate();
     const {range} = useGlobalData();
@@ -67,7 +69,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
 
     return (
-        <Card className='group'>
+        <Card className={cn('group', className)}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
@@ -126,6 +128,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const navigate = useNavigate();
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
+    const {limitedByPlan} = useGlobalData();
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
@@ -147,11 +150,15 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
         cols = 'lg:grid-cols-1';
     }
 
+    if (appSettings?.analytics.webAnalytics && limitedByPlan) {
+        cols = 'lg:grid-cols-2';
+    }
+
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
     return (
         <div className={containerClass}>
-            {appSettings?.analytics.webAnalytics === true &&
+            {(appSettings?.analytics.webAnalytics === true && !limitedByPlan) ?
                 <OverviewKPICard
                     description='Number of individual people who visited your website'
                     diffDirection='empty'
@@ -175,6 +182,29 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                         yAxisRange={visitorsYRange}
                     />
                 </OverviewKPICard>
+                :
+                // Show CTA for customers on plans without access to web analytics
+                (appSettings?.analytics.webAnalytics && limitedByPlan) &&
+                <Card>
+                    <CardHeader className='hidden'>
+                        <CardTitle>Unlock web analytics</CardTitle>
+                        <CardDescription>Get the full picture of what&apos;s working with detailed, cookie-free traffic analytics.</CardDescription>
+                    </CardHeader>
+                    <CardContent className='flex h-full items-center justify-center p-6'>
+                        <EmptyIndicator
+                            actions={
+                                <Button variant='outline' onClick={() => {}}>
+                                    Upgrade now
+                                </Button>
+                            }
+                            className='py-10'
+                            description={`Get the full picture of what's working with detailed, cookie-free traffic analytics.`}
+                            title='Unlock web analytics'
+                        >
+                            <LucideIcon.ChartSpline />
+                        </EmptyIndicator>
+                    </CardContent>
+                </Card>
             }
 
             <OverviewKPICard
@@ -202,7 +232,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 />
             </OverviewKPICard>
 
-            {appSettings?.paidMembersEnabled === true &&
+            {appSettings?.paidMembersEnabled === true && !limitedByPlan &&
                 <OverviewKPICard
                     description='Monthly recurring revenue changes over time'
                     diffDirection={growthTotals.directions.mrr}

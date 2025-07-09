@@ -48,7 +48,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 };
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, data, limitedByPlan} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
 
@@ -95,7 +95,7 @@ const Web: React.FC = () => {
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
 
-    if (!appSettings?.analytics.webAnalytics) {
+    if (!appSettings?.analytics.webAnalytics || limitedByPlan) {
         return (
             <Navigate to='/' />
         );

@@ -55,7 +55,7 @@ interface ProcessedLocationData {
 }
 
 const Locations:React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, audience, limitedByPlan} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
@@ -197,7 +197,7 @@ const Locations:React.FC = () => {
 
     const isLoading = isConfigLoading || loading;
 
-    if (!appSettings?.analytics.webAnalytics) {
+    if (!appSettings?.analytics.webAnalytics || limitedByPlan) {
         return (
             <Navigate to='/' />
         );

@@ -29,7 +29,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
 }) => {
     const navigate = useNavigate();
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site, settings} = useGlobalData();
+    const {site, settings, limitedByPlan} = useGlobalData();
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
@@ -149,7 +149,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                         <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 text-sm xl:h-full xl:max-w-none'>
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
-                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
+                                {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics && !limitedByPlan &&
                                     <div className={metricClassName} onClick={() => {
                                         navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>

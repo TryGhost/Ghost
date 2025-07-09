@@ -13,7 +13,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {appSettings} = useAppContext();
-    const {site, statsConfig} = useGlobalData();
+    const {site, statsConfig, limitedByPlan} = useGlobalData();
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false
@@ -26,7 +26,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     <H1 className='-ml-px min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]'>
                         Analytics
                     </H1>
-                    {appSettings?.analytics.webAnalytics && (
+                    {appSettings?.analytics.webAnalytics && !limitedByPlan && (
                         <div className='flex items-center gap-2 text-sm'>
                             {site?.url && (
                                 <div className='hidden items-center gap-1.5 sm:!visible sm:!flex'>
@@ -63,7 +63,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         navigate('/');
                     }}>Overview</PageMenuItem>
 
-                    {appSettings?.analytics.webAnalytics &&
+                    {(appSettings?.analytics.webAnalytics && !limitedByPlan) &&
                         <PageMenuItem value="/web/" onClick={() => {
                             navigate('/web/');
                         }}>Web traffic</PageMenuItem>
@@ -79,9 +79,11 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         navigate('/growth/');
                     }}>Growth</PageMenuItem>
 
-                    <PageMenuItem value="/locations/" onClick={() => {
-                        navigate('/locations/');
-                    }}>Locations</PageMenuItem>
+                    {(appSettings?.analytics.webAnalytics && !limitedByPlan) &&
+                        <PageMenuItem value="/locations/" onClick={() => {
+                            navigate('/locations/');
+                        }}>Locations</PageMenuItem>
+                    }
                 </PageMenu>
                 <NavbarActions>
                     {children}
