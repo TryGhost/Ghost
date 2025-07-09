@@ -3,23 +3,23 @@
 ## It is used in the e2e test CI workflow to configure Ghost to use the Tinybird local instance
 ## It can also be used locally to configure Ghost to use a tinybird local instance
 
-# Get workspace admin token
-## This token is available in the Tinybird Local instance without authentication
-WORKSPACE_ADMIN_TOKEN=$(curl -s http://localhost:7181/tokens | jq -r ".admin_token")
-export TINYBIRD_WORKSPACE_ADMIN_TOKEN="$WORKSPACE_ADMIN_TOKEN"
+# Store tb info output as JSON to parse multiple values
+TB_INFO=$(tb --output json info)
 
-# Get the admin token from the Tinybird CLI
+# Get the workspace ID from the JSON output
+WORKSPACE_ID=$(echo "$TB_INFO" | jq -r '.local.workspace_id')
+export TINYBIRD_WORKSPACE_ID="$WORKSPACE_ID"
+
+WORKSPACE_TOKEN=$(echo "$TB_INFO" | jq -r '.local.token')
+
+# Get the admin token from the Tinybird API
 ## This is different from the workspace admin token
-ADMIN_TOKEN=$(tb token ls --match "admin token" | grep "token:" | awk -F'token: ' '{print $2}')
+ADMIN_TOKEN=$(curl -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://localhost:7181/v0/tokens | jq -r '.tokens[] | select(.name == "admin token") | .token')
 export TINYBIRD_ADMIN_TOKEN="$ADMIN_TOKEN"
 
-# Get the tracker token from the Tinybird CLI
-TRACKER_TOKEN=$(tb token ls --match "tracker" | grep "token:" | awk -F'token: ' '{print $2}')
+# Get the tracker token from the Tinybird API
+TRACKER_TOKEN=$(curl -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://localhost:7181/v0/tokens | jq -r '.tokens[] | select(.name == "tracker") | .token')
 export TINYBIRD_TRACKER_TOKEN="$TRACKER_TOKEN"
-
-# Get the workspace ID from the Tinybird CLI
-WORKSPACE_ID=$(tb info | grep "workspace_id:" | awk '{print $2}')
-export TINYBIRD_WORKSPACE_ID="$WORKSPACE_ID"
 
 # Export Ghost configuration as environment variables
 export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
