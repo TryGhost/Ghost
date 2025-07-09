@@ -12,9 +12,8 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
-    "test:frontend": "playwright test test/frontend",
     "test:types": "tsc --noEmit",
-    "lint": "eslint src/ --ext .ts --cache"
+    "lint": "eslint helpers --ext .ts --cache"
   },
   "files": [
     "build"
