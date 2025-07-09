@@ -806,6 +806,12 @@ jobs:
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+        options: >-
+          --health-cmd "curl -f http://localhost:7181/"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 30s
       mysql:
         image: mysql:8.0
         env:
@@ -818,6 +824,12 @@ jobs:
         credentials:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 30s
     env:
       CI: true
       database__client: mysql
