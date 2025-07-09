@@ -1,5 +1,6 @@
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from '@assets/images/dots-pattern.png';
+import DotsPatternn from './DotsPattern';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
 import {takeScreenshot} from '@src/utils/screenshot';
@@ -21,6 +22,8 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const {isEnabled} = useFeatureFlags();
     const {data: siteData} = useBrowseSite();
     const accentColor = siteData?.site?.accent_color;
+    const coverImage = siteData?.site?.cover_image;
+    const publicationIcon = siteData?.site?.icon;
     const profileCardRef = useRef<HTMLDivElement>(null);
     const [backgroundColor, setBackgroundColor] = useState<'light' | 'dark' | 'accent'>('light');
     const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
@@ -99,30 +102,35 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         return (
             <div className={`relative z-10 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
                 <div className='relative h-48 p-2'>
-                    {account?.bannerImageUrl &&
+                    {(account?.bannerImageUrl || coverImage) ?
                         <img
                             alt={account?.name}
                             className='size-full rounded-[26px] rounded-b-none object-cover'
                             referrerPolicy='no-referrer'
-                            src={account?.bannerImageUrl}
-                        />
+                            src={account?.bannerImageUrl || coverImage}
+                        /> :
+                        <div className='relative size-full overflow-hidden rounded-[26px] rounded-b-none' style={{background: `linear-gradient(to bottom, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 1)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 0.5)})`}}>
+                            <DotsPatternn className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-50px' : '-100px', left: isScreenshot ? '-69px' : '-138px'}} />
+                        </div>
                     }
-                    <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
-                        <APAvatar
-                            author={
-                                {
-                                    icon: {
-                                        url: account?.avatarUrl || ''
-                                    },
-                                    name: account?.name || '',
-                                    handle: account?.handle
+                    {(account?.avatarUrl || publicationIcon) &&
+                        <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
+                            <APAvatar
+                                author={
+                                    {
+                                        icon: {
+                                            url: account?.avatarUrl || publicationIcon || ''
+                                        },
+                                        name: account?.name || siteData?.site?.title || '',
+                                        handle: account?.handle
+                                    }
                                 }
-                            }
-                            size='md'
-                        />
-                    </div>
+                                size='md'
+                            />
+                        </div>
+                    }
                 </div>
-                <div className={`flex grow flex-col items-center p-6 pt-9 text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
+                <div className={`flex grow flex-col items-center p-6 ${(account?.avatarUrl || publicationIcon) ? 'pt-9' : 'pt-3'} text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
                     <H2 style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
                     <span className='mt-0.5 text-lg' style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
                     <div
@@ -217,7 +225,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         Download image
                     </Button>
                 </div>
-                <img className='absolute inset-0 size-full object-cover' src={DotsPattern} />
+                {(account?.bannerImageUrl || coverImage) &&
+                    <img className='absolute inset-0 size-full object-cover' src={DotsPattern} />
+                }
                 <div className='absolute inset-0' style={{background: getGradient()}} />
             </div>
 
@@ -230,16 +240,18 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 }}
             >
                 <ProfileCard format={cardFormat} isScreenshot={true} />
-                <img
-                    className='absolute left-0 top-0'
-                    src={DotsPattern}
-                    style={{
-                        height: '456px',
-                        maxHeight: 'none',
-                        maxWidth: 'none',
-                        width: '456px'
-                    }}
-                />
+                {(account?.bannerImageUrl || coverImage) &&
+                    <img
+                        className='absolute left-0 top-0'
+                        src={DotsPattern}
+                        style={{
+                            height: '456px',
+                            maxHeight: 'none',
+                            maxWidth: 'none',
+                            width: '456px'
+                        }}
+                    />
+                }
                 <div
                     className='absolute left-0 top-0'
                     style={{

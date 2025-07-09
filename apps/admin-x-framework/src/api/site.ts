@@ -8,6 +8,7 @@ export type SiteData = {
     description: string;
     logo: string;
     icon: string;
+    cover_image: string;
     accent_color: string;
     url: string;
     locale: string;
