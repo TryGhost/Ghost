@@ -1,16 +1,12 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
-    const [canHaveWebAnalytics, setCanHaveWebAnalytics] = useState(true);
-
-    const limiter = useLimiter();
     const {
         localSettings,
         isEditing,
@@ -21,23 +17,13 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, webAnalytics] = getSettingValues(localSettings, [
-        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics'
+    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, webAnalyticsUserSetting, isWebAnalyticsEnabled] = getSettingValues(localSettings, [
+        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics', 'web_analytics_enabled'
     ]) as boolean[];
 
-    const hasTrafficAnalytics = useFeatureFlag('trafficAnalytics');
+    const taBetaFlagEnabled = useFeatureFlag('trafficAnalytics');
     const ui60 = useFeatureFlag('ui60');
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
-
-    useEffect(() => {
-        if (limiter?.isLimited('limitAnalytics')) {
-            limiter.errorIfWouldGoOverLimit('limitAnalytics').catch((error) => {
-                if (error instanceof HostLimitError) {
-                    setCanHaveWebAnalytics(false);
-                }
-            });
-        }
-    }, [limiter]);
 
     const handleToggleChange = (key: string, e: React.ChangeEvent<HTMLInputElement>) => {
         updateSetting(key, e.target.checked);
@@ -68,13 +54,14 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
-            {hasTrafficAnalytics && canHaveWebAnalytics && (
+            {taBetaFlagEnabled && (
                 <>
                     <Toggle
-                        checked={webAnalytics}
+                        checked={isWebAnalyticsEnabled && webAnalyticsUserSetting}
                         direction='rtl'
+                        disabled={!isWebAnalyticsEnabled}
                         gap='gap-0'
-                        hint={ui60 && 'Cookie-free, first party traffic analytics for your site'}
+                        hint={isWebAnalyticsEnabled ? (ui60 ? 'Cookie-free, first party traffic analytics for your site' : undefined) : 'Web analytics requires additional setup in your configuration'}
                         label='Web analytics'
                         labelClasses='py-4 w-full'
                         onChange={(e) => {
