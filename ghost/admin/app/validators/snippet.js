@@ -8,7 +8,7 @@ export default BaseValidator.create({
     name(model) {
         let {name} = model;
 
-        if (!validator.isLength(name || '', 0, 191)) {
+        if (!validator.isLength(name || '', {max: 191})) {
             model.errors.add('name', 'Name cannot be longer than 191 characters');
             this.invalidate();
         }

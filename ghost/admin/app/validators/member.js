@@ -6,7 +6,7 @@ export default BaseValidator.create({
     properties: ['name', 'email', 'note'],
 
     name(model) {
-        if (!validator.isLength(model.name || '', 0, 191)) {
+        if (!validator.isLength(model.name || '', {max: 191})) {
             model.errors.add('name', 'Name cannot be longer than 191 characters.');
             this.invalidate();
         }
@@ -22,7 +22,7 @@ export default BaseValidator.create({
             model.errors.add('email', 'Invalid Email.');
             this.invalidate();
         }
-        if (!validator.isLength(model.email || '', 0, 191)) {
+        if (!validator.isLength(model.email || '', {max: 191})) {
             model.errors.add('email', 'Email cannot be longer than 191 characters.');
             this.invalidate();
         }
@@ -33,7 +33,7 @@ export default BaseValidator.create({
     note(model) {
         let note = model.note;
 
-        if (!validator.isLength(note || '', 0, 500)) {
+        if (!validator.isLength(note || '', {max: 500})) {
             model.errors.add('note', 'Note is too long.');
             this.invalidate();
         }

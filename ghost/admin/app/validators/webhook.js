@@ -10,7 +10,7 @@ export default BaseValidator.create({
             model.errors.add('name', 'Please enter a name');
             model.hasValidated.pushObject('name');
             this.invalidate();
-        } else if (!validator.isLength(model.name, 0, 191)) {
+        } else if (!validator.isLength(model.name, {max: 191})) {
             model.errors.add('name', 'Name is too long, max 191 chars');
             model.hasValidated.pushObject('name');
             this.invalidate();
@@ -30,7 +30,7 @@ export default BaseValidator.create({
             model.errors.add('targetUrl', 'Please enter a target URL');
         } else if (!validator.isURL(model.targetUrl || '', {require_protocol: false})) {
             model.errors.add('targetUrl', 'Please enter a valid URL');
-        } else if (!validator.isLength(model.targetUrl, 0, 2000)) {
+        } else if (!validator.isLength(model.targetUrl, {max: 2000})) {
             model.errors.add('targetUrl', 'Target URL is too long, max 2000 chars');
         }
 
@@ -42,7 +42,7 @@ export default BaseValidator.create({
     },
 
     secret(model) {
-        if (!isBlank(model.secret) && !validator.isLength(model.secret, 0, 191)) {
+        if (!isBlank(model.secret) && !validator.isLength(model.secret, {max: 191})) {
             model.errors.add('secret', 'Secret is too long, max 191 chars');
             model.hasValidated.pushObject('secret');
             this.invalidate();
