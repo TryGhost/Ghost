@@ -9,19 +9,15 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 
 export const searchKeywords5x = {
-    network: ['network', 'social web', 'social', 'web', 'activitypub', 'activity pub', 'fediverse', 'federated'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment'],
-    embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
     recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
-    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions']
+    embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
+    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions'],
+    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
 };
 
 export const searchKeywords = {
-    network: ['network', 'social web', 'social', 'web', 'activitypub', 'activity pub', 'fediverse', 'federated'],
-    explore: ['explore', 'web', 'social', 'web', 'growth', 'list'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment'],
-    embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
     recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
+    embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
     offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions']
 };
 
