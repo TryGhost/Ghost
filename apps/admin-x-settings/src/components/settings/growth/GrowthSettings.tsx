@@ -43,10 +43,10 @@ const GrowthSettings: React.FC = () => {
     }
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords5x).flat()} title='Growth'>
-            <Recommendations keywords={searchKeywords5x.recommendations} />
-            <EmbedSignupForm keywords={searchKeywords5x.embedSignupForm} />
-            {hasStripeEnabled && <Offers keywords={searchKeywords5x.offers} />}
+        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Growth'>
+            <Recommendations keywords={searchKeywords.recommendations} />
+            <EmbedSignupForm keywords={searchKeywords.embedSignupForm} />
+            {hasStripeEnabled && <Offers keywords={searchKeywords.offers} />}
         </SearchableSection>
     );
 };

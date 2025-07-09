@@ -59,15 +59,17 @@ const GeneralSettings: React.FC = () => {
         );
     }
 
+    // This section is going to be updated with merging Twitter and Facebook to the Metadata group,
+    // that's why we're using a dedicated searchKeywords array for it.
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title="General settings">
             <TitleAndDescription keywords={searchKeywords.titleAndDescription} />
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
             <Users keywords={searchKeywords.users} />
-            <Metadata keywords={searchKeywords5x.metadata} />
-            <Twitter keywords={searchKeywords5x.twitter} />
-            <Facebook keywords={searchKeywords5x.facebook} />
+            <Metadata keywords={searchKeywords.metadata} />
+            <Twitter keywords={searchKeywords.twitter} />
+            <Facebook keywords={searchKeywords.facebook} />
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <Analytics keywords={searchKeywords.analytics} />
             <LockSite keywords={searchKeywords.lockSite} />
