@@ -44,8 +44,6 @@ const useNavigationEditor = ({items, setItems}: {
             errors.label = 'You must specify a label';
         }
 
-        // @TODO: at first glance this is working with validator 13+
-        // but i think it might be because this is a looser check, b/c it allows relative paths
         if (!item.url || item.url.match(/\s/) || (!validator.isURL(item.url, {require_protocol: true}) && !item.url.match(urlRegex))) {
             errors.url = 'You must specify a valid URL or relative path';
         }
