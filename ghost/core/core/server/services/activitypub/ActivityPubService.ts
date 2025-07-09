@@ -27,7 +27,7 @@ export class ActivityPubService {
     getExpectedWebhooks(secret: string): ExpectedWebhook[] {
         return [{
             event: 'post.published',
-            target_url: new URL('.ghost/activitypub/webhooks/post/published', this.siteUrl),
+            target_url: new URL('.ghost/activitypub/v1/webhooks/post/published', this.siteUrl),
             api_version: 'v5.100.0',
             secret
         }];
@@ -69,7 +69,7 @@ export class ActivityPubService {
                 .first();
             const token = await this.identityTokenService.getTokenForUser(ownerUser.email, 'Owner');
 
-            const res = await fetch(new URL('.ghost/activitypub/site', this.siteUrl), {
+            const res = await fetch(new URL('.ghost/activitypub/v1/site', this.siteUrl), {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
