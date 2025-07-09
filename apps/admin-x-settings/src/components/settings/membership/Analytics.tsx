@@ -2,7 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Button, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues, isSettingReadOnly} from '@tryghost/admin-x-framework/api/settings';
 import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
@@ -61,14 +61,25 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         direction='rtl'
                         disabled={!isWebAnalyticsEnabled}
                         gap='gap-0'
-                        hint={isWebAnalyticsEnabled ? (ui60 ? 'Cookie-free, first party traffic analytics for your site' : undefined) : 'Web analytics requires additional setup in your configuration'}
+                        hint={ui60 && 'Cookie-free, first party traffic analytics for your site'}
                         label='Web analytics'
                         labelClasses='py-4 w-full'
                         onChange={(e) => {
                             handleToggleChange('web_analytics', e);
                         }}
                     />
-                    <Separator className="border-grey-200 dark:border-grey-900" />
+                    {ui60 && !isWebAnalyticsEnabled ?
+                        <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5'>
+                            <span className='flex items-start gap-2'>
+                                <Icon className='-mt-px text-black' name='info-fill' size={24} />
+                                <span>
+                            Web analytics in Ghost is powered by <a className='text-green underline' href="https://tinybird.co" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='text-green underline' href="https://ghost.org/docs/" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
+                                </span>
+                            </span>
+                        </div>
+                        :
+                        <Separator className="border-grey-200 dark:border-grey-900" />
+                    }
                 </>
             )}
             <Toggle
