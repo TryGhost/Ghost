@@ -83,7 +83,16 @@ const Sidebar: React.FC = () => {
 
     useEffect(() => {
         if (ui60) {
-            // TODO: add 6.0 search
+            if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
+                !checkVisible(Object.values(siteSearchKeywords).flat()) &&
+                !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
+                !checkVisible(Object.values(growthSearchKeywords).flat()) &&
+                !checkVisible(Object.values(emailSearchKeywords).flat()) &&
+                !checkVisible(Object.values(advancedSearchKeywords).flat())) {
+                setNoResult(true);
+            } else {
+                setNoResult(false);
+            }
         } else {
             if (!checkVisible(Object.values(generalSearchKeywords5x).flat()) &&
                 !checkVisible(Object.values(siteSearchKeywords).flat()) &&
