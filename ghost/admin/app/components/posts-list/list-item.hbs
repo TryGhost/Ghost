@@ -228,7 +228,7 @@
         {{/if}}
 
         {{!-- Member conversions column (only show for published posts when member tracking is enabled) --}}
-        {{#if (or this.settings.membersTrackSources false)}}
+        {{#if this.settings.membersTrackSources}}
             {{#if @post.isPublished}}
                 {{#if this.hasMemberData}}
                     <div class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}>

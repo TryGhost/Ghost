@@ -456,7 +456,7 @@
     },
     "labs": {
         "labs": {
-            "defaultValue": "{}",
+            "defaultValue": "{\"trafficAnalytics\": true}",
             "type": "object"
         }
     },
@@ -541,6 +541,14 @@
     },
     "analytics": {
         "outbound_link_tagging": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "web_analytics": {
             "defaultValue": "true",
             "validations": {
                 "isEmpty": false,

@@ -27,6 +27,7 @@ describe('Acceptance: Posts / Pages', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        this.server.loadFixtures('settings');
     });
 
     this.afterEach(function () {
@@ -117,8 +118,10 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Published posts');
 
                 // API request includes author filter
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
+                // Find the posts API request
+                let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                expect(lastPostsRequest.queryParams.filter).to.have.string(`authors:${author.slug}`);
 
                 // only author's post is shown
                 expect(findAll('[data-test-post-id]').length, 'post count').to.equal(1);
@@ -183,7 +186,6 @@ describe('Acceptance: Posts / Pages', function () {
             let admin, editor, publishedPost, scheduledPost, draftPost, authorPost;
 
             beforeEach(async function () {
-                this.server.loadFixtures('settings');
                 this.server.loadFixtures('tiers');
 
                 let adminRole = this.server.create('role', {name: 'Administrator'});
@@ -230,8 +232,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Draft posts');
 
                     // API request is correct
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
                     // Displays draft post
                     expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
                     expect(find(`[data-test-post-id="${draftPost.id}"]`), 'draft post').to.exist;
@@ -240,8 +243,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Published posts');
 
                     // API request is correct
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+                    postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
                     // Displays three published posts + pages
                     expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
                     expect(find(`[data-test-post-id="${publishedPost.id}"]`), 'admin published post').to.exist;
@@ -251,8 +255,9 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-type-select]', 'Scheduled posts');
 
                     // API request is correct
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+                    let scheduledPostsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastScheduledRequest = scheduledPostsRequests[scheduledPostsRequests.length - 1];
+                    expect(lastScheduledRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
                     // Displays scheduled post
                     expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                     expect(find(`[data-test-post-id="${scheduledPost.id}"]`), 'scheduled post').to.exist;
@@ -265,10 +270,11 @@ describe('Acceptance: Posts / Pages', function () {
                     await selectChoose('[data-test-author-select]', editor.name);
 
                     // API request is correct
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"editor" request status filter')
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"editor" request status filter')
                         .to.have.string('status:[draft,scheduled,published,sent]');
-                    expect(lastRequest.queryParams.allFilter, '"editor" request filter param')
+                    expect(lastPostsRequest.queryParams.allFilter, '"editor" request filter param')
                         .to.have.string(`authors:${editor.slug}`);
 
                     // Displays editor post
@@ -279,15 +285,17 @@ describe('Acceptance: Posts / Pages', function () {
                     await visit('/posts');
 
                     await selectChoose('[data-test-visibility-select]', 'Paid members-only');
-                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    let postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    let lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"visibility" request filter param')
                         .to.have.string('visibility:[paid,tiers]');
                     let posts = findAll('[data-test-post-id]');
                     expect(posts.length, 'all posts count').to.equal(1);
 
                     await selectChoose('[data-test-visibility-select]', 'Public');
-                    [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                    expect(lastRequest.queryParams.allFilter, '"visibility" request filter param')
+                    postsRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/posts/') && r.method === 'GET');
+                    lastPostsRequest = postsRequests[postsRequests.length - 1];
+                    expect(lastPostsRequest.queryParams.allFilter, '"visibility" request filter param')
                         .to.have.string('visibility:public');
                     posts = findAll('[data-test-post-id]');
                     expect(posts.length, 'all posts count').to.equal(3);
@@ -936,8 +944,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Draft pages');
 
                 // API request is correct
-                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
+                let pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                let lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"drafts" request status filter').to.have.string('status:draft');
                 // Displays draft page
                 expect(findAll('[data-test-post-id]').length, 'drafts count').to.equal(1);
                 expect(find('[data-test-post-id="3"]'), 'draft page').to.exist;
@@ -946,8 +955,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Published pages');
 
                 // API request is correct
-                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
+                pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"published" request status filter').to.have.string('status:published');
                 // Displays two published pages
                 expect(findAll('[data-test-post-id]').length, 'published count').to.equal(2);
                 expect(find('[data-test-post-id="1"]'), 'admin published page').to.exist;
@@ -957,8 +967,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await selectChoose('[data-test-type-select]', 'Scheduled pages');
 
                 // API request is correct
-                [lastRequest] = this.server.pretender.handledRequests.slice(-1);
-                expect(lastRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
+                pagesRequests = this.server.pretender.handledRequests.filter(r => r.url.includes('/pages/') && r.method === 'GET');
+                lastPagesRequest = pagesRequests[pagesRequests.length - 1];
+                expect(lastPagesRequest.queryParams.filter, '"scheduled" request status filter').to.have.string('status:scheduled');
                 // Displays scheduled page
                 expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                 expect(find('[data-test-post-id="4"]'), 'scheduled page').to.exist;
