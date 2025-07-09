@@ -58,14 +58,19 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
-            settings: [
-                {key: 'web_analytics', value: false},
-                {key: 'members_track_sources', value: false},
-                {key: 'email_track_opens', value: false},
-                {key: 'email_track_clicks', value: false},
-                {key: 'outbound_link_tagging', value: false}
-            ]
+        const actualSettings = lastApiRequests.editSettings?.body?.settings || [];
+        const expectedSettings = [
+            {key: 'web_analytics', value: false},
+            {key: 'members_track_sources', value: false},
+            {key: 'email_track_opens', value: false},
+            {key: 'email_track_clicks', value: false},
+            {key: 'outbound_link_tagging', value: false}
+        ];
+
+        // Check that all expected settings are present, regardless of order
+        expect(actualSettings).toHaveLength(expectedSettings.length);
+        expectedSettings.forEach((expectedSetting) => {
+            expect(actualSettings).toContainEqual(expectedSetting);
         });
     });
 
