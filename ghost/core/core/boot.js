@@ -94,6 +94,12 @@ async function initCore({ghostServer, config, frontend}) {
     models.init();
     debug('End: models');
 
+    // Limit service is booted before settings, so that limits are available for calculated settings
+    debug('Begin: limits');
+    const limits = require('./server/services/limits');
+    await limits.init();
+    debug('End: limits');
+
     // Settings are a core concept we use settings to store key-value pairs used in critical pathways as well as public data like the site title
     debug('Begin: settings');
     const settings = require('./server/services/settings/settings-service');
@@ -312,7 +318,6 @@ async function initServices() {
     const xmlrpc = require('./server/services/xmlrpc');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const limits = require('./server/services/limits');
     const scheduling = require('./server/adapters/scheduling');
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
@@ -337,10 +342,6 @@ async function initServices() {
     const explorePingService = require('./server/services/explore-ping');
 
     const urlUtils = require('./shared/url-utils');
-
-    // NOTE: limits service has to be initialized first
-    // in case it limits initialization of any other service (e.g. webhooks)
-    await limits.init();
 
     // NOTE: Members service depends on these
     //       so they are initialized before it.
