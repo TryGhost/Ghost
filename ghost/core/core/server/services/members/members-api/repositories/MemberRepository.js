@@ -948,7 +948,6 @@ module.exports = class MemberRepository {
             // Use first Ghost product as default product in case of missing link
             if (!ghostProduct) {
                 ghostProduct = await this._productRepository.getDefaultProduct({
-                    forUpdate: true,
                     ...options
                 });
             }
