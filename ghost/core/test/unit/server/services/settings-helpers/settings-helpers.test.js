@@ -4,7 +4,6 @@ const configUtils = require('../../../../utils/configUtils');
 const SettingsHelpers = require('../../../../../core/server/services/settings-helpers/SettingsHelpers');
 const crypto = require('crypto');
 const assert = require('assert').strict;
-const logging = require('@tryghost/logging');
 
 const mockValidationKey = 'validation_key';
 
@@ -259,11 +258,7 @@ describe('Settings Helpers', function () {
         let settingsCache;
         let urlUtils;
         let labs;
-        let loggingSpy;
-
         beforeEach(function () {
-            loggingSpy = sinon.spy(logging, 'warn');
-
             settingsCache = {
                 get: sinon.stub().withArgs('social_web').returns(true)
             };
@@ -290,7 +285,6 @@ describe('Settings Helpers', function () {
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
             assert.equal(isEnabled, false);
-            sinon.assert.calledWith(loggingSpy, 'Social web is disabled in settings');
         });
 
         it('returns false when the Labs setting is set to false', function () {
@@ -300,7 +294,6 @@ describe('Settings Helpers', function () {
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
             assert.equal(isEnabled, false);
-            sinon.assert.calledWith(loggingSpy, 'Social web is disabled in labs');
         });
 
         it('returns false when social web is disabled for a Ghost (Pro) user', function () {
@@ -310,7 +303,6 @@ describe('Settings Helpers', function () {
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
             assert.equal(isEnabled, false);
-            sinon.assert.calledWith(loggingSpy, 'Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
         });
 
         it('returns false when the site is hosted on a subdirectory', function () {
@@ -320,7 +312,6 @@ describe('Settings Helpers', function () {
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
             assert.equal(isEnabled, false);
-            sinon.assert.calledWith(loggingSpy, 'Social web is not available for Ghost sites hosted on a subdirectory');
         });
 
         it('returns false if the site is hosted on a localhost or IP address in production', function () {
@@ -331,7 +322,6 @@ describe('Settings Helpers', function () {
             const isEnabled = settingsHelpers.isSocialWebEnabled();
 
             assert.equal(isEnabled, false);
-            sinon.assert.calledWith(loggingSpy, 'Social web is not available for localhost or IPs addresses in production');
         });
 
         it('returns true otherwise', function () {

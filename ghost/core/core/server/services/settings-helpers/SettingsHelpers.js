@@ -4,6 +4,7 @@ const errors = require('@tryghost/errors');
 const EmailAddressParser = require('../email-address/EmailAddressParser');
 const logging = require('@tryghost/logging');
 const crypto = require('crypto');
+const debug = require('@tryghost/debug')('services:settings-helpers');
 
 const messages = {
     incorrectKeyType: 'type must be one of "direct" or "connect".'
@@ -229,26 +230,26 @@ class SettingsHelpers {
     isSocialWebEnabled() {
         // UI setting
         if (this.settingsCache.get('social_web') !== true) {
-            logging.warn('Social web is disabled in settings');
+            debug('Social web is disabled in settings');
             return false;
         }
 
         // Labs setting
         if (!this.labs.isSet('ActivityPub')) {
-            logging.warn('Social web is disabled in labs');
+            debug('Social web is disabled in labs');
             return false;
         }
 
         // Ghost (Pro) limits
         if (this.limitService.isDisabled('limitSocialWeb')) {
-            logging.warn('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
+            debug('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
             return false;
         }
 
         // Social web (ActivityPub) currently does not support Ghost sites hosted on a subdirectory, e.g. https://example.com/blog/
         const subdirectory = this.urlUtils.getSubdir();
         if (subdirectory) {
-            logging.warn('Social web is not available for Ghost sites hosted on a subdirectory');
+            debug('Social web is not available for Ghost sites hosted on a subdirectory');
             return false;
         }
 
@@ -257,7 +258,7 @@ class SettingsHelpers {
         const isLocalhost = siteUrl.hostname === 'localhost' || siteUrl.hostname === '127.0.0.1' || siteUrl.hostname === '::1';
         const isIP = net.isIP(siteUrl.hostname);
         if (process.env.NODE_ENV === 'production' && (isLocalhost || isIP)) {
-            logging.warn('Social web is not available for localhost or IPs addresses in production');
+            debug('Social web is not available from localhost or IPs addresses in production');
             return false;
         }
 
