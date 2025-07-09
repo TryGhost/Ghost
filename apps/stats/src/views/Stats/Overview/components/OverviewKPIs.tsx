@@ -1,5 +1,5 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
@@ -149,6 +149,8 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
 
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
+    const showTrialCTA = true;
+
     return (
         <div className={containerClass}>
             {appSettings?.analytics.webAnalytics === true &&
@@ -177,6 +179,29 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 </OverviewKPICard>
             }
 
+            {!appSettings?.analytics.webAnalytics && showTrialCTA &&
+                <Card>
+                    <CardHeader className='hidden'>
+                        <CardTitle>Unlock web analytics</CardTitle>
+                        <CardDescription>Get the full picture of what&apos;s working with detailed, cookie-free traffic analytics.</CardDescription>
+                    </CardHeader>
+                    <CardContent className='flex h-full items-center justify-center p-6'>
+                        <EmptyIndicator
+                            actions={
+                                <Button variant='outline' onClick={() => {}}>
+                                Upgrade now
+                                </Button>
+                            }
+                            className='py-10'
+                            description={`Get the full picture of what's working with detailed, cookie-free traffic analytics.`}
+                            title='Unlock web analytics'
+                        >
+                            <LucideIcon.ChartSpline />
+                        </EmptyIndicator>
+                    </CardContent>
+                </Card>
+            }
+
             <OverviewKPICard
                 description='How number of members of your publication changed over time'
                 diffDirection={growthTotals.directions.total}
@@ -202,7 +227,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 />
             </OverviewKPICard>
 
-            {appSettings?.paidMembersEnabled === true &&
+            {appSettings?.paidMembersEnabled === true && !showTrialCTA &&
                 <OverviewKPICard
                     description='Monthly recurring revenue changes over time'
                     diffDirection={growthTotals.directions.mrr}
