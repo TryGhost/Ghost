@@ -444,7 +444,7 @@
     },
     "labs": {
         "labs": {
-            "defaultValue": "{\"trafficAnalytics\": true}",
+            "defaultValue": "{}",
             "type": "object"
         }
     },

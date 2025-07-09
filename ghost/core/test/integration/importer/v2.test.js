@@ -835,7 +835,7 @@ describe('Importer', function () {
                 .then(function (result) {
                     should.equal(result.attributes.key, 'labs');
                     should.equal(result.attributes.group, 'labs');
-                    should.equal(result.attributes.value, '{"additionalPaymentMethods":true,"trafficAnalytics":true}');
+                    should.equal(result.attributes.value, '{"additionalPaymentMethods":true}');
                 });
         });
 
