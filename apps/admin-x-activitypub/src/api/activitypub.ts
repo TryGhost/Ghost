@@ -331,7 +331,7 @@ export class ActivityPubAPI {
     }
 
     get userApiUrl() {
-        return new URL(`.ghost/activitypub/v1/users/${this.handle}`, this.apiUrl);
+        return new URL(`.ghost/activitypub/users/${this.handle}`, this.apiUrl);
     }
 
     async getUser() {
