@@ -803,6 +803,9 @@ jobs:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
       mysql:
         image: mysql:8.0
         env:
@@ -812,6 +815,9 @@ jobs:
           MYSQL_PASSWORD: ghost
         ports:
           - 3306:3306
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
     env:
       CI: true
       database__client: mysql
