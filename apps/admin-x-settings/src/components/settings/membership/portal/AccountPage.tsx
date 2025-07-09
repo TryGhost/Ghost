@@ -21,9 +21,8 @@ const AccountPage: React.FC<{
 
         if (!supportAddress) {
             setError('members_support_address', 'Enter an email address');
-            // @TODO: require_tld is automatically true in validator 13+
-            // this causes issues with localhost, so need to adjust based on NODE_ENV or another solution
-        } else if (!validator.isEmail(supportAddress, {require_tld: process.env.NODE_ENV === 'production'})) {
+            // require_tld is automatically true in validator 13+, we set it false here for our default localhost setup
+        } else if (!validator.isEmail(supportAddress, {require_tld: false})) {
             setError('members_support_address', 'Enter a valid email address');
         } else {
             setError('members_support_address', '');

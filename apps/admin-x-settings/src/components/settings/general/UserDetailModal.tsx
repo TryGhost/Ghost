@@ -36,9 +36,7 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
-        // @TODO: require_tld is automatically true in validator 13+
-        // this causes issues with localhost, so need to adjust based on NODE_ENV or another solution
-        // what's also weird is that i don't see a field for this, so it seems odd that it's validated
+        // require_tld is automatically true in validator 13+, we set it false here for our default localhost setup
         const valid = !url || validator.isURL(url, {require_tld: false});
         return valid ? '' : 'Enter a valid URL';
     },
