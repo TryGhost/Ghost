@@ -30,7 +30,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                 <div className='-mt-4 mb-2 text-xs uppercase text-grey-500 dark:text-grey-800'>Preview</div>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-975'>
                     <div className='mt-3 flex items-center'>
-                        <div className='basis-'>
+                        <div>
                             <GoogleLogo className='mr-7 h-7' />
                         </div>
                         <div className='grow'>
@@ -100,7 +100,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'twitter_title',
         'twitter_description',
         'twitter_image'
-    ]) as string[];
+    ]).map(value => value || '') as string[];
 
     // Tab management
     const [selectedTab, setSelectedTab] = useState('metadata');
