@@ -18,7 +18,7 @@ test.describe('Feed', async () => {
             },
             getActivityPubUser: {
                 method: 'GET',
-                path: '/v1/users/index',
+                path: '/users/index',
                 response: activityPubUser
             },
             getAccount: {
@@ -233,7 +233,7 @@ test.describe('Feed', async () => {
             },
             getActivityPubUser: {
                 method: 'GET',
-                path: '/v1/users/index',
+                path: '/users/index',
                 response: activityPubUser
             },
             replyToPost: {
