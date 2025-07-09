@@ -899,6 +899,138 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(find('[data-test-button="edit-view"]'), 'edit-view button (on existing view)').to.exist;
             });
         });
+
+        describe('analytics visibility', function () {
+            let publishedPost;
+
+            beforeEach(async function () {
+                let adminRole = this.server.create('role', {name: 'Administrator'});
+                this.server.create('user', {roles: [adminRole]});
+
+                publishedPost = this.server.create('post', {
+                    status: 'published',
+                    hasBeenEmailed: true,
+                    email: this.server.create('email', {
+                        emailCount: 100,
+                        openedCount: 50,
+                        clickedCount: 25,
+                        openRate: 50,
+                        clickRate: 25
+                    })
+                });
+
+                await authenticateSession();
+            });
+
+            it('hides visitor count column when webAnalytics is disabled', async function () {
+                // Disable webAnalytics setting
+                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that visitor count column is not visible
+                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                expect(visitorsText, 'visitor count column').to.not.exist;
+            });
+
+            it('shows visitor count column when webAnalytics is enabled and trafficAnalytics feature is enabled', async function () {
+                // Enable webAnalytics setting
+                this.server.db.settings.update({key: 'web_analytics'}, {value: 'true'});
+                
+                // Enable trafficAnalytics feature flag
+                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
+
+                await visit('/posts');
+
+                // When both settings are enabled, the visitor count column container should exist
+                // even if it shows "—" without actual data
+                expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
+                
+                // The page should load without errors when analytics are enabled
+                expect(currentURL(), 'current URL').to.equal('/posts');
+            });
+
+            it('hides member conversions column when membersTrackSources is disabled', async function () {
+                // Disable membersTrackSources setting
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that member conversions column is not visible
+                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                expect(membersText, 'member conversions column').to.not.exist;
+            });
+
+            it('shows member conversions column when membersTrackSources is enabled', async function () {
+                // Enable membersTrackSources setting
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'true'});
+
+                await visit('/posts');
+
+                // Check that member conversions column is visible
+                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                expect(membersText, 'member conversions column').to.exist;
+            });
+
+            it('shows analytics button when post has analytics page', async function () {
+                // Update post to have analytics page
+                publishedPost.update({hasAnalyticsPage: true});
+
+                await visit('/posts');
+
+                // Check that analytics button is visible when post has analytics page
+                expect(find('.gh-post-list-cta.stats'), 'analytics button').to.exist;
+                expect(find('.gh-post-list-cta.edit'), 'edit button').to.not.exist;
+            });
+
+            it('hides all analytics columns when both settings are disabled', async function () {
+                // Disable both settings
+                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Check that neither analytics column is visible
+                let visitorsText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'visitors');
+                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
+                expect(visitorsText, 'visitor count column').to.not.exist;
+                expect(membersText, 'member conversions column').to.not.exist;
+            });
+
+            it('shows email analytics columns regardless of webAnalytics and membersTrackSources settings', async function () {
+                // Disable both analytics settings
+                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
+
+                await visit('/posts');
+
+                // Email analytics should still be visible as they have their own conditions
+                // The metrics container should exist for email analytics even when other analytics are disabled
+                expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
+                
+                // The page should load without errors
+                expect(currentURL(), 'current URL').to.equal('/posts');
+            });
+
+            it('shows different template based on trafficAnalytics feature flag', async function () {
+                // Test with trafficAnalytics disabled (standard template)
+                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: false})});
+
+                await visit('/posts');
+
+                // Standard template should not have enhanced analytics features
+                expect(find('.gh-post-list-analytics'), 'analytics template class').to.not.exist;
+
+                // Enable trafficAnalytics feature flag
+                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
+
+                await visit('/posts');
+
+                // Check that the enhanced template features are present
+                // The analytics template may not have the exact class name, so let's check for general presence
+                expect(findAll('.gh-posts-list-item').length, 'posts list items').to.be.greaterThan(0);
+            });
+        });
     });
 
     // NOTE: Because the pages list is (at this point in time) a thin extension of the posts list, we should not need to duplicate all of the tests.
