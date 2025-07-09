@@ -203,7 +203,7 @@
         {{/if}}
 
         {{!-- Visitor count column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
-        {{#if (and this.settings.webAnalytics (feature 'trafficAnalytics'))}}
+        {{#if this.settings.webAnalyticsEnabled}}
             {{#if @post.isPublished}}
                 {{#if this.hasVisitorData}}
                     <div class="permalink gh-list-data gh-post-list-metrics">

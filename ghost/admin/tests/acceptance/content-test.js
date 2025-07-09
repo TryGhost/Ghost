@@ -922,9 +922,9 @@ describe('Acceptance: Posts / Pages', function () {
                 await authenticateSession();
             });
 
-            it('hides visitor count column when webAnalytics is disabled', async function () {
-                // Disable webAnalytics setting
-                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+            it('hides visitor count column when webAnalyticsEnabled is disabled', async function () {
+                // Disable webAnalyticsEnabled setting
+                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'false'});
 
                 await visit('/posts');
 
@@ -933,9 +933,9 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
-            it('shows visitor count column when webAnalytics is enabled and trafficAnalytics feature is enabled', async function () {
-                // Enable webAnalytics setting
-                this.server.db.settings.update({key: 'web_analytics'}, {value: 'true'});
+            it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
+                // Enable webAnalyticsEnabled setting
+                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
                 
                 // Enable trafficAnalytics feature flag
                 this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
@@ -997,9 +997,9 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(membersText, 'member conversions column').to.not.exist;
             });
 
-            it('shows email analytics columns regardless of webAnalytics and membersTrackSources settings', async function () {
+            it('shows email analytics columns regardless of webAnalyticsEnabled and membersTrackSources settings', async function () {
                 // Disable both analytics settings
-                this.server.db.settings.update({key: 'web_analytics'}, {value: 'false'});
+                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'false'});
                 this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
 
                 await visit('/posts');
