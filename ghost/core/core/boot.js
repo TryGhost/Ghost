@@ -460,6 +460,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         config = require('./shared/config');
         debug('End: Load config');
 
+        // Log Tinybird Config 
+        console.log('Tinybird Config:', config.get('tinybird'));
+        // Log database config
+        console.log('Database Config:', config.get('database'));
+
         // Logging is also used absolutely everywhere
         debug('Begin: Load logging');
         logging = require('@tryghost/logging');
