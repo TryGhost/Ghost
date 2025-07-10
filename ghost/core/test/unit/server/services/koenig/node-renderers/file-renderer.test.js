@@ -136,5 +136,40 @@ describe('services/koenig/node-renderers/file-renderer', function () {
             const result = renderForEmail(getTestData({src: ''}));
             assert.equal(result.html, '');
         });
+
+        it('renders without title and caption', function () {
+            const minimalDataset = {
+                src: '/content/files/2023/03/IMG_0196.jpeg',
+                fileName: 'IMG_0196.jpeg',
+                fileSize: 123456
+            };
+            const {element} = renderForEmail(minimalDataset);
+
+            // Should not have title
+            assert(!element.querySelector('.kg-file-title'));
+
+            // Should not have caption
+            assert(!element.querySelector('.kg-file-description'));
+
+            // Should have smaller icon
+            const icon = element.querySelector('img');
+            assert.equal(icon.style.height, '20px');
+        });
+
+        it('properly escapes HTML in all fields', function () {
+            const datasetWithHtml = {
+                fileTitle: 'Title with <script>alert("xss")</script>',
+                fileCaption: 'Caption with <strong>html</strong>',
+                fileName: 'file<.html'
+            };
+
+            const result = renderForEmail(getTestData(datasetWithHtml));
+
+            assert(!result.html.includes('<script>'));
+            assert(!result.html.includes('<strong>'));
+            assert(result.html.includes('file&lt;.html'));
+            assert(result.html.includes('Title with '));
+            assert(result.html.includes('Caption with '));
+        });
     });
 });
