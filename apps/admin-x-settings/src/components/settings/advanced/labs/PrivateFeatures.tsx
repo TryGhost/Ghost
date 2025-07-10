@@ -11,8 +11,7 @@ const features = [{
 }, {
     title: 'Traffic Analytics (private beta)',
     description: 'Enables traffic analytics',
-    flag: 'trafficAnalytics',
-    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
+    flag: 'trafficAnalytics'
 }, {
     title: 'Traffic Analytics (alpha)',
     description: 'Enables alpha stage analytics features',
