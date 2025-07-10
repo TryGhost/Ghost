@@ -34,7 +34,8 @@ const PUBLIC_BETA_FEATURES = [
     'ActivityPub',
     'superEditors',
     'editorExcerpt',
-    'additionalPaymentMethods'
+    'additionalPaymentMethods',
+    'themeTranslation'
 ];
 
 // These features are considered private they live in the private tab of the labs settings page
