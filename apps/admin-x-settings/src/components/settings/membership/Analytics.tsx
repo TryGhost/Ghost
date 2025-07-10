@@ -66,11 +66,12 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const inputs = (
         <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
-            {hasTrafficAnalytics && canHaveWebAnalytics && (
+            {hasTrafficAnalytics && (
                 <>
                     <Toggle
-                        checked={webAnalytics}
+                        checked={canHaveWebAnalytics && webAnalytics}
                         direction='rtl'
+                        disabled={!canHaveWebAnalytics}
                         gap='gap-0'
                         label='Web analytics'
                         labelClasses='py-4 w-full'
@@ -78,7 +79,17 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             handleToggleChange('web_analytics', e);
                         }}
                     />
-                    <Separator className="border-grey-200 dark:border-grey-900" />
+                    {!canHaveWebAnalytics ?
+                        <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5'>
+                            <span className='flex items-start gap-2'>
+                                <span>
+                                Get the full picture of what&apos;s working with detailed, cookie-free traffic analytics. <span className='text-green underline' onClick={() => {}}>Upgrade now &rarr;</span>
+                                </span>
+                            </span>
+                        </div>
+                        :
+                        <Separator className="border-grey-200 dark:border-grey-900" />
+                    }
                 </>
             )}
             <Toggle

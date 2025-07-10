@@ -4,6 +4,7 @@ import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useLimiter} from '@src/hooks/useLimiter';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -126,6 +127,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const navigate = useNavigate();
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
+    const limiter = useLimiter();
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
@@ -149,7 +151,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
 
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
-    const showTrialCTA = true;
+    const showTrialCTA = limiter.isLimited('limitAnalytics');
 
     return (
         <div className={containerClass}>
