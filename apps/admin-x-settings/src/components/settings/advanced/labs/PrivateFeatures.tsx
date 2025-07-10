@@ -14,11 +14,6 @@ const features = [{
     flag: 'trafficAnalytics',
     limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
 }, {
-    title: 'Traffic Analytics (alpha)',
-    description: 'Enables alpha stage analytics features',
-    flag: 'trafficAnalyticsAlpha',
-    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
-}, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
     flag: 'emailCustomization'
@@ -27,9 +22,9 @@ const features = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
-    title: 'Updated main navigation (internal alpha)',
-    description: 'Enables simplified main navigation',
-    flag: 'updatedMainNav'
+    title: 'UI 6.0 (internal alpha)',
+    description: 'General structural changes to the admin UI in 6.0',
+    flag: 'ui60'
 }, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',

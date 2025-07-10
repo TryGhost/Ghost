@@ -26,7 +26,7 @@
         {{#unless this.session.user.isContributor}}
         <div class="gh-nav-top">
 
-            {{#if (and (feature "updatedMainNav") this.session.user.isAdmin)}}
+            {{#if (and (feature "ui60") this.session.user.isAdmin)}}
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
                         <li class="relative">

@@ -9,6 +9,7 @@ import {usePostsExports} from '@tryghost/admin-x-framework/api/posts';
 
 const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [canHaveWebAnalytics, setCanHaveWebAnalytics] = useState(true);
+
     const limiter = useLimiter();
     const {
         localSettings,
@@ -25,6 +26,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
     ]) as boolean[];
 
     const hasTrafficAnalytics = useFeatureFlag('trafficAnalytics');
+    const ui60 = useFeatureFlag('ui60');
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
 
     useEffect(() => {
@@ -72,6 +74,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         checked={webAnalytics}
                         direction='rtl'
                         gap='gap-0'
+                        hint={ui60 && 'Cookie-free, first party traffic analytics for your site'}
                         label='Web analytics'
                         labelClasses='py-4 w-full'
                         onChange={(e) => {
@@ -85,6 +88,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={trackEmailOpens}
                 direction='rtl'
                 gap='gap-0'
+                hint={ui60 && 'Record when a member opens an email'}
                 label='Newsletter opens'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -97,6 +101,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 direction='rtl'
                 disabled={isEmailTrackClicksReadOnly}
                 gap='gap-0'
+                hint={ui60 && 'Record when a member clicks on any link in an email'}
                 label='Newsletter clicks'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -108,6 +113,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={trackMemberSources}
                 direction='rtl'
                 gap='gap-0'
+                hint={ui60 && 'Track the traffic sources and posts that drive the most member growth'}
                 label='Member sources'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -119,6 +125,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 checked={outboundLinkTagging}
                 direction='rtl'
                 gap='gap-0'
+                hint={ui60 && 'Make it easier for other sites to track the traffic you send them in their analytics'}
                 label='Outbound link tagging'
                 labelClasses='py-4 w-full'
                 onChange={(e) => {
@@ -144,7 +151,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='items-center-mt-1 flex justify-between'>
-                <Button color='green' label='Export' link linkWithPadding onClick={exportPosts} />
+                {!ui60 && <Button color='green' label='Export' link linkWithPadding onClick={exportPosts} />}
                 <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
         </TopLevelGroup>
