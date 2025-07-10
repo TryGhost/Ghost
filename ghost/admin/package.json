@@ -150,7 +150,7 @@
     "testem": "3.16.0",
     "tracked-built-ins": "3.4.0",
     "util": "0.12.5",
-    "validator": "7.2.0",
+    "validator": "13.12.0",
     "walk-sync": "3.0.0"
   },
   "ember-addon": {

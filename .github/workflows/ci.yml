@@ -798,8 +798,46 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: E2E tests
+    services:
+      tinybird:
+        image: tinybirdco/tinybird-local:latest
+        ports:
+          - 7181:7181
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        options: >-
+          --health-cmd "curl -f http://localhost:7181/"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 30s
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_USER: ghost
+          MYSQL_PASSWORD: ghost
+        ports:
+          - 3306:3306
+        credentials:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+        options: >-
+          --health-cmd "mysqladmin ping -h localhost"
+          --health-interval 2s
+          --health-timeout 5s
+          --health-retries 5
+          --health-start-period 30s
     env:
       CI: true
+      database__client: mysql
+      database__connection__host: localhost
+      database__connection__port: 3306
+      database__connection__user: ghost
+      database__connection__password: ghost
+      database__connection__database: ghost_testing
     steps:
       - uses: actions/checkout@v4
         with:
@@ -818,6 +856,17 @@ jobs:
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
+      - name: Install Tinybird CLI
+        run: curl -fsSL https://tinybird.co/install.sh | sh
+
+      - name: Deploy Tinybird Schema
+        working-directory: ghost/core/core/server/data/tinybird
+        run: tb build
+
+      - name: Get Tinybird configuration
+        working-directory: ghost/core/core/server/data/tinybird
+        run: ./scripts/configure-ghost.sh
+
       - name: Run migrations
         working-directory: ghost/core
         run: yarn knex-migrator init
@@ -827,7 +876,7 @@ jobs:
 
       - name: Start Ghost
         working-directory: ghost/core
-        run: DEBUG=* yarn dev &
+        run: node --import=tsx index.js &
 
       - name: Wait for Ghost to be ready
         run: |

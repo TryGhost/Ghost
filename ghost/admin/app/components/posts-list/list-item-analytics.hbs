@@ -164,8 +164,8 @@
     <div class="gh-post-list-analytics-right">
         <div class="gh-post-list-metrics-container">
 
-            {{!-- Visitor count column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
-            {{#if (or this.settings.webAnalytics false)}}
+            {{!-- Visitor count column (only when web analytics is enabled) --}}
+            {{#if this.settings.webAnalyticsEnabled}}
                 {{#if @post.isPublished}}
                     {{#if this.hasVisitorData}}
                         <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
