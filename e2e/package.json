@@ -12,8 +12,13 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:factory": "playwright test --config=playwright-data-factory.config.mjs",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers --ext .ts --cache"
+    "lint": "eslint helpers --ext .ts --cache",
+    "factory:create": "node lib/data-factory/scripts/create-test-post.js",
+    "factory:play": "node lib/data-factory/scripts/factory-playground.js",
+    "factory:repl": "node lib/data-factory/scripts/factory-repl.js",
+    "factory:verify": "node lib/data-factory/scripts/verify-post.js"
   },
   "files": [
     "build"

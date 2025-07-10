@@ -1,5 +1,5 @@
 const {test, expect} = require('@playwright/test');
-const {createTestDataFactory} = require('../lib/ghost-data-factory');
+const factoryLib = require('../../factory');
 
 test.describe('E2E Data Factory Demo', () => {
     let db;
@@ -12,8 +12,8 @@ test.describe('E2E Data Factory Demo', () => {
     };
     
     test.beforeAll(async () => {
-        const setup = await createTestDataFactory();
-        factory = setup.factory;
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
         db = factory.knex;
     });
     
@@ -48,7 +48,7 @@ test.describe('E2E Data Factory Demo', () => {
     });
     
     test.afterAll(async () => {
-        await factory.destroy();
+        
     });
 
     test('demonstrates creating different types of members', async () => {

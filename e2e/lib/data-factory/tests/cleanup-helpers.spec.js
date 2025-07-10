@@ -1,15 +1,16 @@
 const {test, expect} = require('@playwright/test');
-const {createGhostDataFactory} = require('../lib/ghost-data-factory');
+const factoryLib = require('../../factory');
 
 test.describe('DataFactory Cleanup Helpers', () => {
     let factory;
 
     test.beforeAll(async () => {
-        factory = createGhostDataFactory();
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
     });
 
     test.afterAll(async () => {
-        await factory.destroy();
+        await factoryLib.cleanupFactory();
     });
 
     test('should clean up posts with cleanUp helper', async () => {

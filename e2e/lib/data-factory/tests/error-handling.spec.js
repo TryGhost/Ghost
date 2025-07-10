@@ -1,5 +1,5 @@
 const {test, expect} = require('@playwright/test');
-const {createTestDataFactory} = require('../lib/ghost-data-factory');
+const factoryLib = require('../../factory');
 
 test.describe('Error Handling Tests', () => {
     let db;
@@ -7,8 +7,8 @@ test.describe('Error Handling Tests', () => {
     const createdMembers = [];
     
     test.beforeAll(async () => {
-        const setup = await createTestDataFactory();
-        factory = setup.factory;
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
         db = factory.knex;
     });
     
@@ -21,7 +21,7 @@ test.describe('Error Handling Tests', () => {
     });
     
     test.afterAll(async () => {
-        await factory.destroy();
+        
     });
 
     test('should throw error for invalid post status', async () => {

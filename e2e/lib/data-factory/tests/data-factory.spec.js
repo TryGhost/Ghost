@@ -1,13 +1,17 @@
 const {test, expect} = require('@playwright/test');
-const {createTestDataFactory} = require('../lib/ghost-data-factory');
+const factoryLib = require('../../factory');
 
 test.describe('E2E Data Factory - Members', () => {
     let db;
     let factory;
     
     test.beforeAll(async () => {
-        const setup = await createTestDataFactory();
-        factory = setup.factory;
+        try {
+            factory = factoryLib.getFactory();
+        } catch (e) {
+            await factoryLib.setupFactory();
+            factory = factoryLib.getFactory();
+        }
         db = factory.knex;
         
         // Clean up test data from previous runs
@@ -57,7 +61,7 @@ test.describe('E2E Data Factory - Members', () => {
         // Clean up labels created in tests
         await db('labels').whereIn('name', ['VIP', 'Premium', 'Early Access']).delete();
         
-        await factory.destroy();
+        
     });
 
     test('should create different types of members', async () => {
@@ -173,8 +177,8 @@ test.describe('E2E Data Factory - Posts', () => {
     let createdAuthorId = null;
     
     test.beforeAll(async () => {
-        const setup = await createTestDataFactory();
-        factory = setup.factory;
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
         db = factory.knex;
         
         // Create a default author for posts
@@ -232,7 +236,7 @@ test.describe('E2E Data Factory - Posts', () => {
             await db('users').where('id', createdAuthorId).delete();
         }
         
-        await factory.destroy();
+        
     });
 
     test('should create different types of posts', async () => {
@@ -392,8 +396,8 @@ test.describe('E2E Data Factory - Complex Scenarios', () => {
     const createdTags = new Set();
     
     test.beforeAll(async () => {
-        const setup = await createTestDataFactory();
-        factory = setup.factory;
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
         db = factory.knex;
     });
     
@@ -433,7 +437,7 @@ test.describe('E2E Data Factory - Complex Scenarios', () => {
     });
     
     test.afterAll(async () => {
-        await factory.destroy();
+        
     });
 
     test('should create a complete blog scenario', async () => {

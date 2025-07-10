@@ -1,19 +1,18 @@
 const {test, expect} = require('@playwright/test');
-const {getDatabaseConfig} = require('../lib/database-config');
-const knex = require('knex');
+const factoryLib = require('../../factory');
 
 test.describe('Database Connection Tests', () => {
     let db;
+    let factory;
     
     test.beforeAll(async () => {
-        const config = getDatabaseConfig();
-        db = knex(config);
+        await factoryLib.setupFactory();
+        factory = factoryLib.getFactory();
+        db = factory.knex;
     });
     
     test.afterAll(async () => {
-        if (db) {
-            await db.destroy();
-        }
+        
     });
     
     test('can connect to Ghost database', async () => {
