@@ -128,6 +128,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
     const limiter = useLimiter();
+    const showTrialCTA = limiter.isLimited('limitAnalytics');
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
@@ -140,18 +141,22 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     }
 
     let cols = 'lg:grid-cols-3';
-    if ((appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) ||
-        (!appSettings?.analytics.webAnalytics && appSettings?.paidMembersEnabled)) {
+    
+    // Calculate number of cards being displayed
+    const hasWebAnalytics = appSettings?.analytics.webAnalytics && !showTrialCTA;
+    const hasTrialCTA = showTrialCTA;
+    const hasMembers = true; // Always shown
+    const hasMRR = appSettings?.paidMembersEnabled && !showTrialCTA;
+    
+    const cardCount = [hasWebAnalytics, hasTrialCTA, hasMembers, hasMRR].filter(Boolean).length;
+    
+    if (cardCount === 2) {
         cols = 'lg:grid-cols-2';
-    }
-
-    if (!appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) {
+    } else if (cardCount === 1) {
         cols = 'lg:grid-cols-1';
     }
 
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
-
-    const showTrialCTA = limiter.isLimited('limitAnalytics');
 
     return (
         <div className={containerClass}>
@@ -181,7 +186,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 </OverviewKPICard>
             }
 
-            {!appSettings?.analytics.webAnalytics && showTrialCTA &&
+            {showTrialCTA &&
                 <Card>
                     <CardHeader className='hidden'>
                         <CardTitle>Unlock web analytics</CardTitle>
@@ -190,7 +195,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     <CardContent className='flex h-full items-center justify-center p-6'>
                         <EmptyIndicator
                             actions={
-                                <Button variant='outline' onClick={() => {}}>
+                                <Button variant='outline' onClick={() => navigate('/pro', {crossApp: true})}>
                                 Upgrade now
                                 </Button>
                             }
