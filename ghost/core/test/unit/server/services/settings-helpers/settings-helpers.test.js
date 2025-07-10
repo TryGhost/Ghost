@@ -331,5 +331,105 @@ describe('Settings Helpers', function () {
             assert.equal(isEnabled, true);
         });
     });
+
+    describe('isWebAnalyticsEnabled', function () {
+        const config = configUtils.config;
+        let settingsCache;
+        let urlUtils;
+        let labs;
+        beforeEach(function () {
+            settingsCache = {
+                get: sinon.stub().withArgs('web_analytics').returns(true)
+            };
+            urlUtils = {
+                getSiteUrl: sinon.stub().returns('http://example.com/'),
+                getSubdir: sinon.stub().returns('')
+            };
+            labs = {
+                isSet: sinon.stub().withArgs('trafficAnalytics').returns(true)
+            };
+            limitService = {
+                isDisabled: sinon.stub().withArgs('limitAnalytics').returns(undefined)
+            };
+            configUtils.set({
+                tinybird: {
+                    tracker: {
+                        endpoint: 'https://api.tinybird.co/v0/events'
+                    },
+                    workspaceId: '1234567890',
+                    adminToken: '1234567890'
+                }
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('returns false when the UI setting is set to false', function () {
+            settingsCache.get.withArgs('web_analytics').returns(false);
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns false when the Labs setting is set to false', function () {
+            labs.isSet.withArgs('trafficAnalytics').returns(false);
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns false when the config is not valid', function () {
+            configUtils.set({
+                tinybird: undefined
+            });
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns false when web analytics is disabled for a Ghost (Pro) user', function () {
+            limitService.isDisabled.withArgs('limitAnalytics').returns(true);
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, false);
+        });
+
+        it('returns true otherwise', function () {
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, true);
+        });
+
+        it('returns true when config is set up for local dev', function () {
+            configUtils.set({
+                tinybird: {
+                    tracker: {
+                        endpoint: 'https://api.tinybird.co/v0/events'
+                    },
+                    stats: {
+                        local: {
+                            enabled: true
+                        }
+                    }
+                }
+            });
+
+            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
+            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
+
+            assert.equal(isEnabled, true);
+        });
+    });
 });
 

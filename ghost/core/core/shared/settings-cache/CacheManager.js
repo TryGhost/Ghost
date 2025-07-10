@@ -62,6 +62,8 @@ const _ = require('lodash');
  * @property {string|null} editor_default_email_recipients - Default email recipients for editor
  * @property {string|null} labs - JSON string of enabled labs features
  * @property {boolean|null} social_web_enabled - Whether social web is enabled
+ * @property {boolean|null} web_analytics_enabled - Whether web analytics is enabled
+ * @property {boolean|null} web_analytics_configured - Whether web analytics is configured
  * @property {never} [x] - Prevent accessing undefined properties
  */
 

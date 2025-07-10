@@ -109,6 +109,10 @@ module.exports = {
         // Social web (ActivityPub)
         fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
 
+        // Web analytics
+        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics', 'labs']}));
+        fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
+
         return fields;
     },
 

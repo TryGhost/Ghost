@@ -23,7 +23,7 @@ export default class Posts extends AdminXComponent {
                     emailTrackClicks: this.settings.emailTrackClicks,
                     membersTrackSources: this.settings.membersTrackSources,
                     outboundLinkTagging: this.settings.outboundLinkTagging,
-                    webAnalytics: this.feature.trafficAnalytics && (this.settings.webAnalytics ?? false)
+                    webAnalytics: this.settings.webAnalyticsEnabled // use the computed setting
                 }
             }
         };

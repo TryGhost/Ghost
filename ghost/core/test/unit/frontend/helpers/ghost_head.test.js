@@ -15,7 +15,7 @@ const logging = require('@tryghost/logging');
 
 const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
-const {settingsCache, labs} = proxy;
+const {settingsCache, labs, settingsHelpers} = proxy;
 
 /**
  * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
@@ -1409,9 +1409,12 @@ describe('{{ghost_head}} helper', function () {
 
     describe('includes tinybird tracker script when config is set', function () {
         let labsStub;
+        let settingsHelpersStub;
+        
         function setAnalyticsFlags({analytics = false} = {}) {
-            labsStub.withArgs('trafficAnalytics').returns(analytics);
+            settingsHelpersStub.returns(analytics);
         }
+        
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
@@ -1429,11 +1432,17 @@ describe('{{ghost_head}} helper', function () {
                 }
             });
             labsStub = sinon.stub(labs, 'isSet');
-            setAnalyticsFlags({analytics: true});
             labsStub.withArgs('i18n').returns(true);
+            
+            settingsHelpersStub = sinon.stub(settingsHelpers, 'isWebAnalyticsEnabled');
+            setAnalyticsFlags({analytics: true});
+        });
+        
+        afterEach(function () {
+            settingsHelpersStub.restore();
         });
 
-        it('includes tracker script when trafficAnalytics is set', async function () {
+        it('includes tracker script when web analytics is enabled', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
                     relativeUrl: '/',
@@ -1445,7 +1454,7 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/script defer src="\/public\/ghost-stats\.min\.js/);
         });
 
-        it('does not include tracker script when trafficAnalytics is not set', async function () {
+        it('does not include tracker script when web analytics is not enabled', async function () {
             setAnalyticsFlags({analytics: false});
 
             const rendered = await testGhostHead(testUtils.createHbsResponse({
@@ -1608,6 +1617,17 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.not.match(/data-token=/);
+        });
+
+        it('does not include tracker script in preview context', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['preview', 'home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
         });
     });
     describe('respects values from excludes: ', function () {

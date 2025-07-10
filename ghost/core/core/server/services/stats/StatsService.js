@@ -245,8 +245,7 @@ class StatsService {
         const request = deps.request || require('../../lib/request-external');
         const settingsCache = deps.settingsCache || require('../../../shared/settings-cache');
 
-        // Only create the client if Tinybird is configured
-        if (config.get('tinybird') && config.get('tinybird:stats')) {
+        if (settingsCache.get('web_analytics_enabled')) {
             // TODO: move the tinybird client to the tinybird service
             const TinybirdServiceWrapper = require('../tinybird');
             TinybirdServiceWrapper.init();

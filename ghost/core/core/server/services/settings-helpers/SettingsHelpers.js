@@ -265,7 +265,81 @@ class SettingsHelpers {
         return true;
     }
 
+    /**
+     * Calculated setting for Web analytics
+     *
+     *  Setting > Labs Flag > Config > Limit Service
+     * 
+     * @returns {boolean}
+     */
+    isWebAnalyticsEnabled() {
+        // UI setting
+        if (this.settingsCache.get('web_analytics') !== true) {
+            debug('Web analytics is disabled in settings');
+            return false;
+        }
+
+        // Labs setting
+        if (!this.labs.isSet('trafficAnalytics')) {
+            debug('Web analytics is disabled in labs');
+            return false;
+        }
+
+        // Check if web analytics can be configured (limit service and required config)
+        if (!this.isWebAnalyticsConfigured()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if web analytics can be configured (used for UI enable/disable state)
+     * 
+     * @returns {boolean}
+     */
+    isWebAnalyticsConfigured() {
+        // Correct config is required
+        if (!this._isValidTinybirdConfig()) {
+            return false;
+        }
+
+        // Ghost (Pro) limits
+        if (this.limitService.isDisabled('limitAnalytics')) {
+            debug('Web analytics configuration is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
+            return false;
+        }
+
+        return true;
+    }
+
     // PRIVATE
+
+    /**
+     * Validates tinybird configuration for web analytics
+     * @returns {boolean} True if config is valid, false otherwise
+     * @private
+     */
+    _isValidTinybirdConfig() {
+        const tinybirdConfig = this.config.get('tinybird');
+        
+        // First requirement: tinybird:tracker:endpoint is always required
+        if (!tinybirdConfig || !tinybirdConfig.tracker?.endpoint) {
+            debug('Web analytics is not available without tinybird:tracker:endpoint');
+            return false;
+        }
+
+        // Second requirement: Either JWT config OR local stats config
+        const hasJwtConfig = !!(tinybirdConfig.workspaceId && tinybirdConfig.adminToken);
+        const hasLocalConfig = !!(tinybirdConfig.stats?.local?.enabled);
+        
+        if (!hasJwtConfig && !hasLocalConfig) {
+            debug('Web analytics requires either (workspaceId + adminToken) or stats.local.enabled');
+            return false;
+        }
+
+        return true;
+    }
 
     #managedEmailEnabled() {
         return !!this.config.get('hostSettings:managedEmail:enabled');
