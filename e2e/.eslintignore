@@ -1,0 +1,6 @@
+node_modules/
+coverage/
+test-results/
+*.log
+*.tmp
+.git/

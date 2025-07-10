@@ -57,33 +57,33 @@ function getDatabaseConfig() {
  */
 function getDatabaseConfigForEnv(env) {
     switch (env) {
-        case 'ci':
-            return {
-                client: 'mysql2',
-                connection: {
-                    host: 'localhost',
-                    port: 3306,
-                    user: 'root',
-                    password: 'root',
-                    database: 'ghost_test',
-                    charset: 'utf8mb4',
-                    timezone: 'UTC'
-                },
-                pool: { min: 0, max: 5 },
-                useNullAsDefault: true
-            };
+    case 'ci':
+        return {
+            client: 'mysql2',
+            connection: {
+                host: 'localhost',
+                port: 3306,
+                user: 'root',
+                password: 'root',
+                database: 'ghost_test',
+                charset: 'utf8mb4',
+                timezone: 'UTC'
+            },
+            pool: {min: 0, max: 5},
+            useNullAsDefault: true
+        };
         
-        case 'local':
-            return {
-                client: 'sqlite3',
-                connection: {
-                    filename: ':memory:'
-                },
-                useNullAsDefault: true
-            };
+    case 'local':
+        return {
+            client: 'sqlite3',
+            connection: {
+                filename: ':memory:'
+            },
+            useNullAsDefault: true
+        };
         
-        default:
-            return getDatabaseConfig();
+    default:
+        return getDatabaseConfig();
     }
 }
 

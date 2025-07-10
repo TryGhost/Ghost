@@ -158,15 +158,15 @@ test.describe('DataFactory Cleanup Helpers', () => {
 
     test('should handle mixed ID and object arrays', async () => {
         // Create posts
-        const post1 = await factory.createPublishedPost({ title: 'Mixed 1' });
-        const post2 = await factory.createPublishedPost({ title: 'Mixed 2' });
-        const post3 = await factory.createPublishedPost({ title: 'Mixed 3' });
+        const post1 = await factory.createPublishedPost({title: 'Mixed 1'});
+        const post2 = await factory.createPublishedPost({title: 'Mixed 2'});
+        const post3 = await factory.createPublishedPost({title: 'Mixed 3'});
 
         // Clean up with mixed array (objects and IDs)
         const deleted = await factory.cleanUp('posts', [
-            post1,           // Full object
-            post2.id,        // Just ID
-            { id: post3.id } // Object with id property
+            post1, // Full object
+            post2.id, // Just ID
+            {id: post3.id} // Object with id property
         ]);
 
         expect(deleted).toBe(3);

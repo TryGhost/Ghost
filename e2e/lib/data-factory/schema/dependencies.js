@@ -106,7 +106,7 @@ class DependencyResolver {
             
             const foreignKeys = this.analyzer.getForeignKeys()[table] || {};
             
-            for (const [column, fkDef] of Object.entries(foreignKeys)) {
+            for (const [, fkDef] of Object.entries(foreignKeys)) {
                 // Skip self-references
                 if (fkDef.table === table) {
                     continue;
@@ -168,7 +168,7 @@ class DependencyResolver {
     getDependencyTree(rootTable, maxDepth = 5) {
         const buildTree = (table, depth = 0, visited = new Set()) => {
             if (depth >= maxDepth || visited.has(table)) {
-                return { table, circular: visited.has(table) };
+                return {table, circular: visited.has(table)};
             }
             
             visited.add(table);

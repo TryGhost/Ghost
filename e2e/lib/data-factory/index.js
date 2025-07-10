@@ -66,7 +66,7 @@ class DataFactory extends BaseFactory {
      * Create a free member
      */
     async createFreeMember(options = {}) {
-        const { email, name, createdAt, ...otherData } = options;
+        const {email, name, createdAt, ...otherData} = options;
         
         const builder = this.members();
         
@@ -84,7 +84,7 @@ class DataFactory extends BaseFactory {
      * Create a comped member
      */
     async createCompedMember(options = {}) {
-        const { email, name, createdAt, tier, ...otherData } = options;
+        const {email, name, createdAt, tier, ...otherData} = options;
         
         const builder = this.members();
         
@@ -167,7 +167,7 @@ class DataFactory extends BaseFactory {
      * Create a published post
      */
     async createPublishedPost(options = {}) {
-        const { title, content, publishedAt = new Date(), author, tags, ...otherData } = options;
+        const {title, content, publishedAt = new Date(), author, tags, ...otherData} = options;
         
         const builder = this.posts();
         
@@ -186,7 +186,7 @@ class DataFactory extends BaseFactory {
      * Create a draft post
      */
     async createDraftPost(options = {}) {
-        const { title, content, author, tags, ...otherData } = options;
+        const {title, content, author, tags, ...otherData} = options;
         
         const builder = this.posts();
         
@@ -205,7 +205,7 @@ class DataFactory extends BaseFactory {
      * Create a sent post (newsletter)
      */
     async createSentPost(options = {}) {
-        const { title, content, sentAt = new Date(), author, tags, ...otherData } = options;
+        const {title, content, sentAt = new Date(), author, tags, ...otherData} = options;
         
         // Find default newsletter
         const newsletter = await this.knex('newsletters')
@@ -231,7 +231,7 @@ class DataFactory extends BaseFactory {
      * Create a published post that was also sent as newsletter
      */
     async createPublishedAndSentPost(options = {}) {
-        const { title, content, publishedAt = new Date(), author, tags, ...otherData } = options;
+        const {title, content, publishedAt = new Date(), author, tags, ...otherData} = options;
         
         // Find default newsletter
         const newsletter = await this.knex('newsletters')
@@ -304,7 +304,6 @@ class DataFactory extends BaseFactory {
             }
             
             // Database reset complete
-            
         } catch (error) {
             // Re-throw error
             throw error;
@@ -357,7 +356,6 @@ class DataFactory extends BaseFactory {
             if (this.knex.client.config.client === 'mysql2') {
                 await this.knex.raw('SET FOREIGN_KEY_CHECKS = 1');
             }
-            
         } catch (error) {
             // Re-throw error
             throw error;
@@ -410,7 +408,7 @@ class DataFactory extends BaseFactory {
      * This is a convenience alias for resetDatabase with all tables
      */
     async resetDb() {
-        return this.resetDatabase({ tables: ['all'] });
+        return this.resetDatabase({tables: ['all']});
     }
     
     /**
@@ -425,7 +423,7 @@ class DataFactory extends BaseFactory {
         }
         
         // Extract IDs from entities (handle both ID arrays and object arrays)
-        const ids = entities.map(entity => {
+        const ids = entities.map((entity) => {
             if (typeof entity === 'string') {
                 return entity;
             }
@@ -439,66 +437,66 @@ class DataFactory extends BaseFactory {
         // Handle dependent tables based on entity type
         try {
             switch (entityType) {
-                case 'posts':
-                    // Clean up dependent tables first
-                    await this.knex('posts_tags').whereIn('post_id', ids).delete();
-                    await this.knex('posts_authors').whereIn('post_id', ids).delete();
-                    await this.knex('posts_meta').whereIn('post_id', ids).delete();
-                    await this.knex('emails').whereIn('post_id', ids).delete();
-                    // Then clean up posts
-                    return await this.knex('posts').whereIn('id', ids).delete();
+            case 'posts':
+                // Clean up dependent tables first
+                await this.knex('posts_tags').whereIn('post_id', ids).delete();
+                await this.knex('posts_authors').whereIn('post_id', ids).delete();
+                await this.knex('posts_meta').whereIn('post_id', ids).delete();
+                await this.knex('emails').whereIn('post_id', ids).delete();
+                // Then clean up posts
+                return await this.knex('posts').whereIn('id', ids).delete();
                     
-                case 'members':
-                    // Clean up dependent tables first
-                    await this.knex('members_subscribe_events').whereIn('member_id', ids).delete();
-                    await this.knex('members_paid_subscription_events').whereIn('member_id', ids).delete();
-                    await this.knex('members_stripe_customers_subscriptions')
-                        .whereIn('customer_id', function() {
-                            this.select('id').from('members_stripe_customers').whereIn('member_id', ids);
-                        })
-                        .delete();
-                    await this.knex('members_stripe_customers').whereIn('member_id', ids).delete();
-                    await this.knex('members_products').whereIn('member_id', ids).delete();
-                    await this.knex('members_labels').whereIn('member_id', ids).delete();
-                    await this.knex('members_newsletters').whereIn('member_id', ids).delete();
-                    // Then clean up members
-                    return await this.knex('members').whereIn('id', ids).delete();
+            case 'members':
+                // Clean up dependent tables first
+                await this.knex('members_subscribe_events').whereIn('member_id', ids).delete();
+                await this.knex('members_paid_subscription_events').whereIn('member_id', ids).delete();
+                await this.knex('members_stripe_customers_subscriptions')
+                    .whereIn('customer_id', function () {
+                        this.select('id').from('members_stripe_customers').whereIn('member_id', ids);
+                    })
+                    .delete();
+                await this.knex('members_stripe_customers').whereIn('member_id', ids).delete();
+                await this.knex('members_products').whereIn('member_id', ids).delete();
+                await this.knex('members_labels').whereIn('member_id', ids).delete();
+                await this.knex('members_newsletters').whereIn('member_id', ids).delete();
+                // Then clean up members
+                return await this.knex('members').whereIn('id', ids).delete();
                     
-                case 'tags':
-                    // Clean up dependent tables first
-                    await this.knex('posts_tags').whereIn('tag_id', ids).delete();
-                    // Then clean up tags
-                    return await this.knex('tags').whereIn('id', ids).delete();
+            case 'tags':
+                // Clean up dependent tables first
+                await this.knex('posts_tags').whereIn('tag_id', ids).delete();
+                // Then clean up tags
+                return await this.knex('tags').whereIn('id', ids).delete();
                     
-                case 'users':
-                    // Clean up dependent tables first
-                    await this.knex('posts_authors').whereIn('author_id', ids).delete();
-                    // Update posts to remove primary author reference
-                    await this.knex('posts').whereIn('author_id', ids).update({ author_id: null });
-                    // Then clean up users
-                    return await this.knex('users').whereIn('id', ids).delete();
+            case 'users':
+                // Clean up dependent tables first
+                await this.knex('posts_authors').whereIn('author_id', ids).delete();
+                // Update posts to remove primary author reference
+                await this.knex('posts').whereIn('author_id', ids).update({author_id: null});
+                // Then clean up users
+                return await this.knex('users').whereIn('id', ids).delete();
                     
-                case 'products':
-                case 'tiers':
-                    // Clean up dependent tables first
-                    await this.knex('members_products').whereIn('product_id', ids).delete();
-                    await this.knex('stripe_products').whereIn('product_id', ids).delete();
-                    await this.knex('stripe_prices').whereIn('stripe_product_id', function() {
-                        this.select('id').from('stripe_products').whereIn('product_id', ids);
-                    }).delete();
-                    // Then clean up products
-                    return await this.knex('products').whereIn('id', ids).delete();
+            case 'products':
+            case 'tiers':
+                // Clean up dependent tables first
+                await this.knex('members_products').whereIn('product_id', ids).delete();
+                await this.knex('stripe_products').whereIn('product_id', ids).delete();
+                await this.knex('stripe_prices').whereIn('stripe_product_id', function () {
+                    this.select('id').from('stripe_products').whereIn('product_id', ids);
+                }).delete();
+                // Then clean up products
+                return await this.knex('products').whereIn('id', ids).delete();
                     
-                case 'newsletters':
-                    // Update posts to remove newsletter reference
-                    await this.knex('posts').whereIn('newsletter_id', ids).update({ newsletter_id: null });
-                    await this.knex('members_newsletters').whereIn('newsletter_id', ids).delete();
-                    // Then clean up newsletters
-                    return await this.knex('newsletters').whereIn('id', ids).delete();
+            case 'newsletters':
+                // Update posts to remove newsletter reference
+                await this.knex('posts').whereIn('newsletter_id', ids).update({newsletter_id: null});
+                await this.knex('members_newsletters').whereIn('newsletter_id', ids).delete();
+                // Then clean up newsletters
+                return await this.knex('newsletters').whereIn('id', ids).delete();
                     
-                default:
-                    // For other entity types, just delete directly
-                    return await this.knex(entityType).whereIn('id', ids).delete();
+            default:
+                // For other entity types, just delete directly
+                return await this.knex(entityType).whereIn('id', ids).delete();
             }
         } catch (error) {
             this.logger.error(`Error cleaning up ${entityType}:`, error);

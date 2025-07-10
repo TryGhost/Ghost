@@ -92,7 +92,7 @@ class BaseFactory {
      */
     applyDefaults(tableName, data) {
         const defaults = this.analyzer.getDefaultValues(tableName);
-        const result = { ...data };
+        const result = {...data};
         
         for (const [column, defaultValue] of Object.entries(defaults)) {
             if (!(column in result)) {
@@ -178,7 +178,7 @@ class BaseFactory {
         }
         
         // Create new record
-        const data = { ...findBy, ...createData };
+        const data = {...findBy, ...createData};
         return this.insert(tableName, data);
     }
 

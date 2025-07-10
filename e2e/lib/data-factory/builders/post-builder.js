@@ -1,5 +1,5 @@
 const BaseBuilder = require('./base-builder');
-const { faker } = require('@faker-js/faker');
+const {faker} = require('@faker-js/faker');
 
 /**
  * PostBuilder provides a fluent interface for creating posts with precise control
@@ -50,15 +50,19 @@ class PostBuilder extends BaseBuilder {
     /**
      * Set post content (mobiledoc format)
      */
-    withContent(html) {
+    withContent(content) {
         const mobiledoc = {
             version: '0.3.1',
             atoms: [],
             cards: [],
             markups: [],
-            sections: [[1, 'p', [[0, [], 0, html]]]]
+            sections: [[1, 'p', [[0, [], 0, content]]]],
+            ghostVersion: '4.0'
         };
-        return this.set('mobiledoc', JSON.stringify(mobiledoc));
+        return this
+            .set('mobiledoc', JSON.stringify(mobiledoc))
+            .set('html', `<p>${content}</p>`)
+            .set('plaintext', content);
     }
 
     /**
@@ -98,7 +102,8 @@ class PostBuilder extends BaseBuilder {
     asPublished(publishedAt = new Date()) {
         return this
             .withStatus('published')
-            .withPublishedAt(publishedAt);
+            .withPublishedAt(publishedAt)
+            .set('published_by', '1');
     }
 
     /**
@@ -191,7 +196,7 @@ class PostBuilder extends BaseBuilder {
 
             // Create email record if post is sent
             if (post.status === 'sent' || (post.status === 'published' && post.email_recipient_filter)) {
-                const email = await this.factory.insert('emails', {
+                await this.factory.insert('emails', {
                     post_id: post.id,
                     uuid: faker.datatype.uuid(),
                     status: 'sent',
@@ -263,7 +268,8 @@ class PostBuilder extends BaseBuilder {
                 atoms: [],
                 cards: [],
                 markups: [],
-                sections: [[1, 'p', [[0, [], 0, content]]]]
+                sections: [[1, 'p', [[0, [], 0, content]]]],
+                ghostVersion: '4.0'
             });
         }
         
@@ -290,7 +296,53 @@ class PostBuilder extends BaseBuilder {
             defaults.email_recipient_filter = 'none';
         }
         
+        // Generate HTML and plaintext from mobiledoc
+        if ((this.data.mobiledoc || defaults.mobiledoc) && !this.data.html) {
+            try {
+                const mobiledoc = JSON.parse(this.data.mobiledoc || defaults.mobiledoc);
+                // Extract text content from mobiledoc
+                let plaintext = '';
+                let html = '';
+                
+                mobiledoc.sections.forEach((section) => {
+                    if (section[0] === 1 && section[1] === 'p') {
+                        const text = section[2][0][2];
+                        plaintext += text + '\n\n';
+                        html += `<p>${text}</p>`;
+                    }
+                });
+                
+                defaults.html = html.trim();
+                defaults.plaintext = plaintext.trim();
+            } catch (e) {
+                // If mobiledoc parsing fails, set defaults
+                defaults.html = '<p>Content</p>';
+                defaults.plaintext = 'Content';
+            }
+        }
+        
+        // Set published_by for published posts
+        if (this.data.status === 'published' && !this.data.published_by) {
+            defaults.published_by = '1';
+        }
+        
         return defaults;
+    }
+    
+    /**
+     * Override create to ensure posts always have an author
+     */
+    async create() {
+        // Check if we have any author set
+        const hasAuthor = this.postCreateHooks.some(hook => hook.toString().includes('posts_authors'));
+        
+        // If no author was specified, add the default user as author
+        if (!hasAuthor) {
+            this.withAuthor('1');
+        }
+        
+        // Call parent create method
+        return super.create();
     }
 }
 

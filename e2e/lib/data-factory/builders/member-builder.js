@@ -1,6 +1,6 @@
 const BaseBuilder = require('./base-builder');
 const crypto = require('crypto');
-const { faker } = require('@faker-js/faker');
+const {faker} = require('@faker-js/faker');
 
 /**
  * MemberBuilder provides a fluent interface for creating members with precise control
@@ -44,7 +44,7 @@ class MemberBuilder extends BaseBuilder {
     /**
      * Set member newsletter subscription
      */
-    withNewsletters(subscribed = true) {
+    withNewsletters() {
         // Newsletter subscriptions are handled via members_newsletters table
         return this;
     }
@@ -111,7 +111,7 @@ class MemberBuilder extends BaseBuilder {
             // Find or create a product/tier
             let product = tier;
             if (!product) {
-                product = await this.factory.getRandomRecord('products', { type: 'paid' });
+                product = await this.factory.getRandomRecord('products', {type: 'paid'});
                 if (!product) {
                     // Create a default paid product
                     product = await this.factory.insert('products', {
@@ -219,7 +219,7 @@ class MemberBuilder extends BaseBuilder {
             // Find or create a product/tier
             let product = tier;
             if (!product) {
-                product = await this.factory.getRandomRecord('products', { type: 'paid' });
+                product = await this.factory.getRandomRecord('products', {type: 'paid'});
                 if (!product) {
                     // Create a default paid product
                     product = await this.factory.insert('products', {

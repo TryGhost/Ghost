@@ -42,7 +42,7 @@ function createGhostDataFactory(options = {}) {
  */
 async function createTestDataFactory() {
     const knex = require('knex')(getDatabaseConfig());
-    const factory = createGhostDataFactory({ knex });
+    const factory = createGhostDataFactory({knex});
     
     return {
         factory,

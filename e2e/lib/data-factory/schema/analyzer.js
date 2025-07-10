@@ -206,8 +206,7 @@ class SchemaAnalyzer {
             // Junction tables typically have 2-3 foreign keys and possibly sort_order
             if (Object.keys(foreignKeys).length >= 2 && columnNames.length <= 5) {
                 // Check if most columns are foreign keys or common junction table fields
-                const nonFkColumns = columnNames.filter(col => 
-                    !foreignKeys[col] && 
+                const nonFkColumns = columnNames.filter(col => !foreignKeys[col] && 
                     !['id', 'sort_order', 'created_at', 'updated_at'].includes(col)
                 );
                 

@@ -1,4 +1,4 @@
-const { faker } = require('@faker-js/faker');
+const {faker} = require('@faker-js/faker');
 
 /**
  * BaseBuilder provides a fluent interface for building entities
@@ -127,7 +127,7 @@ class BaseBuilder {
             const defaults = this.generateDefaults();
             
             // Merge defaults with provided data (provided data takes precedence)
-            this.data = { ...defaults, ...this.data };
+            this.data = {...defaults, ...this.data};
             
             // Resolve foreign key dependencies
             await this.resolveDependencies();
@@ -156,7 +156,7 @@ class BaseBuilder {
      */
     build() {
         const defaults = this.generateDefaults();
-        return { ...defaults, ...this.data };
+        return {...defaults, ...this.data};
     }
 }
 
