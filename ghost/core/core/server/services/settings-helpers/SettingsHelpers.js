@@ -285,6 +285,20 @@ class SettingsHelpers {
             return false;
         }
 
+        // Check if web analytics can be configured (limit service and required config)
+        if (!this.isWebAnalyticsConfigured()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if web analytics can be configured (used for UI enable/disable state)
+     * 
+     * @returns {boolean}
+     */
+    isWebAnalyticsConfigured() {
         // Correct config is required
         if (!this._isValidTinybirdConfig()) {
             return false;
@@ -292,7 +306,7 @@ class SettingsHelpers {
 
         // Ghost (Pro) limits
         if (this.limitService.isDisabled('limitAnalytics')) {
-            debug('Web analytics is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
+            debug('Web analytics configuration is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');
             return false;
         }
 

@@ -44,6 +44,33 @@ const jwt = require('jsonwebtoken');
  * @property {TinybirdScope[]} scopes - Array of permission scopes
  */
 
+/**
+ * Validates tinybird configuration
+ * @param {TinybirdConfig} tinybirdConfig - The tinybird configuration object
+ * @returns {{isValid: boolean, reason?: string}} Validation result with optional reason for failure
+ */
+function validateTinybirdConfig(tinybirdConfig) {
+    if (!tinybirdConfig) {
+        return {
+            isValid: false,
+            reason: 'Missing tinybird configuration'
+        };
+    }
+
+    // Either JWT config OR local stats config is required
+    const hasJwtConfig = !!(tinybirdConfig.workspaceId && tinybirdConfig.adminToken);
+    const hasLocalConfig = !!(tinybirdConfig.stats?.local?.enabled);
+    
+    if (!hasJwtConfig && !hasLocalConfig) {
+        return {
+            isValid: false,
+            reason: 'Requires either (workspaceId + adminToken) or stats.local.enabled'
+        };
+    }
+
+    return {isValid: true};
+}
+
 const TINYBIRD_PIPES = [
     'api_kpis',
     'api_active_visitors',
@@ -165,6 +192,15 @@ class TinybirdService {
         } catch (error) {
             return true;
         }
+    }
+
+    /**
+     * Validates tinybird configuration
+     * @param {TinybirdConfig} tinybirdConfig - The tinybird configuration object
+     * @returns {{isValid: boolean, reason?: string}} Validation result with optional reason for failure
+     */
+    static validateConfig(tinybirdConfig) {
+        return validateTinybirdConfig(tinybirdConfig);
     }
 }
 

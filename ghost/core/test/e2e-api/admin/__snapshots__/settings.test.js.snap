@@ -368,6 +368,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1179,6 +1183,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1565,6 +1573,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -1948,6 +1960,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -2798,6 +2814,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -3184,6 +3204,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -3568,6 +3592,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -3960,6 +3988,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -4343,6 +4375,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -4733,6 +4769,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -5489,6 +5529,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -5873,6 +5917,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -6262,6 +6310,10 @@ Object {
       "key": "web_analytics_enabled",
       "value": false,
     },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
+    },
   ],
 }
 `;
@@ -6647,6 +6699,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -7096,6 +7152,10 @@ Object {
     },
     Object {
       "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],

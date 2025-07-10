@@ -25,7 +25,8 @@ test.describe('Analytics settings', async () => {
                     settings: [
                         ...responseFixtures.settings.settings,
                         {key: 'web_analytics', value: true},
-                        {key: 'web_analytics_enabled', value: true}
+                        {key: 'web_analytics_enabled', value: true},
+                        {key: 'web_analytics_configured', value: true}
                     ]
                 }
             },
@@ -137,7 +138,8 @@ test.describe('Analytics settings', async () => {
                     settings: [
                         ...responseFixtures.settings.settings,
                         {key: 'web_analytics', value: true},
-                        {key: 'web_analytics_enabled', value: true}
+                        {key: 'web_analytics_enabled', value: true},
+                        {key: 'web_analytics_configured', value: true}
                     ]
                 }
             }
@@ -194,7 +196,7 @@ test.describe('Analytics settings', async () => {
         await expect(section.getByLabel('Outbound link tagging')).toBeVisible();
     });
 
-    test('Shows web analytics toggle as disabled when web_analytics_enabled is false', async ({page}) => {
+    test('Shows web analytics toggle as disabled when web_analytics_configured is false', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             browseConfig: {
@@ -216,7 +218,8 @@ test.describe('Analytics settings', async () => {
                     settings: [
                         ...responseFixtures.settings.settings,
                         {key: 'web_analytics', value: true},
-                        {key: 'web_analytics_enabled', value: false}
+                        {key: 'web_analytics_enabled', value: false},
+                        {key: 'web_analytics_configured', value: false}
                     ]
                 }
             }
@@ -262,7 +265,8 @@ test.describe('Analytics settings', async () => {
                     settings: [
                         ...responseFixtures.settings.settings,
                         {key: 'web_analytics', value: true},
-                        {key: 'web_analytics_enabled', value: true}
+                        {key: 'web_analytics_enabled', value: true},
+                        {key: 'web_analytics_configured', value: true}
                     ]
                 }
             },
