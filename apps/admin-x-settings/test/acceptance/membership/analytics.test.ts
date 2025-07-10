@@ -206,7 +206,8 @@ test.describe('Analytics settings', async () => {
                         ...responseFixtures.config.config,
                         labs: {
                             ...responseFixtures.config.config.labs,
-                            trafficAnalytics: true // Feature flag enabled
+                            trafficAnalytics: true, // Feature flag enabled
+                            ui60: true // Enable ui60 for hint text
                         }
                     }
                 }
@@ -239,8 +240,8 @@ test.describe('Analytics settings', async () => {
         // Should show as unchecked when disabled (even if web_analytics setting is true)
         await expect(webAnalyticsToggle).not.toBeChecked();
 
-        // Should show the hint about additional setup required
-        await expect(section.getByText('Web analytics requires additional setup in your configuration')).toBeVisible();
+        // Should show the info box about additional setup required
+        await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
     });
 
     test('Shows web analytics toggle as enabled and respects user setting', async ({page}) => {
@@ -340,5 +341,108 @@ test.describe('Analytics settings', async () => {
         
         // Should not show save/cancel buttons since nothing changed
         await expect(section.getByRole('button', {name: 'Save'})).not.toBeVisible();
+    });
+
+    test('Can enable web analytics when it starts deselected', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config.labs,
+                            trafficAnalytics: true // Feature flag enabled
+                        }
+                    }
+                }
+            },
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: {
+                    ...responseFixtures.settings,
+                    settings: [
+                        ...responseFixtures.settings.settings,
+                        {key: 'web_analytics', value: false}, // Starts as false
+                        {key: 'web_analytics_enabled', value: false}, // Feature is OFF but configurable
+                        {key: 'web_analytics_configured', value: true} // Can be configured
+                    ]
+                }
+            },
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'web_analytics', value: true}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await expect(section).toBeVisible();
+
+        // Web analytics toggle should be visible and enabled (but unchecked)
+        const webAnalyticsToggle = section.getByLabel('Web analytics');
+        await expect(webAnalyticsToggle).toBeVisible();
+        await expect(webAnalyticsToggle).toBeEnabled();
+        await expect(webAnalyticsToggle).not.toBeChecked();
+
+        // Toggle it on
+        await webAnalyticsToggle.check();
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'web_analytics', value: true}
+            ]
+        });
+    });
+
+    test('Does not show hint text when ui60 flag is disabled', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    config: {
+                        ...responseFixtures.config.config,
+                        labs: {
+                            ...responseFixtures.config.config.labs,
+                            trafficAnalytics: true, // Feature flag enabled
+                            ui60: false // ui60 disabled
+                        }
+                    }
+                }
+            },
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: {
+                    ...responseFixtures.settings,
+                    settings: [
+                        ...responseFixtures.settings.settings,
+                        {key: 'web_analytics', value: true},
+                        {key: 'web_analytics_enabled', value: false},
+                        {key: 'web_analytics_configured', value: false}
+                    ]
+                }
+            }
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('analytics');
+
+        await expect(section).toBeVisible();
+
+        // Web analytics toggle should be visible but disabled
+        const webAnalyticsToggle = section.getByLabel('Web analytics');
+        await expect(webAnalyticsToggle).toBeVisible();
+        await expect(webAnalyticsToggle).toBeDisabled();
+        
+        // Should NOT show the info box about Tinybird configuration when ui60 is disabled
+        await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).not.toBeVisible();
+        
+        // Should show the separator instead
+        await expect(section.locator('.border-grey-200').first()).toBeVisible();
     });
 });
