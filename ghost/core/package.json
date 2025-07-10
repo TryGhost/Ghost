@@ -182,7 +182,7 @@
     "knex-migrator": "5.3.2",
     "leaky-bucket": "2.2.0",
     "lodash": "4.17.21",
-    "luxon": "3.7.0",
+    "luxon": "3.7.1",
     "mailgun.js": "10.4.0",
     "metascraper": "5.45.15",
     "metascraper-author": "5.45.10",
