@@ -222,15 +222,15 @@ class TinybirdService {
             
             // Validate local configuration
             if (config.stats?.local?.enabled) {
+                if (!config.stats.local.token) {
+                    validationErrors.push('Local stats token is required when local mode is enabled');
+                }
                 if (!config.stats.local.endpoint) {
                     validationErrors.push('Local stats endpoint is required when local mode is enabled');
                 }
             }
             
             if (config.tracker?.local?.enabled) {
-                if (!config.tracker.local.token) {
-                    validationErrors.push('Local tracker token is required when local mode is enabled');
-                }
                 if (!config.tracker.local.endpoint) {
                     validationErrors.push('Local tracker endpoint is required when local mode is enabled');
                 }

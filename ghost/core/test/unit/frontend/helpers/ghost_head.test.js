@@ -1418,15 +1418,14 @@ describe('{{ghost_head}} helper', function () {
         beforeEach(function () {
             configUtils.set({
                 tinybird: {
+                    workspaceId: 'test-workspace-id',
+                    adminToken: 'test-admin-token',
                     tracker: {
                         endpoint: 'https://e.ghost.org/tb/web_analytics',
-                        token: 'tinybird_token',
-                        datasource: 'analytics_events',
                         local: {
                             enabled: false,
                             endpoint: 'http://localhost:7181/v0/events',
-                            token: 'tinybird_local_token',
-                            datasource: 'analytics_events'
+                            token: 'tinybird_local_token'
                         }
                     }
                 }

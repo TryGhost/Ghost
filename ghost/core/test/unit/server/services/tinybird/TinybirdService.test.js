@@ -221,6 +221,7 @@ describe('TinybirdService', function () {
                 stats: {
                     local: {
                         enabled: true,
+                        token: 'local-stats-token',
                         endpoint: 'http://localhost:7181'
                     }
                 }
@@ -236,7 +237,6 @@ describe('TinybirdService', function () {
                 tracker: {
                     local: {
                         enabled: true,
-                        token: 'local-tracker-token',
                         endpoint: 'http://localhost:3000/tb/web_analytics'
                     }
                 }
@@ -295,7 +295,8 @@ describe('TinybirdService', function () {
             const config = {
                 stats: {
                     local: {
-                        enabled: true
+                        enabled: true,
+                        token: 'local-stats-token'
                         // missing endpoint
                     }
                 }
@@ -306,12 +307,12 @@ describe('TinybirdService', function () {
             assert.ok(result.errors.includes('Local stats endpoint is required when local mode is enabled'));
         });
 
-        it('should fail validation for local tracker config missing token', function () {
+        it('should fail validation for local stats config missing token', function () {
             const config = {
-                tracker: {
+                stats: {
                     local: {
                         enabled: true,
-                        endpoint: 'http://localhost:3000/tb/web_analytics'
+                        endpoint: 'http://localhost:7181'
                         // missing token
                     }
                 }
@@ -319,12 +320,27 @@ describe('TinybirdService', function () {
             const result = TinybirdService.validateConfig(config);
             assert.equal(result.isValid, false);
             assert.equal(result.isLocal, true);
-            assert.ok(result.errors.includes('Local tracker token is required when local mode is enabled'));
+            assert.ok(result.errors.includes('Local stats token is required when local mode is enabled'));
+        });
+
+        it('should fail validation for local tracker config missing endpoint', function () {
+            const config = {
+                tracker: {
+                    local: {
+                        enabled: true
+                        // missing endpoint
+                    }
+                }
+            };
+            const result = TinybirdService.validateConfig(config);
+            assert.equal(result.isValid, false);
+            assert.equal(result.isLocal, true);
+            assert.ok(result.errors.includes('Local tracker endpoint is required when local mode is enabled'));
         });
 
         it('should return multiple errors for multiple validation failures', function () {
             const config = {
-                tracker: {
+                stats: {
                     local: {
                         enabled: true
                         // missing both token and endpoint
@@ -335,8 +351,8 @@ describe('TinybirdService', function () {
             assert.equal(result.isValid, false);
             assert.equal(result.isLocal, true);
             assert.equal(result.errors.length, 2);
-            assert.ok(result.errors.includes('Local tracker token is required when local mode is enabled'));
-            assert.ok(result.errors.includes('Local tracker endpoint is required when local mode is enabled'));
+            assert.ok(result.errors.includes('Local stats token is required when local mode is enabled'));
+            assert.ok(result.errors.includes('Local stats endpoint is required when local mode is enabled'));
         });
     });
 
@@ -352,7 +368,6 @@ describe('TinybirdService', function () {
                     endpoint: 'https://api.tinybird.co/v0/events',
                     local: {
                         enabled: true,
-                        token: 'local-token',
                         endpoint: 'http://localhost:3000/tb/web_analytics'
                     }
                 }
@@ -367,6 +382,7 @@ describe('TinybirdService', function () {
                 stats: {
                     local: {
                         enabled: true,
+                        token: 'local-stats-token',
                         endpoint: 'http://localhost:7181'
                     }
                 }
@@ -384,6 +400,7 @@ describe('TinybirdService', function () {
                     endpoint: 'https://api.tinybird.co',
                     local: {
                         enabled: true,
+                        token: 'local-stats-token',
                         endpoint: 'http://localhost:7181'
                     }
                 }
