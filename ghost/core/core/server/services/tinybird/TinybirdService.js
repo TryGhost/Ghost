@@ -193,15 +193,6 @@ class TinybirdService {
             return true;
         }
     }
-
-    /**
-     * Validates tinybird configuration
-     * @param {TinybirdConfig} tinybirdConfig - The tinybird configuration object
-     * @returns {{isValid: boolean, reason?: string}} Validation result with optional reason for failure
-     */
-    static validateConfig(tinybirdConfig) {
-        return validateTinybirdConfig(tinybirdConfig);
-    }
 }
 
 module.exports = TinybirdService;
