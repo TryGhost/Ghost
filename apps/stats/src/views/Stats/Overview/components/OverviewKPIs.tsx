@@ -234,7 +234,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 />
             </OverviewKPICard>
 
-            {appSettings?.paidMembersEnabled === true && !showTrialCTA &&
+            {appSettings?.paidMembersEnabled === true &&
                 <OverviewKPICard
                     description='Monthly recurring revenue changes over time'
                     diffDirection={growthTotals.directions.mrr}
