@@ -1,7 +1,7 @@
 import {Page} from '@playwright/test';
 import AdminPage from '../AdminPage';
 
-class LocationsTab extends AdminPage {
+class AnalyticsLocationsPage extends AdminPage {
     constructor(page: Page) {
         super(page);
 
@@ -9,4 +9,4 @@ class LocationsTab extends AdminPage {
     }
 }
 
-export default LocationsTab;
+export default AnalyticsLocationsPage;

@@ -2,7 +2,7 @@ import {Locator, Page} from '@playwright/test';
 
 class AdminPage {
     protected pageUrl:string;
-    private readonly page: Page;
+    protected readonly page: Page;
     public readonly body: Locator;
 
     constructor(page: Page) {
@@ -11,7 +11,7 @@ class AdminPage {
         this.body = page.locator('body');
     }
 
-    async visit(url = null) {
+    async goto(url = null) {
         const urlToVisit = url || this.pageUrl;
         await this.page.goto(urlToVisit);
     }
