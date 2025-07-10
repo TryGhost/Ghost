@@ -109,6 +109,12 @@ export interface Notification {
         repostCount: number;
         repostedByMe: boolean;
         replyCount: number;
+        attachments?: {
+            type: string;
+            mediaType: string;
+            name: string;
+            url: string;
+        }[];
     },
     inReplyTo: null | {
         id: string;
