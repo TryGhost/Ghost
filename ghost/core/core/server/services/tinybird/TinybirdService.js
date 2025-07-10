@@ -1,19 +1,21 @@
 const jwt = require('jsonwebtoken');
+const errors = require('@tryghost/errors');
 
 /**
  * @typedef {Object} TinybirdConfig
- * @property {string} workspaceId - The Tinybird workspace ID
- * @property {string} adminToken - The admin token for JWT signing
+ * @property {string} [workspaceId] - The Tinybird workspace ID (required for remote configuration)
+ * @property {string} [adminToken] - The admin token for JWT signing (required for remote configuration)
+ * @property {Object} [tracker] - Tracker configuration (required for remote configuration)
+ * @property {string} [tracker.endpoint] - Tracker endpoint URL (required for remote configuration)
+ * @property {Object} [tracker.local] - Local tracker configuration
+ * @property {boolean} [tracker.local.enabled] - Whether local tracker is enabled
+ * @property {string} [tracker.local.endpoint] - Local tracker endpoint (required when tracker.local.enabled is true)
  * @property {Object} [stats] - Statistics configuration
- * @property {string} [stats.id] - Stats ID (deprecated)
- * @property {string} [stats.token] - Stats token (deprecated)
  * @property {string} [stats.endpoint] - Stats endpoint
- * @property {string} [stats.datasource] - Stats datasource
  * @property {Object} [stats.local] - Local stats configuration
  * @property {boolean} [stats.local.enabled] - Whether local stats are enabled
  * @property {string} [stats.local.token] - Local stats token
- * @property {string} [stats.local.endpoint] - Local stats endpoint
- * @property {string} [stats.local.datasource] - Local stats datasource
+ * @property {string} [stats.local.endpoint] - Local stats endpoint (required when stats.local.enabled is true)
  */
 
 /**
@@ -65,13 +67,21 @@ class TinybirdService {
      * @param {TinybirdConstructorOptions} options - Configuration options
      */
     constructor({tinybirdConfig, siteUuid}) {
+        // Validate configuration
+        const validation = TinybirdService.validateConfig(tinybirdConfig);
+        if (!validation.isValid) {
+            throw new errors.ValidationError({
+                message: `Invalid Tinybird configuration: ${validation.errors.join(', ')}`
+            });
+        }
+
         this.tinybirdConfig = tinybirdConfig;
         this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
 
         // Flags for determining which token to use
         // We should aim to simplify this in the future
         this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
-        this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
+        this.isLocalEnabled = validation.isLocal;
         this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
         this._serverToken = null;
         this._serverTokenExp = null;
@@ -97,10 +107,13 @@ class TinybirdService {
                 exp: this._serverTokenExp
             };
         }
-        // If local stats are enabled, use the local token
+        // If local mode is enabled, use the local token
         if (this.isLocalEnabled) {
+            // Prefer tracker.local token if available, fallback to stats.local
+            const localToken = this.tinybirdConfig.tracker?.local?.token || 
+                             this.tinybirdConfig.stats?.local?.token;
             return {
-                token: this.tinybirdConfig.stats.local?.token
+                token: localToken
             };
         }
         // If stats are enabled, use the stats token
@@ -165,6 +178,81 @@ class TinybirdService {
         } catch (error) {
             return true;
         }
+    }
+
+    /**
+     * Gets the appropriate tracker endpoint based on configuration
+     * @returns {string|null} The tracker endpoint URL or null if not configured
+     */
+    getTrackerEndpoint() {
+        if (this.isLocalEnabled && this.tinybirdConfig.tracker?.local?.endpoint) {
+            return this.tinybirdConfig.tracker.local.endpoint;
+        }
+        return this.tinybirdConfig.tracker?.endpoint || null;
+    }
+
+    /**
+     * Gets the appropriate stats endpoint based on configuration
+     * @returns {string|null} The stats endpoint URL or null if not configured
+     */
+    getStatsEndpoint() {
+        if (this.isLocalEnabled && this.tinybirdConfig.stats?.local?.endpoint) {
+            return this.tinybirdConfig.stats.local.endpoint;
+        }
+        return this.tinybirdConfig.stats?.endpoint || null;
+    }
+
+    /**
+     * Static method to validate Tinybird configuration
+     * @param {TinybirdConfig} config - Ghost's config.tinybird object to validate
+     * @returns {{isValid: boolean, errors: string[], isLocal: boolean}} Validation result
+     */
+    static validateConfig(config) {
+        const validationErrors = [];
+        let isLocal = false;
+
+        if (!config) {
+            validationErrors.push('Tinybird configuration is missing');
+            return {isValid: false, errors: validationErrors, isLocal};
+        }
+
+        // Check if local mode is enabled
+        if (config.stats?.local?.enabled || config.tracker?.local?.enabled) {
+            isLocal = true;
+            
+            // Validate local configuration
+            if (config.stats?.local?.enabled) {
+                if (!config.stats.local.endpoint) {
+                    validationErrors.push('Local stats endpoint is required when local mode is enabled');
+                }
+            }
+            
+            if (config.tracker?.local?.enabled) {
+                if (!config.tracker.local.token) {
+                    validationErrors.push('Local tracker token is required when local mode is enabled');
+                }
+                if (!config.tracker.local.endpoint) {
+                    validationErrors.push('Local tracker endpoint is required when local mode is enabled');
+                }
+            }
+        } else {
+            // Validate remote configuration
+            if (!config.workspaceId) {
+                validationErrors.push('workspaceId is required for remote configuration');
+            }
+            if (!config.adminToken) {
+                validationErrors.push('adminToken is required for remote configuration');
+            }
+            if (!config.tracker || !config.tracker.endpoint) {
+                validationErrors.push('tracker.endpoint is required for remote configuration');
+            }
+        }
+
+        return {
+            isValid: validationErrors.length === 0,
+            errors: validationErrors,
+            isLocal
+        };
     }
 }
 

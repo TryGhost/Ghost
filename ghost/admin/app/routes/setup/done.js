@@ -18,7 +18,7 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
         }
 
         // Redirect to Analytics if trafficAnalytics is enabled and user has access
-        if (this.config.stats && this.feature.trafficAnalytics && this.session.user?.isAdmin) {
+        if (this.feature.trafficAnalytics && this.session.user?.isAdmin) {
             return this.router.transitionTo('stats-x');
         }
 
