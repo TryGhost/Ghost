@@ -7871,10 +7871,10 @@
     "@tryghost/root-utils" "^0.3.33"
     debug "^4.3.1"
 
-"@tryghost/domain-events@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-1.0.1.tgz#6bf1c4dffd26a2eecb032c3e57be80802dfd4832"
-  integrity sha512-rMqN+KYwpPpZCTIPspa9ecexW82wLm0kD/t2lZW0+Xpc5eQoF9EDFNFSA+QJIi4FycXlb1vsl8xEmWyfHyLKNw==
+"@tryghost/domain-events@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/domain-events/-/domain-events-1.0.2.tgz#0d4b134a997802946f3615385a09b82c4904d8c7"
+  integrity sha512-y2sam/cOhCDViWLzLFmGn7ZIwNpz7dTOK1zygxwVrojhwrORWPtbA9MSoVrT6zUF9IplOx53/MAgnE1CYXSfng==
 
 "@tryghost/elasticsearch@^3.0.24":
   version "3.0.24"
@@ -7982,14 +7982,14 @@
     "@tryghost/errors" "^1.3.8"
     jest-snapshot "^29.0.0"
 
-"@tryghost/job-manager@1.0.2":
-  version "1.0.2"
-  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-1.0.2.tgz#e4a94a2198e85b135fa60fa6c440621b5d8bf490"
-  integrity sha512-W5lpAj/xuo/arIHNJb9awxXI3Yn0nc0rxoamdOyc3apOLSbnaf3giU9xhmd1Ud4uqGk1OIF9VcF/XWdBFCLiVA==
+"@tryghost/job-manager@1.0.3":
+  version "1.0.3"
+  resolved "https://registry.yarnpkg.com/@tryghost/job-manager/-/job-manager-1.0.3.tgz#f9bef29c063bdc72057c6badad8f4d2749072dc6"
+  integrity sha512-PQCHnqRVxayUltXDTnqW0SzQUPPlwU8jia+15tEYdFARQ43+oKuzFA3sSkYd7gnuxm0Mp520hshJ3Y6jG96iew==
   dependencies:
     "@breejs/later" "4.2.0"
     "@tryghost/errors" "^1.3.8"
-    "@tryghost/logging" "^2.4.22"
+    "@tryghost/logging" "^2.4.23"
     bree "6.5.0"
     cron-validate "1.4.5"
     fastq "1.19.1"
@@ -8171,7 +8171,7 @@
     lodash "^4.17.21"
     luxon "^1.26.0"
 
-"@tryghost/logging@2.4.19", "@tryghost/logging@2.4.23", "@tryghost/logging@^2.4.22", "@tryghost/logging@^2.4.7":
+"@tryghost/logging@2.4.19", "@tryghost/logging@2.4.23", "@tryghost/logging@^2.4.23", "@tryghost/logging@^2.4.7":
   version "2.4.23"
   resolved "https://registry.yarnpkg.com/@tryghost/logging/-/logging-2.4.23.tgz#a2351b55c0d413e3f06ee41cbcfe7bbdff785972"
   integrity sha512-xmindrXwW0zKvuxdTNkyK3TM1exPvgkqqSRXOdf8G1SDZpuvemWGlrllAFQuj2J/K4dy9CWcYl9GpM1wYaG1CQ==
@@ -8304,12 +8304,12 @@
     lodash "^4.17.21"
     prettyjson "^1.2.5"
 
-"@tryghost/prometheus-metrics@1.0.1":
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/@tryghost/prometheus-metrics/-/prometheus-metrics-1.0.1.tgz#6d9d4f7adbdacb31a2bf0b549cb2c964c1c3e26f"
-  integrity sha512-NmhMBBnkpq2yo6OOIQrOoVXFl6uxfXiLATw8w5bY+HY2wcnKfcMPboRacWqyDX9TPyXGimHcl4q1QImzPpP8Jw==
+"@tryghost/prometheus-metrics@1.0.2":
+  version "1.0.2"
+  resolved "https://registry.yarnpkg.com/@tryghost/prometheus-metrics/-/prometheus-metrics-1.0.2.tgz#e4ee48a846dcf3d5883848842ea24519d0372dbf"
+  integrity sha512-30LfSf7M6gJs29I7EJEwjI+fzJJkq19x9qwukyBTD3WC8SB17THlHe8alxa0f/lkxPgMGcqgyC4ZCyAR5zoO5Q==
   dependencies:
-    "@tryghost/logging" "^2.4.22"
+    "@tryghost/logging" "^2.4.23"
     express "4.21.2"
     prom-client "15.1.3"
     stoppable "1.1.0"
@@ -8329,19 +8329,7 @@
   resolved "https://registry.yarnpkg.com/@tryghost/referrer-parser/-/referrer-parser-0.1.8.tgz#ad48b8a81e30e0aed9afdd0ee34dfa2ef84f775c"
   integrity sha512-+RQQo/nG4E/uxbvm1OeWA0a58CHuF5RxBKHjc9qiiBIi9VhMsLGNcJzsyj9Q+2Sa7fZzMSlmvDHUQKaHHc6wCg==
 
-"@tryghost/request@1.0.11":
-  version "1.0.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-1.0.11.tgz#833c6894f4dcf9e9123d0fb5559d8616bf20ab88"
-  integrity sha512-VVlgYy2/oZkd1USaLxhsHApykI6sJwzfk9SGpOUlGWcJptxYdfFDz0Kxls/eWFGEF0odHzv2+GPdDe0VI0YfNA==
-  dependencies:
-    "@tryghost/errors" "^1.3.8"
-    "@tryghost/validator" "^0.2.17"
-    "@tryghost/version" "^0.1.33"
-    cacheable-lookup "7.0.0"
-    got "13.0.0"
-    lodash "^4.17.21"
-
-"@tryghost/request@^1.0.12":
+"@tryghost/request@1.0.12", "@tryghost/request@^1.0.12":
   version "1.0.12"
   resolved "https://registry.yarnpkg.com/@tryghost/request/-/request-1.0.12.tgz#642be33ca2593932af4ed68ee3eed1f58a08a3ea"
   integrity sha512-vSsyaQ06ySTkDF78JALsLMfOGTFWfRCye3s1zys3sUZy2A51YsmP7kcg5wCemgTTDnRhErOUBotUuECIyg0TGA==
