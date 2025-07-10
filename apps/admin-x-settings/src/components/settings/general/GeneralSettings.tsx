@@ -5,6 +5,7 @@ import Facebook from './Facebook';
 import LockSite from './LockSite';
 import Metadata from './Metadata';
 import PublicationLanguage from './PublicationLanguage';
+import SEOMeta from './SEOMeta';
 import SearchableSection from '../../SearchableSection';
 import SocialAccounts from './SocialAccounts';
 import TimeZone from './TimeZone';
@@ -32,9 +33,7 @@ export const searchKeywords = {
     timeZone: ['general', 'time', 'date', 'site timezone', 'time zone'],
     publicationLanguage: ['general', 'publication language', 'locale'],
     users: ['general', 'users and permissions', 'roles', 'staff', 'invite people', 'contributors', 'editors', 'authors', 'administrators'],
-    metadata: ['general', 'metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data'],
-    twitter: ['general', 'twitter card', 'structured data', 'rich cards', 'x card', 'social'],
-    facebook: ['general', 'facebook card', 'structured data', 'rich cards', 'social'],
+    metadata: ['general', 'metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data', 'twitter card', 'structured data', 'rich cards', 'x card', 'social', 'facebook card'],
     socialAccounts: ['general', 'social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
     lockSite: ['general', 'password protection', 'lock site', 'make this site private'],
     analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership']
@@ -67,9 +66,7 @@ const GeneralSettings: React.FC = () => {
             <TimeZone keywords={searchKeywords.timeZone} />
             <PublicationLanguage keywords={searchKeywords.publicationLanguage} />
             <Users keywords={searchKeywords.users} />
-            <Metadata keywords={searchKeywords.metadata} />
-            <Twitter keywords={searchKeywords.twitter} />
-            <Facebook keywords={searchKeywords.facebook} />
+            <SEOMeta keywords={searchKeywords.metadata} />
             <SocialAccounts keywords={searchKeywords.socialAccounts} />
             <Analytics keywords={searchKeywords.analytics} />
             <LockSite keywords={searchKeywords.lockSite} />
