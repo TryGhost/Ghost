@@ -23,7 +23,7 @@ describe('Unit: Service: post-analytics', function () {
             }
         };
         settingsStub = {
-            webAnalytics: true,
+            webAnalyticsEnabled: true,
             membersTrackSources: true
         };
         const featureStub = {
@@ -48,14 +48,7 @@ describe('Unit: Service: post-analytics', function () {
         });
 
         it('returns early if web analytics is disabled', async function () {
-            settingsStub.webAnalytics = false;
-            const result = await service.loadVisitorCounts(['uuid1']);
-            expect(result).to.be.undefined;
-            expect(ajaxStub.called).to.be.false;
-        });
-
-        it('returns early if trafficAnalytics feature is disabled', async function () {
-            service.feature.trafficAnalytics = false;
+            settingsStub.webAnalyticsEnabled = false;
             const result = await service.loadVisitorCounts(['uuid1']);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;

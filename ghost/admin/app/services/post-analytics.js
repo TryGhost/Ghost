@@ -42,7 +42,7 @@ export default class PostAnalyticsService extends Service {
         }
         
         // Check if web analytics is enabled
-        if (!this.settings.webAnalytics || !this.feature.trafficAnalytics) {
+        if (!this.settings.webAnalyticsEnabled) {
             return Promise.resolve();
         }
         
