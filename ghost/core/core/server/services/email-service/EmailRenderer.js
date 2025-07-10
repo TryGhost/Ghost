@@ -1301,6 +1301,17 @@ class EmailRenderer {
             linkStyle,
             hasOutlineButtons,
 
+            // useful data
+            ctaBgColors: [
+                'grey',
+                'blue',
+                'green',
+                'yellow',
+                'red',
+                'pink',
+                'purple'
+            ],
+
             classes: {
                 container: clsx('container', {
                     'title-serif': titleFont === 'serif'
