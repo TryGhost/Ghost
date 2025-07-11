@@ -128,7 +128,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
     const limiter = useLimiter();
-    const showTrialCTA = limiter.isLimited('limitAnalytics');
+    const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
@@ -139,28 +139,27 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </EmptyCard>
         );
     }
-
-    let cols = 'lg:grid-cols-3';
     
     // Calculate number of cards being displayed
-    const hasWebAnalytics = appSettings?.analytics.webAnalytics && !showTrialCTA;
-    const hasTrialCTA = showTrialCTA;
-    const hasMembers = true; // Always shown
-    const hasMRR = appSettings?.paidMembersEnabled && !showTrialCTA;
+    const showWebAnalytics = appSettings?.analytics.webAnalytics;
+    const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
+    const showMembers = true; // Always shown
+    const showMRR = appSettings?.paidMembersEnabled;
     
-    const cardCount = [hasWebAnalytics, hasTrialCTA, hasMembers, hasMRR].filter(Boolean).length;
-    
+    // Determine number of columns to display, 1, 2, or 3
+    const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;
+    let cols = 'lg:grid-cols-3';
     if (cardCount === 2) {
         cols = 'lg:grid-cols-2';
     } else if (cardCount === 1) {
         cols = 'lg:grid-cols-1';
     }
-
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
+
 
     return (
         <div className={containerClass}>
-            {appSettings?.analytics.webAnalytics === true &&
+            {showWebAnalytics && !showUpgradeCTA &&
                 <OverviewKPICard
                     description='Number of individual people who visited your website'
                     diffDirection='empty'
@@ -186,7 +185,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 </OverviewKPICard>
             }
 
-            {showTrialCTA &&
+            {showUpgradeCTA &&
                 <Card>
                     <CardHeader className='hidden'>
                         <CardTitle>Unlock web analytics</CardTitle>
@@ -209,32 +208,34 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 </Card>
             }
 
-            <OverviewKPICard
-                description='How number of members of your publication changed over time'
-                diffDirection={growthTotals.directions.total}
-                diffValue={growthTotals.percentChanges.total}
-                formattedValue={formatNumber(growthTotals.totalMembers)}
-                iconName='User'
-                linkto='/growth/'
-                title='Members'
-                trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
-                onClick={() => {
-                    navigate('/growth/?tab=total-members');
-                }}
-            >
-                <GhAreaChart
-                    className={areaChartClassName}
-                    color='hsl(var(--chart-darkblue))'
-                    data={membersChartData}
-                    id="members"
-                    range={range}
-                    showHorizontalLines={true}
-                    showYAxisValues={false}
-                    syncId="overview-charts"
-                />
-            </OverviewKPICard>
+            {showMembers &&
+                <OverviewKPICard
+                    description='How number of members of your publication changed over time'
+                    diffDirection={growthTotals.directions.total}
+                    diffValue={growthTotals.percentChanges.total}
+                    formattedValue={formatNumber(growthTotals.totalMembers)}
+                    iconName='User'
+                    linkto='/growth/'
+                    title='Members'
+                    trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
+                    onClick={() => {
+                        navigate('/growth/?tab=total-members');
+                    }}
+                >
+                    <GhAreaChart
+                        className={areaChartClassName}
+                        color='hsl(var(--chart-darkblue))'
+                        data={membersChartData}
+                        id="members"
+                        range={range}
+                        showHorizontalLines={true}
+                        showYAxisValues={false}
+                        syncId="overview-charts"
+                    />
+                </OverviewKPICard>
+            }
 
-            {appSettings?.paidMembersEnabled === true &&
+            {showMRR &&
                 <OverviewKPICard
                     description='Monthly recurring revenue changes over time'
                     diffDirection={growthTotals.directions.mrr}
