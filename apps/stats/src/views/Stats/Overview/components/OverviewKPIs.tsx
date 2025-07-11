@@ -1,9 +1,10 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
 import {STATS_RANGES} from '@src/utils/constants';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useLimiter} from '@src/hooks/useLimiter';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface OverviewKPICardProps {
@@ -126,6 +127,8 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const navigate = useNavigate();
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
+    const limiter = useLimiter();
+    const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
 
     const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
@@ -136,22 +139,26 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
             </EmptyCard>
         );
     }
-
+    
+    // Calculate number of cards being displayed
+    const showWebAnalytics = appSettings?.analytics.webAnalytics;
+    const showUpgradeCTA = isWebAnalyticsLimited && !showWebAnalytics;
+    const showMembers = true; // Always shown
+    const showMRR = appSettings?.paidMembersEnabled;
+    
+    // Determine number of columns to display, 1, 2, or 3
+    const cardCount = [showWebAnalytics, showUpgradeCTA, showMembers, showMRR].filter(Boolean).length;
     let cols = 'lg:grid-cols-3';
-    if ((appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) ||
-        (!appSettings?.analytics.webAnalytics && appSettings?.paidMembersEnabled)) {
+    if (cardCount === 2) {
         cols = 'lg:grid-cols-2';
-    }
-
-    if (!appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) {
+    } else if (cardCount === 1) {
         cols = 'lg:grid-cols-1';
     }
-
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
     return (
         <div className={containerClass}>
-            {appSettings?.analytics.webAnalytics === true &&
+            {showWebAnalytics && !showUpgradeCTA &&
                 <OverviewKPICard
                     description='Number of individual people who visited your website'
                     diffDirection='empty'
@@ -177,32 +184,57 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 </OverviewKPICard>
             }
 
-            <OverviewKPICard
-                description='How number of members of your publication changed over time'
-                diffDirection={growthTotals.directions.total}
-                diffValue={growthTotals.percentChanges.total}
-                formattedValue={formatNumber(growthTotals.totalMembers)}
-                iconName='User'
-                linkto='/growth/'
-                title='Members'
-                trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
-                onClick={() => {
-                    navigate('/growth/?tab=total-members');
-                }}
-            >
-                <GhAreaChart
-                    className={areaChartClassName}
-                    color='hsl(var(--chart-darkblue))'
-                    data={membersChartData}
-                    id="members"
-                    range={range}
-                    showHorizontalLines={true}
-                    showYAxisValues={false}
-                    syncId="overview-charts"
-                />
-            </OverviewKPICard>
+            {showUpgradeCTA &&
+                <Card>
+                    <CardHeader className='hidden'>
+                        <CardTitle>Unlock web analytics</CardTitle>
+                        <CardDescription>Get the full picture of what&apos;s working with detailed, cookie-free traffic analytics.</CardDescription>
+                    </CardHeader>
+                    <CardContent className='flex h-full items-center justify-center p-6'>
+                        <EmptyIndicator
+                            actions={
+                                <Button variant='outline' onClick={() => navigate('/pro', {crossApp: true})}>
+                                Upgrade now
+                                </Button>
+                            }
+                            className='py-10'
+                            description={`Get the full picture of what's working with detailed, cookie-free traffic analytics.`}
+                            title='Unlock web analytics'
+                        >
+                            <LucideIcon.ChartSpline />
+                        </EmptyIndicator>
+                    </CardContent>
+                </Card>
+            }
 
-            {appSettings?.paidMembersEnabled === true &&
+            {showMembers &&
+                <OverviewKPICard
+                    description='How number of members of your publication changed over time'
+                    diffDirection={growthTotals.directions.total}
+                    diffValue={growthTotals.percentChanges.total}
+                    formattedValue={formatNumber(growthTotals.totalMembers)}
+                    iconName='User'
+                    linkto='/growth/'
+                    title='Members'
+                    trendingFromValue={`${formatNumber(membersChartData[0].value)}`}
+                    onClick={() => {
+                        navigate('/growth/?tab=total-members');
+                    }}
+                >
+                    <GhAreaChart
+                        className={areaChartClassName}
+                        color='hsl(var(--chart-darkblue))'
+                        data={membersChartData}
+                        id="members"
+                        range={range}
+                        showHorizontalLines={true}
+                        showYAxisValues={false}
+                        syncId="overview-charts"
+                    />
+                </OverviewKPICard>
+            }
+
+            {showMRR &&
                 <OverviewKPICard
                     description='Monthly recurring revenue changes over time'
                     diffDirection={growthTotals.directions.mrr}
