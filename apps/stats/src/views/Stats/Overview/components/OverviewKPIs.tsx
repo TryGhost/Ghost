@@ -156,7 +156,6 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     }
     const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
-
     return (
         <div className={containerClass}>
             {showWebAnalytics && !showUpgradeCTA &&
