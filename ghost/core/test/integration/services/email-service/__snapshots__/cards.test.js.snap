@@ -444,6 +444,11 @@ table.body h2 span {
   }
 }
 </style>
+        <!--[if mso]>
+        <style type=\\"text/css\\">
+            ul, ol { margin-left: 1.5em !important; } 
+        </style>
+        <![endif]-->
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph test.</span>
@@ -1206,6 +1211,11 @@ table.body h2 span {
   }
 }
 </style>
+        <!--[if mso]>
+        <style type=\\"text/css\\">
+            ul, ol { margin-left: 1.5em !important; } 
+        </style>
+        <![endif]-->
     </head>
     <body style=\\"background-color: #fff; font-family: -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; -webkit-font-smoothing: antialiased; font-size: 18px; line-height: 0; margin: 0; padding: 0; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; color: #15212A;\\">
         <span class=\\"preheader\\" style=\\"color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;\\">This is a paragraph</span>

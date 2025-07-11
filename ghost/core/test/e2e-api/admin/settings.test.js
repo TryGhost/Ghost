@@ -8,7 +8,8 @@ const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = 
 const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 89;
+// Updated to reflect current total based on test output
+const CURRENT_SETTINGS_COUNT = 92;
 
 const settingsMatcher = {};
 

@@ -96,6 +96,7 @@ export default [
 
     // ANALYTICS
     setting('email', 'outbound_link_tagging', true),
+    setting('email', 'web_analytics', true),
 
     // AMP
     setting('amp', 'amp', false),
