@@ -1,7 +1,7 @@
 module.exports = class ExplorePingService {
     /**
      * @param {object} deps
-     * @param {{getPublic: () => import('../../../shared/settings-cache/CacheManager').PublicSettingsCache}} deps.settingsCache
+     * @param {{get: (key: string) => string}} deps.settingsCache
      * @param {object} deps.config
      * @param {object} deps.labs
      * @param {object} deps.logging
@@ -28,9 +28,6 @@ module.exports = class ExplorePingService {
     }
 
     async constructPayload() {
-        /* eslint-disable camelcase */
-        const {title, description, icon, locale, accent_color, twitter, facebook, site_uuid} = this.settingsCache.getPublic();
-
         // Get post statistics
         const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
             this.posts.stats.getTotalPostsPublished(),
@@ -52,15 +49,16 @@ module.exports = class ExplorePingService {
 
         return {
             ghost: this.ghostVersion.full,
-            site_uuid,
             url: this.config.get('url'),
-            title,
-            description,
-            icon,
-            locale,
-            accent_color,
-            twitter,
-            facebook,
+            site_uuid: this.settingsCache.get('site_uuid'),
+            title: this.settingsCache.get('title'),
+            description: this.settingsCache.get('description'),
+            icon: this.settingsCache.get('icon'),
+            locale: this.settingsCache.get('locale'),
+            accent_color: this.settingsCache.get('accent_color'),
+            twitter: this.settingsCache.get('twitter'),
+            facebook: this.settingsCache.get('facebook'),
+            theme: this.settingsCache.get('active_theme'),
             posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
             posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
             posts_total: totalPosts,
