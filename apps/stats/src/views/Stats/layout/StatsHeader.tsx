@@ -1,5 +1,5 @@
 import React from 'react';
-import {H1, LucideIcon, Navbar, NavbarActions, Tabs, TabsList, TabsTrigger, formatNumber} from '@tryghost/shade';
+import {H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, formatNumber} from '@tryghost/shade';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
@@ -29,7 +29,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     {appSettings?.analytics.webAnalytics && (
                         <div className='flex items-center gap-2 text-sm'>
                             {site?.url && (
-                                <div className='flex items-center gap-1.5'>
+                                <div className='hidden items-center gap-1.5 sm:!visible sm:!flex'>
                                     {/* No need for favicon as it's already shown in the left sidebar + globe icon represents "web" better */}
                                     <LucideIcon.Globe className='text-muted-foreground' size={16} strokeWidth={1.5} />
                                     <a
@@ -57,42 +57,32 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 items-center border-none bg-white/70 py-8 backdrop-blur-md dark:bg-black'>
-                <Tabs className="w-full" defaultValue={location.pathname} variant='pill'>
-                    <TabsList>
-                        <TabsTrigger value="/" onClick={() => {
-                            navigate('/');
-                        }}>
-                            Overview
-                        </TabsTrigger>
+            <Navbar className='sticky top-0 z-40 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+                <PageMenu defaultValue={location.pathname} responsive>
+                    <PageMenuItem value="/" onClick={() => {
+                        navigate('/');
+                    }}>Overview</PageMenuItem>
 
-                        {appSettings?.analytics.webAnalytics &&
-                            <TabsTrigger value="/web/" onClick={() => {
-                                navigate('/web/');
-                            }}>
-                            Web traffic
-                            </TabsTrigger>
-                        }
+                    {appSettings?.analytics.webAnalytics &&
+                        <PageMenuItem value="/web/" onClick={() => {
+                            navigate('/web/');
+                        }}>Web traffic</PageMenuItem>
+                    }
 
-                        <TabsTrigger value="/newsletters/" onClick={() => {
+                    {appSettings?.newslettersEnabled &&
+                        <PageMenuItem value="/newsletters/" onClick={() => {
                             navigate('/newsletters/');
-                        }}>
-                        Newsletters
-                        </TabsTrigger>
-                        <TabsTrigger value="/growth/" onClick={() => {
-                            navigate('/growth/');
-                        }}>
-                        Growth
-                        </TabsTrigger>
-                        {appSettings?.analytics.webAnalytics &&
-                            <TabsTrigger value="/locations/" onClick={() => {
-                                navigate('/locations/');
-                            }}>
-                            Locations
-                            </TabsTrigger>
-                        }
-                    </TabsList>
-                </Tabs>
+                        }}>Newsletters</PageMenuItem>
+                    }
+
+                    <PageMenuItem value="/growth/" onClick={() => {
+                        navigate('/growth/');
+                    }}>Growth</PageMenuItem>
+
+                    <PageMenuItem value="/locations/" onClick={() => {
+                        navigate('/locations/');
+                    }}>Locations</PageMenuItem>
+                </PageMenu>
                 <NavbarActions>
                     {children}
                 </NavbarActions>

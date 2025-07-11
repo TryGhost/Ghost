@@ -9,11 +9,10 @@ import {KpiDataItem} from '@src/utils/kpi-helpers';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/Growth';
-import {getStatEndpointUrl, getToken, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
+import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
-import {useMemo} from 'react';
+import {useEffect, useMemo} from 'react';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
-import {useQuery} from '@tinybirdco/charts';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
@@ -21,6 +20,7 @@ const Overview: React.FC = () => {
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -73,15 +73,15 @@ const Overview: React.FC = () => {
         return baseParams;
     }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
-    const {data, loading: tbLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data, loading: tbLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
-    const {data: chartData, loading: chartLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_kpis'),
-        token: getToken(statsConfig),
+    const {data: chartData, loading: chartLoading} = useTinybirdQuery({
+        endpoint: 'api_kpis',
+        statsConfig: statsConfig || {id: ''},
         params: chartParams
     });
 
@@ -109,9 +109,9 @@ const Overview: React.FC = () => {
     });
 
     // Get sources data
-    const {data: sourcesData, loading: isSourcesLoading} = useQuery({
-        endpoint: getStatEndpointUrl(statsConfig, 'api_top_sources'),
-        token: getToken(statsConfig),
+    const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
+        endpoint: 'api_top_sources',
+        statsConfig: statsConfig || {id: ''},
         params: params
     });
 
@@ -119,13 +119,20 @@ const Overview: React.FC = () => {
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(post as Post);
+    const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
+
+    // Redirect to Growth tab if this is a published-only post with web analytics disabled
+    useEffect(() => {
+        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
+            navigate(`/analytics/beta/${postId}/growth`);
+        }
+    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
 
     return (
         <>
             <PostAnalyticsHeader currentTab='Overview'>
-                <div className='flex items-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600'>
+                <div className='order-1 flex w-full items-center justify-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600 lg:order-none lg:w-auto'>
                     <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
                     Viewing Analytics (beta)
                     <Button className='pl-1 pr-0 text-purple-600 !underline' size='sm' variant='link' onClick={() => {
@@ -134,7 +141,7 @@ const Overview: React.FC = () => {
                 </div>
             </PostAnalyticsHeader>
             <PostAnalyticsContent>
-                <div className='grid grid-cols-2 gap-8'>
+                <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
                     {showWebSection && (
                         <WebOverview
                             chartData={processedChartData}
@@ -164,7 +171,7 @@ const Overview: React.FC = () => {
                                 navigate(`/analytics/beta/${postId}/growth`);
                             }}>View more</Button>
                         </div>
-                        <CardContent className='grid grid-cols-3 items-stretch px-0'>
+                        <CardContent className='flex flex-col gap-8 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
                             {kpiIsLoading ?
                                 Array.from({length: 3}, (_, i) => (
                                     <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>

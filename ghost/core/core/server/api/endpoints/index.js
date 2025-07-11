@@ -181,6 +181,10 @@ module.exports = {
         return apiFramework.pipeline(require('./custom-theme-settings'), localUtils);
     },
 
+    get tinybird() {
+        return apiFramework.pipeline(require('./tinybird'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
@@ -211,6 +215,10 @@ module.exports = {
 
     get incomingRecommendations() {
         return apiFramework.pipeline(require('./incoming-recommendations'), localUtils);
+    },
+
+    get searchIndex() {
+        return apiFramework.pipeline(require('./search-index'), localUtils);
     },
 
     /**
@@ -263,5 +271,9 @@ module.exports = {
 
     get recommendationsPublic() {
         return apiFramework.pipeline(require('./recommendations-public'), localUtils, 'content');
+    },
+
+    get searchIndexPublic() {
+        return apiFramework.pipeline(require('./search-index-public'), localUtils, 'content');
     }
 };

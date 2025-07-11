@@ -36,11 +36,12 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
-        const valid = !url || validator.isURL(url);
+        // require_tld is automatically true in validator 8+, we set it false here for our default localhost setup
+        const valid = !url || validator.isURL(url, {require_tld: false});
         return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
-        const valid = !bio || bio.length <= 200;
+        const valid = !bio || bio.length <= 250;
         return valid ? '' : 'Bio is too long';
     },
     location: ({location}) => {

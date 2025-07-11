@@ -20,7 +20,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
             if (isBlank(name)) {
                 model.errors.add('name', 'Please enter a name.');
                 this.invalidate();
-            } else if (!validator.isLength(name, 0, 191)) {
+            } else if (!validator.isLength(name, {max: 191})) {
                 model.errors.add('name', 'Name is too long');
                 this.invalidate();
             }
@@ -31,7 +31,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
         let bio = model.bio;
 
         if (this.isActive(model)) {
-            if (!validator.isLength(bio || '', 0, 200)) {
+            if (!validator.isLength(bio || '', {max: 250})) {
                 model.errors.add('bio', 'Bio is too long');
                 this.invalidate();
             }
@@ -46,7 +46,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
             this.invalidate();
         }
 
-        if (!validator.isLength(email || '', 0, 191)) {
+        if (!validator.isLength(email || '', {max: 191})) {
             model.errors.add('email', 'Email is too long');
             this.invalidate();
         }
@@ -56,7 +56,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
         let location = model.location;
 
         if (this.isActive(model)) {
-            if (!validator.isLength(location || '', 0, 150)) {
+            if (!validator.isLength(location || '', {max: 150})) {
                 model.errors.add('location', 'Location is too long');
                 this.invalidate();
             }
@@ -67,7 +67,7 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
         let website = model.website;
         // eslint-disable-next-line camelcase
         let isInvalidWebsite = !validator.isURL(website || '', {require_protocol: false})
-                          || !validator.isLength(website || '', 0, 2000);
+                          || !validator.isLength(website || '', {max: 2000});
 
         if (this.isActive(model)) {
             if (!isBlank(website) && isInvalidWebsite) {

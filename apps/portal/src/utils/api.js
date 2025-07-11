@@ -10,9 +10,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     }
 
-    function contentEndpointFor({resource, params = ''}) {
+    function contentEndpointFor({resource, params = {}}) {
         if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+            const searchParams = new URLSearchParams({
+                ...params,
+                key: apiKey
+            });
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?${searchParams.toString()}`;
         }
         return '';
     }
@@ -47,7 +51,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         newsletters() {
-            const url = contentEndpointFor({resource: 'newsletters'});
+            const url = contentEndpointFor({resource: 'newsletters', params: {limit: 100}});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -64,7 +68,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         tiers() {
-            const url = contentEndpointFor({resource: 'tiers', params: '&include=monthly_price,yearly_price,benefits'});
+            const url = contentEndpointFor({resource: 'tiers', params: {limit: 100, include: 'monthly_price,yearly_price,benefits'}});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -114,9 +118,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        recommendations({limit}) {
-            let url = contentEndpointFor({resource: 'recommendations'});
-            url = url.replace('limit=all', `limit=${limit}`);
+        recommendations({limit = 100} = {limit: 100}) {
+            const url = contentEndpointFor({resource: 'recommendations', params: {limit}});
             return makeRequest({
                 url,
                 method: 'GET',

@@ -168,9 +168,16 @@ describe('ghost-stats.js', function () {
     });
 
     describe('GhostStats Configuration', function () {
-        it('should initialize with required configuration', function () {
+        it('should initialize with host and token', function () {
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
             mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            expect(ghostStats.initConfig()).to.be.true;
+        });
+
+        it('should initialize with host and no token', function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
             
             expect(ghostStats.initConfig()).to.be.true;
         });
@@ -252,6 +259,108 @@ describe('ghost-stats.js', function () {
             
             expect(consoleSpy.calledOnce).to.be.true;
             consoleSpy.restore();
+        });
+
+        it('should send payload with correct shape and required fields', async function () {
+            const testEventData = {
+                custom_field: 'test_value',
+                numeric_field: 123
+            };
+            
+            await ghostStats.trackEvent('custom_event', testEventData);
+            
+            expect(mockFetch.calledOnce).to.be.true;
+            
+            // Verify request structure
+            const [url, options] = mockFetch.firstCall.args;
+            expect(url).to.equal('https://test.com?name=analytics_events&token=test-token');
+            expect(options.method).to.equal('POST');
+            expect(options.headers['Content-Type']).to.equal('application/json');
+            expect(options.headers['x-site-uuid']).to.equal('test-site-uuid');
+            
+            // Parse and validate payload structure
+            const payload = JSON.parse(options.body);
+            
+            // Required top-level fields
+            expect(payload).to.have.property('action');
+            expect(payload).to.have.property('payload');
+            expect(payload).to.have.property('timestamp');
+            
+            // Validate field types
+            expect(payload.action).to.be.a('string');
+            expect(payload.payload).to.be.a('string');
+            expect(payload.timestamp).to.be.a('string');
+            
+            // Validate action matches expected value
+            expect(payload.action).to.equal('custom_event');
+            
+            // Validate timestamp is ISO format
+            expect(() => new Date(payload.timestamp)).to.not.throw();
+            expect(new Date(payload.timestamp).toISOString()).to.equal(payload.timestamp);
+            
+            // Parse inner payload and validate structure
+            const innerPayload = JSON.parse(payload.payload);
+            
+            // Should contain custom event data
+            expect(innerPayload).to.have.property('custom_field', 'test_value');
+            expect(innerPayload).to.have.property('numeric_field', 123);
+            
+            // Should contain global attributes from script tag
+            expect(innerPayload).to.have.property('site_uuid', 'test-site-uuid');
+            
+            // Custom events do not automatically include browser/location info
+            // That is only added for page_hit events in trackPageHit()
+            expect(innerPayload).to.not.have.property('user-agent');
+            expect(innerPayload).to.not.have.property('pathname');
+            expect(innerPayload).to.not.have.property('href');
+        });
+
+        it('should send page hit payload with correct shape', function () {
+            ghostStats.trackPageHit();
+            
+            // Execute the delayed callback
+            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
+            timeoutCallback();
+            
+            expect(mockFetch.calledOnce).to.be.true;
+            
+            const [, options] = mockFetch.firstCall.args;
+            const payload = JSON.parse(options.body);
+            const innerPayload = JSON.parse(payload.payload);
+            
+            // Page hit specific validations
+            expect(payload.action).to.equal('page_hit');
+            
+            // Should contain all required page hit fields
+            expect(innerPayload).to.have.property('user-agent');
+            expect(innerPayload).to.have.property('pathname');
+            expect(innerPayload).to.have.property('href');
+            expect(innerPayload).to.have.property('parsedReferrer');
+            expect(innerPayload).to.have.property('locale');
+            expect(innerPayload).to.have.property('location');
+            expect(innerPayload).to.have.property('site_uuid');
+            
+            // Validate field types for page hit
+            expect(innerPayload['user-agent']).to.be.a('string');
+            expect(innerPayload.pathname).to.be.a('string');
+            expect(innerPayload.href).to.be.a('string');
+            expect(innerPayload.parsedReferrer).to.be.a('object');
+            expect(innerPayload.locale).to.be.a('string');
+            expect(innerPayload.location).to.be.a('string');
+            expect(innerPayload.site_uuid).to.be.a('string');
+            expect(innerPayload.event_id).to.be.a('string');
+        });
+
+        it('should handle missing token gracefully', async function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
+            ghostStats.initConfig();
+            await ghostStats.trackEvent('test', {});
+
+            expect(mockFetch.calledOnce).to.be.true;
+            
+            // Verify request structure
+            const [url] = mockFetch.firstCall.args;
+            expect(url).to.equal('https://test.com?name=analytics_events');
         });
     });
 
@@ -389,6 +498,20 @@ describe('ghost-stats.js', function () {
             // Test the global API works
             mockWindow.Tinybird.trackEvent('test', {data: 'value'});
             expect(mockFetch.calledOnce).to.be.true;
+        });
+    });
+
+    describe('GhostStats UUID Generation', function () {
+        it('should generate a valid UUID', function () {
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        });
+
+        it('should generate a valid UUID with fallback', function () {
+            mockWindow.crypto = undefined;
+
+            const uuid = ghostStats.generateUUID();
+            expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
         });
     });
 });

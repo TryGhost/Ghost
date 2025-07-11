@@ -17,12 +17,13 @@ export default class Posts extends AdminXComponent {
             fromAnalytics: fromAnalytics,
             appSettings: {
                 paidMembersEnabled: this.settings.paidMembersEnabled,
+                newslettersEnabled: this.settings.editorDefaultEmailRecipients !== 'disabled',
                 analytics: {
                     emailTrackOpens: this.settings.emailTrackOpens,
                     emailTrackClicks: this.settings.emailTrackClicks,
                     membersTrackSources: this.settings.membersTrackSources,
                     outboundLinkTagging: this.settings.outboundLinkTagging,
-                    webAnalytics: this.feature.trafficAnalytics && (this.settings.webAnalytics ?? false)
+                    webAnalytics: this.settings.webAnalyticsEnabled // use the computed setting
                 }
             }
         };

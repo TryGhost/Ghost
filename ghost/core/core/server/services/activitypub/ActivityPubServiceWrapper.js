@@ -14,9 +14,9 @@ module.exports = class ActivityPubServiceWrapper {
         const logging = require('@tryghost/logging');
         const events = require('../../lib/common/events');
         const {knex} = require('../../data/db');
-        const labs = require('../../../shared/labs');
         const urlUtils = require('../../../shared/url-utils');
         const IdentityTokenServiceWrapper = require('../identity-tokens');
+        const settingsCache = require('../../../shared/settings-cache');
 
         if (!IdentityTokenServiceWrapper.instance) {
             logging.error(`IdentityTokenService needs to be initialised before ActivityPubService`);
@@ -32,16 +32,22 @@ module.exports = class ActivityPubServiceWrapper {
             IdentityTokenServiceWrapper.instance
         );
 
-        if (labs.isSet('ActivityPub')) {
+        const initActivityPubService = async () => {
             await ActivityPubServiceWrapper.instance.initialiseWebhooks();
             ActivityPubServiceWrapper.initialised = true;
+        };
+
+        if (settingsCache.get('social_web_enabled')) {
+            await initActivityPubService();
         } else {
-            events.on('settings.labs.edited', async () => {
-                if (labs.isSet('ActivityPub') && !ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
-                    ActivityPubServiceWrapper.initialised = true;
+            const initActivityPubServiceLater = async () => {
+                if (settingsCache.get('social_web_enabled') && !ActivityPubServiceWrapper.initialised) {
+                    await initActivityPubService();
                 }
-            });
+            };
+
+            events.on('settings.labs.edited', initActivityPubServiceLater);
+            events.on('settings.social_web.edited', initActivityPubServiceLater);
         }
     }
 };

@@ -1,9 +1,9 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../Newsletters';
-import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, GhAreaChart, KpiTabTrigger, KpiTabValue, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
-import {sanitizeChartData} from '@src/utils/chart-helpers';
+import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
+import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
-import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 interface BarTooltipPayload {
     value: number;
@@ -87,6 +87,8 @@ const NewsletterKPIs: React.FC<{
     const {range} = useGlobalData();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const {appSettings} = useAppContext();
+    const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
@@ -140,9 +142,6 @@ const NewsletterKPIs: React.FC<{
         }
     } satisfies ChartConfig;
 
-    const barDomain = [0, 1];
-    const barTicks = [0, 1];
-
     const tabConfig = {
         'total-subscribers': {
             color: 'hsl(var(--chart-darkblue))',
@@ -158,6 +157,41 @@ const NewsletterKPIs: React.FC<{
         }
     };
 
+    // Calculate dynamic domain and ticks based on current tab's data
+    const {barDomain, barTicks} = useMemo(() => {
+        if (!avgsData || avgsData.length === 0 || currentTab === 'total-subscribers') {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const dataKey = tabConfig[currentTab as keyof typeof tabConfig]?.datakey;
+        if (!dataKey) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        // Extract values for the current data key
+        const values = avgsData.map(item => item[dataKey as keyof AvgsDataItem]).filter(val => typeof val === 'number') as number[];
+
+        if (values.length === 0) {
+            return {barDomain: [0, 1], barTicks: [0, 1]};
+        }
+
+        const minValue = Math.min(...values);
+        const maxValue = Math.max(...values);
+
+        // Round to nearest 0.1
+        const roundedMin = Math.floor(minValue * 10) / 10;
+        const roundedMax = Math.ceil(maxValue * 10) / 10;
+
+        // Ensure we have some padding and don't have the same min/max
+        const finalMin = Math.max(0, roundedMin);
+        const finalMax = roundedMax === finalMin ? finalMin + 0.1 : roundedMax;
+
+        return {
+            barDomain: [finalMin, finalMax],
+            barTicks: [finalMin, finalMax]
+        };
+    }, [avgsData, currentTab]);
+
     if (isLoading) {
         return (
             <div className='-mb-6 flex h-[calc(16vw+132px)] w-full items-start justify-center'>
@@ -166,10 +200,21 @@ const NewsletterKPIs: React.FC<{
         );
     }
 
+    let gridClass = 'grid-cols-3';
+    if (!emailTrackClicksEnabled || !emailTrackOpensEnabled) {
+        gridClass = 'grid-cols-2';
+    }
+    if (!emailTrackClicksEnabled && !emailTrackOpensEnabled) {
+        gridClass = 'grid-cols-1';
+    }
+
+    const showAvgLine = (currentTab === 'avg-open-rate' && avgOpenRate > barDomain[0] && avgOpenRate < barDomain[1]) || (currentTab === 'avg-click-rate' && avgClickRate > barDomain[0] && avgClickRate < barDomain[1]);
+    const avgValue = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
+
     return (
         <Tabs defaultValue={initialTab} variant='kpis'>
-            <TabsList className="-mx-6 grid grid-cols-3">
-                <KpiTabTrigger value="total-subscribers" onClick={() => {
+            <TabsList className={`-mx-6 hidden grid-cols-3 md:!visible md:!grid ${gridClass}`}>
+                <KpiTabTrigger className={`${!emailTrackOpensEnabled && !emailTrackClicksEnabled && 'cursor-auto after:hidden'}`} value="total-subscribers" onClick={() => {
                     handleTabChange('total-subscribers');
                 }}>
                     <KpiTabValue
@@ -178,31 +223,77 @@ const NewsletterKPIs: React.FC<{
                         value={formatNumber(totalSubscribers)}
                     />
                 </KpiTabTrigger>
-                <KpiTabTrigger value="avg-open-rate" onClick={() => {
-                    handleTabChange('avg-open-rate');
-                }}>
-                    <KpiTabValue
-                        className={isAvgsLoading ? 'opacity-50' : ''}
-                        color={tabConfig['avg-open-rate'].color}
-                        label="Avg. open rate"
-                        value={formatPercentage(avgOpenRate)}
-                    />
-                </KpiTabTrigger>
-                <KpiTabTrigger value="avg-click-rate" onClick={() => {
-                    handleTabChange('avg-click-rate');
-                }}>
-                    <KpiTabValue
-                        className={isAvgsLoading ? 'opacity-50' : ''}
-                        color={tabConfig['avg-click-rate'].color}
-                        label="Avg. click rate"
-                        value={formatPercentage(avgClickRate)}
-                    />
-                </KpiTabTrigger>
+
+                {emailTrackOpensEnabled &&
+                    <KpiTabTrigger value="avg-open-rate" onClick={() => {
+                        handleTabChange('avg-open-rate');
+                    }}>
+                        <KpiTabValue
+                            className={isAvgsLoading ? 'opacity-50' : ''}
+                            color={tabConfig['avg-open-rate'].color}
+                            label="Avg. open rate"
+                            value={formatPercentage(avgOpenRate)}
+                        />
+                    </KpiTabTrigger>
+                }
+
+                {emailTrackClicksEnabled &&
+                    <KpiTabTrigger value="avg-click-rate" onClick={() => {
+                        handleTabChange('avg-click-rate');
+                    }}>
+                        <KpiTabValue
+                            className={isAvgsLoading ? 'opacity-50' : ''}
+                            color={tabConfig['avg-click-rate'].color}
+                            label="Avg. click rate"
+                            value={formatPercentage(avgClickRate)}
+                        />
+                    </KpiTabTrigger>
+                }
             </TabsList>
+            <DropdownMenu>
+                <DropdownMenuTrigger className='md:hidden' asChild>
+                    <KpiDropdownButton>
+                        {currentTab === 'total-subscribers' &&
+                                <KpiTabValue
+                                    color={tabConfig['total-subscribers'].color}
+                                    label="Total subscribers"
+                                    value={formatNumber(totalSubscribers)}
+                                />
+                        }
+                        {currentTab === 'avg-open-rate' && emailTrackOpensEnabled &&
+                                <KpiTabValue
+                                    className={isAvgsLoading ? 'opacity-50' : ''}
+                                    color={tabConfig['avg-open-rate'].color}
+                                    label="Avg. open rate"
+                                    value={formatPercentage(avgOpenRate)}
+                                />
+                        }
+                        {currentTab === 'avg-click-rate' && emailTrackClicksEnabled &&
+                                <KpiTabValue
+                                    className={isAvgsLoading ? 'opacity-50' : ''}
+                                    color={tabConfig['avg-click-rate'].color}
+                                    label="Avg. click rate"
+                                    value={formatPercentage(avgClickRate)}
+                                />
+                        }
+                    </KpiDropdownButton>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align='end' className="w-56">
+                    <DropdownMenuItem onClick={() => handleTabChange('total-subscribers')}>Total subscribers</DropdownMenuItem>
+
+                    {emailTrackOpensEnabled &&
+                            <DropdownMenuItem onClick={() => handleTabChange('avg-open-rate')}>Avg. open rate</DropdownMenuItem>
+                    }
+
+                    {emailTrackClicksEnabled &&
+                            <DropdownMenuItem onClick={() => handleTabChange('avg-click-rate')}>Avg. click rate</DropdownMenuItem>
+                    }
+                </DropdownMenuContent>
+            </DropdownMenu>
             <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
                     <GhAreaChart
-                        className='-mb-3 h-[16vw] max-h-[320px] w-full'
+                        className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
                         color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
                         id="mrr"
@@ -210,77 +301,88 @@ const NewsletterKPIs: React.FC<{
                     />
                 }
 
-                {(currentTab === 'avg-open-rate' || currentTab === 'avg-click-rate') &&
+                {((currentTab === 'avg-open-rate' && emailTrackOpensEnabled) || (currentTab === 'avg-click-rate' && emailTrackClicksEnabled)) &&
                     <>
                         {isAvgsLoading ?
                             <div className='h-[320px] w-full items-center justify-center'>
                                 <BarChartLoadingIndicator />
                             </div>
                             :
-                            <>
-                                <ChartContainer className='max-h-[320px] w-full' config={barChartConfig}>
-                                    <Recharts.BarChart
-                                        className={isHoveringClickable ? '!cursor-pointer' : ''}
-                                        data={avgsData}
-                                        margin={{
-                                            top: 20
-                                        }}
-                                        onClick={(e) => {
-                                            if (e.activePayload && e.activePayload![0].payload.post_id) {
-                                                navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                            avgsData && avgsData.length > 0 ?
+                                <>
+                                    <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]' config={barChartConfig}>
+                                        <Recharts.BarChart
+                                            className={isHoveringClickable ? '!cursor-pointer' : ''}
+                                            data={avgsData}
+                                            margin={{
+                                                top: 20
+                                            }}
+                                            onClick={(e) => {
+                                                if (e.activePayload && e.activePayload![0].payload.post_id) {
+                                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                                }
+                                            }}
+                                            onMouseLeave={() => setIsHoveringClickable(false)}
+                                            onMouseMove={(e) => {
+                                                setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
+                                            }}
+                                        >
+                                            <defs>
+                                                <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
+                                                    <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
+                                                    <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
+                                                </linearGradient>
+                                            </defs>
+                                            <Recharts.CartesianGrid horizontal={true} vertical={false} />
+                                            <Recharts.XAxis
+                                                axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
+                                                dataKey="post_id"
+                                                interval={0}
+                                                stroke="hsl(var(--border))"
+                                                tickFormatter={() => ('')}
+                                                tickLine={false}
+                                                tickMargin={10}
+                                            />
+                                            <Recharts.YAxis
+                                                axisLine={false}
+                                                domain={barDomain}
+                                                tickFormatter={value => formatPercentage(value)}
+                                                tickLine={false}
+                                                ticks={barTicks}
+                                                width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
+                                            />
+                                            <ChartTooltip
+                                                content={<BarTooltipContent />}
+                                                cursor={false}
+                                                isAnimationActive={false}
+                                                position={{y: 10}}
+                                            />
+                                            {showAvgLine &&
+                                                <Recharts.ReferenceLine label={{value: `${formatPercentage(avgValue)}`, position: 'left', offset: 8, fill: 'hsl(var(--muted-foreground))'}} opacity={0.5} stroke="hsl(var(--muted-foreground))" strokeDasharray="4 4" y={avgValue} />
                                             }
-                                        }}
-                                        onMouseLeave={() => setIsHoveringClickable(false)}
-                                        onMouseMove={(e) => {
-                                            setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
-                                        }}
-                                    >
-                                        <defs>
-                                            <linearGradient id="barGradient" x1="0" x2="0" y1="0" y2="1">
-                                                <stop offset="0%" stopColor={tabConfig[currentTab].color} stopOpacity={0.8} />
-                                                <stop offset="100%" stopColor={tabConfig[currentTab].color} stopOpacity={0.6} />
-                                            </linearGradient>
-                                        </defs>
-                                        <Recharts.CartesianGrid horizontal={false} vertical={false} />
-                                        <Recharts.XAxis
-                                            axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
-                                            dataKey="post_id"
-                                            interval={0}
-                                            stroke="hsl(var(--gray-300))"
-                                            tickFormatter={() => ('')}
-                                            tickLine={false}
-                                            tickMargin={10}
-                                        />
-                                        <Recharts.YAxis
-                                            axisLine={false}
-                                            domain={barDomain}
-                                            tickFormatter={value => formatPercentage(value)}
-                                            tickLine={false}
-                                            ticks={barTicks}
-                                            width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}
-                                        />
-                                        <ChartTooltip
-                                            content={<BarTooltipContent />}
-                                            cursor={false}
-                                            isAnimationActive={false}
-                                            position={{y: 10}}
-                                        />
-                                        <Recharts.Bar
-                                            activeBar={{fillOpacity: 1}}
-                                            dataKey={tabConfig[currentTab].datakey}
-                                            fill='url(#barGradient)'
-                                            fillOpacity={0.6}
-                                            isAnimationActive={false}
-                                            maxBarSize={32}
-                                            minPointSize={3}
-                                            radius={4}
-                                        />
-                                    </Recharts.BarChart>
-                                </ChartContainer>
-                                <div className="-mt-6 text-center text-sm text-muted-foreground">
+                                            <Recharts.Bar
+                                                activeBar={{fillOpacity: 1}}
+                                                dataKey={tabConfig[currentTab].datakey}
+                                                fill='url(#barGradient)'
+                                                fillOpacity={0.6}
+                                                isAnimationActive={false}
+                                                maxBarSize={32}
+                                                minPointSize={3}
+                                                radius={4}
+                                            />
+                                        </Recharts.BarChart>
+                                    </ChartContainer>
+                                    <div className="-mt-4 text-center text-sm text-muted-foreground">
                                     Newsletters {currentTab === 'avg-open-rate' ? 'opens' : 'clicks'} in this period
-                                </div>
-                            </>
+                                    </div>
+                                </>
+                                :
+                                <EmptyIndicator
+                                    className='size-full py-20'
+                                    title={`No newsletters ${getPeriodText(range)}`}
+                                >
+                                    <LucideIcon.Mail strokeWidth={1.5} />
+                                </EmptyIndicator>
                         }
                     </>
                 }

@@ -234,7 +234,7 @@ export class MockedApi {
             };
         }
 
-        let replies: any[] = comment.replies;
+        const replies: any[] = comment.replies;
 
         // Sort replies on created at + id
         replies.sort((a, b) => {
@@ -248,24 +248,28 @@ export class MockedApi {
             return aDate > bDate ? 1 : -1;
         });
 
-        // Parse NQL filter
+        // Parse NQL filter and apply pagination
+        let filteredReplies = replies;
         if (filter) {
             const parsed = nql(filter);
-            replies = replies.filter((reply) => {
+            filteredReplies = replies.filter((reply) => {
                 return parsed.queryJSON(reply);
             });
         }
 
-        const limitedReplies = replies.slice(0, limit);
+        const limitedReplies = filteredReplies.slice(0, limit);
+        const hasMore = filteredReplies.length > limit;
 
         return {
             comments: limitedReplies,
             meta: {
                 pagination: {
-                    pages: Math.ceil(replies.length / limit),
-                    total: replies.length,
                     page: 1,
-                    limit
+                    pages: Math.ceil(filteredReplies.length / limit),
+                    total: filteredReplies.length,
+                    limit,
+                    next: hasMore ? 2 : null,
+                    prev: null
                 }
             }
         };

@@ -72,7 +72,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
-            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-4'>
+            <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-2 xl:pb-4'>
                 <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                         {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
@@ -127,27 +127,27 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const {range} = useGlobalData();
     const {appSettings} = useAppContext();
 
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] hover:!cursor-pointer';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
 
     if (isLoading) {
         return (
-            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] items-center justify-center hover:!cursor-pointer'>
+            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:!cursor-pointer'>
                 <BarChartLoadingIndicator />
             </EmptyCard>
         );
     }
 
-    let cols = 'grid-cols-3';
+    let cols = 'lg:grid-cols-3';
     if ((appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) ||
         (!appSettings?.analytics.webAnalytics && appSettings?.paidMembersEnabled)) {
-        cols = 'grid-cols-2';
+        cols = 'lg:grid-cols-2';
     }
 
     if (!appSettings?.analytics.webAnalytics && !appSettings?.paidMembersEnabled) {
-        cols = 'grid-cols-1';
+        cols = 'lg:grid-cols-1';
     }
 
-    const containerClass = `grid ${cols} gap-8`;
+    const containerClass = `flex flex-col lg:grid ${cols} gap-8`;
 
     return (
         <div className={containerClass}>
@@ -156,7 +156,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                     description='Number of individual people who visited your website'
                     diffDirection='empty'
                     formattedValue={kpiValues.visits}
-                    iconName='Eye'
+                    iconName='Globe'
                     linkto='/web/'
                     title='Unique visitors'
                     onClick={() => {

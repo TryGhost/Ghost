@@ -1,6 +1,7 @@
 import React from 'react';
-import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {useAppContext} from '@src/App';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
@@ -21,7 +22,7 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
             <Table>
                 <TableHeader>
                     <TableRow>
-                        <TableHead variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
+                        <TableHead className='min-w-[320px]' variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
                         <TableHead className='w-[110px] text-right'>Free members</TableHead>
                         <TableHead className='w-[110px] text-right'>Paid members</TableHead>
                         <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
@@ -93,6 +94,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
     getPeriodText
 }) => {
+    const {appSettings} = useAppContext();
+    const navigate = useNavigate();
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
         return processSources({
@@ -128,7 +131,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
             {topSources.length <= 0 &&
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>
@@ -136,7 +139,20 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                 </CardHeader>
             }
             <CardContent>
-                {topSources.length > 0 ? (
+                {mode === 'growth' && !appSettings?.analytics.membersTrackSources ? (
+                    <EmptyIndicator
+                        actions={
+                            <Button variant='outline' onClick={() => navigate('/settings/analytics', {crossApp: true})}>
+                                Open settings
+                            </Button>
+                        }
+                        className='py-10'
+                        description='Enable member source tracking in settings to see which content drives member growth.'
+                        title='Member sources have been disabled'
+                    >
+                        <LucideIcon.Activity />
+                    </EmptyIndicator>
+                ) : topSources.length > 0 ? (
                     <SourcesTable
                         data={topSources}
                         defaultSourceIconUrl={defaultSourceIconUrl}
@@ -152,10 +168,13 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                     </SourcesTable>
                 ) : (
                     <div className='py-20 text-center text-sm text-gray-700'>
-                        {mode === 'growth'
-                            ? 'Once someone signs up on this post, sources will show here.'
-                            : 'No sources data available.'
-                        }
+                        <EmptyIndicator
+                            className='h-full'
+                            description={mode === 'growth' && `Once someone signs up on this post, sources will show here`}
+                            title={`No sources data available ${getPeriodText ? getPeriodText(range) : ''}`}
+                        >
+                            <LucideIcon.UserPlus strokeWidth={1.5} />
+                        </EmptyIndicator>
                     </div>
                 )}
             </CardContent>
@@ -166,7 +185,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                 <SheetTitle>{sheetTitle}</SheetTitle>
                                 <SheetDescription>{sheetDescription}</SheetDescription>
                             </SheetHeader>

@@ -7,6 +7,7 @@ export default class PostAnalyticsService extends Service {
     @service ajax;
     @service ghostPaths;
     @service feature;
+    @service settings;
 
     /**
      * @type {?Object} Post visitor counts by UUID
@@ -40,8 +41,8 @@ export default class PostAnalyticsService extends Service {
             return Promise.resolve();
         }
         
-        // Check if traffic analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha) {
+        // Check if web analytics is enabled
+        if (!this.settings.webAnalyticsEnabled) {
             return Promise.resolve();
         }
         
@@ -77,8 +78,8 @@ export default class PostAnalyticsService extends Service {
             return Promise.resolve();
         }
         
-        // Check if traffic analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha) {
+        // Check if member tracking is enabled
+        if (!this.settings.membersTrackSources) {
             return Promise.resolve();
         }
         

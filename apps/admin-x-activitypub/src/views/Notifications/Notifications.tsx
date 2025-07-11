@@ -13,6 +13,7 @@ import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -229,17 +230,17 @@ const Notifications: React.FC = () => {
         switch (group.type) {
         case 'like':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'reply':
             if (group.post && group.inReplyTo) {
-                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
+                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'repost':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'follow':
@@ -251,7 +252,7 @@ const Notifications: React.FC = () => {
             break;
         case 'mention':
             if (group.post) {
-                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
+                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         }
@@ -396,6 +397,13 @@ const Notifications: React.FC = () => {
                                                                     content={group.post?.content || ''}
                                                                     stripTags={['a']}
                                                                 />
+                                                                {group.post && group.post.attachments && group.post.attachments.length > 0 && (
+                                                                    <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
+                                                                        {renderFeedAttachment(
+                                                                            {...group.post, type: 'Note', attachment: group.post.attachments}
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )

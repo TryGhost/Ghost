@@ -5,7 +5,7 @@ import nock from 'nock';
 
 test('renders Sodo Search app component', () => {
     nock('http://localhost:3000/ghost/api/content')
-        .get('/posts/?key=69010382388f9de5869ad6e558&limit=10000&fields=id%2Cslug%2Ctitle%2Cexcerpt%2Curl%2Cupdated_at%2Cvisibility&order=updated_at%20DESC')
+        .get('/search-index/posts/?key=69010382388f9de5869ad6e558')
         .reply(200, {
             posts: []
         })

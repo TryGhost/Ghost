@@ -17,6 +17,26 @@ describe('Admin API', function () {
         assert.equal(user.slug, expected.slug);
     }
 
+    describe('Switch Authentication Methods', function () {
+        it('can use a restricted cookie session, then switch to a token', async function () {
+            // editor doesn't have permission to access /members, so this should fail
+            await agent.loginAsEditor();
+            await agent.get('members').expectStatus(403);
+            // the backup token has permission to access /members
+            await agent.useBackupAdminAPIKey();
+            await agent.get('members').expectStatus(200);
+        });
+
+        it('can use a restricted token, then switch to a cookie session', async function () {
+            // the backup token doesn't have permission to access /users, so this should fail
+            await agent.useBackupAdminAPIKey();
+            await agent.get('users').expectStatus(403);
+            // the admin token has permission to access /users
+            await agent.loginAsAdmin();
+            await agent.get('users').expectStatus(200);
+        });
+    });
+
     // The intention of these tests is to generally demonstrate that the staff token is working
     describe('Staff Tokens - Can fetch own data', function () {
         it('Owner', async function () {
@@ -106,22 +126,18 @@ describe('Admin API', function () {
                     .get('users')
                     .expectStatus(403);
             });
-        });
-    });
 
-    // Make sure that user auth works in tests, after using a token
-    describe('User Authentication', function () {
-        it('can do user auth after a token is used', async function () {
-            await agent.loginAsOwner();
-            await agent
-                .get('users/me')
-                .expectStatus(200);
+            it('Request to list members should succeed', async function () {
+                await agent
+                    .get('members')
+                    .expectStatus(200);
+            });
         });
     });
 
     // Make sure that staff tokens are blocked from certain endpoints
     describe('Staff Token Blocklist', function () {
-        describe('DELETE /db endpoint', function () {
+        describe('DELETE /db endpoint (delete all content)', function () {
             it('Owner staff token should be blocked', async function () {
                 await agent.useStaffTokenForOwner();
                 await agent
@@ -153,7 +169,7 @@ describe('Admin API', function () {
             });
         });
 
-        describe('PUT /users/owner endpoint', function () {
+        describe('PUT /users/owner endpoint (transfer ownership)', function () {
             it('Owner staff token should be blocked', async function () {
                 await agent.useStaffTokenForOwner();
                 await agent
@@ -190,7 +206,6 @@ describe('Admin API', function () {
 
             it('Regular user authentication should work (if user has permission)', async function () {
                 await agent.loginAsOwner();
-                // Note: This will likely fail with validation or other errors, but not the staff token error
                 await agent
                     .put('users/owner')
                     .body({
@@ -203,22 +218,85 @@ describe('Admin API', function () {
             });
         });
 
-        describe('Other endpoints should work normally', function () {
-            it('Staff tokens can still access GET /users', async function () {
-                await agent.useStaffTokenForAdmin();
+        describe('Everything else should get access according to their permissions', function () {
+            it('Owner staff tokens can access GET /db', async function () {
+                await agent.useStaffTokenForOwner();
                 await agent
-                    .get('users')
+                    .get('db')
                     .expectStatus(200);
             });
 
-            it('Staff tokens can get invites, which integrations cannot', async function () {
+            it('Owner staff tokens can access GET /invites', async function () {
+                await agent.useStaffTokenForOwner();
+                await agent
+                    .get('invites')
+                    .expectStatus(200);
+            });
+
+            it('Admin staff tokens can access GET /db', async function () {
+                await agent.useStaffTokenForAdmin();
+                await agent
+                    .get('db')
+                    .expectStatus(200);
+            });
+
+            it('Admin staff tokens can access GET /invites', async function () {
+                await agent.useStaffTokenForAdmin();
+                await agent
+                    .get('invites')
+                    .expectStatus(200);
+            });
+
+            it('Editor staff tokens cannot access GET /db', async function () {
+                await agent.useStaffTokenForEditor();
+                await agent
+                    .get('db')
+                    .expectStatus(403);
+            });
+
+            it('Editor staff tokens can access GET /invites', async function () {
                 await agent.useStaffTokenForEditor();
                 await agent
                     .get('invites')
                     .expectStatus(200);
             });
 
-            it('Integrations still cannot access invites', async function () {
+            it('Author staff tokens cannot access GET /db', async function () {
+                await agent.useStaffTokenForAuthor();
+                await agent
+                    .get('db')
+                    .expectStatus(403);
+            });
+
+            it('Author staff tokens cannot access GET /invites', async function () {
+                await agent.useStaffTokenForAuthor();
+                await agent
+                    .get('invites')
+                    .expectStatus(403);
+            });
+
+            it('Contributor staff tokens cannot access GET /db', async function () {
+                await agent.useStaffTokenForContributor();
+                await agent
+                    .get('db')
+                    .expectStatus(403);
+            });
+
+            it('Contributor staff tokens cannot access GET /invites', async function () {
+                await agent.useStaffTokenForContributor();
+                await agent
+                    .get('invites')
+                    .expectStatus(403);
+            });
+
+            it('Integrations cannot access GET /db', async function () {
+                await agent.useZapierAdminAPIKey();
+                await agent
+                    .get('db')
+                    .expectStatus(403);
+            });
+
+            it('Integrations cannot access GET /invites', async function () {
                 await agent.useZapierAdminAPIKey();
                 await agent
                     .get('invites')

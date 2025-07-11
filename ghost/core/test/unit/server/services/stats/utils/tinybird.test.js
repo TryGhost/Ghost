@@ -7,6 +7,7 @@ describe('Tinybird Client', function () {
     let mockConfig;
     let mockRequest;
     let mockSettingsCache;
+    let mockTinybirdService;
     
     beforeEach(function () {
         // Set up mocks
@@ -29,12 +30,19 @@ describe('Tinybird Client', function () {
             token: 'tb-token'
         });
         mockSettingsCache.get.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
+        mockTinybirdService = {
+            getToken: sinon.stub().returns({
+                token: 'mock-jwt-token',
+                exp: 1719859200
+            })
+        };
 
         // Create tinybird client with mocked dependencies
         tinybirdClient = tinybird.create({
             config: mockConfig,
             request: mockRequest,
-            settingsCache: mockSettingsCache
+            settingsCache: mockSettingsCache,
+            tinybirdService: mockTinybirdService
         });
     });
 
@@ -59,7 +67,7 @@ describe('Tinybird Client', function () {
 
             should.exist(options);
             should.exist(options.headers);
-            options.headers.Authorization.should.equal('Bearer tb-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
 
         it('uses tbVersion if provided', function () {
@@ -100,7 +108,7 @@ describe('Tinybird Client', function () {
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
             
             url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer local-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
         
         it('ignores tbVersion when local is enabled', function () {
@@ -227,7 +235,7 @@ describe('Tinybird Client', function () {
             mockRequest.get.calledOnce.should.be.true();
             const [url, options] = mockRequest.get.firstCall.args;
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer tb-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
         
         it('returns null when request fails', async function () {

@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
+const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -158,6 +158,8 @@ function getTinybirdTrackerScript(dataRoot) {
 
     const src = getAssetUrl('public/ghost-stats.min.js', false);
 
+    const env = config.get('env');
+
     const statsConfig = config.get('tinybird:tracker');
     const localConfig = config.get('tinybird:tracker:local');
     const localEnabled = localConfig?.enabled ?? false;
@@ -174,7 +176,7 @@ function getTinybirdTrackerScript(dataRoot) {
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
-    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" data-token="${token}" ${tbParams}></script>`;
+    return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;
 }
 
 /**
@@ -360,9 +362,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-            const isTbTrackingEnabled = labs.isSet('trafficAnalytics') || labs.isSet('trafficAnalyticsTracking');
-            const hasTbConfig = config.get('tinybird') && config.get('tinybird:tracker');
-            if (isTbTrackingEnabled && hasTbConfig) {
+            // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
+            if (settingsHelpers.isWebAnalyticsEnabled()) {
                 head.push(getTinybirdTrackerScript(dataRoot));
                 // Set a flag in response locals to indicate tracking script is being served
                 if (dataRoot._locals) {

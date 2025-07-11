@@ -239,7 +239,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: white;">
+                            <td align="center" style="background-color: #ffffff;">
                                 <a href="http://blog.com/post1" style="color: #000000 !important;">
                                     click me
                                 </a>
@@ -303,7 +303,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
         it('does not convert black button when background is not dark', function () {
             const data = getTestData({
                 backgroundColor: 'none',
-                buttonColor: 'black'
+                buttonColor: '#000000'
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: false},
@@ -314,7 +314,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: black;">
+                            <td align="center" style="background-color: #000000;">
                                 <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                     click me
                                 </a>
@@ -328,7 +328,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
         it('does not convert black button when CTA background is not transparent or white', function () {
             const data = getTestData({
                 backgroundColor: 'blue',
-                buttonColor: 'black'
+                buttonColor: '#000000'
             });
             const result = renderForEmail(data, {
                 design: {backgroundIsDark: true},
@@ -339,7 +339,7 @@ describe('services/koenig/node-renderers/call-to-action-renderer', function () {
                 <table class="btn" border="0" cellspacing="0" cellpadding="0">
                     <tbody>
                         <tr>
-                            <td align="center" style="background-color: black;">
+                            <td align="center" style="background-color: #000000;">
                                 <a href="http://blog.com/post1" style="color: #ffffff !important;">
                                     click me
                                 </a>

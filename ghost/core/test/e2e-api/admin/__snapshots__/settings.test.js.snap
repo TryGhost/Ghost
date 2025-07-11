@@ -297,6 +297,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -355,6 +359,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -1096,6 +1112,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1154,6 +1174,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -1470,6 +1502,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1528,6 +1564,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -1843,6 +1891,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1901,6 +1953,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -2679,6 +2743,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -2737,6 +2805,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -3053,6 +3133,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3111,6 +3195,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -3427,6 +3523,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3485,6 +3585,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -3805,6 +3917,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3863,6 +3979,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -4178,6 +4306,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -4236,6 +4368,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -4556,6 +4700,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -4614,6 +4762,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -5298,6 +5458,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -5356,6 +5520,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -5672,6 +5848,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -5730,6 +5910,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -6047,6 +6239,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6105,6 +6301,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -6422,6 +6630,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6480,6 +6692,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }
@@ -6859,6 +7083,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6917,6 +7145,18 @@ Object {
     Object {
       "key": "all_blocked_email_domains",
       "value": Array [],
+    },
+    Object {
+      "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
+      "value": false,
     },
   ],
 }

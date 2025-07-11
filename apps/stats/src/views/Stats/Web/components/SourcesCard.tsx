@@ -1,6 +1,6 @@
 import React from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -107,7 +107,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
         });
     }, [processedData, totalVisitors]);
 
-    const topSources = extendedData.slice(0, 10);
+    const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
     const title = 'Top sources';
@@ -129,7 +129,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
 
     return (
         <Card className='group/datalist'>
-            <div className='flex items-center justify-between p-6'>
+            <div className='flex items-center justify-between gap-6 p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
@@ -145,19 +145,22 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                         range={range}
                         tableHeader={false} />
                 ) : (
-                    <div className='py-20 text-center text-sm text-gray-700'>
-                            No sources data available.
-                    </div>
+                    <EmptyIndicator
+                        className='mt-8 w-full py-20'
+                        title={`No visitors ${getPeriodText(range)}`}
+                    >
+                        <LucideIcon.Globe strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
-            {extendedData.length > 10 &&
+            {extendedData.length > 11 &&
                 <CardFooter>
                     <Sheet>
                         <SheetTrigger asChild>
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>

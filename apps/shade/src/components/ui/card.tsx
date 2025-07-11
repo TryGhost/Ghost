@@ -184,13 +184,13 @@ interface KpiCardValueProps {
 
 const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, diffValue, diffTooltip}) => {
     const diffContainerClassName = cn(
-        'hidden xl:!flex xl:!visible items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default',
+        'flex items-center gap-1 text-xs h-[22px] px-1.5 rounded-sm group/diff cursor-default',
         diffDirection === 'up' && `text-green-600 bg-green/10 ${diffTooltip && 'hover:bg-green/20'}`,
         diffDirection === 'down' && `text-red-600 bg-red/10 ${diffTooltip && 'hover:bg-red/20'}`,
         diffDirection === 'same' && 'text-gray-700 bg-muted'
     );
     return (
-        <div className='relative flex items-center gap-3'>
+        <div className='relative flex flex-col items-start gap-2 lg:flex-row lg:gap-3'>
             <div className='text-[2.2rem] font-semibold leading-none tracking-tighter'>
                 {value}
             </div>
