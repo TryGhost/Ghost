@@ -98,7 +98,7 @@
         "react-dom": "18.3.1",
         "react-hook-form": "7.60.0",
         "react-hot-toast": "2.5.2",
-        "react-select": "5.10.1",
+        "react-select": "5.10.2",
         "react-world-flags": "1.6.0",
         "recharts": "2.15.4",
         "rollup-plugin-node-builtins": "2.1.2",
