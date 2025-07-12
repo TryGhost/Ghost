@@ -10,7 +10,7 @@ describe('Unit: Service: post-analytics', function () {
     let service;
     let ajaxStub;
     let ghostPathsStub;
-    let featureStub;
+    let settingsStub;
 
     beforeEach(function () {
         service = this.owner.lookup('service:post-analytics');
@@ -22,12 +22,17 @@ describe('Unit: Service: post-analytics', function () {
                 api: sinon.stub()
             }
         };
-        featureStub = {
-            trafficAnalyticsAlpha: true
+        settingsStub = {
+            webAnalyticsEnabled: true,
+            membersTrackSources: true
+        };
+        const featureStub = {
+            trafficAnalytics: true
         };
 
         service.ajax = {request: ajaxStub};
         service.ghostPaths = ghostPathsStub;
+        service.settings = settingsStub;
         service.feature = featureStub;
     });
 
@@ -42,8 +47,8 @@ describe('Unit: Service: post-analytics', function () {
             expect(ajaxStub.called).to.be.false;
         });
 
-        it('returns early if feature flag is disabled', async function () {
-            featureStub.trafficAnalyticsAlpha = false;
+        it('returns early if web analytics is disabled', async function () {
+            settingsStub.webAnalyticsEnabled = false;
             const result = await service.loadVisitorCounts(['uuid1']);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;
@@ -139,8 +144,8 @@ describe('Unit: Service: post-analytics', function () {
             expect(ajaxStub.called).to.be.false;
         });
 
-        it('returns early if feature flag is disabled', async function () {
-            featureStub.trafficAnalyticsAlpha = false;
+        it('returns early if member tracking is disabled', async function () {
+            service.settings.membersTrackSources = false;
             const result = await service.loadMemberCounts([{id: '1', uuid: 'uuid1'}]);
             expect(result).to.be.undefined;
             expect(ajaxStub.called).to.be.false;

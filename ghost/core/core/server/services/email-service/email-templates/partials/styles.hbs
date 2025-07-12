@@ -381,6 +381,17 @@ h6 + .kg-paywall .kg-paywall-hr td {
 }
 
 /* Exclude CTA cards with colored backgrounds from custom text color, but allow transparent ones */
+{{#hasFeature "emailCustomization"}}
+{{#each ctaBgColors}}
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text p,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text ul,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text ul li,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text ol,
+.post-content-row .kg-cta-bg-{{this}} .kg-cta-text ol li {
+    color: inherit !important;
+}
+{{/each}}
+{{else}}
 .post-content-row .kg-cta-bg-grey .kg-cta-text p,
 .post-content-row .kg-cta-bg-blue .kg-cta-text p,
 .post-content-row .kg-cta-bg-green .kg-cta-text p,
@@ -390,6 +401,7 @@ h6 + .kg-paywall .kg-paywall-hr td {
 .post-content-row .kg-cta-bg-purple .kg-cta-text p {
     color: inherit !important;
 }
+{{/hasFeature}}
 
 .kg-cta-bg-none .kg-cta-sponsor-label span,
 .kg-cta-bg-white .kg-cta-sponsor-label span {
@@ -2530,3 +2542,10 @@ table.btn-accent a {
 {{/if}}
 
 </style>
+{{#hasFeature "emailCustomization"}}
+<!--[if mso]>
+<style type="text/css">
+    ul, ol { margin-left: 1.5em !important; } {{!-- fix bullets/numbers not appearing for lists in older Outlook versions --}}
+</style>
+<![endif]-->
+{{/hasFeature}}

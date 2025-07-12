@@ -79,11 +79,11 @@
         "@radix-ui/react-tabs": "1.1.12",
         "@radix-ui/react-tooltip": "1.2.7",
         "@sentry/react": "7.120.3",
-        "@uiw/react-codemirror": "4.23.14",
+        "@uiw/react-codemirror": "4.24.0",
         "clsx": "2.1.1",
         "react-colorful": "5.6.1",
         "react-hot-toast": "2.5.2",
-        "react-select": "5.10.1"
+        "react-select": "5.10.2"
     },
     "peerDependencies": {
         "react": "^18.2.0",
