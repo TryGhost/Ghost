@@ -277,6 +277,18 @@ const mockLimitService = (limit, options) => {
 
     mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
     mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
+
+    // If errorIfWouldGoOverLimit is true, reject with HostLimitError
+    if (options.errorIfWouldGoOverLimit === true) {
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).rejects(
+            new errors.HostLimitError({
+                message: `Upgrade to use ${limit.replace(/$limit/, '')} feature.`
+            })
+        );
+    } else {
+        // Otherwise, resolve normally
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).resolves();
+    }
 };
 
 const restore = () => {
