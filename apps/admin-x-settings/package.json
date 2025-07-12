@@ -35,17 +35,17 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
-    "@tryghost/color-utils": "0.2.8",
+    "@tryghost/color-utils": "0.2.9",
     "@tryghost/kg-unsplash-selector": "0.3.6",
-    "@tryghost/limit-service": "1.3.2",
+    "@tryghost/limit-service": "1.4.0",
     "@tryghost/nql": "0.12.7",
-    "@tryghost/timezone-data": "0.4.10",
+    "@tryghost/timezone-data": "0.4.11",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "validator": "7.2.0"
+    "validator": "13.12.0"
   },
   "devDependencies": {
-    "@playwright/test": "1.53.2",
+    "@playwright/test": "1.54.1",
     "@testing-library/react": "14.3.1",
     "@tryghost/admin-x-design-system": "0.0.0",
     "@tryghost/admin-x-framework": "0.0.0",

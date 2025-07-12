@@ -16,7 +16,7 @@ const EmbedSignupForm: React.FC<{ keywords: string[] }> = ({keywords}) => {
             keywords={keywords}
             navid='embed-signup-form'
             testId='embed-signup-form'
-            title="Embeddable signup form"
+            title='Signup forms'
         />
     );
 };

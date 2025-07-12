@@ -203,7 +203,7 @@
         {{/if}}
 
         {{!-- Visitor count column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
-        {{#if (and (feature "trafficAnalyticsAlpha") this.settings.webAnalytics)}}
+        {{#if this.settings.webAnalyticsEnabled}}
             {{#if @post.isPublished}}
                 {{#if this.hasVisitorData}}
                     <div class="permalink gh-list-data gh-post-list-metrics">
@@ -227,8 +227,8 @@
             {{/if}}
         {{/if}}
 
-        {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled AND member tracking is enabled) --}}
-        {{#if (and (feature "trafficAnalytics") (or this.settings.membersTrackSources false))}}
+        {{!-- Member conversions column (only show for published posts when member tracking is enabled) --}}
+        {{#if this.settings.membersTrackSources}}
             {{#if @post.isPublished}}
                 {{#if this.hasMemberData}}
                     <div class="permalink gh-list-data gh-post-list-metrics" data-tooltip={{if this.totalMemberConversions (concat (format-number this.memberCounts.free) " free " (format-number this.memberCounts.paid) " paid ")}}>
