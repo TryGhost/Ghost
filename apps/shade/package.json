@@ -87,7 +87,7 @@
         "@radix-ui/react-tabs": "1.1.12",
         "@radix-ui/react-tooltip": "1.2.7",
         "@sentry/react": "7.120.3",
-        "@uiw/react-codemirror": "4.24.0",
+        "@uiw/react-codemirror": "4.24.1",
         "class-variance-authority": "0.7.1",
         "clsx": "2.1.1",
         "lucide-react": "0.525.0",
