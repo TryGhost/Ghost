@@ -329,6 +329,24 @@ describe('Acceptance: Posts / Pages', function () {
                     expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:second');
                 });
 
+                it('can filter by tag with server-side search', async function () {
+                    this.server.createList('tag', 120);
+                    this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+
+                    await visit('/posts');
+
+                    await selectSearch('[data-test-tag-select]', 'Last');
+
+                    let options = findAll('.ember-power-select-option');
+                    expect(options.length, 'options count').to.equal(1);
+                    expect(options[0].textContent.trim()).to.equal('Z - Last');
+
+                    await selectChoose('[data-test-tag-select]', 'Z - Last');
+
+                    let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                    expect(lastRequest.queryParams.allFilter, '"posts" request filter param').to.have.string('tag:last');
+                });
+
                 it('can open with a filtered tag', async function () {
                     const tag = this.server.create('tag', {name: 'B - Second', slug: 'second'});
                     this.server.create('post', {authors: [admin], status: 'published', title: 'Published Post with Second tag', tags: [tag]});
@@ -936,7 +954,7 @@ describe('Acceptance: Posts / Pages', function () {
             it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
                 // Enable webAnalyticsEnabled setting
                 this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
-                
+
                 // Enable trafficAnalytics feature flag
                 this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
 
@@ -945,7 +963,7 @@ describe('Acceptance: Posts / Pages', function () {
                 // When both settings are enabled, the visitor count column container should exist
                 // even if it shows "—" without actual data
                 expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
-                
+
                 // The page should load without errors when analytics are enabled
                 expect(currentURL(), 'current URL').to.equal('/posts');
             });
@@ -1007,7 +1025,7 @@ describe('Acceptance: Posts / Pages', function () {
                 // Email analytics should still be visible as they have their own conditions
                 // The metrics container should exist for email analytics even when other analytics are disabled
                 expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
-                
+
                 // The page should load without errors
                 expect(currentURL(), 'current URL').to.equal('/posts');
             });
@@ -1105,6 +1123,68 @@ describe('Acceptance: Posts / Pages', function () {
                 // Displays scheduled page
                 expect(findAll('[data-test-post-id]').length, 'scheduled count').to.equal(1);
                 expect(find('[data-test-post-id="4"]'), 'scheduled page').to.exist;
+            });
+
+            it('can filter by tag', async function () {
+                this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+                this.server.create('tag', {name: 'A - First', slug: 'first'});
+
+                await visit('/pages');
+                await clickTrigger('[data-test-tag-select]');
+
+                // defaults to "All tags"
+                let options = findAll('.ember-power-select-option');
+                expect(options.length, 'options count').to.equal(4); // 3 tags + "All tags", we populate the tags when opening the dropdown
+                expect(options[0].textContent.trim()).to.equal('All tags');
+
+                // search lazy-loads tags from the API, and sorts them alphabetically
+                await selectSearch('[data-test-tag-select]', 's');
+
+                options = findAll('.ember-power-select-option');
+                expect(options[0].textContent.trim()).to.equal('A - First');
+                expect(options[1].textContent.trim()).to.equal('B - Second');
+                expect(options[2].textContent.trim()).to.equal('Z - Last');
+
+                // select one
+                await selectChoose('[data-test-tag-select]', 'B - Second');
+                // affirm request
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:second');
+            });
+
+            it('can filter by tag with server-side search', async function () {
+                this.server.createList('tag', 120);
+                this.server.create('tag', {name: 'Z - Last', slug: 'last'});
+
+                await visit('/pages');
+
+                await selectSearch('[data-test-tag-select]', 'Last');
+
+                let options = findAll('.ember-power-select-option');
+                expect(options.length, 'options count').to.equal(1);
+                expect(options[0].textContent.trim()).to.equal('Z - Last');
+
+                await selectChoose('[data-test-tag-select]', 'Z - Last');
+
+                let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                expect(lastRequest.queryParams.allFilter, '"pages" request filter param').to.have.string('tag:last');
+            });
+
+            it('can open with a filtered tag', async function () {
+                const tag = this.server.create('tag', {name: 'B - Second', slug: 'second'});
+                this.server.create('page', {authors: [admin], status: 'published', title: 'Published Page with Second tag', tags: [tag]});
+
+                await visit('/pages?tag=second');
+
+                // Pages list is filtered by tag
+                const pages = findAll('[data-test-post-id]');
+                expect(pages.length, 'all pages count').to.equal(1);
+                expect(pages[0].querySelector('.gh-content-entry-title').textContent, 'post title').to.contain('Published Page with Second tag');
+
+                // Filter shows selected tag
+                const filter = find('[data-test-tag-select]');
+                expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
             });
         });
     });

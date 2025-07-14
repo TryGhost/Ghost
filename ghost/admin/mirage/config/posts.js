@@ -23,7 +23,16 @@ function extractTags(postAttrs, tags) {
     });
 }
 
-export function getPosts({posts}, {queryParams}) {
+export function getPosts() {
+    return getPostsOrPages('posts', ...arguments);
+}
+
+export function getPages() {
+    return getPostsOrPages('pages', ...arguments);
+}
+
+export function getPostsOrPages(modelName, db, {queryParams}) {
+    const model = db[modelName];
     let {filter, page, limit} = queryParams;
 
     page = +page || 1;
@@ -34,7 +43,7 @@ export function getPosts({posts}, {queryParams}) {
     let visibilityFilter = extractFilterParam('visibility', filter);
     let tags = extractFilterParam('tag', filter);
 
-    let collection = posts.all().filter((post) => {
+    let collection = model.all().filter((post) => {
         let matchesStatus = true;
         let matchesAuthors = true;
         let matchesVisibility = true;
@@ -65,7 +74,7 @@ export function getPosts({posts}, {queryParams}) {
         }
     }
 
-    return paginateModelCollection('posts', collection, page, limit);
+    return paginateModelCollection(modelName, collection, page, limit);
 }
 
 export default function mockPosts(server) {

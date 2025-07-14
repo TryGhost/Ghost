@@ -1,8 +1,8 @@
 import moment from 'moment-timezone';
 import {Response} from 'miragejs';
 import {dasherize} from '@ember/string';
-import {extractFilterParam, paginateModelCollection} from '../utils';
-import {isBlank, isEmpty} from '@ember/utils';
+import {getPages} from './posts';
+import {isBlank} from '@ember/utils';
 
 // NOTE: mirage requires Model objects when saving relationships, however the
 // `attrs` on POST/PUT requests will contain POJOs for authors and tags so we
@@ -37,26 +37,7 @@ export default function mockPages(server) {
         return pages.create(attrs);
     });
 
-    server.get('/pages/', function ({pages}, {queryParams}) {
-        let {filter, page, limit} = queryParams;
-
-        page = +page || 1;
-        limit = +limit || 15;
-
-        let statusFilter = extractFilterParam('status', filter);
-
-        let collection = pages.all().filter((pageModel) => {
-            let matchesStatus = true;
-
-            if (!isEmpty(statusFilter)) {
-                matchesStatus = statusFilter.includes(pageModel.status);
-            }
-
-            return matchesStatus;
-        });
-
-        return paginateModelCollection('pages', collection, page, limit);
-    });
+    server.get('/pages/', getPages);
 
     server.get('/pages/:id/', function ({pages}, {params}) {
         let {id} = params;
