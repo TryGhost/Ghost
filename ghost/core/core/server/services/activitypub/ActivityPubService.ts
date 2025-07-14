@@ -25,12 +25,32 @@ export class ActivityPubService {
     ) {}
 
     getExpectedWebhooks(secret: string): ExpectedWebhook[] {
-        return [{
-            event: 'post.published',
-            target_url: new URL('.ghost/activitypub/v1/webhooks/post/published', this.siteUrl),
-            api_version: 'v5.100.0',
-            secret
-        }];
+        return [
+            {
+                event: 'post.published',
+                target_url: new URL('.ghost/activitypub/v1/webhooks/post/published', this.siteUrl),
+                api_version: 'v5.100.0',
+                secret
+            },
+            {
+                event: 'post.deleted',
+                target_url: new URL('.ghost/activitypub/v1/webhooks/post/deleted', this.siteUrl),
+                api_version: 'v5.100.0',
+                secret
+            },
+            {
+                event: 'post.unpublished',
+                target_url: new URL('.ghost/activitypub/v1/webhooks/post/unpublished', this.siteUrl),
+                api_version: 'v5.100.0',
+                secret
+            },
+            {
+                event: 'post.published.edited',
+                target_url: new URL('.ghost/activitypub/v1/webhooks/post/updated', this.siteUrl),
+                api_version: 'v5.100.0',
+                secret
+            }
+        ];
     }
 
     async checkWebhookState(expectedWebhooks: ExpectedWebhook[], integration: {id: string}) {
