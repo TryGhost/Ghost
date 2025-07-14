@@ -74,9 +74,7 @@ const BlueskySharing: React.FC = () => {
                             'Add a profile image to connect to Bluesky. Profile pictures help prevent spam.' :
                             'Connect your account to Bluesky to share your content directly to your Bluesky profile. When enabled, new posts you create can be automatically shared to your Bluesky account, expanding your reach across platforms.'
                         }</p>
-                        {!account?.avatarUrl && (
-                            <p className='-mt-2 text-base'>Username changes aren&apos;t supported. Make sure you&apos;re happy with your social web handle before connecting.</p>
-                        )}
+                        <p className='-mt-2 text-base'>Username changes aren&apos;t supported. Make sure you&apos;re happy with your social web handle before connecting.</p>
                         {!account?.avatarUrl ? (
                             <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                                 <DialogTrigger>
