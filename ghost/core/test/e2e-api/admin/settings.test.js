@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
-const CURRENT_SETTINGS_COUNT = 92;
+const CURRENT_SETTINGS_COUNT = 94;
 
 const settingsMatcher = {};
 
