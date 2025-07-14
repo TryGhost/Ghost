@@ -243,8 +243,8 @@ describe('RSS: Generate Feed', function () {
         });
     });
 
-    describe("Card reformatting"), function () {
-        it("should remove clutter from bookmark card"), function (done) {
+    describe("Card reformatting", function () {
+        it("should remove clutter from bookmark card", function (done) {
             const postWithBookmark = posts[2];
 
             postWithBookmark.html = callRenderer('thumbnail', {
@@ -255,21 +255,23 @@ describe('RSS: Generate Feed', function () {
                 author: 'ghost',
                 publisher: 'Ghost - The Professional Publishing Platform',
                 thumbnail: 'https://ghost.org/images/meta/ghost.png',
-                caption: 'caption here',
+                caption: 'caption here'
             });
+
+            data.posts = [postWithBookmark];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
-                should.not.exist("kg-bookmark-thumbnail");
-                should.not.exist("kg-bookmark-icon");
-                should.not.exist("kg-bookmark-description");
+                xmlData.should.not.match(/kg-bookmark-thumbnail/);
+                xmlData.should.not.match(/kg-bookmark-icon/);
+                xmlData.should.not.match(/kg-bookmark-description/);
 
                 done();
             }).catch(done);
-        }
+        });
 
-        it("should remove clutter from video card"), function (done) {
+        it("should remove clutter from video card", function (done) {
             const postWithVideo = posts[2];
 
             postWithVideo.html = callRenderer('video', {
@@ -283,22 +285,24 @@ describe('RSS: Generate Feed', function () {
                 thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg',
                 customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg',
                 thumbnailWidth: 100,
-                thumbnailHeight: 50,
+                thumbnailHeight: 50
             });
+
+            data.posts = [postWithVideo];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
-                should.not.exist("kg-video-overlay");
-                should.not.exist("kg-video-player-container");
-                should.not.exist("kg-bookmark-description");
+                xmlData.should.not.match(/kg-video-overlay/);
+                xmlData.should.not.match(/kg-video-player-container/);
+                xmlData.should.not.match(/kg-bookmark-description/);
 
                 done();
             }).catch(done);
-        }
+        });
 
 
-        it("should remove clutter from audio card"), function (done) {
+        it("should remove clutter from audio card", function (done) {
             const postWithAudio = posts[2];
 
             postWithAudio.html = callRenderer('audio', {
@@ -306,18 +310,20 @@ describe('RSS: Generate Feed', function () {
                 title: 'Test Audio',
                 duration: 60,
                 mimeType: 'audio/mp3',
-                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg',
+                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg'
             });
+
+            data.posts = [postWithAudio];
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
 
-                should.not.exist("kg-audio-thumbnail");
-                should.not.exist("kg-audio-player");
-                should.not.exist("kg-audio-title");
+                xmlData.should.not.match(/kg-audio-thumbnail/);
+                xmlData.should.not.match(/kg-audio-player/);
+                xmlData.should.not.match(/kg-audio-title/);
 
                 done();
             }).catch(done);
-        }
-    }
+        });
+    });
 });
