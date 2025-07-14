@@ -101,7 +101,7 @@ function getPostSchema(metaData, data) {
                 escapeExpression(data[context].primary_author.metaDescription) :
                 null
         },
-        contributor: data[context].authors.length > 1 ? data[context].authors.slice(1).map(author => ({
+        contributor: data[context].authors && data[context].authors.length > 1 ? data[context].authors.slice(1).map(author => trimSchema({
             '@type': 'Person',
             name: escapeExpression(author.name),
             image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
