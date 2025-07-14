@@ -2217,6 +2217,19 @@ describe('Email renderer', function () {
             assert.equal(data.accentContrastColor, '#FFFFFF');
         });
 
+        it('Includes list of cta background colors', async function () {
+            const data = await templateDataWithSettings({});
+            assert.deepEqual(data.ctaBgColors, [
+                'grey',
+                'blue',
+                'green',
+                'yellow',
+                'red',
+                'pink',
+                'purple'
+            ]);
+        });
+
         it('Uses the correct background colors based on settings', async function () {
             const tests = [
                 {input: 'Invalid Color', expected: '#ffffff'},

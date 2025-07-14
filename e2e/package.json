@@ -12,15 +12,14 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
-    "test:frontend": "playwright test test/frontend",
     "test:types": "tsc --noEmit",
-    "lint": "eslint src/ --ext .ts --cache"
+    "lint": "eslint helpers --ext .ts --cache"
   },
   "files": [
     "build"
   ],
   "devDependencies": {
-    "@playwright/test": "1.53.2",
+    "@playwright/test": "1.54.1",
     "c8": "10.1.3",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"

@@ -15,6 +15,7 @@ export interface ToggleProps {
     size?: ToggleSizes;
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
+    containerClasses?: string;
     labelClasses?: string;
     toggleBg?: 'green' | 'black' | 'stripetest';
     separator?: boolean;
@@ -29,6 +30,7 @@ const Toggle: React.FC<ToggleProps> = ({
     direction,
     label,
     labelStyle = 'value',
+    containerClasses,
     labelClasses,
     toggleBg = 'black',
     hint,
@@ -100,11 +102,11 @@ const Toggle: React.FC<ToggleProps> = ({
 
     return (
         <div>
-            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
+            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'} ${containerClasses}`}>
                 <TogglePrimitive.Root className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
-                    'enabled:hover:cursor-pointer disabled:opacity-40 enabled:group-hover:opacity-80',
+                    'enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 enabled:group-hover:opacity-80',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
                 )} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
@@ -114,7 +116,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     )} />
                 </TogglePrimitive.Root>
                 {label &&
-                    <label className={`flex grow flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
+                    <label className={`flex grow flex-col ${!disabled && 'hover:cursor-pointer'} ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
                                 <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>

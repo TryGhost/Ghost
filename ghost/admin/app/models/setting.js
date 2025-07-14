@@ -53,6 +53,7 @@ export default Model.extend(ValidationEngine, {
     announcementContent: attr('string'),
     announcementBackground: attr('string'),
     announcementVisibility: attr('json-string'),
+
     /**
      * Analytics settings
      */
@@ -60,7 +61,8 @@ export default Model.extend(ValidationEngine, {
     emailTrackClicks: attr('boolean'),
     outboundLinkTagging: attr('boolean'),
     membersTrackSources: attr('boolean'),
-    webAnalytics: attr('boolean'),
+    webAnalyticsEnabled: attr('boolean'), // computed setting
+
     /**
      * Members settings
      */
