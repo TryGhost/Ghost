@@ -38,7 +38,7 @@ describe('Themes API', function () {
     });
 
     afterEach(function () {
-        mockManager.restore();
+        nock.cleanAll();
     });
 
     it('Can request all available themes', async function () {
@@ -331,11 +331,11 @@ describe('Themes API', function () {
     });
 
     it('Can download and install a TryGhost theme from GitHub when customThemes limit is active', async function () {
-        // Mock the limit service to restrict custom themes
+        // Mock the limit service to restrict custom themes but allow TryGhost repos
         mockManager.mockLimitService('customThemes', {
             isLimited: true,
-            // This theme is allowed, because it's in the allowlist of theme names
-            errorIfWouldGoOverLimit: false
+            errorIfWouldGoOverLimit: false,
+            allowlist: ['source', 'casper', 'starter', 'edition']
         });
 
         const githubZipball = nock('https://api.github.com')
@@ -371,13 +371,17 @@ describe('Themes API', function () {
             .del(localUtils.API.getApiQuery('themes/starter'))
             .set('Origin', config.get('url'))
             .expect(204);
+        
+        // Clean up only the limit service mocks
+        mockManager.restoreLimitService();
     });
 
     it('Cannot download and install a theme from GitHub when customThemes limit is active theme name is not allowed', async function () {
         // Mock the limit service to restrict custom themes and throw error for non-allowed themes
         mockManager.mockLimitService('customThemes', {
             isLimited: true,
-            errorIfWouldGoOverLimit: true
+            errorIfWouldGoOverLimit: true,
+            allowlist: ['source', 'casper', 'starter', 'edition']
         });
 
         const githubZipball = nock('https://api.github.com')
@@ -406,6 +410,9 @@ describe('Themes API', function () {
         jsonResponse.errors[0].type.should.eql('HostLimitError');
         // The actual error message returned by the API
         jsonResponse.errors[0].message.should.match(/Unable to complete the request, this resource is limited\.|Upgrade to use customThemes feature\./);
+        
+        // Clean up only the limit service mocks
+        mockManager.restoreLimitService();
     });
 
     it('Can re-upload the active theme to override', async function () {
