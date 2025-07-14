@@ -63,7 +63,7 @@ const generateItem = function generateItem(post) {
         htmlContent(card).find('.kg-video-card video').attr('poster', videoPoster);
 
         // Audio card
-        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player').remove();
+        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
         htmlContent(card).find('.kg-audio-card audio').attr('controls', '');
     });
 
