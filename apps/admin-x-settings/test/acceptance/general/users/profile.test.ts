@@ -172,7 +172,7 @@ test.describe('User profile', async () => {
 
         await modal.getByTitle('Social Links').click();
         await modal.getByTestId('website-input').fill('https://example.com');
-        await modal.getByTestId('facebook-input').fill('fb');
+        await modal.getByTestId('facebook-input').fill('minfb');
         await modal.getByTestId('x-input').fill('tw');
 
         await modal.getByRole('button', {name: 'Save'}).click();
@@ -190,7 +190,7 @@ test.describe('User profile', async () => {
                 slug: 'newadmin',
                 location: 'some location',
                 website: 'https://example.com',
-                facebook: 'fb',
+                facebook: 'minfb',
                 twitter: '@tw',
                 bio: 'some bio'
             }]
