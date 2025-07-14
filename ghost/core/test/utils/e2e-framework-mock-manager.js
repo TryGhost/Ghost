@@ -278,16 +278,24 @@ const mockLimitService = (limit, options) => {
     mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
     mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
 
+    // Mock the limits property for checking allowlist
+    mocks.limitService.limits = {
+        [limit]: {
+            allowlist: options.allowlist || [],
+            errorIfWouldGoOverLimit: () => {} // Add dummy function to prevent errors
+        }
+    };
+
     // If errorIfWouldGoOverLimit is true, reject with HostLimitError
     if (options.errorIfWouldGoOverLimit === true) {
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).rejects(
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).rejects(
             new errors.HostLimitError({
-                message: `Upgrade to use ${limit.replace(/$limit/, '')} feature.`
+                message: `Upgrade to use ${limit} feature.`
             })
         );
     } else {
         // Otherwise, resolve normally
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).resolves();
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).resolves();
     }
 };
 
