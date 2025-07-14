@@ -4,15 +4,21 @@ import React, {useEffect, useState} from 'react';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {List} from '@tryghost/admin-x-design-system';
 
-const features = [{
+type Feature = {
+    title: string;
+    description: string;
+    flag: string;
+    limitName?: string;
+};
+
+const features: Feature[] = [{
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
 }, {
     title: 'Traffic Analytics (private beta)',
     description: 'Enables traffic analytics',
-    flag: 'trafficAnalytics',
-    limitName: 'limitAnalytics' // the limit name as set in hostSettings.limits in config.json
+    flag: 'trafficAnalytics'
 }, {
     title: 'Email customization (internal beta)',
     description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
@@ -33,12 +39,12 @@ const features = [{
 
 const AlphaFeatures: React.FC = () => {
     const limiter = useLimiter();
-    const [allowedFeatures, setAllowedFeatures] = useState<typeof features>([]);
+    const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
 
     useEffect(() => {
         const filterFeatures = async () => {
             const filtered = [];
-            // Remove all features that are limited according to the subscribed plan
+            // Remove all features that are limited according to the subscribed plan (given these are beta, is optional to use)
             for (const feature of features) {
                 if (feature.limitName && limiter?.isLimited(feature.limitName)) {
                     try {
