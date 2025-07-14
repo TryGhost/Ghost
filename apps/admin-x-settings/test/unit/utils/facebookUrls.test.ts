@@ -1,6 +1,14 @@
 import * as assert from 'assert/strict';
 import {FB_ERRORS, facebookHandleToUrl, facebookUrlToHandle, validateFacebookUrl} from '../../../src/utils/socialUrls/index';
 
+// Convert FB_ERRORS to regex patterns for testing
+const FB_ERROR_PATTERNS = {
+    INVALID_URL: new RegExp(FB_ERRORS.INVALID_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+    INVALID_USERNAME: new RegExp(FB_ERRORS.INVALID_USERNAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+    INVALID_PAGE_FORMAT: new RegExp(FB_ERRORS.INVALID_PAGE_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')),
+    INVALID_GROUP_FORMAT: new RegExp(FB_ERRORS.INVALID_GROUP_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+};
+
 describe('Facebook URLs', () => {
     describe('URL validation', () => {
         it('should return empty string when input is empty', () => {
@@ -17,11 +25,11 @@ describe('Facebook URLs', () => {
         });
 
         it('should format pages URLs correctly', () => {
-            assert.equal(validateFacebookUrl('facebook.com/pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
-            assert.equal(validateFacebookUrl('https://www.facebook.com/pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
-            assert.equal(validateFacebookUrl('fb.me/pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
-            assert.equal(validateFacebookUrl('https://fb.me/pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
-            assert.equal(validateFacebookUrl('pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
+            assert.equal(validateFacebookUrl('facebook.com/pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
+            assert.equal(validateFacebookUrl('https://www.facebook.com/pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
+            assert.equal(validateFacebookUrl('fb.me/pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
+            assert.equal(validateFacebookUrl('https://fb.me/pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
+            assert.equal(validateFacebookUrl('pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
         });
 
         it('should format groups URLs correctly', () => {
@@ -33,28 +41,28 @@ describe('Facebook URLs', () => {
         });
 
         it('should reject URLs from other domains', () => {
-            assert.throws(() => validateFacebookUrl('https://twitter.com/myPage'), new RegExp(FB_ERRORS.INVALID_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('http://example.com'), new RegExp(FB_ERRORS.INVALID_URL.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+            assert.throws(() => validateFacebookUrl('https://twitter.com/myPage'), FB_ERROR_PATTERNS.INVALID_URL);
+            assert.throws(() => validateFacebookUrl('http://example.com'), FB_ERROR_PATTERNS.INVALID_URL);
         });
 
         it('should reject invalid usernames', () => {
-            assert.throws(() => validateFacebookUrl('facebook.com/abc'), new RegExp(FB_ERRORS.INVALID_USERNAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/my\nPage'), new RegExp(FB_ERRORS.INVALID_USERNAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/my-page'), new RegExp(FB_ERRORS.INVALID_USERNAME.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+            assert.throws(() => validateFacebookUrl('facebook.com/abc'), FB_ERROR_PATTERNS.INVALID_USERNAME);
+            assert.throws(() => validateFacebookUrl('facebook.com/my\nPage'), FB_ERROR_PATTERNS.INVALID_USERNAME);
+            assert.throws(() => validateFacebookUrl('facebook.com/my-page'), FB_ERROR_PATTERNS.INVALID_USERNAME);
         });
 
         it('should reject invalid pages URLs', () => {
-            assert.throws(() => validateFacebookUrl('facebook.com/pages/company'), new RegExp(FB_ERRORS.INVALID_PAGE_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/pages/company/abc'), new RegExp(FB_ERRORS.INVALID_PAGE_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/pages/company/123/extra'), new RegExp(FB_ERRORS.INVALID_PAGE_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('pages/company/1234'), new RegExp(FB_ERRORS.INVALID_PAGE_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+            assert.throws(() => validateFacebookUrl('facebook.com/pages/myCompany'), FB_ERROR_PATTERNS.INVALID_PAGE_FORMAT);
+            assert.throws(() => validateFacebookUrl('facebook.com/pages/myCompany/abc'), FB_ERROR_PATTERNS.INVALID_PAGE_FORMAT);
+            assert.throws(() => validateFacebookUrl('facebook.com/pages/myCompany/123/extra'), FB_ERROR_PATTERNS.INVALID_PAGE_FORMAT);
+            assert.throws(() => validateFacebookUrl('pages/myCompany/1234'), FB_ERROR_PATTERNS.INVALID_PAGE_FORMAT);
         });
 
         it('should reject invalid groups URLs', () => {
-            assert.throws(() => validateFacebookUrl('facebook.com/groups'), new RegExp(FB_ERRORS.INVALID_GROUP_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/groups/abc'), new RegExp(FB_ERRORS.INVALID_GROUP_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('facebook.com/groups/my-group'), new RegExp(FB_ERRORS.INVALID_GROUP_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
-            assert.throws(() => validateFacebookUrl('groups/my\ngroup'), new RegExp(FB_ERRORS.INVALID_GROUP_FORMAT.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+            assert.throws(() => validateFacebookUrl('facebook.com/groups'), FB_ERROR_PATTERNS.INVALID_GROUP_FORMAT);
+            assert.throws(() => validateFacebookUrl('facebook.com/groups/abc'), FB_ERROR_PATTERNS.INVALID_GROUP_FORMAT);
+            assert.throws(() => validateFacebookUrl('facebook.com/groups/my-group'), FB_ERROR_PATTERNS.INVALID_GROUP_FORMAT);
+            assert.throws(() => validateFacebookUrl('groups/my\ngroup'), FB_ERROR_PATTERNS.INVALID_GROUP_FORMAT);
         });
     });
 
@@ -64,7 +72,7 @@ describe('Facebook URLs', () => {
         });
 
         it('should convert pages handle to full URL', () => {
-            assert.equal(facebookHandleToUrl('pages/company/643146772483269'), 'https://www.facebook.com/pages/company/643146772483269');
+            assert.equal(facebookHandleToUrl('pages/myCompany/643146772483269'), 'https://www.facebook.com/pages/myCompany/643146772483269');
         });
 
         it('should convert groups handle to full URL', () => {
@@ -81,8 +89,8 @@ describe('Facebook URLs', () => {
         });
 
         it('should extract pages handle from URL', () => {
-            assert.equal(facebookUrlToHandle('https://www.facebook.com/pages/company/643146772483269'), 'pages/company/643146772483269');
-            assert.equal(facebookUrlToHandle('https://fb.me/pages/company/643146772483269'), 'pages/company/643146772483269');
+            assert.equal(facebookUrlToHandle('https://www.facebook.com/pages/myCompany/643146772483269'), 'pages/myCompany/643146772483269');
+            assert.equal(facebookUrlToHandle('https://fb.me/pages/myCompany/643146772483269'), 'pages/myCompany/643146772483269');
         });
 
         it('should extract groups handle from URL', () => {

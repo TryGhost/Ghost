@@ -1,3 +1,4 @@
+import {FB_ERRORS} from '../../../src/utils/socialUrls/facebook';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
 import {mockApi, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
@@ -72,14 +73,14 @@ test.describe('Social account settings', async () => {
             facebookInput,
             'page/fb123',
             '',
-            'Facebook username must be 5-50 characters long and contain only letters, numbers, and periods'
+            FB_ERRORS.INVALID_USERNAME
         );
 
         await testUrlValidation(
             facebookInput,
             'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
             '',
-            'The URL must be in a format like https://www.facebook.com/yourPage, https://www.facebook.com/pages/PageName/123456789, or https://www.facebook.com/groups/GroupName'
+            FB_ERRORS.INVALID_URL
         );
 
         await testUrlValidation(
@@ -92,21 +93,21 @@ test.describe('Social account settings', async () => {
             facebookInput,
             'http://github.com/username',
             '',
-            'The URL must be in a format like https://www.facebook.com/yourPage, https://www.facebook.com/pages/PageName/123456789, or https://www.facebook.com/groups/GroupName'
+            FB_ERRORS.INVALID_URL
         );
 
         await testUrlValidation(
             facebookInput,
             'page/*(&*(%%))',
             '',
-            'Facebook username must be 5-50 characters long and contain only letters, numbers, and periods'
+            FB_ERRORS.INVALID_USERNAME
         );
 
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
             '',
-            'The URL must be in a format like https://www.facebook.com/yourPage, https://www.facebook.com/pages/PageName/123456789, or https://www.facebook.com/groups/GroupName'
+            FB_ERRORS.INVALID_URL
         );
 
         const twitterInput = section.getByLabel('URL of your X profile');

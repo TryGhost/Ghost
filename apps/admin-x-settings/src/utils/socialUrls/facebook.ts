@@ -14,19 +14,19 @@ type PathType = typeof PATH_TYPES[number];
 // fb docs: https://www.facebook.com/help/105399436216001/
 const USERNAME_REGEX = /^[a-zA-Z0-9.]{5,50}$/;
 // page ids are numeric
-const PAGE_ID_REGEX = /^[0-9]{5,}$/;
+const PAGE_ID_REGEX = /^[0-9]{5,50}$/;
 
 // Regex to extract handles from Facebook URLs
 // Valid formats:
 // - https://www.facebook.com/username
 // - https://fb.me/username  
-// - https://www.facebook.com/pages/company/643146772483269
+// - https://www.facebook.com/pages/myCompany/643146772483269
 // - https://fb.me/pages/PageName/123456789
 // - https://www.facebook.com/groups/GroupName
 // - https://fb.me/groups/GroupName
 // - Optional: protocol (https://), www, legacy #! fragment, trailing slash
-// Also matches incomplete URLs like pages/company or groups (for proper error handling)
-// And URLs with extra parts like pages/company/123/extra (for proper rejection)
+// Also matches incomplete URLs like pages/myCompany or groups (for proper error handling)
+// And URLs with extra parts like pages/myCompany/123/extra (for proper rejection)
 const FACEBOOK_URL_REGEX = /^(?:https?:\/\/)?(?:www\.)?(?:facebook\.com|fb\.me)\/(?:#!\/)?(?:(pages)(?:\/([^/?#]*?))?(?:\/([^/?#]*?))?(?:\/([^/?#]*?))?|(groups)(?:\/([^/?#]*?))?|([^/?#]*?))\/?$/i;
 
 // trims whitespace and removes leading @ or / if it exists
