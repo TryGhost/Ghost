@@ -243,11 +243,11 @@ describe('RSS: Generate Feed', function () {
         });
     });
 
-    describe("Card reformatting", function () {
-        it("should remove clutter from bookmark card", function (done) {
+    describe('Card reformatting', function () {
+        it('should remove clutter from bookmark card', function (done) {
             const postWithBookmark = posts[2];
 
-            postWithBookmark.html = callRenderer('thumbnail', {
+            postWithBookmark.html = callRenderer('bookmark', {
                 url: 'https://www.ghost.org/',
                 icon: 'https://www.ghost.org/favicon.ico',
                 title: 'Ghost: The Creator Economy Platform',
@@ -271,7 +271,7 @@ describe('RSS: Generate Feed', function () {
             }).catch(done);
         });
 
-        it("should remove clutter from video card", function (done) {
+        it('should remove clutter from video card', function (done) {
             const postWithVideo = posts[2];
 
             postWithVideo.html = callRenderer('video', {
@@ -295,14 +295,13 @@ describe('RSS: Generate Feed', function () {
 
                 xmlData.should.not.match(/kg-video-overlay/);
                 xmlData.should.not.match(/kg-video-player-container/);
-                xmlData.should.not.match(/kg-bookmark-description/);
 
                 done();
             }).catch(done);
         });
 
 
-        it("should remove clutter from audio card", function (done) {
+        it('should remove clutter from audio card', function (done) {
             const postWithAudio = posts[2];
 
             postWithAudio.html = callRenderer('audio', {
