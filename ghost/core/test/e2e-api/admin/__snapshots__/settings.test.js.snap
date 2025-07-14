@@ -325,6 +325,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1140,6 +1148,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1530,6 +1546,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -1916,6 +1940,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -2771,6 +2803,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -3161,6 +3201,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -3548,6 +3596,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -3945,6 +4001,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -4331,6 +4395,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -4725,6 +4797,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -5486,6 +5566,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -5873,6 +5961,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -6267,6 +6363,14 @@ Object {
       "value": false,
     },
     Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
+      "value": false,
+    },
+    Object {
       "key": "members_enabled",
       "value": true,
     },
@@ -6655,6 +6759,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -7108,6 +7220,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
