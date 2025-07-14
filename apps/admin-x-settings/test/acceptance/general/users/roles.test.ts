@@ -43,6 +43,9 @@ test.describe('User roles', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseRoles: {method: 'GET', path: '/roles/?limit=100', response: responseFixtures.roles},
             browseAssignableRoles: {method: 'GET', path: '/roles/?limit=100&permissions=assign', response: responseFixtures.roles},
@@ -97,10 +100,17 @@ test.describe('User roles', async () => {
     });
 
     test('Editors can only manage lower roles', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'contributor@test.com')!;
 
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getAdminBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseMe: {...globalDataRequests.browseMe, response: meWithRole('Editor')},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {

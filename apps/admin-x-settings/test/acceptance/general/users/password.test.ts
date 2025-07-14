@@ -4,8 +4,13 @@ import {mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/accept
 
 test.describe('User passwords', async () => {
     test('Supports changing password', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getAdminBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             updatePassword: {method: 'PUT', path: '/users/password/', response: {}}
         }});

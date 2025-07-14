@@ -1,5 +1,5 @@
 import {InfiniteData} from '@tanstack/react-query';
-import {Meta, createInfiniteQuery, createMutation} from '../utils/api/hooks';
+import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
 import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
 import {usersDataType} from './currentUser';
 import {UserRole} from './roles';
@@ -94,6 +94,12 @@ export const useBrowseUsers = createInfiniteQuery<UsersResponseType & {isEnd: bo
     }
 });
 
+export const useGetUserBySlug = createQueryWithId<UsersResponseType>({
+    dataType,
+    path: slug => `/users/slug/${slug}/`,
+    defaultSearchParams: {include: 'roles'}
+});
+
 export const useEditUser = createMutation<UsersResponseType, User>({
     method: 'PUT',
     path: user => `/users/${user.id}/`,
@@ -155,7 +161,7 @@ export function isAdminUser(user: User) {
 }
 
 export function isEditorUser(user: User) {
-    const isAnyEditor = user.roles.some(role => role.name === 'Editor') 
+    const isAnyEditor = user.roles.some(role => role.name === 'Editor')
         || user.roles.some(role => role.name === 'Super Editor');
     return isAnyEditor;
 }
