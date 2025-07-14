@@ -639,7 +639,7 @@
             "type": "boolean"
         },
         "explore_ping_growth": {
-            "defaultValue": "true",
+            "defaultValue": "false",
             "validations": {
                 "isEmpty": false,
                 "isIn": [["true", "false"]]
