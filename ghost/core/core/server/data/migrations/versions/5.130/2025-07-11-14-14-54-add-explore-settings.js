@@ -9,7 +9,7 @@ module.exports = combineTransactionalMigrations(
     }),
     addSetting({
         key: 'explore_ping_growth',
-        value: 'true',
+        value: 'false',
         type: 'boolean',
         group: 'explore'
     })
