@@ -5,6 +5,7 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/configUtils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
+const {callRenderer} = require('../../../../../test/unit/server/services/koenig/test-utils');
 
 describe('RSS: Generate Feed', function () {
     const data = {};
@@ -241,4 +242,82 @@ describe('RSS: Generate Feed', function () {
             }).catch(done);
         });
     });
+
+    describe("Card reformatting"), function () {
+        it("should remove clutter from bookmark card"), function (done) {
+            const postWithBookmark = posts[2];
+
+            postWithBookmark.html = callRenderer('thumbnail', {
+                url: 'https://www.ghost.org/',
+                icon: 'https://www.ghost.org/favicon.ico',
+                title: 'Ghost: The Creator Economy Platform',
+                description: 'doing kewl stuff',
+                author: 'ghost',
+                publisher: 'Ghost - The Professional Publishing Platform',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png',
+                caption: 'caption here',
+            });
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                should.not.exist("kg-bookmark-thumbnail");
+                should.not.exist("kg-bookmark-icon");
+                should.not.exist("kg-bookmark-description");
+
+                done();
+            }).catch(done);
+        }
+
+        it("should remove clutter from video card"), function (done) {
+            const postWithVideo = posts[2];
+
+            postWithVideo.html = callRenderer('video', {
+                src: '/content/images/2022/11/koenig-lexical.mp4',
+                caption: 'This is a <b>caption</b>',
+                fileName: 'koenig-lexical.mp4',
+                mimeType: 'video/mp4',
+                width: 200,
+                height: 100,
+                duration: 60,
+                thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg',
+                customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg',
+                thumbnailWidth: 100,
+                thumbnailHeight: 50,
+            });
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                should.not.exist("kg-video-overlay");
+                should.not.exist("kg-video-player-container");
+                should.not.exist("kg-bookmark-description");
+
+                done();
+            }).catch(done);
+        }
+
+
+        it("should remove clutter from audio card"), function (done) {
+            const postWithAudio = posts[2];
+
+            postWithAudio.html = callRenderer('audio', {
+                src: '/content/audio/2022/11/koenig-lexical.mp3',
+                title: 'Test Audio',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg',
+            });
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                should.not.exist("kg-audio-thumbnail");
+                should.not.exist("kg-audio-player");
+                should.not.exist("kg-audio-title");
+
+                done();
+            }).catch(done);
+        }
+    }
 });
