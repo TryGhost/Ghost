@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class MigrateService extends Service {
     @service ajax;
+    @service billing;
     @service router;
     @service ghostPaths;
     @service settings;
@@ -61,6 +62,21 @@ export default class MigrateService extends Service {
         }).catch((error) => {
             throw error;
         });
+    }
+
+    async postMessagePayload() {
+        const theToken = await this.apiToken();
+        const theOwner = await this.billing.getOwnerUser();
+
+        let payload = {
+            apiUrl: this.apiUrl,
+            apiToken: theToken,
+            stripe: this.isStripeConnected,
+            ghostVersion: this.ghostVersion,
+            ownerEmail: theOwner.email
+        };
+
+        return payload;
     }
 
     get isStripeConnected() {
