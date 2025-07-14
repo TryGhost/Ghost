@@ -87,7 +87,7 @@ const isValidUsername = (type: PathType | undefined, username: string) => {
         }
 
         const [, pageName, pageId] = parts;
-        return pageName && pageId && PAGE_ID_REGEX.test(pageId);
+        return pageName && pageId && USERNAME_REGEX.test(pageName) && PAGE_ID_REGEX.test(pageId);
     }
 
     if (type === 'groups') {
@@ -178,7 +178,7 @@ export const facebookUrlToHandle = (url: string) => {
             return null;
         }
         // Must have both pageName and pageId for valid pages URL
-        if (!pageName || !pageId || !PAGE_ID_REGEX.test(pageId)) {
+        if (!pageName || !pageId || !USERNAME_REGEX.test(pageName) || !PAGE_ID_REGEX.test(pageId)) {
             return null;
         }
         return `pages/${pageName}/${pageId}`;
