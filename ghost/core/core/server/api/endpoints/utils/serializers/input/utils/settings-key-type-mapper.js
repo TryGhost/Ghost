@@ -54,7 +54,10 @@ const keyTypeMapping = {
     stripe_connect_livemode: 'boolean',
     labs: 'object',
     unsplash: 'object',
-    bulk_email_settings: 'object'
+    bulk_email_settings: 'object',
+    require_email_mfa: 'boolean',
+    explore_ping: 'boolean',
+    explore_ping_growth: 'boolean'
 };
 
 const mapKeyToType = (key) => {

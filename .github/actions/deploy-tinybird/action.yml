@@ -1,0 +1,54 @@
+name: 'Deploy Tinybird'
+description: 'Deploy Tinybird configuration to a workspace'
+inputs:
+  host:
+    description: 'Tinybird host URL'
+    required: true
+  token:
+    description: 'Tinybird authentication token'
+    required: true
+  workspace:
+    description: 'Workspace name (for logging purposes)'
+    required: true
+  slack-webhook:
+    description: 'Slack webhook URL for notifications'
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Tinybird CLI
+      shell: bash
+      run: curl -fsSL https://tinybird.co/install.sh | sh
+    - name: Check the deployment
+      shell: bash
+      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --check
+      working-directory: ghost/core/core/server/data/tinybird
+    - name: Create a ${{ inputs.workspace }} deployment
+      id: deploy
+      shell: bash
+      run: tb --cloud --host ${{ inputs.host }} --token ${{ inputs.token }} deployment create --wait
+      working-directory: ghost/core/core/server/data/tinybird
+
+    - name: Send slack notification
+      uses: slackapi/slack-github-action@v2.1.1
+      if: always()
+      with:
+        webhook: ${{ inputs.slack-webhook }}
+        webhook-type: incoming-webhook
+        payload: |
+          text: "Tinybird Deployment: ${{ inputs.workspace }}"
+          blocks:
+            - type: "section"
+              text:
+                type: "mrkdwn"
+                text: "${{ steps.deploy.outcome == 'success' && format(':white_check_mark: *Tinybird {0} Deployment*', inputs.workspace) || format(':x: *Tinybird {0} Deployment*', inputs.workspace) }}"                
+            - type: "section"
+              fields:
+                - type: "mrkdwn"
+                  text: "*Status:*\n${{ steps.deploy.outcome == 'success' && ':large_green_circle: Success' || ':red_circle: Failed' }}"
+                - type: "mrkdwn"
+                  text: "*Workflow:*\n:link: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+            - type: "divider"
+          attachments:
+            - color: "${{ steps.deploy.outcome == 'success' && 'good' || 'danger' }}"
+              fallback: "Tinybird Deployment: ${{ steps.deploy.outcome }}"

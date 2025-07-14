@@ -65,17 +65,14 @@ export default class FeatureService extends Service {
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
-    @feature('signupCard') signupCard;
     @feature('mailEvents') mailEvents;
-    @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('adminXDemo') adminXDemo;
-    @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
-    @feature('postsX') postsX;
+    @feature('ui60') ui60;
+    @feature('trafficAnalytics') trafficAnalytics;
 
     _user = null;
 
@@ -152,11 +149,14 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
+        document.documentElement.classList.toggle('dark', nightShift ?? false);
+
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
+            document.documentElement.classList.remove('dark');
         });
     }
 }

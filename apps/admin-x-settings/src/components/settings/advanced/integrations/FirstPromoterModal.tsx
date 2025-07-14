@@ -76,7 +76,7 @@ const FirstpromoterModal = NiceModal.create(() => {
         >
             <IntegrationHeader
                 detail='Launch your own member referral program'
-                icon={<Icon className='-mt-2 h-14 w-14' />}
+                icon={<Icon className='-mt-2 size-14' />}
                 title='FirstPromoter'
             />
             <div className='mt-7'>

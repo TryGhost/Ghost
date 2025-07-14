@@ -7,6 +7,7 @@ const storage = require('../adapters/storage');
 
 let nodes;
 let lexicalHtmlRenderer;
+let customNodeRenderers;
 let urlTransformMap;
 let postsService;
 let serializePosts;
@@ -52,6 +53,23 @@ module.exports = {
         return lexicalHtmlRenderer;
     },
 
+    get customNodeRenderers() {
+        if (!customNodeRenderers) {
+            try {
+                customNodeRenderers = require('../services/koenig/node-renderers');
+            } catch (err) {
+                throw new errors.InternalServerError({
+                    message: 'Unable to render post content',
+                    context: 'The custom node renderers module could not be required',
+                    code: 'KOENIG_CUSTOM_NODE_RENDERERS_LOAD_ERROR',
+                    err: err
+                });
+            }
+        }
+
+        return customNodeRenderers;
+    },
+
     async render(lexical, userOptions = {}) {
         if (!postsService) {
             const getPostServiceInstance = require('../services/posts/posts-service');
@@ -74,8 +92,10 @@ module.exports = {
                     && typeof storage.getStorage('images').saveRaw === 'function';
             },
             feature: {
-                contentVisibility: labs.isSet('contentVisibility')
-            }
+                contentVisibility: labs.isSet('contentVisibility'),
+                emailCustomization: true // force on until Koenig has been bumped
+            },
+            nodeRenderers: this.customNodeRenderers
         }, userOptions);
 
         return await this.lexicalHtmlRenderer.render(lexical, options);

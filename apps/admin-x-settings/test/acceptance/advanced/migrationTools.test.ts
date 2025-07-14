@@ -17,6 +17,11 @@ test.describe('Migration tools', async () => {
 
         await page.goto('/');
 
+        await migrationSection.getByRole('button', {name: 'WordPress'}).click();
+        await expectExternalNavigate(page, {route: '/migrate/wordpress'});
+
+        await page.goto('/');
+
         await migrationSection.getByRole('button', {name: 'Medium'}).click();
         await expectExternalNavigate(page, {route: '/migrate/medium'});
 

@@ -18,9 +18,8 @@ const urlUtils = require('../../shared/url-utils');
 const {Tag} = require('./tag');
 const {Newsletter} = require('./newsletter');
 const {BadRequestError} = require('@tryghost/errors');
-const {PostRevisions} = require('@tryghost/post-revisions');
 const {mobiledocToLexical} = require('@tryghost/kg-converters');
-const labs = require('../../shared/labs');
+const {setIsRoles} = require('./role-utils');
 
 const messages = {
     isAlreadyPublished: 'Your post is already published, please reload your page.',
@@ -367,52 +366,6 @@ Post = ghostBookshelf.Model.extend({
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
     },
 
-    onFetched: async function onFetched(model, response, options) {
-        if (!labs.isSet('collectionsCard')) {
-            return;
-        }
-
-        await this.renderIfNeeded(model, options);
-    },
-
-    onFetchedCollection: async function onFetched(collection, response, options) {
-        if (!labs.isSet('collectionsCard')) {
-            return;
-        }
-
-        for await (const model of collection.models) {
-            await this.renderIfNeeded(model, options);
-        }
-    },
-
-    renderIfNeeded: async function renderIfNeeded(model, options = {}) {
-        // pages can have their html cleared to "queue" a re-render to update dynamic data such
-        // as collection cards. Detect that and re-render here so the page is always up to date
-        if (model.get('lexical') !== null && model.get('html') === null) {
-            const html = await lexicalLib.render(model.get('lexical'));
-            const plaintext = htmlToPlaintext.excerpt(html);
-
-            // avoid a DB query if we have no html - knex will set it to an empty string rather than NULL
-            if (!html && !model.get('plaintext')) {
-                return model;
-            }
-
-            // set model attributes so they are available immediately in code that uses the returned model
-            model.set('html', html);
-            model.set('plaintext', plaintext);
-
-            // update database manually using knex to avoid hooks being called multiple times
-            const query = ghostBookshelf.knex.raw('UPDATE posts SET html = ?, plaintext = ? WHERE id = ?', [html, plaintext, model.id]);
-            if (options.transacting) {
-                await query.transacting(options.transacting);
-            } else {
-                await query;
-            }
-        }
-
-        return model;
-    },
-
     /**
      * We update the tags after the Post was inserted.
      * We update the tags before the Post was updated, see `onSaving` event.
@@ -512,22 +465,6 @@ Post = ghostBookshelf.Model.extend({
 
     onDestroyed: async function onDestroyed(model, options) {
         ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
-
-        if (labs.isSet('collectionsCard') && model.previous('type') === 'post' && model.previous('status') === 'published') {
-            // reset all page HTML when a published post is deleted so they can be re-rendered
-            // on next fetch so any collection cards are "dynamically" updated
-            const resetPages = function resetPages(transacting) {
-                return ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = \'page\' AND lexical IS NOT NULL').transacting(transacting);
-            };
-
-            if (options.transacting) {
-                await resetPages(options.transacting);
-            } else {
-                await ghostBookshelf.knex.transaction(async (transacting) => {
-                    await resetPages(transacting);
-                });
-            }
-        }
 
         if (model.previous('status') === 'published') {
             model.emitChange('unpublished', Object.assign({usePreviousAttribute: true}, options));
@@ -944,6 +881,7 @@ Post = ghostBookshelf.Model.extend({
             });
         }
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
+            const {PostRevisions} = require('../lib/PostRevisions');
             const postRevisions = new PostRevisions({
                 config: {
                     max_revisions: POST_REVISIONS_COUNT,
@@ -1011,19 +949,6 @@ Post = ghostBookshelf.Model.extend({
             if (freeTier) {
                 this.set('tiers', this.get('tiers').filter(t => t.id !== freeTier.id));
             }
-        }
-
-        if (labs.isSet('collectionsCard') && this.get('type') === 'post' && (newStatus === 'published' || olderStatus === 'published')) {
-            // reset all page HTML when a published post is updated so they can be re-rendered
-            // on next fetch so any collection cards are "dynamically" updated
-            ops.push(async function resetPageHTML() {
-                const query = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = ? AND lexical IS NOT NULL', ['page']);
-                if (options.transacting) {
-                    await query.transacting(options.transacting);
-                } else {
-                    await query;
-                }
-            });
         }
 
         return sequence(ops);
@@ -1386,17 +1311,7 @@ Post = ghostBookshelf.Model.extend({
 
     bulkEdit: async function bulkEdit(ids, tableName, options) {
         if (tableName === this.prototype.tableName) {
-            const result = await ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
-
-            if (labs.isSet('collectionsCard')) {
-                // reset all page HTML so collection cards can be re-rendered with updated posts
-                // NOTE: we can't check for only published edits here as we don't have access to previous values
-                //       to see if a previously published post has been unpublished, so we just reset all pages
-                const pageResetQuery = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = "page" AND lexical IS NOT NULL');
-                await (options.transacting ? pageResetQuery.transacting(options.transacting) : pageResetQuery);
-            }
-
-            return result;
+            return await ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
         } else {
             return ghostBookshelf.Model.bulkEdit.call(this, ids, tableName, options);
         }
@@ -1449,39 +1364,12 @@ Post = ghostBookshelf.Model.extend({
     },
 
     bulkDestroy: async function bulkDestroy(ids, tableName, options) {
-        if (tableName === this.prototype.tableName) {
-            if (labs.isSet('collectionsCard')) {
-                // get count of published posts to be destroyed before they no longer exist to count
-                const deletedPublishedCount = await this.query((qb) => {
-                    qb.where('type', 'post')
-                        .where('status', 'published')
-                        .whereIn('id', ids);
-                }).count({transacting: options.transacting});
-
-                const result = await ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
-
-                // if we've deleted any published posts, we need to reset the html for all pages so dynamic collection
-                // card content can be re-rendered
-                if (deletedPublishedCount > 0) {
-                    const pageResetQuery = ghostBookshelf.knex.raw('UPDATE posts set html = NULL WHERE type = "page" AND lexical IS NOT NULL');
-                    await (options.transacting ? pageResetQuery.transacting(options.transacting) : pageResetQuery);
-                }
-
-                return result;
-            } else {
-                return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
-            }
-        } else {
-            return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
-        }
+        return ghostBookshelf.Model.bulkDestroy.call(this, ids, tableName, options);
     },
 
     // NOTE: the `authors` extension is the parent of the post model. It also has a permissible function.
     permissible: async function permissible(postModel, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission) {
-        let isContributor;
-        let isOwner;
-        let isAdmin;
-        let isEditor;
+        let {isContributor, isOwner, isAdmin, isEitherEditor} = setIsRoles(loadedPermissions);
         let isIntegration;
         let isEdit;
         let isAdd;
@@ -1499,10 +1387,6 @@ Post = ghostBookshelf.Model.extend({
             return postModel.get('status') === 'draft';
         }
 
-        isContributor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Contributor'});
-        isOwner = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'});
-        isAdmin = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Administrator'});
-        isEditor = loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Editor'});
         isIntegration = loadedPermissions.apiKey && _.some(loadedPermissions.apiKey.roles, {name: 'Admin Integration'});
 
         isEdit = (action === 'edit');
@@ -1525,7 +1409,7 @@ Post = ghostBookshelf.Model.extend({
         } else if (isContributor && isDestroy) {
             // If destroying, only allow contributor to destroy their own draft posts
             hasUserPermission = isDraft();
-        } else if (!(isOwner || isAdmin || isEditor || isIntegration)) {
+        } else if (!(isOwner || isAdmin || isEitherEditor || isIntegration)) {
             hasUserPermission = !isChanging('visibility');
         }
 

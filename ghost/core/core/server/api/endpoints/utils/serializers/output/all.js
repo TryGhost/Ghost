@@ -2,14 +2,14 @@ const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output
 const _ = require('lodash');
 
 const removeXBY = (object) => {
-    _.each(object, (value, key) => {
+    for (const [key, value] of Object.entries(object)) {
         // CASE: go deeper
         if (_.isObject(value) || _.isArray(value)) {
             removeXBY(value);
         } else if (['updated_by', 'created_by', 'published_by'].includes(key)) {
             delete object[key];
         }
-    });
+    }
 
     return object;
 };

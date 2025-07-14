@@ -6,12 +6,15 @@ module.exports = {
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
     },
-    darkMode: ['class', 'class'],
+    // darkMode: 'selector',
+    darkMode: ['variant', ['&:is(.dark *):not(.light *)']],
     theme: {
         screens: {
             sm: '480px',
             md: '640px',
+            sidebar: '800px',
             lg: '1024px',
+            sidebarlg: '1240px',
             xl: '1320px',
             xxl: '1440px',
             xxxl: '1600px',
@@ -20,7 +23,7 @@ module.exports = {
         colors: {
             transparent: 'transparent',
             current: 'currentColor',
-            accent: 'var(--accent-color, #ff0095)',
+            ghostaccent: 'var(--accent-color, #ff0095)',
             white: '#FFF',
             black: '#15171A',
 
@@ -77,13 +80,14 @@ module.exports = {
                 400: '#42C6FF',
                 500: '#14B8FF',
                 600: '#00A4EB',
+                700: '#3778F1',
                 DEFAULT: '#14B8FF'
             },
             purple: {
                 100: '#EDE0FF',
                 400: '#A366FF',
                 500: '#8E42FF',
-                600: '7B1FFF',
+                600: '#7B1FFF',
                 DEFAULT: '#8E42FF'
             },
             pink: {
@@ -99,6 +103,13 @@ module.exports = {
                 500: '#F50B23',
                 600: '#DC091E',
                 DEFAULT: '#F50B23'
+            },
+            orange: {
+                100: '#FFEDD5',
+                400: '#FB923C',
+                500: '#F97316',
+                600: '#EA580C',
+                DEFAULT: '#F97316'
             },
             yellow: {
                 100: '#FFF1D6',
@@ -320,7 +331,8 @@ module.exports = {
                 max: 'max-content',
                 fit: 'fit-content',
                 prose: '65ch',
-                page: '148rem'
+                page: '148rem',
+                pageminsidebar: '116rem'
             },
             borderRadius: {
                 sm: 'calc(var(--radius) - 4px)',
@@ -341,7 +353,7 @@ module.exports = {
                 lg: '1.5rem',
                 xl: '1.7rem',
                 '2xl': '2.2rem',
-                '3xl': '2.7rem',
+                '3xl': '2.8rem',
                 '4xl': '3.2rem',
                 '5xl': [
                     '4.0rem',
@@ -410,7 +422,17 @@ module.exports = {
                     2: 'hsl(var(--chart-2))',
                     3: 'hsl(var(--chart-3))',
                     4: 'hsl(var(--chart-4))',
-                    5: 'hsl(var(--chart-5))'
+                    5: 'hsl(var(--chart-5))',
+                    gray: 'hsl(var(--chart-gray))',
+                    darkgray: 'hsl(var(--chart-darkgray))',
+                    rose: 'hsl(var(--chart-rose))',
+                    orange: 'hsl(var(--chart-orange))',
+                    amber: 'hsl(var(--chart-amber))',
+                    yellow: 'hsl(var(--chart-yellow))',
+                    green: 'hsl(var(--chart-green))',
+                    teal: 'hsl(var(--chart-teal))',
+                    blue: 'hsl(var(--chart-blue))',
+                    purple: 'hsl(var(--chart-purple))'
                 },
                 sidebar: {
                     DEFAULT: 'hsl(var(--sidebar-background))',

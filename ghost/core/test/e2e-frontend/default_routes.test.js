@@ -164,14 +164,14 @@ describe('Default Frontend routing', function () {
             before(async function () {
                 configUtils.set('admin:redirects', false);
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
             after(async function () {
                 await configUtils.restore();
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
@@ -340,7 +340,7 @@ describe('Default Frontend routing', function () {
 
     describe('Site Map', function () {
         before(async function () {
-            await testUtils.clearData();
+            await testUtils.teardownDb();
             await testUtils.initData();
             await testUtils.initFixtures('posts');
         });

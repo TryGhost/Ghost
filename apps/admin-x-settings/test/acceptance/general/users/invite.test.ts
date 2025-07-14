@@ -11,8 +11,8 @@ test.describe('User invitations', async () => {
             ...globalDataRequests,
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             browseInvites: {method: 'GET', path: '/invites/', response: responseFixtures.invites},
-            browseRoles: {method: 'GET', path: '/roles/?limit=all', response: responseFixtures.roles},
-            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
+            browseRoles: {method: 'GET', path: '/roles/?limit=100', response: responseFixtures.roles},
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=100&permissions=assign', response: responseFixtures.roles},
             addInvite: {method: 'POST', path: '/invites/', response: {
                 invites: [
                     {
@@ -147,7 +147,7 @@ test.describe('User invitations', async () => {
         await mockApi({page, requests: {
             ...globalDataRequests,
             ...limitRequests,
-            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=all&permissions=assign', response: responseFixtures.roles},
+            browseAssignableRoles: {method: 'GET', path: '/roles/?limit=100&permissions=assign', response: responseFixtures.roles},
             browseConfig: {
                 ...globalDataRequests.browseConfig,
                 response: {

@@ -1,7 +1,7 @@
 import clsx from 'clsx';
-import {Button} from '@tryghost/admin-x-design-system';
+import {Button} from '@tryghost/shade';
 import {useEffect, useState} from 'react';
-import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/useActivityPubQueries';
+import {useFollowMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 
 interface FollowButtonProps {
     className?: string;
@@ -10,6 +10,7 @@ interface FollowButtonProps {
     type?: 'primary' | 'secondary';
     onFollow?: () => void;
     onUnfollow?: () => void;
+    'data-testid'?: string;
 }
 
 const noop = () => {};
@@ -18,26 +19,27 @@ const FollowButton: React.FC<FollowButtonProps> = ({
     className,
     following,
     handle,
-    type = 'secondary',
     onFollow = noop,
-    onUnfollow = noop
+    onUnfollow = noop,
+    'data-testid': testId
 }) => {
     const [isFollowing, setIsFollowing] = useState(following);
-    const [isHovered, setIsHovered] = useState(false);
 
     const unfollowMutation = useUnfollowMutationForUser('index',
-        noop,
         () => {
-            setIsFollowing(false);
-            onUnfollow();
+            // Success handled by cache updates
+        },
+        () => {
+            setIsFollowing(true);
         }
     );
 
     const followMutation = useFollowMutationForUser('index',
-        noop,
+        () => {
+            // Success handled by cache updates
+        },
         () => {
             setIsFollowing(false);
-            onUnfollow();
         }
     );
 
@@ -57,27 +59,23 @@ const FollowButton: React.FC<FollowButtonProps> = ({
         setIsFollowing(following);
     }, [following]);
 
-    const color = (type === 'primary') ? 'black' : 'grey';
-    const size = (type === 'primary') ? 'md' : 'sm';
-    const minWidth = (type === 'primary') ? 'min-w-[96px]' : 'min-w-[88px]';
-
     return (
         <Button
             className={clsx(
-                className,
-                isFollowing && minWidth
+                'min-w-[90px]',
+                className
             )}
-            color={isFollowing ? 'outline' : color}
-            label={isFollowing ? (isHovered ? 'Unfollow' : 'Following') : 'Follow'}
-            size={size}
+            data-testid={testId}
+            title={isFollowing ? 'Click to unfollow' : ''}
+            variant={!isFollowing ? 'default' : 'outline'}
             onClick={(event) => {
                 event?.preventDefault();
                 event?.stopPropagation();
                 handleClick();
             }}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-        />
+        >
+            {isFollowing ? 'Following' : 'Follow'}
+        </Button>
     );
 };
 

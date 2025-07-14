@@ -17,8 +17,8 @@ module.exports = {
 
     /**
      * @description Get's called if you register a router in express.
-     * @param {String} name
-     * @param {Express-Router} router
+     * @param {string} name
+     * @param {import('express').Router} router
      */
     setRouter(name, router) {
         routers[name] = router;
@@ -34,8 +34,8 @@ module.exports = {
 
     /**
      * @description Get router by name.
-     * @param {String} name
-     * @returns {Express-Router}
+     * @param {string} name
+     * @returns {import('express').Router}
      */
     getRouter(name) {
         return routers[name];
@@ -43,8 +43,8 @@ module.exports = {
 
     /**
      * Gets a router by it's internal router name
-     * @param {String} name internal router name
-     * @returns {Express-Router}
+     * @param {string} name internal router name
+     * @returns {import('express').Router}
      */
     getRouterByName(name) {
         for (let routerKey in routers) {

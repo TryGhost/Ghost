@@ -289,6 +289,21 @@ describe('User API', function () {
         should.equal(res.headers['x-cache-invalidate'], undefined);
     });
 
+    it('Does trigger cache invalidation when a social link on a user has been changed', async function () {
+        const res = await request.put(localUtils.API.getApiQuery('users/me/'))
+            .set('Origin', config.get('url'))
+            .send({
+                users: [{
+                    mastodon: 'https://mastodon.social/@johnsmith'
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        should.equal(res.headers['x-cache-invalidate'], '/*');
+    });
+
     it('Does not trigger cache invalidation when no attribute on a user has been changed', async function () {
         const res = await request.put(localUtils.API.getApiQuery('users/me/'))
             .set('Origin', config.get('url'))

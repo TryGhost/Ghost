@@ -1,4 +1,5 @@
-const {PostsService, PostsExporter} = require('@tryghost/posts-service');
+const PostsService = require('./PostsService');
+const PostsExporter = require('./PostsExporter');
 const url = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 
 /**

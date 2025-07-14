@@ -8,7 +8,7 @@ const {PERMIT_ACCESS} = membersService.contentGating;
 const HAS_GATED_BLOCKS_REGEX = /<!--\s*kg-gated-block:begin/;
 // Match gated block comments
 // e.g. <!--kg-gated-block:begin nonMember:true memberSegment:"status:free"-->...gated content<!--kg-gated-block:end-->
-const GATED_BLOCK_REGEX = /<!--\s*kg-gated-block:begin\s+([^\n]+?)\s*-->\s*([\s\S]*?)\s*<!--\s*kg-gated-block:end\s*-->/g;
+const GATED_BLOCK_REGEX = /<!--kg-gated-block:begin ([^\n]+?)\s*-->([\s\S]*?)<!--kg-gated-block:end-->/g;
 // Match the key-value pairs (with optional quotes around the value) in the gated-block:begin comment
 const GATED_BLOCK_PARAM_REGEX = /\b(?<key>\w+):["']?(?<value>[^"'\s]+)["']?/g;
 
@@ -70,15 +70,14 @@ const stripGatedBlocks = function (html, member) {
     });
 };
 
-function _updatePlaintext(attrs) {
+function _updateTextAttrs(attrs) {
     if (attrs.html) {
         attrs.plaintext = htmlToPlaintext.excerpt(attrs.html);
     }
-}
 
-function _updateExcerpt(attrs) {
     if (!attrs.custom_excerpt && attrs.excerpt) {
-        attrs.excerpt = htmlToPlaintext.excerpt(attrs.html).substring(0, 500);
+        const plaintext = attrs.plaintext || htmlToPlaintext.excerpt(attrs.html);
+        attrs.excerpt = plaintext.substring(0, 500);
     }
 }
 
@@ -96,8 +95,7 @@ const forPost = (attrs, frame) => {
 
         if (paywallIndex !== -1) {
             attrs.html = attrs.html.slice(0, paywallIndex);
-            _updatePlaintext(attrs);
-            _updateExcerpt(attrs);
+            _updateTextAttrs(attrs);
         } else {
             ['plaintext', 'html', 'excerpt'].forEach((field) => {
                 if (attrs[field] !== undefined) {
@@ -111,8 +109,7 @@ const forPost = (attrs, frame) => {
         const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
         if (hasGatedBlocks) {
             attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
-            _updatePlaintext(attrs);
-            _updateExcerpt(attrs);
+            _updateTextAttrs(attrs);
         }
     }
 

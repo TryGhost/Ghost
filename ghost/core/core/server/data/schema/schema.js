@@ -43,14 +43,23 @@ module.exports = {
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
         show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
-        border_color: {type: 'string', maxlength: 50, nullable: true},
-        title_color: {type: 'string', maxlength: 50, nullable: true},
+        post_title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        button_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'rounded', validations: {isIn: [['square', 'rounded', 'pill']]}},
+        button_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'fill', validations: {isIn: [['fill', 'outline']]}},
+        title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold', validations: {isIn: [['normal', 'medium', 'semibold', 'bold']]}},
+        link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline', validations: {isIn: [['underline', 'regular', 'bold']]}},
+        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}},
+        header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
+        section_title_color: {type: 'string', maxlength: 50, nullable: true},
+        divider_color: {type: 'string', maxlength: 50, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        link_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'}
     },
     posts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        uuid: {type: 'string', maxlength: 36, nullable: false, validations: {isUUID: true}},
+        uuid: {type: 'string', maxlength: 36, nullable: false, index: true, validations: {isUUID: true}},
         title: {type: 'string', maxlength: 2000, nullable: false, validations: {isLength: {max: 255}}},
         slug: {type: 'string', maxlength: 191, nullable: false},
         mobiledoc: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
@@ -126,11 +135,18 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         profile_image: {type: 'string', maxlength: 2000, nullable: true},
         cover_image: {type: 'string', maxlength: 2000, nullable: true},
-        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 200}}},
+        bio: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 250}}},
         website: {type: 'string', maxlength: 2000, nullable: true, validations: {isEmptyOrURL: true}},
         location: {type: 'text', maxlength: 65535, nullable: true, validations: {isLength: {max: 150}}},
         facebook: {type: 'string', maxlength: 2000, nullable: true},
         twitter: {type: 'string', maxlength: 2000, nullable: true},
+        threads: {type: 'string', maxlength: 191, nullable: true},
+        bluesky: {type: 'string', maxlength: 191, nullable: true},
+        mastodon: {type: 'string', maxlength: 191, nullable: true},
+        tiktok: {type: 'string', maxlength: 191, nullable: true},
+        youtube: {type: 'string', maxlength: 191, nullable: true},
+        instagram: {type: 'string', maxlength: 191, nullable: true},
+        linkedin: {type: 'string', maxlength: 191, nullable: true},
         accessibility: {type: 'text', maxlength: 65535, nullable: true},
         status: {
             type: 'string',
@@ -447,7 +463,10 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         created_by: {type: 'string', maxlength: 24, nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
-        updated_by: {type: 'string', maxlength: 24, nullable: true}
+        updated_by: {type: 'string', maxlength: 24, nullable: true},
+        '@@INDEXES@@': [
+            ['email_disabled']
+        ]
     },
     // NOTE: this is the tiers table
     products: {
@@ -748,7 +767,10 @@ module.exports = {
                 isIn: [['member', 'import', 'system', 'api', 'admin']]
             }
         },
-        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false}
+        newsletter_id: {type: 'string', maxlength: 24, nullable: true, references: 'newsletters.id', cascadeDelete: false},
+        '@@INDEXES@@': [
+            ['newsletter_id', 'created_at']
+        ]
     },
     donation_payment_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

@@ -1,0 +1,5 @@
+{{#if this.onboarding.isChecklistShown}}
+    <Dashboard::OnboardingChecklist />
+{{else}}
+    <div {{react-render this.ReactComponent}}></div>
+{{/if}}

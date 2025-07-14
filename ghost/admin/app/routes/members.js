@@ -1,8 +1,8 @@
-import AdminRoute from 'ghost-admin/routes/admin';
+import MembersManagementRoute from './members-management';
 import {didCancel} from 'ember-concurrency';
 import {inject as service} from '@ember/service';
 
-export default class MembersRoute extends AdminRoute {
+export default class MembersRoute extends MembersManagementRoute {
     @service store;
     @service feature;
 
@@ -14,11 +14,6 @@ export default class MembersRoute extends AdminRoute {
         filterParam: {refreshModel: true},
         postAnalytics: {refreshModel: false}
     };
-
-    beforeModel() {
-        super.beforeModel(...arguments);
-        // - TODO: redirect if members is disabled?
-    }
 
     model(params) {
         this.controllerFor('members').resetFilters(params);

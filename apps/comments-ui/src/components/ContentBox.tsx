@@ -1,6 +1,6 @@
 import Content from './content/Content';
 import Loading from './content/Loading';
-import React from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {ROOT_DIV_ID} from '../utils/constants';
 import {useAppContext} from '../AppContext';
 
@@ -25,12 +25,13 @@ const ContentBox: React.FC<Props> = ({done}) => {
     };
     const {accentColor, colorScheme} = useAppContext();
 
-    const darkMode = () => {
+    const darkMode = useCallback(() => {
         if (colorScheme === 'light') {
             return false;
         } else if (colorScheme === 'dark') {
             return true;
         } else {
+            // Always fall back to container color detection
             const el = document.getElementById(ROOT_DIV_ID);
             if (!el || !el.parentElement) {
                 return false;
@@ -44,9 +45,32 @@ const ContentBox: React.FC<Props> = ({done}) => {
 
             return contrast([255, 255, 255], [red, green, blue]) < 5;
         }
-    };
+    }, [colorScheme, contrast]);
 
-    const containerClass = darkMode() ? 'dark' : '';
+    const [containerClass, setContainerClass] = useState(darkMode() ? 'dark' : '');
+
+    useEffect(() => {
+        // Update class when colorScheme changes
+        setContainerClass(darkMode() ? 'dark' : '');
+    }, [colorScheme, darkMode]);
+
+    useEffect(() => {
+        // Handle container style/class changes
+        const el = document.getElementById(ROOT_DIV_ID);
+        if (el?.parentElement) {
+            const observer = new MutationObserver(() => {
+                setContainerClass(darkMode() ? 'dark' : '');
+            });
+            observer.observe(el.parentElement, {
+                attributes: true,
+                attributeFilter: ['style', 'class']
+            });
+            return () => {
+                observer.disconnect();
+            };
+        }
+    }, [darkMode]);
+
     const style = {
         '--gh-accent-color': accentColor ?? 'black',
         paddingTop: 0,

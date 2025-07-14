@@ -68,6 +68,17 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
+    it('does not redirect to staff page when authenticated as super editor', async function () {
+        let role = this.server.create('role', {name: 'Super Editor'});
+        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        this.server.create('post', {authors: [author]});
+
+        await authenticateSession();
+        await visit('/editor/post/1');
+
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
+    });
+    
     it('displays 404 when post does not exist', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});

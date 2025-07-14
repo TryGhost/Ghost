@@ -389,6 +389,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     color: var(--middarkgrey);
 }
 
+.gh-nav-list .gh-icon-ap-network {
+    width: 18px;
+    height: 18px;
+}
+
 /* Global search
 /* ---------------------------------------------------------- */
 
@@ -546,6 +551,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 1;
 }
 
+.gh-nav-list a:hover .gh-nav-member-count {
+    background: color-mod(var(--mainmenu-color-active-bg) l(-5%));
+}
+
 /* Icons */
 .gh-nav-list svg {
     margin-right: 11px;
@@ -559,19 +568,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .gh-nav-list-home svg {
     margin-top: -2px;
-}
-
-.gh-nav-list svg.force-fill path {
-    fill: var(--midgrey);
-}
-
-.gh-nav-list a:not(.active):hover svg,
-.gh-nav-list button.main-menu-item:hover svg {
-    fill: var(--black);
-}
-
-.gh-nav-list .active svg {
-    fill: var(--black);
 }
 
 .gh-nav-list svg circle {
@@ -649,12 +645,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     align-items: center;
     justify-content: center;
 }
-
 .gh-nav-list .gh-secondary-action span svg {
     margin-right: 0;
-    width: 14px;
-    height: 14px;
-    fill: color-mod(var(--middarkgrey) l(-10%));
 }
 
 .gh-nav-list .gh-secondary-action:not(.icon-only):hover span {
@@ -668,10 +660,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 .gh-nav-list .gh-secondary-action:hover,
 .gh-nav-list a.gh-secondary-action:hover {
     background: none;
-}
-
-.gh-nav-list .gh-secondary-action:hover span svg path {
-    fill: var(--black);
 }
 
 .gh-nav-list .gh-secondary-action.icon-only,
@@ -689,11 +677,6 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 1;
 }
 
-.gh-nav-list .gh-nav-new-post span svg {
-    width: 1.8rem;
-    height: 1.8rem;
-}
-
 .gh-nav-list .gh-nav-new-post span svg path {
     stroke: var(--darkgrey);
     stroke-width: 1;
@@ -705,7 +688,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     padding: 2px 7px;
     margin: 0;
     right: 10px;
-    top: 5px;
+    top: 7px;
     background: var(--mainmenu-color-active-bg);
     color: var(--middarkgrey);
     border-radius: 999px;
@@ -713,6 +696,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     font-size: 1.3rem;
     min-width: 23px;
     text-align: center;
+}
+
+.gh-nav-list-ap .active .gh-nav-member-count {
+    display: none;
 }
 
 .gh-nav-main {
@@ -1251,7 +1238,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     flex-shrink: 0;
     height: 34px;
     color: var(--midgrey-l2);
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     font-weight: 500;
     line-height: 34px;
     letter-spacing: .2px;
@@ -1272,7 +1259,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: block;
     width: 9px;
     height: 9px;
-    margin: 1px 6px 0;
+    margin: 1px 10px 0;
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb svg path {

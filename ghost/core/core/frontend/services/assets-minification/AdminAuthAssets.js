@@ -1,10 +1,11 @@
 // const debug = require('@tryghost/debug')('comments-counts-assets');
-const Minifier = require('@tryghost/minifier');
 const path = require('path');
 const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
+
+const Minifier = require('./Minifier');
 const AssetsMinificationBase = require('./AssetsMinificationBase');
 
 module.exports = class AdminAuthAssets extends AssetsMinificationBase {
@@ -18,7 +19,6 @@ module.exports = class AdminAuthAssets extends AssetsMinificationBase {
         this.minifier = new Minifier({src: this.src, dest: this.dest});
 
         try {
-            // TODO: don't do this synchronously
             fs.mkdirSync(this.dest, {recursive: true});
             fs.copyFileSync(path.join(this.src, 'index.html'), path.join(this.dest, 'index.html'));
         } catch (error) {

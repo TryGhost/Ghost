@@ -6,6 +6,8 @@ const fs = require('fs');
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const errors = require('@tryghost/errors');
+
+/** @type {knex.Knex} */
 let knexInstance;
 
 // @TODO:

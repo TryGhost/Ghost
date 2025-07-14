@@ -96,15 +96,15 @@ Used to be for fixed bottom mobile menu bar
     }
 } */
 
-.admin-x-base.dark {
+.dark .admin-x-base {
     color: #FAFAFB;
 }
 
-.admin-x-base.dark .gh-loading-orb-container {
+.dark .admin-x-base .gh-loading-orb-container {
     background-color: #000000;
 }
 
-.admin-x-base.dark .gh-loading-orb {
+.dark .admin-x-base .gh-loading-orb {
     filter: invert(100%);
 }
 
@@ -121,4 +121,3 @@ Used to be for fixed bottom mobile menu bar
 .gh-prose-links a {
     color: #30CF43;
 }
-

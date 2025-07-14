@@ -52,6 +52,7 @@ const EDITABLE_SETTINGS = [
     'email_track_opens',
     'email_track_clicks',
     'members_track_sources',
+    'web_analytics',
     'amp',
     'amp_gtag_id',
     'slack_url',
@@ -75,7 +76,11 @@ const EDITABLE_SETTINGS = [
     'recommendations_enabled',
     'body_font',
     'heading_font',
-    'blocked_email_domains'
+    'blocked_email_domains',
+    'require_email_mfa',
+    'social_web',
+    'explore_ping',
+    'explore_ping_growth'
 ];
 
 module.exports = {

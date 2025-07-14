@@ -1,18 +1,18 @@
-const {Mention} = require('@tryghost/webmentions');
+const Mention = require('./Mention');
 const logging = require('@tryghost/logging');
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').IMentionRepository} IMentionRepository
+ * @typedef {import('./MentionsAPI').IMentionRepository} IMentionRepository
  */
 
 /**
  * @template Model
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').Page<Model>} Page
+ * @typedef {import('./MentionsAPI').Page<Model>} Page
  */
 
 /**
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').GetPageOptions} GetPageOptions
- * @typedef {import('@tryghost/webmentions/lib/MentionsAPI').GetAllOptions} GetAllOptions
+ * @typedef {import('./MentionsAPI').GetPageOptions} GetPageOptions
+ * @typedef {import('./MentionsAPI').GetAllOptions} GetAllOptions
  */
 
 /**
@@ -64,7 +64,7 @@ module.exports = class BookshelfMentionRepository {
 
     /**
      * @param {GetPageOptions} options
-     * @returns {Promise<Page<import('@tryghost/webmentions/lib/Mention')>>}
+     * @returns {Promise<Page<import('./Mention')>>}
      */
     async getPage(options) {
         /**
@@ -88,7 +88,7 @@ module.exports = class BookshelfMentionRepository {
 
     /**
      * @param {GetAllOptions} options
-     * @returns {Promise<import('@tryghost/webmentions/lib/Mention')[]>}
+     * @returns {Promise<import('./Mention')[]>}
      */
     async getAll(options) {
         const models = await this.#MentionModel.findAll(options);
@@ -99,7 +99,7 @@ module.exports = class BookshelfMentionRepository {
     /**
      * @param {URL} source
      * @param {URL} target
-     * @returns {Promise<import('@tryghost/webmentions/lib/Mention')|null>}
+     * @returns {Promise<import('./Mention')|null>}
      */
     async getBySourceAndTarget(source, target) {
         const model = await this.#MentionModel.findOne({
@@ -115,7 +115,7 @@ module.exports = class BookshelfMentionRepository {
     }
 
     /**
-     * @param {import('@tryghost/webmentions/lib/Mention')} mention
+     * @param {import('./Mention')} mention
      * @returns {Promise<void>}
      */
     async save(mention) {

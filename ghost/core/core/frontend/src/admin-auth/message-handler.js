@@ -63,7 +63,7 @@ window.addEventListener('message', async function (event) {
     if (data.action === 'getUser') {
         try {
             const res = await fetch(
-                adminUrl + '/users/me/'
+                adminUrl + '/users/me/?include=roles'
             );
             const json = await res.json();
             respond(null, json);

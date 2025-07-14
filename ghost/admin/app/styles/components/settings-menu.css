@@ -6,9 +6,10 @@
 
 .settings-menu-toggle {
     position: absolute;
-    top: 30px;
+    top: 24px;
     right: 24px;
     z-index: 9999;
+    height: 34px;
     margin-right: 0 !important;
 }
 
@@ -116,8 +117,9 @@
 .settings-menu-header {
     position: fixed;
     display: flex;
+    height: 82px; /* 34px + 24px + 24px */
     width: 100%;
-    padding: 36px 24px 24px;
+    padding: 24px;
     justify-content: space-between;
     align-items: center;
     z-index: 3;
@@ -132,9 +134,9 @@
 
 .settings-menu-header h4 {
     margin: 0;
-    font-size: 1.75rem;
+    font-size: 2rem;
     line-height: 1.375;
-    font-weight: 600;
+    font-weight: 700;
 }
 
 .settings-menu-header .close {

@@ -1,5 +1,5 @@
 const queries = require('../../lib/queries');
-
+ 
 /**
  * Updates email analytics for a specific member
  * 

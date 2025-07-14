@@ -1,6 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
-
 // Thing we are testing
 const redirectAdminUrls = require('../../../../../core/server/web/admin/middleware/redirect-admin-urls');
 
@@ -28,9 +27,9 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                next.called.should.be.false();
-                res.redirect.called.should.be.true();
-                res.redirect.calledWith('/ghost/#/x').should.be.true();
+                assert.equal(next.called, false);
+                assert.equal(res.redirect.called, true);
+                sinon.assert.calledWith(res.redirect, '/ghost/#/x');
             });
 
             it('should not redirect /ghost/ on its owh', function () {
@@ -38,8 +37,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                next.called.should.be.true();
-                res.redirect.called.should.be.false();
+                assert.equal(next.called, true);
+                assert.equal(res.redirect.called, false);
             });
 
             it('should not redirect url that has no slash', function () {
@@ -47,8 +46,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                next.called.should.be.true();
-                res.redirect.called.should.be.false();
+                assert.equal(next.called, true);
+                assert.equal(res.redirect.called, false);
             });
 
             it('should not redirect url that starts with something other than /ghost/', function () {
@@ -56,8 +55,8 @@ describe('Admin App', function () {
 
                 redirectAdminUrls(req, res, next);
 
-                next.called.should.be.true();
-                res.redirect.called.should.be.false();
+                assert.equal(next.called, true);
+                assert.equal(res.redirect.called, false);
             });
         });
     });

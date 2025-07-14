@@ -9,8 +9,6 @@ describe('Posts Bulk API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard');
-
         agent = await agentProvider.getAdminAPIAgent();
 
         // Note that we generate lots of fixtures here to test the bulk deletion correctly
@@ -55,13 +53,6 @@ describe('Posts Bulk API', function () {
             await DomainEvents.allSettled();
 
             assert.equal(response.body.bulk.meta.stats.successful, amount, `Expect all matching posts (${amount}) to be changed`);
-
-            // Check page HTML was reset to enable re-render of collection cards
-            // Must be done before fetch all posts otherwise they will be re-rendered
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'no. of render-queued pages after bulk edit');
 
             // Fetch all posts and check if they are featured
             const posts = await models.Post.findAll({filter, status: 'all'});
@@ -332,12 +323,6 @@ describe('Posts Bulk API', function () {
             // Check if all posts were deleted
             const posts = await models.Post.findPage({filter, status: 'all'});
             assert.equal(posts.meta.pagination.total, 0, `Expect all matching posts (${amount}) to be deleted`);
-
-            // Check page HTML was reset to enable re-render of collection cards
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'no. of render-queued pages after bulk delete');
         });
 
         it('Can delete all posts', async function () {

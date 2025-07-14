@@ -1,3 +1,4 @@
+import React from 'react';
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 

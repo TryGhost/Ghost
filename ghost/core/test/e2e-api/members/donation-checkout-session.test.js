@@ -329,4 +329,31 @@ describe('Create Stripe Checkout Session for Donations', function () {
 
         latestStripePrice.get('nickname').should.have.length(250);
     });
+    it('Can create a checkout session with a personal note included', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: 'noob@test.com',
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    test: 'hello',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                },
+                personalNote: 'Please leave a note, gracias!'
+            })
+            .expectStatus(200)
+            .matchBodySnapshot();
+    });
 });

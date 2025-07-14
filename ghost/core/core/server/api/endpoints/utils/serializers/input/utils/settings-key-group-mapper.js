@@ -47,7 +47,10 @@ const keyGroupMapping = {
     stripe_connect_integration: 'members',
     portal_name: 'portal',
     portal_button: 'portal',
-    portal_plans: 'portal'
+    portal_plans: 'portal',
+    require_email_mfa: 'security',
+    explore_ping: 'explore',
+    explore_ping_growth: 'explore'
 };
 
 const mapKeyToGroup = (key) => {
