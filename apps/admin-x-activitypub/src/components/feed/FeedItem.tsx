@@ -46,7 +46,9 @@ export function getAttachment(object: ObjectProperties) {
 
 export function renderFeedAttachment(
     object: ObjectProperties,
-    onImageClick?: (url: string) => void
+    onImageClick?: (url: string) => void,
+    brokenImages?: Set<string>,
+    onImageError?: (url: string) => void
 ) {
     const attachment = getAttachment(object);
 
@@ -61,6 +63,24 @@ export function renderFeedAttachment(
         }
     };
 
+    const handleImageError = (url: string) => {
+        if (onImageError) {
+            onImageError(url);
+        }
+    };
+
+    const isThreadsImage = (url: string) => {
+        return url.includes('cdninstagram.com');
+    };
+
+    const renderThreadsErrorMessage = () => (
+        <div className="mt-4 flex w-full flex-col items-center rounded-md bg-gray-100 p-6 text-center text-gray-700 dark:bg-gray-925/30">
+            <LucideIcon.ImageOff size={32} strokeWidth={1.2} />
+            <H4 className='mt-2.5'>Threads image missing.</H4>
+            <p>Message <span className='font-semibold'>@mosseri@threads.net</span> for more info</p>
+        </div>
+    );
+
     if (Array.isArray(attachment)) {
         const attachmentCount = attachment.length;
 
@@ -73,12 +93,37 @@ export function renderFeedAttachment(
             gridClass = 'grid-cols-3 auto-rows-[150px]'; // >4 images, three per row
         }
 
+        const hasThreadsImages = attachment.some(item => isThreadsImage(item.url));
+        const hasAnyBrokenThreadsImages = brokenImages && hasThreadsImages && attachment.some(item => isThreadsImage(item.url) && brokenImages.has(item.url));
+
+        // Filter out broken Threads images to check if we have any visible images
+        const visibleImages = attachment.filter(item => !brokenImages || !brokenImages.has(item.url) || !isThreadsImage(item.url)
+        );
+
         return (
-            <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
-                {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} referrerPolicy='no-referrer' src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
-                ))}
-            </div>
+            <>
+                {visibleImages.length > 0 && (
+                    <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
+                        {attachment.map((item, index) => {
+                            if (brokenImages && brokenImages.has(item.url) && isThreadsImage(item.url)) {
+                                return null;
+                            }
+                            return (
+                                <img
+                                    key={item.url}
+                                    alt={item.name || `Image-${index}`}
+                                    className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`}
+                                    referrerPolicy='no-referrer'
+                                    src={item.url}
+                                    onClick={onImageClick ? handleImageClick(item.url) : undefined}
+                                    onError={() => handleImageError(item.url)}
+                                />
+                            );
+                        })}
+                    </div>
+                )}
+                {hasAnyBrokenThreadsImages && renderThreadsErrorMessage()}
+            </>
         );
     }
 
@@ -87,7 +132,10 @@ export function renderFeedAttachment(
     case 'image/png':
     case 'image/gif':
     case 'image/webp':
-        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
+        if (brokenImages && brokenImages.has(attachment.url) && isThreadsImage(attachment.url)) {
+            return renderThreadsErrorMessage();
+        }
+        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} onError={() => handleImageError(attachment.url)} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mb-4 mt-3'>
@@ -113,6 +161,10 @@ export function renderFeedAttachment(
                 imageUrl = object.image?.url;
             }
 
+            if (brokenImages && brokenImages.has(imageUrl) && isThreadsImage(imageUrl)) {
+                return renderThreadsErrorMessage();
+            }
+
             return (
                 <img
                     alt={attachment.name || 'Image'}
@@ -120,6 +172,7 @@ export function renderFeedAttachment(
                     referrerPolicy='no-referrer'
                     src={imageUrl}
                     onClick={onImageClick ? handleImageClick(imageUrl) : undefined}
+                    onError={() => handleImageError(imageUrl)}
                 />
             );
         }
@@ -234,6 +287,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
+    const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -323,6 +377,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
             toast.success('Link copied');
             setTimeout(() => setIsCopied(false), 2000);
         }
+    };
+
+    const handleImageError = (url: string) => {
+        setBrokenImages(prev => new Set(prev).add(url));
     };
 
     let author = actor;
@@ -424,7 +482,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, onClick)}
+                                            {renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                             <div className='p-5'>
                                                 <div className='mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight break-anywhere' data-test-activity-heading>{object.name}</div>
                                                 <div className='line-clamp-3 leading-[1.4em] break-anywhere'>{object.preview?.content}</div>
@@ -453,7 +511,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 {isTruncated && (
                                                     <button className='mt-1 text-blue-600' type='button'>Show more</button>
                                                 )}
-                                                {renderFeedAttachment(object, openLightbox)}
+                                                {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                             </div>
                                         }
                                     </div>
@@ -521,7 +579,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='flex flex-col items-start'>
                                         {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
-                                        {renderFeedAttachment(object, openLightbox)}
+                                        {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
                                                 actor={author}
@@ -590,10 +648,10 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {(object.type === 'Article') && renderFeedAttachment(object, onClick)}
+                                        {(object.type === 'Article') && renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                         {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
-                                        {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
+                                        {(object.type === 'Note') && renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                         {(object.type === 'Article') && <Button
                                             className='mt-3 w-full'
                                             id='read-more'
