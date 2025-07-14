@@ -401,7 +401,7 @@ test.describe('Analytics settings', async () => {
         await expect(webAnalyticsToggle).toBeDisabled();
 
         // Should show the upgrade CTA instead of configuration message
-        await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).toBeVisible();
+        await expect(section.getByText(/Web analytics is available on the Publisher plan and above/)).toBeVisible();
         await expect(section.getByText('Upgrade now →')).toBeVisible();
         
         // Should NOT show the configuration message
