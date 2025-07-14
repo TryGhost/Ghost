@@ -22,6 +22,8 @@ describe('Facebook URLs', () => {
             assert.equal(validateFacebookUrl('/myPage'), 'https://www.facebook.com/myPage');
             assert.equal(validateFacebookUrl('fb.me/myPage'), 'https://www.facebook.com/myPage');
             assert.equal(validateFacebookUrl('https://fb.me/myPage'), 'https://www.facebook.com/myPage');
+            assert.equal(validateFacebookUrl('  myPage  '), 'https://www.facebook.com/myPage');
+            assert.equal(validateFacebookUrl('@myPage'), 'https://www.facebook.com/myPage');
         });
 
         it('should format pages URLs correctly', () => {
