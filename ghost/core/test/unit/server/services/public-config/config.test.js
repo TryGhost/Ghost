@@ -92,19 +92,19 @@ describe('Public-config Service', function () {
 
             let configProperties = getConfigProperties();
 
-            assert.deepEqual(configProperties.stats, {endpoint: 'xxx', id: '931ade9e-a4f1-4217-8625-34bd34250c16'});
+            assert.deepEqual(configProperties.stats, {endpoint: 'xxx', siteUuid: '931ade9e-a4f1-4217-8625-34bd34250c16'});
         });
 
-        it('should return stats id when tinybird config is set with the id key', function () {
+        it('should return overriden site uuid when tinybird config is set with the overrideSiteUuid key', function () {
             configUtils.set('tinybird', {
                 stats: {
-                    id: '1234567890'
+                    overrideSiteUuid: '1234567890'
                 }
             });
 
             let configProperties = getConfigProperties();
 
-            assert.deepEqual(configProperties.stats.id, '1234567890');
+            assert.deepEqual(configProperties.stats.overrideSiteUuid, '1234567890');
         });
 
         it('should NOT return stats when tinybird config is set without the stats key', function () {
