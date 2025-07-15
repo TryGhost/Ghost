@@ -111,7 +111,7 @@ const Overview: React.FC = () => {
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: params
     });
 
