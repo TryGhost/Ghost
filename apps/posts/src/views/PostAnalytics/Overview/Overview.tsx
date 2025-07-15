@@ -160,7 +160,7 @@ const Overview: React.FC = () => {
                         />
                     )}
                     <Card className='group col-span-2 overflow-hidden p-0'>
-                        <div className='relative flex items-center justify-between gap-6'>
+                        <div className='relative flex items-center justify-between gap-6' data-testid='growth'>
                             <CardHeader>
                                 <CardTitle className='flex items-center gap-1.5 text-lg'>
                                     <LucideIcon.Sprout size={16} strokeWidth={1.5} />
