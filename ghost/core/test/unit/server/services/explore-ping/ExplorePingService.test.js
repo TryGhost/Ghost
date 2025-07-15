@@ -20,6 +20,7 @@ describe('ExplorePingService', function () {
         };
 
         settingsCacheStub.get.withArgs('site_uuid').returns('123e4567-e89b-12d3-a456-426614174000');
+        settingsCacheStub.get.withArgs('active_theme').returns('alto');
         settingsCacheStub.get.withArgs('explore_ping').returns(true);
         settingsCacheStub.get.withArgs('explore_ping_growth').returns(false);
 
@@ -55,7 +56,8 @@ describe('ExplorePingService', function () {
 
         membersStub = {
             stats: {
-                getTotalMembers: sinon.stub().resolves(50)
+                getTotalMembers: sinon.stub().resolves(50),
+                getMRRHistory: sinon.stub().resolves(1000)
             }
         };
 
@@ -83,6 +85,7 @@ describe('ExplorePingService', function () {
                 ghost: '4.0.0',
                 site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
+                theme: 'alto',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z'
@@ -100,11 +103,13 @@ describe('ExplorePingService', function () {
             assert.equal(payload.posts_total, null);
         });
 
-        it('does not include members_total if setting is disabled', async function () {
+        it('does not include member stats when setting is disabled', async function () {
             membersStub.stats.getTotalMembers.resolves(null);
+            membersStub.stats.getMRRHistory.resolves(null);
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, undefined);
+            assert.equal(payload.mrr, undefined);
         });
     });
 
@@ -120,10 +125,12 @@ describe('ExplorePingService', function () {
                 ghost: '4.0.0',
                 site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
+                theme: 'alto',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z',
-                members_total: 50
+                members_total: 50,
+                mrr: 1000
             });
         });
 
@@ -138,9 +145,11 @@ describe('ExplorePingService', function () {
 
         it('returns null for members_total if no members data available', async function () {
             membersStub.stats.getTotalMembers.resolves(null);
+            membersStub.stats.getMRRHistory.resolves(null);
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, null);
+            assert.equal(payload.mrr, null);
         });
 
         it('returns null for members_total if getTotalMembers throws an error', async function () {
@@ -148,6 +157,7 @@ describe('ExplorePingService', function () {
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, null);
+            assert.equal(payload.mrr, null);
         });
     });
 
