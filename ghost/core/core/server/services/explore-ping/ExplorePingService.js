@@ -14,6 +14,7 @@ module.exports = class ExplorePingService {
      * }}} deps.posts
      * @param {{stats: {
      *   getTotalMembers: () => Promise<number>
+     *   getMRRHistory: () => Promise<number>
      * }}} deps.members
      */
     constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members}) {
@@ -31,7 +32,8 @@ module.exports = class ExplorePingService {
         const payload = {
             ghost: this.ghostVersion.full,
             site_uuid: this.settingsCache.get('site_uuid'),
-            url: this.config.get('url')
+            url: this.config.get('url'),
+            theme: this.settingsCache.get('active_theme')
         };
 
         try {
@@ -57,13 +59,16 @@ module.exports = class ExplorePingService {
         if (this.settingsCache.get('explore_ping_growth')) {
             try {
                 const totalMembers = await this.members.stats.getTotalMembers();
+                const mrr = await this.members.stats.getMRRHistory();
                 payload.members_total = totalMembers;
+                payload.mrr = mrr;
             } catch (err) {
                 this.logging.warn('Failed to fetch member statistics', {
                     error: err.message,
                     context: 'explore-ping-service'
                 });
                 payload.members_total = null;
+                payload.mrr = null;
             }
         }
 
