@@ -344,6 +344,43 @@ describe('Settings API', function () {
 
             sinon.assert.calledOnce(loggingStub);
         });
+
+        it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {isLimited: true});
+
+            const membersService = require('../../../core/server/services/members');
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_123',
+                secret_key: 'sk_test_123',
+                livemode: false,
+                display_name: 'Test Account',
+                account_id: 'acct_test_123'
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
     });
 
     describe('verify key update', function () {

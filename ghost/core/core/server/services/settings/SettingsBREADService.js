@@ -11,7 +11,8 @@ const EMAIL_KEYS = ['members_support_address'];
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
-    invalidEmail: 'Invalid email address'
+    invalidEmail: 'Invalid email address',
+    stripeConnectDisabled: 'Stripe Connect is disabled on this plan'
 };
 
 class SettingsBREADService {
@@ -24,12 +25,14 @@ class SettingsBREADService {
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      * @param {Object} options.labsService - labs service instance
+     * @param {Object} options.limitsService - limits service instance
      * @param {{service: Object}} options.emailAddressService
      */
-    constructor({SettingsModel, settingsCache, labsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
+    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
         this.labs = labsService;
+        this.limitsService = limitsService;
         this.emailAddressService = emailAddressService;
 
         /* email verification setup */
@@ -194,6 +197,12 @@ class SettingsBREADService {
         }
 
         if (stripeConnectData) {
+            if (this.limitsService.isLimited('limitStripeConnect')) {
+                throw new NoPermissionError({
+                    message: tpl(messages.stripeConnectDisabled)
+                });
+            }
+
             filteredSettings.push({
                 key: 'stripe_connect_publishable_key',
                 value: stripeConnectData.public_key
