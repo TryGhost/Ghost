@@ -175,22 +175,6 @@ describe('TinybirdService', function () {
             assert.equal(result.token, 'local-token');
             assert.equal(result.exp, undefined);
         });
-        
-        it('should return the tracker local token if available', function () {
-            tinybirdConfig = {
-                tracker: {
-                    local: {
-                        enabled: true,
-                        token: 'tracker-local-token',
-                        endpoint: 'http://localhost:3000/tb/web_analytics'
-                    }
-                }
-            };
-            tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const result = tinybirdService.getToken();
-            assert.equal(result.token, 'tracker-local-token');
-            assert.equal(result.exp, undefined);
-        });
     });
 
     describe('validateConfig', function () {
@@ -219,21 +203,6 @@ describe('TinybirdService', function () {
                         enabled: true,
                         token: 'local-stats-token',
                         endpoint: 'http://localhost:7181'
-                    }
-                }
-            };
-            const result = TinybirdService.validateConfig(config);
-            assert.equal(result.isValid, true);
-            assert.equal(result.isLocal, true);
-            assert.equal(result.errors.length, 0);
-        });
-
-        it('should validate a valid local configuration with tracker', function () {
-            const config = {
-                tracker: {
-                    local: {
-                        enabled: true,
-                        endpoint: 'http://localhost:3000/tb/web_analytics'
                     }
                 }
             };
@@ -287,22 +256,6 @@ describe('TinybirdService', function () {
             assert.ok(result.errors.includes('tracker.endpoint is required for remote configuration'));
         });
 
-        it('should fail validation for local stats config missing endpoint', function () {
-            const config = {
-                stats: {
-                    local: {
-                        enabled: true,
-                        token: 'local-stats-token'
-                        // missing endpoint
-                    }
-                }
-            };
-            const result = TinybirdService.validateConfig(config);
-            assert.equal(result.isValid, false);
-            assert.equal(result.isLocal, true);
-            assert.ok(result.errors.includes('Local stats endpoint is required when local mode is enabled'));
-        });
-
         it('should fail validation for local stats config missing token', function () {
             const config = {
                 stats: {
@@ -317,21 +270,6 @@ describe('TinybirdService', function () {
             assert.equal(result.isValid, false);
             assert.equal(result.isLocal, true);
             assert.ok(result.errors.includes('Local stats token is required when local mode is enabled'));
-        });
-
-        it('should fail validation for local tracker config missing endpoint', function () {
-            const config = {
-                tracker: {
-                    local: {
-                        enabled: true
-                        // missing endpoint
-                    }
-                }
-            };
-            const result = TinybirdService.validateConfig(config);
-            assert.equal(result.isValid, false);
-            assert.equal(result.isLocal, true);
-            assert.ok(result.errors.includes('Local tracker endpoint is required when local mode is enabled'));
         });
 
         it('should return multiple errors for multiple validation failures', function () {
@@ -356,21 +294,6 @@ describe('TinybirdService', function () {
         it('should return the remote tracker endpoint for remote config', function () {
             const endpoint = tinybirdService.getTrackerEndpoint();
             assert.equal(endpoint, 'https://api.tinybird.co/v0/events');
-        });
-
-        it('should return the local tracker endpoint for local config', function () {
-            tinybirdConfig = {
-                tracker: {
-                    endpoint: 'https://api.tinybird.co/v0/events',
-                    local: {
-                        enabled: true,
-                        endpoint: 'http://localhost:3000/tb/web_analytics'
-                    }
-                }
-            };
-            tinybirdService = new TinybirdService({tinybirdConfig, siteUuid});
-            const endpoint = tinybirdService.getTrackerEndpoint();
-            assert.equal(endpoint, 'http://localhost:3000/tb/web_analytics');
         });
 
         it('should return null if no tracker endpoint is configured', function () {

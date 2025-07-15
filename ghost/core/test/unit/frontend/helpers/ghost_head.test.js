@@ -1421,12 +1421,7 @@ describe('{{ghost_head}} helper', function () {
                     workspaceId: 'test-workspace-id',
                     adminToken: 'test-admin-token',
                     tracker: {
-                        endpoint: 'https://e.ghost.org/tb/web_analytics',
-                        local: {
-                            enabled: false,
-                            endpoint: 'http://localhost:7181/v0/events',
-                            token: 'tinybird_local_token'
-                        }
+                        endpoint: 'https://e.ghost.org/tb/web_analytics'
                     }
                 }
             });
@@ -1575,20 +1570,6 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             rendered.should.match(/data-host="https:\/\/e.ghost.org\/tb\/web_analytics"/);
-        });
-
-        it('includes local tracker script when local is set', async function () {
-            configUtils.set('tinybird:tracker:local:enabled', true);
-
-            const rendered = await testGhostHead(testUtils.createHbsResponse({
-                locals: {
-                    relativeUrl: '/',
-                    context: ['home', 'index'],
-                    safeVersion: '4.3'
-                }
-            }));
-
-            rendered.should.match(/data-host="http:\/\/localhost:7181\/v0\/events"/);
         });
 
         it('does not include tracker token when it is not set', async function () {

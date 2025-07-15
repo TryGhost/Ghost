@@ -7,10 +7,9 @@ const errors = require('@tryghost/errors');
  * @property {string} [adminToken] - The admin token for JWT signing (required for remote configuration)
  * @property {Object} [tracker] - Tracker configuration (required for remote configuration)
  * @property {string} [tracker.endpoint] - Tracker endpoint URL (required for remote configuration)
- * @property {Object} [tracker.local] - Local tracker configuration
- * @property {boolean} [tracker.local.enabled] - Whether local tracker is enabled
- * @property {string} [tracker.local.endpoint] - Local tracker endpoint (required when tracker.local.enabled is true)
  * @property {Object} [stats] - Statistics configuration
+ * @property {string} [stats.id] - Stats ID (alternative to siteUuid)
+ * @property {string} [stats.token] - Stats token for authentication
  * @property {string} [stats.endpoint] - Stats endpoint
  * @property {Object} [stats.local] - Local stats configuration
  * @property {boolean} [stats.local.enabled] - Whether local stats are enabled
@@ -81,7 +80,7 @@ class TinybirdService {
         // Flags for determining which token to use
         // We should aim to simplify this in the future
         this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
-        this.isLocalEnabled = validation.isLocal;
+        this.isStatsLocalEnabled = validation.isLocal;
         this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
         this._serverToken = null;
         this._serverTokenExp = null;
@@ -108,10 +107,9 @@ class TinybirdService {
             };
         }
         // If local mode is enabled, use the local token
-        if (this.isLocalEnabled) {
-            // Prefer tracker.local token if available, fallback to stats.local
-            const localToken = this.tinybirdConfig.tracker?.local?.token || 
-                             this.tinybirdConfig.stats?.local?.token;
+        if (this.isStatsLocalEnabled) {
+            // Use stats.local token for local mode
+            const localToken = this.tinybirdConfig.stats?.local?.token;
             return {
                 token: localToken
             };
@@ -185,9 +183,6 @@ class TinybirdService {
      * @returns {string|null} The tracker endpoint URL or null if not configured
      */
     getTrackerEndpoint() {
-        if (this.isLocalEnabled && this.tinybirdConfig.tracker?.local?.endpoint) {
-            return this.tinybirdConfig.tracker.local.endpoint;
-        }
         return this.tinybirdConfig.tracker?.endpoint || null;
     }
 
@@ -196,7 +191,7 @@ class TinybirdService {
      * @returns {string|null} The stats endpoint URL or null if not configured
      */
     getStatsEndpoint() {
-        if (this.isLocalEnabled && this.tinybirdConfig.stats?.local?.endpoint) {
+        if (this.isStatsLocalEnabled && this.tinybirdConfig.stats?.local?.endpoint) {
             return this.tinybirdConfig.stats.local.endpoint;
         }
         return this.tinybirdConfig.stats?.endpoint || null;
@@ -217,23 +212,15 @@ class TinybirdService {
         }
 
         // Check if local mode is enabled
-        if (config.stats?.local?.enabled || config.tracker?.local?.enabled) {
+        if (config.stats?.local?.enabled) {
             isLocal = true;
             
             // Validate local configuration
-            if (config.stats?.local?.enabled) {
-                if (!config.stats.local.token) {
-                    validationErrors.push('Local stats token is required when local mode is enabled');
-                }
-                if (!config.stats.local.endpoint) {
-                    validationErrors.push('Local stats endpoint is required when local mode is enabled');
-                }
+            if (!config.stats.local.token) {
+                validationErrors.push('Local stats token is required when local mode is enabled');
             }
-            
-            if (config.tracker?.local?.enabled) {
-                if (!config.tracker.local.endpoint) {
-                    validationErrors.push('Local tracker endpoint is required when local mode is enabled');
-                }
+            if (!config.stats.local.endpoint) {
+                validationErrors.push('Local stats endpoint is required when local mode is enabled');
             }
         } else {
             // Validate remote configuration

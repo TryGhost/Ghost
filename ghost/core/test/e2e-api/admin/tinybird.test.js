@@ -103,33 +103,6 @@ describe('Tinybird API', function () {
                 assert.equal(response.body.tinybird.exp, undefined);
             });
         });
-
-        describe('With local tracker configuration', function () {
-            before(async function () {
-                configUtils.set('tinybird', {
-                    tracker: {
-                        local: {
-                            enabled: true,
-                            endpoint: 'http://localhost:3000/tb/web_analytics'
-                        }
-                    }
-                });
-            });
-
-            after(async function () {
-                await configUtils.restore();
-            });
-
-            it('Returns null when local tracker has no token', async function () {
-                const response = await agent
-                    .get('/tinybird/token/')
-                    .expectStatus(200);
-
-                // Local tracker without token should return null
-                // The API might return null or an empty object depending on serialization
-                assert(response.body.tinybird === null || (typeof response.body.tinybird === 'object' && Object.keys(response.body.tinybird).length === 0));
-            });
-        });
     });
 
     describe('As Admin', function () {

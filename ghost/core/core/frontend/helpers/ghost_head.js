@@ -158,11 +158,7 @@ function getTinybirdTrackerScript(dataRoot) {
 
     const src = getAssetUrl('public/ghost-stats.min.js', false);
 
-    const statsConfig = config.get('tinybird:tracker');
-    const localConfig = config.get('tinybird:tracker:local');
-    const localEnabled = localConfig?.enabled ?? false;
-
-    const endpoint = localEnabled ? localConfig.endpoint : statsConfig.endpoint;
+    const endpoint = config.get('tinybird:tracker:endpoint');
     const datasource = 'analytics_events';
 
     const tbParams = _.map({
