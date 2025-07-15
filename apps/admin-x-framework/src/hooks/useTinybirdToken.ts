@@ -7,8 +7,13 @@ export interface UseTinybirdTokenResult {
     refetch: () => void;
 }
 
-export const useTinybirdToken = (): UseTinybirdTokenResult => {
-    const tinybirdQuery = getTinybirdToken();
+export interface UseTinybirdTokenOptions {
+    enabled?: boolean;
+}
+
+export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
+    const {enabled = true} = options;
+    const tinybirdQuery = getTinybirdToken({enabled});
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     

@@ -38,13 +38,16 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();
     const site = useBrowseSite();
     const config = useBrowseConfig() as unknown as { data: Config & { config: { stats?: StatsConfig } } | null, isLoading: boolean, error: Error | null };
-    const tinybirdTokenQuery = useTinybirdToken();
+    // Only fetch Tinybird token if stats config is present
+    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
     const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
-    const requests = [config, settings, site, tinybirdTokenQuery];
+    // Only include tinybirdTokenQuery in requests if stats config is present
+    const requests = hasStatsConfig ? [config, settings, site, tinybirdTokenQuery] : [config, settings, site];
     const error = requests.map(request => request.error).find(Boolean);
     const isLoading = requests.some(request => request.isLoading);
 
