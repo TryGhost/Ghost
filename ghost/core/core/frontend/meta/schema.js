@@ -88,7 +88,7 @@ function buildContributorObjects(authors) {
         '@type': 'Person',
         name: escapeExpression(author.name),
         image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
-        url: author.url,
+        url: author.url || null,
         sameAs: trimSameAs(author),
         description: author.meta_description ?
             escapeExpression(author.meta_description) :

@@ -869,14 +869,16 @@ describe('getSchema', function () {
                     {
                         name: 'Primary Author',
                         website: 'http://primarysite.com/',
-                        twitter: '@primaryuser'
+                        twitter: '@primaryuser',
+                        url: 'http://mysite.com/author/me/'
                     },
                     {
                         name: 'Co-Author',
                         website: 'http://coauthorsite.com/',
                         twitter: '@coauthor',
                         profile_image: 'http://mysite.com/co-author.jpg',
-                        meta_description: 'Co-author bio'
+                        meta_description: 'Co-author bio',
+                        url: 'http://mysite.com/author/co-author/'
                     }
                 ]
             }
@@ -893,7 +895,7 @@ describe('getSchema', function () {
                     '@type': 'ImageObject',
                     url: 'http://mysite.com/co-author.jpg'
                 },
-                url: 'http://mysite.com/author/me/',
+                url: 'http://mysite.com/author/co-author/',
                 sameAs: [
                     'http://coauthorsite.com/',
                     'https://x.com/coauthor'
@@ -925,17 +927,20 @@ describe('getSchema', function () {
                 authors: [
                     {
                         name: 'Primary Author',
-                        website: 'http://primarysite.com/'
+                        website: 'http://primarysite.com/',
+                        url: 'http://mysite.com/author/me/'
                     },
                     {
                         name: 'Co-Author 1',
                         website: 'http://coauthor1.com/',
-                        twitter: '@coauthor1'
+                        twitter: '@coauthor1',
+                        url: 'http://mysite.com/author/co-author-1/'
                     },
                     {
                         name: 'Co-Author 2',
                         website: 'http://coauthor2.com/',
-                        facebook: 'coauthor2fb'
+                        facebook: 'coauthor2fb',
+                        url: 'http://mysite.com/author/co-author-2/'
                     }
                 ]
             }
@@ -948,7 +953,7 @@ describe('getSchema', function () {
         should.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author 1',
-            url: 'http://mysite.com/author/me/',
+            url: 'http://mysite.com/author/co-author-1/',
             sameAs: [
                 'http://coauthor1.com/',
                 'https://x.com/coauthor1'
@@ -957,7 +962,7 @@ describe('getSchema', function () {
         should.deepEqual(schema.contributor[1], {
             '@type': 'Person',
             name: 'Co-Author 2',
-            url: 'http://mysite.com/author/me/',
+            url: 'http://mysite.com/author/co-author-2/',
             sameAs: [
                 'http://coauthor2.com/',
                 'https://www.facebook.com/coauthor2fb'
@@ -1024,7 +1029,8 @@ describe('getSchema', function () {
                 },
                 authors: [
                     {
-                        name: 'Primary Author'
+                        name: 'Primary Author',
+                        url: 'http://mysite.com/author/me/'
                     },
                     {
                         name: 'Co-Author',
@@ -1032,7 +1038,8 @@ describe('getSchema', function () {
                         profile_image: null,
                         meta_description: null,
                         twitter: null,
-                        facebook: null
+                        facebook: null,
+                        url: 'http://mysite.com/author/co-author/'
                     }
                 ]
             }
@@ -1044,7 +1051,7 @@ describe('getSchema', function () {
         should.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
-            url: 'http://mysite.com/author/me/',
+            url: 'http://mysite.com/author/co-author/',
             sameAs: []
         });
     });
@@ -1071,12 +1078,14 @@ describe('getSchema', function () {
                 authors: [
                     {
                         name: 'Primary Author',
-                        website: 'http://primarysite.com/'
+                        website: 'http://primarysite.com/',
+                        url: 'http://mysite.com/author/me/'
                     },
                     {
                         name: 'Co-Author',
                         website: 'http://coauthorsite.com/',
-                        twitter: '@coauthor'
+                        twitter: '@coauthor',
+                        url: 'http://mysite.com/author/co-author/'
                     }
                 ]
             }
@@ -1088,7 +1097,7 @@ describe('getSchema', function () {
         should.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
-            url: 'http://mysite.com/author/me/',
+            url: 'http://mysite.com/author/co-author/',
             sameAs: [
                 'http://coauthorsite.com/',
                 'https://x.com/coauthor'
