@@ -64,8 +64,6 @@ const _ = require('lodash');
  * @property {boolean|null} social_web_enabled - Whether social web is enabled
  * @property {boolean|null} web_analytics_enabled - Whether web analytics is enabled
  * @property {boolean|null} web_analytics_configured - Whether web analytics is configured
- * @property {boolean|null} explore_ping - Whether Explore is enabled
- * @property {boolean|null} explore_ping_growth - Whether growth data is shared to Explore
  * @property {never} [x] - Prevent accessing undefined properties
  */
 
