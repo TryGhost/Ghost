@@ -6,6 +6,7 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
+const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
 // Updated to reflect current total based on test output
@@ -345,10 +346,41 @@ describe('Settings API', function () {
             sinon.assert.calledOnce(loggingStub);
         });
 
-        it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
-            mockManager.mockLimitService('limitStripeConnect', {isLimited: true, isDisabled: () => true});
+        it('can edit Stripe settings when Stripe Connect limit is not enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {isLimited: false, isDisabled: false});
 
-            const membersService = require('../../../core/server/services/members');
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_for_stripe',
+                secret_key: 'sk_test_123',
+                livemode: null,
+                display_name: null,
+                account_id: null
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {isLimited: true, isDisabled: true});
+
             sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
                 public_key: 'pk_test_123',
                 secret_key: 'sk_test_123',
