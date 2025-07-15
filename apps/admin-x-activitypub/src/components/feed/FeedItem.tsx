@@ -69,17 +69,14 @@ export function renderFeedAttachment(
         }
     };
 
-    const isThreadsImage = (url: string) => {
-        return url.includes('cdninstagram.com');
+    const renderImagePlaceholder = (className: string, isSingleImage: boolean = false) => {
+        const minHeight = isSingleImage ? 'min-h-[200px]' : '';
+        return (
+            <div className={`${className} ${minHeight} flex w-full items-center justify-center bg-gray-100 dark:bg-gray-925/30`}>
+                <LucideIcon.ImageOff className="text-gray-400" size={24} strokeWidth={1.5} />
+            </div>
+        );
     };
-
-    const renderThreadsErrorMessage = () => (
-        <div className="mt-4 flex w-full flex-col items-center rounded-md bg-gray-100 p-6 text-center text-gray-700 dark:bg-gray-925/30">
-            <LucideIcon.ImageOff size={32} strokeWidth={1.2} />
-            <H4 className='mt-2.5'>Threads image missing.</H4>
-            <p>Message <span className='font-semibold'>@mosseri@threads.net</span> for more info</p>
-        </div>
-    );
 
     if (Array.isArray(attachment)) {
         const attachmentCount = attachment.length;
@@ -93,37 +90,28 @@ export function renderFeedAttachment(
             gridClass = 'grid-cols-3 auto-rows-[150px]'; // >4 images, three per row
         }
 
-        const hasThreadsImages = attachment.some(item => isThreadsImage(item.url));
-        const hasAnyBrokenThreadsImages = brokenImages && hasThreadsImages && attachment.some(item => isThreadsImage(item.url) && brokenImages.has(item.url));
-
-        // Filter out broken Threads images to check if we have any visible images
-        const visibleImages = attachment.filter(item => !brokenImages || !brokenImages.has(item.url) || !isThreadsImage(item.url)
-        );
-
         return (
-            <>
-                {visibleImages.length > 0 && (
-                    <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
-                        {attachment.map((item, index) => {
-                            if (brokenImages && brokenImages.has(item.url) && isThreadsImage(item.url)) {
-                                return null;
-                            }
-                            return (
-                                <img
-                                    key={item.url}
-                                    alt={item.name || `Image-${index}`}
-                                    className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`}
-                                    referrerPolicy='no-referrer'
-                                    src={item.url}
-                                    onClick={onImageClick ? handleImageClick(item.url) : undefined}
-                                    onError={() => handleImageError(item.url)}
-                                />
-                            );
-                        })}
-                    </div>
-                )}
-                {hasAnyBrokenThreadsImages && renderThreadsErrorMessage()}
-            </>
+            <div className={`attachment-gallery mt-3 grid w-full ${gridClass} gap-2`}>
+                {attachment.map((item, index) => {
+                    const imageClassName = `size-full rounded-md outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`;
+
+                    if (brokenImages && brokenImages.has(item.url)) {
+                        return renderImagePlaceholder(imageClassName, attachmentCount === 1);
+                    }
+
+                    return (
+                        <img
+                            key={item.url}
+                            alt={item.name || `Image-${index}`}
+                            className={`${imageClassName} cursor-pointer object-cover`}
+                            referrerPolicy='no-referrer'
+                            src={item.url}
+                            onClick={onImageClick ? handleImageClick(item.url) : undefined}
+                            onError={() => handleImageError(item.url)}
+                        />
+                    );
+                })}
+            </div>
         );
     }
 
@@ -132,8 +120,8 @@ export function renderFeedAttachment(
     case 'image/png':
     case 'image/gif':
     case 'image/webp':
-        if (brokenImages && brokenImages.has(attachment.url) && isThreadsImage(attachment.url)) {
-            return renderThreadsErrorMessage();
+        if (brokenImages && brokenImages.has(attachment.url)) {
+            return renderImagePlaceholder(`${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`, true);
         }
         return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} onError={() => handleImageError(attachment.url)} />;
     case 'video/mp4':
@@ -161,8 +149,8 @@ export function renderFeedAttachment(
                 imageUrl = object.image?.url;
             }
 
-            if (brokenImages && brokenImages.has(imageUrl) && isThreadsImage(imageUrl)) {
-                return renderThreadsErrorMessage();
+            if (brokenImages && brokenImages.has(imageUrl)) {
+                return renderImagePlaceholder(imageClassName, true);
             }
 
             return (
