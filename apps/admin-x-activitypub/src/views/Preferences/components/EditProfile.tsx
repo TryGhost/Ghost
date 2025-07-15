@@ -5,7 +5,6 @@ import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSq
 import {toast} from 'sonner';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
@@ -58,7 +57,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
-    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -210,7 +208,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         ) {
             setIsSubmitting(false);
             setIsEditingProfile(false);
-            navigate('/profile');
 
             return;
         }
@@ -225,7 +222,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             onSettled() {
                 setIsSubmitting(false);
                 setIsEditingProfile(false);
-                navigate('/profile');
             }
         });
     }

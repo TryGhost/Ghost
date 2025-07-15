@@ -297,6 +297,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -318,6 +322,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -358,6 +370,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -1100,6 +1120,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1121,6 +1145,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -1161,6 +1193,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -1478,6 +1518,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1499,6 +1543,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -1539,6 +1591,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -1855,6 +1915,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -1876,6 +1940,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -1916,6 +1988,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -2695,6 +2775,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -2716,6 +2800,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -2756,6 +2848,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -3073,6 +3173,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3094,6 +3198,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -3134,6 +3246,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -3451,6 +3571,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3472,6 +3596,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -3512,6 +3644,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -3833,6 +3973,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -3854,6 +3998,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -3894,6 +4046,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -4210,6 +4370,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -4231,6 +4395,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -4271,6 +4443,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -4592,6 +4772,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -4613,6 +4797,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -4653,6 +4845,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -5338,6 +5538,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -5359,6 +5563,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -5399,6 +5611,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -5716,6 +5936,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -5737,6 +5961,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -5777,6 +6009,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -6095,6 +6335,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6116,6 +6360,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -6156,6 +6408,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -6474,6 +6734,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6495,6 +6759,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -6535,6 +6807,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],
@@ -6915,6 +7195,10 @@ Object {
       "value": true,
     },
     Object {
+      "key": "web_analytics",
+      "value": true,
+    },
+    Object {
       "key": "pintura",
       "value": true,
     },
@@ -6936,6 +7220,14 @@ Object {
     },
     Object {
       "key": "recommendations_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "explore_ping",
+      "value": true,
+    },
+    Object {
+      "key": "explore_ping_growth",
       "value": false,
     },
     Object {
@@ -6976,6 +7268,14 @@ Object {
     },
     Object {
       "key": "social_web_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_enabled",
+      "value": false,
+    },
+    Object {
+      "key": "web_analytics_configured",
       "value": false,
     },
   ],

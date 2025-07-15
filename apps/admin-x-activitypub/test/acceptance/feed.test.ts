@@ -13,7 +13,7 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed/notes',
+                path: '/v1/feed/notes',
                 response: feedFixture
             },
             getActivityPubUser: {
@@ -23,7 +23,7 @@ test.describe('Feed', async () => {
             },
             getAccount: {
                 method: 'GET',
-                path: '/account/me',
+                path: '/v1/account/me',
                 response: {
                     id: 'user-1',
                     name: 'Test User',
@@ -37,7 +37,7 @@ test.describe('Feed', async () => {
             },
             postNote: {
                 method: 'POST',
-                path: '/actions/note',
+                path: '/v1/actions/note',
                 response: {
                     post: {
                         id: 'new-note-id',
@@ -86,7 +86,7 @@ test.describe('Feed', async () => {
         await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed/notes',
+                path: '/v1/feed/notes',
                 response: feedFixture
             }
         }, options: {useActivityPub: true}});
@@ -118,12 +118,12 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed/notes',
+                path: '/v1/feed/notes',
                 response: feedFixture
             },
             likePost: {
                 method: 'POST',
-                path: `/actions/like/${encodeURIComponent(firstPostFixture.id)}`,
+                path: `/v1/actions/like/${encodeURIComponent(firstPostFixture.id)}`,
                 response: {}
             }
         }, options: {useActivityPub: true}});
@@ -165,12 +165,12 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed/notes',
+                path: '/v1/feed/notes',
                 response: feedFixture
             },
             repostPost: {
                 method: 'POST',
-                path: `/actions/repost/${encodeURIComponent(lastPostFixture.id)}`,
+                path: `/v1/actions/repost/${encodeURIComponent(lastPostFixture.id)}`,
                 response: {}
             }
         }, options: {useActivityPub: true}});
@@ -207,12 +207,12 @@ test.describe('Feed', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
-                path: '/feed/notes',
+                path: '/v1/feed/notes',
                 response: feedFixture
             },
             getPost: {
                 method: 'GET',
-                path: `/post/${encodeURIComponent(thirdPostFixture.id)}`,
+                path: `/v1/post/${encodeURIComponent(thirdPostFixture.id)}`,
                 response: {
                     ...thirdPostFixture,
                     metadata: {
@@ -222,7 +222,7 @@ test.describe('Feed', async () => {
             },
             getThread: {
                 method: 'GET',
-                path: `/thread/${encodeURIComponent(thirdPostFixture.id)}`,
+                path: `/v1/thread/${encodeURIComponent(thirdPostFixture.id)}`,
                 response: {
                     posts: [
                         {
@@ -238,7 +238,7 @@ test.describe('Feed', async () => {
             },
             replyToPost: {
                 method: 'POST',
-                path: `/actions/reply/${encodeURIComponent(thirdPostFixture.id)}`,
+                path: `/v1/actions/reply/${encodeURIComponent(thirdPostFixture.id)}`,
                 response: {
                     id: 'new-reply-id',
                     type: 'Note',

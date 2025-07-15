@@ -19,9 +19,18 @@ const messages = {
 const installFromGithub = async (ref) => {
     const [org, repo] = ref.toLowerCase().split('/');
 
-    //TODO: move the organization check to config
-    if (limitService.isLimited('customThemes') && org.toLowerCase() !== 'tryghost') {
-        await limitService.errorIfWouldGoOverLimit('customThemes', {value: repo.toLowerCase()});
+    if (limitService.isLimited('customThemes')) {
+        // The custom theme limit might consist of only one single theme, so we can't rely on
+        // the org alone to determine if the request is allowed or not.
+        const noOtherThemesAllowed = limitService.limits.customThemes?.allowlist?.length === 1;
+        //TODO: move the organization check to config
+        const isNotOfficialThemeRequest = org.toLowerCase() !== 'tryghost';
+
+        const checkThemeLimit = noOtherThemesAllowed || isNotOfficialThemeRequest;
+
+        if (checkThemeLimit) {
+            await limitService.errorIfWouldGoOverLimit('customThemes', {value: repo.toLowerCase()});
+        }
     }
 
     // omit /:ref so we fetch the default branch
@@ -60,6 +69,11 @@ const installFromGithub = async (ref) => {
                 message: messages.repoDoesNotExist,
                 context: zipUrl
             }));
+        }
+
+        if (e instanceof errors.HostLimitError) {
+            // If the error is a HostLimitError, we can assume that the theme name is not allowed
+            return Promise.reject(e);
         }
 
         throw e;

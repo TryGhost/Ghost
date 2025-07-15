@@ -83,7 +83,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -108,7 +108,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -129,7 +129,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -154,7 +154,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -166,7 +166,7 @@ describe('ActivityPubService', function () {
         }
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -188,7 +188,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -213,7 +213,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -227,7 +227,7 @@ describe('ActivityPubService', function () {
         await knexInstance('webhooks').update({event: 'wrong.event'}).limit(1);
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -255,7 +255,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'

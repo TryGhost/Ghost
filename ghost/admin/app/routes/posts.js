@@ -14,19 +14,28 @@ class PostsWithAnalytics extends InfinityModel {
     @service settings;
 
     async afterInfinityModel(posts) {
-        // Only fetch analytics for published/sent posts when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
+        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
+        if (publishedPosts.length === 0) {
             return posts;
         }
 
-        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
-        if (publishedPosts.length > 0) {
+        const promises = [];
+        
+        // Fetch visitor counts if web analytics is enabled
+        if (this.settings.webAnalyticsEnabled) {
             const postUuids = publishedPosts.map(post => post.uuid);
-            await Promise.all([
-                this.postAnalytics.loadVisitorCounts(postUuids),
-                this.postAnalytics.loadMemberCounts(publishedPosts)
-            ]);
+            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
         }
+        
+        // Fetch member counts if member tracking is enabled
+        if (this.settings.membersTrackSources) {
+            promises.push(this.postAnalytics.loadMemberCounts(publishedPosts));
+        }
+
+        if (promises.length > 0) {
+            await Promise.all(promises);
+        }
+        
         return posts;
     }
 }
@@ -68,7 +77,7 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
-        if (this.feature.trafficAnalyticsAlpha && this.settings.webAnalytics) {
+        if (this.settings.webAnalyticsEnabled || this.settings.membersTrackSources) {
             this.postAnalytics.reset();
         }
 
@@ -154,8 +163,8 @@ export default class PostsRoute extends AuthenticatedRoute {
      * @param {Object} model - The posts model containing infinity models
      */
     async _fetchAnalyticsForPosts(model) {
-        // Only fetch analytics when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
+        // Early return if neither analytics feature is enabled
+        if (!this.settings.webAnalyticsEnabled && !this.settings.membersTrackSources) {
             return;
         }
 
@@ -163,12 +172,26 @@ export default class PostsRoute extends AuthenticatedRoute {
         if (model.publishedAndSentInfinityModel?.content) {
             posts.push(...model.publishedAndSentInfinityModel.content);
         }
-        if (posts.length > 0) {
+        
+        if (posts.length === 0) {
+            return;
+        }
+
+        const promises = [];
+        
+        // Fetch visitor counts if web analytics is enabled
+        if (this.settings.webAnalyticsEnabled) {
             const postUuids = posts.map(post => post.uuid);
-            await Promise.all([
-                this.postAnalytics.loadVisitorCounts(postUuids),
-                this.postAnalytics.loadMemberCounts(posts)
-            ]);
+            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
+        }
+        
+        // Fetch member counts if member tracking is enabled
+        if (this.settings.membersTrackSources) {
+            promises.push(this.postAnalytics.loadMemberCounts(posts));
+        }
+
+        if (promises.length > 0) {
+            await Promise.all(promises);
         }
     }
 

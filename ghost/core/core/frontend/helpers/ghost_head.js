@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey} = require('../services/proxy');
+const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -362,9 +362,8 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             if (!_.isEmpty(tagCodeInjection)) {
                 head.push(tagCodeInjection);
             }
-            const isTbTrackingEnabled = labs.isSet('trafficAnalytics');
-            const hasTbConfig = config.get('tinybird') && config.get('tinybird:tracker');
-            if (isTbTrackingEnabled && hasTbConfig) {
+            // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
+            if (settingsHelpers.isWebAnalyticsEnabled()) {
                 head.push(getTinybirdTrackerScript(dataRoot));
                 // Set a flag in response locals to indicate tracking script is being served
                 if (dataRoot._locals) {
