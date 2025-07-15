@@ -28,7 +28,7 @@ describe('ExplorePingService', function () {
         };
 
         configStub.get.withArgs('url').returns('https://example.com');
-        configStub.get.withArgs('explore:url').returns('https://explore-api.ghost.org');
+        configStub.get.withArgs('explore:update_url').returns('https://explore.testing.com');
 
         labsStub = {
             isSet: sinon.stub().returns(true)
@@ -190,7 +190,7 @@ describe('ExplorePingService', function () {
         });
 
         it('does not ping if explore URL is not set', async function () {
-            configStub.get.withArgs('explore:url').returns(null);
+            configStub.get.withArgs('explore:update_url').returns(null);
 
             await explorePingService.ping();
 
@@ -213,6 +213,7 @@ describe('ExplorePingService', function () {
             await explorePingService.ping();
 
             assert.equal(requestStub.calledOnce, true);
+            assert.equal(requestStub.firstCall.args[0], 'https://explore.testing.com');
             const payload = await explorePingService.constructPayload();
             assert.equal(requestStub.firstCall.args[1].body, JSON.stringify(payload));
         });
