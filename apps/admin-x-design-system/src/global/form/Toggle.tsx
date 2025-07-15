@@ -23,6 +23,7 @@ export interface ToggleProps {
     hint?: React.ReactNode;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     gap?: string;
+    testId?: string;
 }
 
 const Toggle: React.FC<ToggleProps> = ({
@@ -40,7 +41,8 @@ const Toggle: React.FC<ToggleProps> = ({
     disabled,
     name,
     onChange,
-    gap = 'gap-2'
+    gap = 'gap-2',
+    testId
 }) => {
     const id = useId();
 
@@ -109,7 +111,7 @@ const Toggle: React.FC<ToggleProps> = ({
                     'enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 enabled:group-hover:opacity-80',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
-                )} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
+                )} data-testid={testId} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
                     <TogglePrimitive.Thumb className={clsx(
                         thumbSizeStyles,
                         'block translate-x-0.5 rounded-full bg-white transition-transform duration-100 will-change-transform'

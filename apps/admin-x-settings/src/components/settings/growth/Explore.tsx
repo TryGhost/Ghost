@@ -1,38 +1,50 @@
 import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
-import React, {useState} from 'react';
+import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
+    const {mutateAsync: editSettings} = useEditSettings();
+    const handleError = useHandleError();
+
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
-    const [shareGrowthData, setShareGrowthData] = useState(false);
-    const [exploreEnabled, setExploreEnabled] = useState(true);
     const {localSettings, siteData} = useSettingGroup();
     const [title, description] = getSettingValues(localSettings, ['title', 'description']) as string[];
-
-    const enableToggle = (
-        <>
-            <Toggle
-                checked={exploreEnabled}
-                direction='rtl'
-                onChange={() => {
-                    setExploreEnabled(!exploreEnabled);
-                }}
-            />
-        </>
-    );
+    const [exploreEnabled] = getSettingValues<boolean>(settings, ['explore_ping']);
+    const [shareGrowthData] = getSettingValues<boolean>(settings, ['explore_ping_growth']);
 
     const url = siteData?.url;
     const siteDomain = url?.replace(/^https?:\/\//, '').replace(/\/?$/, '');
 
     const color = accentColor || '#F6414E';
 
+    // Handle toggle change
+    const toggleSetting = async (key: string, event: React.ChangeEvent<HTMLInputElement>) => {
+        const updatedSetting: Setting[] = [
+            {key, value: event.target.checked}
+        ];
+
+        try {
+            await editSettings(updatedSetting);
+        } catch (error) {
+            handleError(error);
+        }
+    };
+
     return (<TopLevelGroup
-        customButtons={enableToggle}
+        customButtons={
+            <Toggle
+                checked={exploreEnabled}
+                direction='rtl'
+                testId='explore-toggle'
+                onChange={event => toggleSetting('explore_ping', event)}
+            />
+        }
         description='Join the Ghost Explore directory and help new readers find your site.'
         keywords={keywords}
         navid='explore'
@@ -50,11 +62,10 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     hint={'Make your member count and revenue public to improve your ranking on Explore'}
                     label='Share growth data'
                     labelClasses='w-full'
-                    onChange={() => {
-                        setShareGrowthData(!shareGrowthData);
-                    }}
+                    testId='explore-growth-toggle'
+                    onChange={event => toggleSetting('explore_ping_growth', event)}
                 />
-                <div className='-mx-7 -mb-7 flex flex-col items-center bg-grey-75 px-7 pb-10 pt-8'>
+                <div className='-mx-7 -mb-7 flex flex-col items-center bg-grey-75 px-7 pb-10 pt-8' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 shadow-lg'>
                         <div className='absolute right-3 top-2.5 text-xs uppercase text-grey-300 dark:text-grey-900'>Preview</div>
                         {icon ?
