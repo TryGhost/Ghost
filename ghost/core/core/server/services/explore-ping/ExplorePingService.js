@@ -54,15 +54,17 @@ module.exports = class ExplorePingService {
             payload.posts_first = null;
         }
 
-        try {
-            const totalMembers = await this.members.stats.getTotalMembers();
-            payload.members_total = totalMembers;
-        } catch (err) {
-            this.logging.warn('Failed to fetch member statistics', {
-                error: err.message,
-                context: 'explore-ping-service'
-            });
-            payload.members_total = null;
+        if (this.settingsCache.get('explore_ping_growth')) {
+            try {
+                const totalMembers = await this.members.stats.getTotalMembers();
+                payload.members_total = totalMembers;
+            } catch (err) {
+                this.logging.warn('Failed to fetch member statistics', {
+                    error: err.message,
+                    context: 'explore-ping-service'
+                });
+                payload.members_total = null;
+            }
         }
 
         return payload;
@@ -97,6 +99,11 @@ module.exports = class ExplorePingService {
         const exploreUrl = this.config.get('explore:url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
+            return;
+        }
+
+        if (!this.settingsCache.get('explore_ping')) {
+            this.logging.info('Explore ping disabled');
             return;
         }
 
