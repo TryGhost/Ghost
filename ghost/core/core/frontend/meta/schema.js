@@ -78,6 +78,24 @@ function trimSameAs(author) {
     return sameAs;
 }
 
+/**
+ * Build contributor objects for schema.org Article schema.
+ *
+ * @param {Object[]} authors - Array of author objects (excluding primary author)
+ */
+function buildContributorObjects(authors) {
+    return authors.map(author => trimSchema({
+        '@type': 'Person',
+        name: escapeExpression(author.name),
+        image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
+        url: author.url || null,
+        sameAs: trimSameAs(author),
+        description: author.meta_description ?
+            escapeExpression(author.meta_description) :
+            null
+    }));
+}
+
 function getPostSchema(metaData, data) {
     // CASE: metaData.excerpt for post context is populated by either the custom excerpt, the meta description,
     // or the automated excerpt of 50 words. It is empty for any other context.
@@ -101,6 +119,7 @@ function getPostSchema(metaData, data) {
                 escapeExpression(data[context].primary_author.metaDescription) :
                 null
         },
+        contributor: data[context].authors && data[context].authors.length > 1 ? buildContributorObjects(data[context].authors.slice(1)) : null,
         headline: escapeExpression(metaData.metaTitle),
         url: metaData.url,
         datePublished: metaData.publishedDate,
