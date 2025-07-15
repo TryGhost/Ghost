@@ -238,9 +238,14 @@ export function abbreviateNumber(number: number) {
     if (num < 1000000) {
         // For thousands: round to nearest 100 for 10.3k, nearest 1000 for 101k
         const roundTo = num < 100000 ? 100 : 1000;
-        
+
         const rounded = Math.round(num / roundTo) * roundTo;
         const abbreviated = rounded / 1000;
+
+        if (abbreviated === 1000) {
+            return '1M';
+        }
+
         const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
         return `${formatted}k`;
     }
