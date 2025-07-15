@@ -1,5 +1,6 @@
 import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
 import React from 'react';
+import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -51,7 +52,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
         testId='explore'
         title='Ghost Explore'
     >
-        {exploreEnabled &&
+        {exploreEnabled ?
             <SettingGroupContent columns={1}>
                 <Separator />
                 <Toggle
@@ -65,9 +66,9 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     testId='explore-growth-toggle'
                     onChange={event => toggleSetting('explore_ping_growth', event)}
                 />
-                <div className='-mx-7 -mb-7 flex flex-col items-center bg-grey-75 px-7 pb-10 pt-8' data-testid='explore-preview'>
-                    <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 shadow-lg'>
-                        <div className='absolute right-3 top-2.5 text-xs uppercase text-grey-300 dark:text-grey-900'>Preview</div>
+                <div className='-mx-5 -mb-5 flex flex-col items-center rounded-b-xl bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
+                    <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
+                        <div className='absolute right-3 top-2.5 text-xs uppercase text-grey-300'>Preview</div>
                         {icon ?
                             <div className='size-9 rounded-sm bg-cover bg-center' style={{
                                 backgroundImage: `url(${icon})`
@@ -98,6 +99,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             </SettingGroupContent>
+            :
+            <img src={SettingImg} />
         }
     </TopLevelGroup>);
 };
