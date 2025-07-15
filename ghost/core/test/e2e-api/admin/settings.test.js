@@ -346,7 +346,7 @@ describe('Settings API', function () {
         });
 
         it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
-            mockManager.mockLimitService('limitStripeConnect', {isLimited: true});
+            mockManager.mockLimitService('limitStripeConnect', {isLimited: true, isDisabled: () => true});
 
             const membersService = require('../../../core/server/services/members');
             sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({

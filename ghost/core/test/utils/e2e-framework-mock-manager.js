@@ -274,6 +274,7 @@ const mockLimitService = (limit, options) => {
     if (!mocks.limitService) {
         mocks.limitService = {
             isLimited: sinon.stub(limitService, 'isLimited'),
+            isDisabled: sinon.stub(limitService, 'isDisabled'),
             checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
             errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
             originalLimits: limitService.limits || {},
@@ -282,6 +283,7 @@ const mockLimitService = (limit, options) => {
     }
 
     mocks.limitService.isLimited.withArgs(limit).returns(options.isLimited);
+    mocks.limitService.isDisabled.withArgs(limit).returns(options.isDisabled);
     mocks.limitService.checkWouldGoOverLimit.withArgs(limit).resolves(options.wouldGoOverLimit);
 
     // Mock the limits property for checking allowlist
@@ -316,6 +318,9 @@ const restoreLimitService = () => {
         }
         if (mocks.limitService.errorIfWouldGoOverLimit) {
             mocks.limitService.errorIfWouldGoOverLimit.restore();
+        }
+        if (mocks.limitService.isDisabled) {
+            mocks.limitService.isDisabled.restore();
         }
 
         // Remove any limits we mocked

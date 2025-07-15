@@ -197,7 +197,7 @@ class SettingsBREADService {
         }
 
         if (stripeConnectData) {
-            if (this.limitsService.isLimited('limitStripeConnect')) {
+            if (this.limitsService.isDisabled('limitStripeConnect')) {
                 throw new NoPermissionError({
                     message: tpl(messages.stripeConnectDisabled)
                 });
