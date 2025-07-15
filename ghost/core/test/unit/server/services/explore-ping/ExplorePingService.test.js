@@ -20,6 +20,8 @@ describe('ExplorePingService', function () {
         };
 
         settingsCacheStub.get.withArgs('site_uuid').returns('123e4567-e89b-12d3-a456-426614174000');
+        settingsCacheStub.get.withArgs('explore_ping').returns(true);
+        settingsCacheStub.get.withArgs('explore_ping_growth').returns(false);
 
         configStub = {
             get: sinon.stub()
@@ -73,7 +75,7 @@ describe('ExplorePingService', function () {
         sinon.restore();
     });
 
-    describe('constructPayload', function () {
+    describe('Payload with default settings', function () {
         it('constructs correct payload', async function () {
             const payload = await explorePingService.constructPayload();
 
@@ -83,8 +85,7 @@ describe('ExplorePingService', function () {
                 url: 'https://example.com',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
-                posts_first: '2020-01-01T00:00:00.000Z',
-                members_total: 50
+                posts_first: '2020-01-01T00:00:00.000Z'
             });
         });
 
@@ -97,6 +98,33 @@ describe('ExplorePingService', function () {
             assert.equal(payload.posts_first, null);
             assert.equal(payload.posts_last, null);
             assert.equal(payload.posts_total, null);
+        });
+
+        it('does not include members_total if setting is disabled', async function () {
+            membersStub.stats.getTotalMembers.resolves(null);
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.members_total, undefined);
+        });
+    });
+
+    describe('Payload with growth enabled', function () {
+        beforeEach(function () {
+            settingsCacheStub.get.withArgs('explore_ping_growth').returns(true);
+        });
+
+        it('constructs correct payload', async function () {
+            const payload = await explorePingService.constructPayload();
+
+            assert.deepEqual(payload, {
+                ghost: '4.0.0',
+                site_uuid: '123e4567-e89b-12d3-a456-426614174000',
+                url: 'https://example.com',
+                posts_total: 100,
+                posts_last: '2023-01-01T00:00:00.000Z',
+                posts_first: '2020-01-01T00:00:00.000Z',
+                members_total: 50
+            });
         });
 
         it('returns null for post stats if getTotalPostsPublished throws an error', async function () {
@@ -169,6 +197,14 @@ describe('ExplorePingService', function () {
             assert.equal(requestStub.called, false);
             assert.equal(loggingStub.warn.calledOnce, true);
             assert.equal(loggingStub.warn.firstCall.args[0], 'Explore URL not set');
+        });
+
+        it('does not ping if explore ping is disabled', async function () {
+            settingsCacheStub.get.withArgs('explore_ping').returns(false);
+
+            await explorePingService.ping();
+
+            assert.equal(requestStub.called, false);
         });
 
         it('pings with constructed payload when properly configured', async function () {
