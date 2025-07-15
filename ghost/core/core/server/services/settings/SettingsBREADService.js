@@ -196,13 +196,7 @@ class SettingsBREADService {
         }
 
         if (stripeConnectData) {
-            try {
-                await this.limitsService.errorIfWouldGoOverLimit('limitStripeConnect');
-            } catch (error) {
-                throw new NoPermissionError({
-                    message: error.message
-                });
-            }
+            await this.limitsService.errorIfWouldGoOverLimit('limitStripeConnect');
 
             filteredSettings.push({
                 key: 'stripe_connect_publishable_key',
