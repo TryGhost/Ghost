@@ -31,7 +31,7 @@ with the following information.
 
 ### Config
 Sample config:
-```json
+```jsonc
 {
    "someOtherConfigurationForEmail": {
         "transport": "SMTP",
