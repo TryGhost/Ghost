@@ -347,7 +347,10 @@ describe('Settings API', function () {
         });
 
         it('can edit Stripe settings when Stripe Connect limit is not enabled', async function () {
-            mockManager.mockLimitService('limitStripeConnect', {isLimited: false, isDisabled: false});
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: false,
+                errorIfWouldGoOverLimit: false
+            });
 
             sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
                 public_key: 'pk_test_for_stripe',
@@ -379,7 +382,10 @@ describe('Settings API', function () {
         });
 
         it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
-            mockManager.mockLimitService('limitStripeConnect', {isLimited: true, isDisabled: true});
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: true,
+                errorIfWouldGoOverLimit: true
+            });
 
             sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
                 public_key: 'pk_test_123',

@@ -297,14 +297,14 @@ const mockLimitService = (limit, options) => {
 
     // If errorIfWouldGoOverLimit is true, reject with HostLimitError
     if (options.errorIfWouldGoOverLimit === true) {
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).rejects(
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).rejects(
             new errors.HostLimitError({
                 message: `Upgrade to use ${limit} feature.`
             })
         );
     } else {
         // Otherwise, resolve normally
-        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit, sinon.match.any).resolves();
+        mocks.limitService.errorIfWouldGoOverLimit.withArgs(limit).resolves();
     }
 };
 
