@@ -37,7 +37,7 @@ test.describe('Network settings', async () => {
         await expect(toggle).toBeDisabled();
 
         // Should show disabled message
-        await expect(section.getByText('Network is disabled because your domain isn’t configured correctly')).toBeVisible();
+        await expect(section.getByText('You need to configure a supported custom domain to use this feature.')).toBeVisible();
     });
 
     test('Network toggle can be turned off', async ({page}) => {
@@ -68,7 +68,7 @@ test.describe('Network settings', async () => {
         await expect(toggle).toBeEnabled();
 
         // Should not show disabled message
-        await expect(section.getByText('Network is disabled because your domain isn’t configured correctly')).not.toBeVisible();
+        await expect(section.getByText('You need to configure a supported custom domain to use this feature.')).not.toBeVisible();
 
         // Toggle off
         await toggle.click();
@@ -109,7 +109,7 @@ test.describe('Network settings', async () => {
         await expect(toggle).toBeEnabled();
 
         // Should not show disabled message
-        await expect(section.getByText('Network is disabled because your domain isn’t configured correctly')).not.toBeVisible();
+        await expect(section.getByText('You need to configure a supported custom domain to use this feature.')).not.toBeVisible();
 
         // Toggle on
         await toggle.click();
