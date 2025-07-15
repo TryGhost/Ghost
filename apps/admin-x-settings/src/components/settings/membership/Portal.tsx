@@ -43,7 +43,7 @@ const Portal: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='portal'
             title="Signup portal"
         >
-            <div className="relative isolate -mx-5 -mb-5 flex flex-col items-center justify-end overflow-hidden bg-grey-50 px-5 pt-6 md:-mx-7 md:-mb-7">
+            <div className="relative isolate -mx-5 -mb-5 hidden flex-col items-center justify-end overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-6 text-black sm:!visible sm:!flex md:-mx-7 md:-mb-7">
                 <div className='absolute bottom-6 right-6 flex size-12 items-center justify-center rounded-full text-white shadow-lg' style={{
                     backgroundColor: color
                 }}>
