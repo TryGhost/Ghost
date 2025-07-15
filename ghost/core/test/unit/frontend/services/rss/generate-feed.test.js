@@ -244,8 +244,10 @@ describe('RSS: Generate Feed', function () {
     });
 
     describe('Card reformatting', function () {
-        it('should remove clutter from bookmark card', function (done) {
-            const postWithBookmark = posts[2];
+        before(function () {
+            let postWithBookmark = posts[0];
+            let postWithVideo = posts[1];
+            let postWithAudio = posts[2];
 
             postWithBookmark.html = callRenderer('bookmark', {
                 url: 'https://www.ghost.org/',
@@ -257,22 +259,6 @@ describe('RSS: Generate Feed', function () {
                 thumbnail: 'https://ghost.org/images/meta/ghost.png',
                 caption: 'caption here'
             });
-
-            data.posts = [postWithBookmark];
-
-            generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
-
-                xmlData.should.not.match(/kg-bookmark-thumbnail/);
-                xmlData.should.not.match(/kg-bookmark-icon/);
-                xmlData.should.not.match(/kg-bookmark-description/);
-
-                done();
-            }).catch(done);
-        });
-
-        it('should remove clutter from video card', function (done) {
-            const postWithVideo = posts[2];
 
             postWithVideo.html = callRenderer('video', {
                 src: '/content/images/2022/11/koenig-lexical.mp4',
@@ -288,7 +274,40 @@ describe('RSS: Generate Feed', function () {
                 thumbnailHeight: 50
             });
 
-            data.posts = [postWithVideo];
+            postWithAudio.html = callRenderer('audio', {
+                src: '/content/audio/2022/11/koenig-lexical.mp3',
+                title: 'Test Audio',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg'
+            });
+
+            data.posts = [postWithBookmark, postWithVideo, postWithAudio];
+        })
+
+        it('should remove clutter from bookmark card', function (done) {
+
+            // Check if original card content is present
+            data.posts[0].html.html.should.match(/kg-bookmark-thumbnail/);
+            data.posts[0].html.html.should.match(/kg-bookmark-icon/);
+            data.posts[0].html.html.should.match(/kg-bookmark-description/);
+
+            generateFeed(baseUrl, data).then(function (xmlData) {
+                should.exist(xmlData);
+
+                xmlData.should.not.match(/kg-bookmark-thumbnail/);
+                xmlData.should.not.match(/kg-bookmark-icon/);
+                xmlData.should.not.match(/kg-bookmark-description/);
+
+                done();
+            }).catch(done);
+        });
+
+        it('should remove clutter from video card', function (done) {
+
+            // Check if original card content is present
+            data.posts[1].html.html.should.match(/kg-video-overlay/);
+            data.posts[1].html.html.should.match(/kg-video-player-container/);
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
@@ -302,17 +321,11 @@ describe('RSS: Generate Feed', function () {
 
 
         it('should remove clutter from audio card', function (done) {
-            const postWithAudio = posts[2];
 
-            postWithAudio.html = callRenderer('audio', {
-                src: '/content/audio/2022/11/koenig-lexical.mp3',
-                title: 'Test Audio',
-                duration: 60,
-                mimeType: 'audio/mp3',
-                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg'
-            });
-
-            data.posts = [postWithAudio];
+            // Check if original card content is present
+            data.posts[2].html.html.should.match(/kg-audio-thumbnail/)
+            data.posts[2].html.html.should.match(/kg-audio-player/)
+            data.posts[2].html.html.should.match(/kg-audio-title/)
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
