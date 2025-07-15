@@ -85,7 +85,7 @@ test.describe('Ghost Explore', () => {
         await expect(growthDataToggle).toBeVisible();
         await expect(growthDataToggle).not.toBeChecked();
 
-        // Turn off growth data sharing
+        // Turn on growth data sharing
         await growthDataToggle.click();
 
         // Verify the API call to disable explore_ping_growth
