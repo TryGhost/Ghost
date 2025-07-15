@@ -96,7 +96,7 @@ module.exports = class ExplorePingService {
             return;
         }
 
-        const exploreUrl = this.config.get('explore:url');
+        const exploreUrl = this.config.get('explore:update_url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
             return;
