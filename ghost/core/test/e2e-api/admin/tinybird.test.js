@@ -29,6 +29,9 @@ describe('Tinybird API', function () {
                     adminToken: 'test-admin-token',
                     tracker: {
                         endpoint: 'https://api.tinybird.co/v0/events'
+                    },
+                    stats: {
+                        endpoint: 'https://api.tinybird.co'
                     }
                 });
             });
@@ -70,39 +73,6 @@ describe('Tinybird API', function () {
                 assert.equal(response.body.tinybird, null);
             });
         });
-
-        describe('With stats token only (deprecated configuration)', function () {
-            // This configuration is no longer valid and should be removed
-            // Keeping test to ensure backward compatibility handling
-        });
-
-        describe('With local stats configuration', function () {
-            before(async function () {
-                configUtils.set('tinybird', {
-                    stats: {
-                        local: {
-                            enabled: true,
-                            token: 'local-stats-token',
-                            endpoint: 'http://localhost:7181'
-                        }
-                    }
-                });
-            });
-
-            after(async function () {
-                await configUtils.restore();
-            });
-
-            it('Returns local token without exp field', async function () {
-                const response = await agent
-                    .get('/tinybird/token/')
-                    .expectStatus(200);
-
-                assert(response.body.tinybird);
-                assert.equal(response.body.tinybird.token, 'local-stats-token');
-                assert.equal(response.body.tinybird.exp, undefined);
-            });
-        });
     });
 
     describe('As Admin', function () {
@@ -113,6 +83,9 @@ describe('Tinybird API', function () {
                 adminToken: 'test-admin-token',
                 tracker: {
                     endpoint: 'https://api.tinybird.co/v0/events'
+                },
+                stats: {
+                    endpoint: 'https://api.tinybird.co'
                 }
             });
         });
