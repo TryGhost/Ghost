@@ -122,7 +122,8 @@ describe('ExplorePingService', function () {
                 url: 'https://example.com',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
-                posts_first: '2020-01-01T00:00:00.000Z'
+                posts_first: '2020-01-01T00:00:00.000Z',
+                members_total: 50
             });
         });
 
