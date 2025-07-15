@@ -6,13 +6,10 @@ import {ExternalLink} from './RoutingProvider';
 
 // Stats-specific configuration
 export interface StatsConfig {
-    endpoint?: string;
-    id?: string;
-    token?: string;
-    local?: {
-        enabled?: boolean;
-        endpoint?: string;
-        token?: string;
+    siteUuid?: string;
+    stats?: {
+        endpoint?: string; // override to use a different endpoint, if not provided, use https://api.tinybird.co
+        id?: string; // override to site uuid, if not provided, use siteUuid
     };
 }
 

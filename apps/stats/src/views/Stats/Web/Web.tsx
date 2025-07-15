@@ -58,7 +58,7 @@ const Web: React.FC = () => {
 
     // Prepare query parameters
     const params = {
-        site_uuid: statsConfig?.id || '',
+        site_uuid: statsConfig?.siteUuid || '',
         date_from: formatQueryDate(startDate),
         date_to: formatQueryDate(endDate),
         timezone: timezone,

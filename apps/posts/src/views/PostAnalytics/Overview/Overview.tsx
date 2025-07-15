@@ -36,7 +36,7 @@ const Overview: React.FC = () => {
     // KPI params for overview data
     const params = useMemo(() => {
         const baseParams = {
-            site_uuid: statsConfig?.id || '',
+            site_uuid: statsConfig?.siteUuid || '',
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
             timezone: timezone,
@@ -51,12 +51,12 @@ const Overview: React.FC = () => {
         }
 
         return baseParams;
-    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
+    }, [isPostLoading, post, statsConfig?.siteUuid, startDate, endDate, timezone]);
 
     // Chart params for chart data
     const chartParams = useMemo(() => {
         const baseParams = {
-            site_uuid: statsConfig?.id || '',
+            site_uuid: statsConfig?.siteUuid || '',
             date_from: formatQueryDate(chartStartDate),
             date_to: formatQueryDate(chartEndDate),
             timezone: chartTimezone,
@@ -71,17 +71,17 @@ const Overview: React.FC = () => {
         }
 
         return baseParams;
-    }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
+    }, [isPostLoading, post, statsConfig?.siteUuid, chartStartDate, chartEndDate, chartTimezone]);
 
     const {data, loading: tbLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: params
     });
 
     const {data: chartData, loading: chartLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: chartParams
     });
 

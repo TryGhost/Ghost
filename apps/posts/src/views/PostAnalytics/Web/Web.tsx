@@ -71,26 +71,26 @@ const Web: React.FC<postAnalyticsProps> = () => {
         }
 
         return baseParams;
-    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone, audience]);
+    }, [isPostLoading, post, statsConfig?.siteUuid, startDate, endDate, timezone, audience]);
 
     // Get web kpi data
     const {data: kpiData, loading: isKpisLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: params
     });
 
     // Get locations data
     const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: params
     });
 
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
+        statsConfig: statsConfig || {siteUuid: ''},
         params: params
     });
 
