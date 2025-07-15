@@ -141,6 +141,12 @@ export default class MigrateService extends Service {
         this.toggleMigrateWindow(true);
     }
 
+    closeMigrateWindow() {
+        window.location.hash = '/settings/migration';
+        this.router.transitionTo('/settings/migration');
+        this.toggleMigrateWindow(false);
+    }
+
     getMigrateIframe() {
         return document.getElementById('migrate-frame');
     }

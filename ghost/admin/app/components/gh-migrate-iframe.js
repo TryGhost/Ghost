@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {htmlSafe} from '@ember/template';
 import {inject as service} from '@ember/service';
 
 export default class GhMigrateIframe extends Component {
@@ -55,12 +56,18 @@ export default class GhMigrateIframe extends Component {
     }
 
     async _handleUrlRequest() {
-        const response = await this.migrate.postMessagePayload();
+        try {
+            const response = await this.migrate.postMessagePayload();
 
-        this.migrate.getMigrateIframe().contentWindow.postMessage({
-            request: 'initialData',
-            response
-        }, new URL(this.migrate.getIframeURL()).origin);
+            this.migrate.getMigrateIframe().contentWindow.postMessage({
+                request: 'initialData',
+                response
+            }, new URL(this.migrate.getIframeURL()).origin);
+        } catch (err) {
+            // Close the iframe so the user can see the notification
+            this.migrate.closeMigrateWindow();
+            this.notifications.showAlert(htmlSafe(`Error initialising migration. Please try again later.`), {type: 'error', key: 'migrate.iframe-postMessage.error'});
+        }
     }
 
     _handleSiteDataUpdate(data) {
