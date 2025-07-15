@@ -246,6 +246,7 @@ Object {
       "featured": false,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
       "mobiledoc": null,
       "published_at": null,
       "slug": "testing-post-deleted-webhook",

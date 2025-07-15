@@ -42,7 +42,7 @@ module.exports = (event, model) => {
             const frame = {options: {previous: true, context: {user: true}}};
 
             if (['posts', 'pages'].includes(docName)) {
-                frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
+                frame.options.formats = ['lexical', 'mobiledoc', 'html', 'plaintext'];
                 frame.options.withRelated = ['tags', 'authors'];
             }
 
