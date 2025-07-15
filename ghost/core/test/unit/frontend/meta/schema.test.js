@@ -28,7 +28,6 @@ function buildExpectedSameAs(website, usernames) {
     return urls;
 }
 
-// Base metadata structure commonly used across tests
 const BASE_METADATA = {
     site: {
         title: 'Site Title'
