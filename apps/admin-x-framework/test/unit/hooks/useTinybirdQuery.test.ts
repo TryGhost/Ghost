@@ -55,7 +55,7 @@ describe('useTinybirdQuery', () => {
 
     it('should return data, meta, loading, and error', () => {
         const {result} = renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -75,7 +75,7 @@ describe('useTinybirdQuery', () => {
         });
 
         renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -94,7 +94,7 @@ describe('useTinybirdQuery', () => {
         });
 
         renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -113,7 +113,7 @@ describe('useTinybirdQuery', () => {
         });
 
         renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -132,7 +132,7 @@ describe('useTinybirdQuery', () => {
         });
 
         const {result} = renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -149,7 +149,7 @@ describe('useTinybirdQuery', () => {
         });
 
         renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {test: 'test'}
         }), {wrapper});
@@ -173,7 +173,7 @@ describe('useTinybirdQuery', () => {
         });
 
         const {result} = renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});
@@ -191,7 +191,7 @@ describe('useTinybirdQuery', () => {
         });
 
         const {result} = renderHook(() => useTinybirdQuery({
-            statsConfig: {id: '123'},
+            statsConfig: {siteUuid: '123'},
             endpoint: 'test',
             params: {}
         }), {wrapper});

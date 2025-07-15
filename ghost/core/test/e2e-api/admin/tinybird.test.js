@@ -26,7 +26,13 @@ describe('Tinybird API', function () {
             before(async function () {
                 configUtils.set('tinybird', {
                     workspaceId: 'test-workspace-id',
-                    adminToken: 'test-admin-token'
+                    adminToken: 'test-admin-token',
+                    tracker: {
+                        endpoint: 'https://api.tinybird.co/v0/events'
+                    },
+                    stats: {
+                        endpoint: 'https://api.tinybird.co'
+                    }
                 });
             });
 
@@ -67,57 +73,6 @@ describe('Tinybird API', function () {
                 assert.equal(response.body.tinybird, null);
             });
         });
-
-        describe('With stats token only (no JWT)', function () {
-            before(async function () {
-                configUtils.set('tinybird', {
-                    stats: {
-                        token: 'static-stats-token'
-                    }
-                });
-            });
-
-            after(async function () {
-                await configUtils.restore();
-            });
-
-            it('Returns static token without exp field', async function () {
-                const response = await agent
-                    .get('/tinybird/token/')
-                    .expectStatus(200);
-
-                assert(response.body.tinybird);
-                assert.equal(response.body.tinybird.token, 'static-stats-token');
-                assert.equal(response.body.tinybird.exp, undefined);
-            });
-        });
-
-        describe('With local stats token only (no JWT)', function () {
-            before(async function () {
-                configUtils.set('tinybird', {
-                    stats: {
-                        local: {
-                            enabled: true,
-                            token: 'local-stats-token'
-                        }
-                    }
-                });
-            });
-
-            after(async function () {
-                await configUtils.restore();
-            });
-
-            it('Returns local token without exp field', async function () {
-                const response = await agent
-                    .get('/tinybird/token/')
-                    .expectStatus(200);
-
-                assert(response.body.tinybird);
-                assert.equal(response.body.tinybird.token, 'local-stats-token');
-                assert.equal(response.body.tinybird.exp, undefined);
-            });
-        });
     });
 
     describe('As Admin', function () {
@@ -125,7 +80,13 @@ describe('Tinybird API', function () {
             await agent.loginAsAdmin();
             configUtils.set('tinybird', {
                 workspaceId: 'test-workspace-id',
-                adminToken: 'test-admin-token'
+                adminToken: 'test-admin-token',
+                tracker: {
+                    endpoint: 'https://api.tinybird.co/v0/events'
+                },
+                stats: {
+                    endpoint: 'https://api.tinybird.co'
+                }
             });
         });
 

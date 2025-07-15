@@ -1,19 +1,16 @@
 const jwt = require('jsonwebtoken');
+const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 /**
  * @typedef {Object} TinybirdConfig
- * @property {string} workspaceId - The Tinybird workspace ID
- * @property {string} adminToken - The admin token for JWT signing
+ * @property {string} [workspaceId] - The Tinybird workspace ID
+ * @property {string} [adminToken] - The admin token for JWT signing
+ * @property {Object} [tracker] - Tracker configuration
+ * @property {string} [tracker.endpoint] - Tracker endpoint URL
  * @property {Object} [stats] - Statistics configuration
- * @property {string} [stats.id] - Stats ID (deprecated)
- * @property {string} [stats.token] - Stats token (deprecated)
- * @property {string} [stats.endpoint] - Stats endpoint
- * @property {string} [stats.datasource] - Stats datasource
- * @property {Object} [stats.local] - Local stats configuration
- * @property {boolean} [stats.local.enabled] - Whether local stats are enabled
- * @property {string} [stats.local.token] - Local stats token
- * @property {string} [stats.local.endpoint] - Local stats endpoint
- * @property {string} [stats.local.datasource] - Local stats datasource
+ * @property {string} [stats.overrideSiteUuid] - (optional) Site UUID override
+ * @property {string} [stats.endpoint] - Statistics endpoint URL
  */
 
 /**
@@ -65,27 +62,28 @@ class TinybirdService {
      * @param {TinybirdConstructorOptions} options - Configuration options
      */
     constructor({tinybirdConfig, siteUuid}) {
-        this.tinybirdConfig = tinybirdConfig;
-        this.siteUuid = tinybirdConfig?.stats?.id || siteUuid;
+        // Validate configuration
+        const validation = TinybirdService.validateConfig(tinybirdConfig);
+        if (!validation.isValid) {
+            throw new errors.ValidationError({
+                message: `Invalid Tinybird configuration: ${validation.errors.join(', ')}`
+            });
+        }
 
-        // Flags for determining which token to use
-        // We should aim to simplify this in the future
-        this.isJwtEnabled = !!tinybirdConfig?.workspaceId && !!tinybirdConfig?.adminToken;
-        this.isLocalEnabled = !!tinybirdConfig?.stats?.local?.enabled;
-        this.isStatsEnabled = !!tinybirdConfig?.stats?.token;
+        this.tinybirdConfig = tinybirdConfig;
+        this.siteUuid = tinybirdConfig?.stats?.overrideSiteUuid || siteUuid;
+
+        // JWT token info
         this._serverToken = null;
         this._serverTokenExp = null;
     }
 
     /**
-     * Gets the server token, refreshing it if it's about to expire
-     * We're moving towards using JWT tokens for all Tinybird requests
-     * For now we need to remain backwards compatible with the old stats token
+     * Gets the server JWT token, refreshing it if it's about to expire
      * @returns {{token: string, exp?: number}|null} Object with token and optional exp, or null if generation fails
      */
     getToken({name = `tinybird-jwt-${this.siteUuid}`, expiresInMinutes = 180} = {}) {
-        // Prefer JWT tokens if enabled
-        if (this.isJwtEnabled) {
+        try {
             // Generate a new JWT token if it doesn't exist or is expired
             if (!this._serverToken || this._isJWTExpired(this._serverToken)) {
                 const tokenData = this._generateToken({name, expiresInMinutes});
@@ -96,21 +94,10 @@ class TinybirdService {
                 token: this._serverToken,
                 exp: this._serverTokenExp
             };
+        } catch (error) {
+            logging.error('Error getting Tinybird token', error);
+            return null;
         }
-        // If local stats are enabled, use the local token
-        if (this.isLocalEnabled) {
-            return {
-                token: this.tinybirdConfig.stats.local?.token
-            };
-        }
-        // If stats are enabled, use the stats token
-        if (this.isStatsEnabled) {
-            return {
-                token: this.tinybirdConfig.stats.token
-            };
-        }
-        // If no token is available, return null
-        return null;
     }
 
     /**
@@ -165,6 +152,55 @@ class TinybirdService {
         } catch (error) {
             return true;
         }
+    }
+
+    /**
+     * Gets the appropriate tracker endpoint based on configuration
+     * @returns {string|null} The tracker endpoint URL or null if not configured
+     */
+    getTrackerEndpoint() {
+        return this.tinybirdConfig.tracker?.endpoint || null;
+    }
+
+    /**
+     * Gets the appropriate stats endpoint based on configuration
+     * @returns {string|null} The stats endpoint URL or null if not configured
+     */
+    getStatsEndpoint() {
+        return this.tinybirdConfig.stats?.endpoint || null;
+    }
+
+    /**
+     * Static method to validate Tinybird configuration
+     * @param {TinybirdConfig} config - Ghost's config.tinybird object to validate
+     * @returns {{isValid: boolean, errors: string[]}} Validation result
+     */
+    static validateConfig(config) {
+        const validationErrors = [];
+
+        if (!config) {
+            validationErrors.push('Tinybird configuration is missing');
+            return {isValid: false, errors: validationErrors};
+        }
+
+        // Validate remote configuration
+        if (!config.workspaceId) {
+            validationErrors.push('workspaceId is required');
+        }
+        if (!config.adminToken) {
+            validationErrors.push('adminToken is required');
+        }
+        if (!config.tracker || !config.tracker.endpoint) {
+            validationErrors.push('tracker.endpoint is required');
+        }
+        if (!config.stats || !config.stats.endpoint) {
+            validationErrors.push('stats.endpoint is required');
+        }
+
+        return {
+            isValid: validationErrors.length === 0,
+            errors: validationErrors
+        };
     }
 }
 

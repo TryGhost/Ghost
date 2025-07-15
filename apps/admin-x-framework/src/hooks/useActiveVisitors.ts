@@ -27,7 +27,7 @@ export const useActiveVisitors = (options: UseActiveVisitorsOptions = {}) => {
     }, [enabled]);
 
     const params = {
-        site_uuid: statsConfig?.id || '',
+        site_uuid: statsConfig?.siteUuid || '',
         // Add postUuid if provided
         ...(postUuid && {post_uuid: postUuid}),
         // Add refreshKey to force refetch

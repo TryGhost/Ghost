@@ -21,7 +21,7 @@ test.describe('Stats App - Web Traffic', () => {
                             ...responseFixtures.config.config,
                             stats: {
                                 ...statsConfig,
-                                id: siteUuid
+                                siteUuid
                             }
                         }
                     }
