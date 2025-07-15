@@ -810,7 +810,7 @@ jobs:
           --health-retries 5
           --health-start-period 30s
       mysql:
-        image: mysql:8.0
+        image: mirror.gcr.io/mysql/mysql-server:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: ghost_testing
