@@ -2,7 +2,7 @@ import {StatsConfig} from '../providers/FrameworkProvider';
 import {getTinybirdToken} from '../api/tinybird';
 
 export const getStatEndpointUrl = (config: StatsConfig, endpoint: string, params = '') => {
-    const endpointUrl = config?.stats?.endpoint || 'https://api.tinybird.co';
+    const endpointUrl = config?.endpoint || 'https://api.tinybird.co';
     return `${endpointUrl}/v0/pipes/${endpoint}.json?${params}`;
 };
 
