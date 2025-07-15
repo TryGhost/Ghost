@@ -176,9 +176,8 @@ describe('useActiveVisitors', () => {
 
     it('calls getStatEndpointUrl with correct parameters and uses tinybirdToken', () => {
         const statsConfig = {
-            id: 'test-site-id',
-            endpoint: 'https://api.test.com',
-            token: 'test-token'
+            siteUuid: 'test-site-id',
+            endpoint: 'https://api.test.com'
         };
 
         renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
@@ -274,9 +273,8 @@ describe('useActiveVisitors', () => {
 
     it('uses statsConfig for site_uuid', () => {
         const statsConfig = {
-            id: 'test-site-id',
-            endpoint: 'https://api.test.com',
-            token: 'test-token'
+            siteUuid: 'test-site-id',
+            endpoint: 'https://api.test.com'
         };
 
         renderHook(() => useActiveVisitors({statsConfig, enabled: true}), {wrapper});
@@ -433,9 +431,8 @@ describe('useActiveVisitors', () => {
 
     it('handles statsConfig changes correctly', () => {
         const initialStatsConfig = {
-            id: 'initial-site-id',
-            endpoint: 'https://initial.api.com',
-            token: 'initial-token'
+            siteUuid: 'initial-site-id',
+            endpoint: 'https://initial.api.com'
         };
 
         const {rerender} = renderHook(
@@ -448,9 +445,8 @@ describe('useActiveVisitors', () => {
 
         // Change statsConfig
         const newStatsConfig = {
-            id: 'new-site-id',
-            endpoint: 'https://new.api.com',
-            token: 'new-token'
+            siteUuid: 'new-site-id',
+            endpoint: 'https://new.api.com'
         };
 
         rerender({statsConfig: newStatsConfig});

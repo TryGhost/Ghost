@@ -21,7 +21,7 @@ test.describe('Stats App - Locations', () => {
                             ...responseFixtures.config.config,
                             stats: {
                                 ...statsConfig,
-                                id: siteUuid
+                                siteUuid
                             }
                         }
                     }
@@ -49,7 +49,7 @@ test.describe('Stats App - Locations', () => {
                             ...responseFixtures.config.config,
                             stats: {
                                 ...statsConfig,
-                                id: siteUuid
+                                siteUuid
                             }
                         }
                     }
