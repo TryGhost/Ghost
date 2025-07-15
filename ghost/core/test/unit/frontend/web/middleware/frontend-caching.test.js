@@ -51,7 +51,7 @@ describe('frontendCaching', function () {
         res.isPrivateBlog = undefined;
         middleware(req, res, next);
         assert.ok(res.set.calledOnce);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.public}));
+        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.publicTenMinutes}));
     });
 
     it('should set cache control to public if the request is made by a member and caching members content is enabled', function () {
@@ -62,7 +62,7 @@ describe('frontendCaching', function () {
         res.isPrivateBlog = undefined;
         middleware(req, res, next);
         assert.equal(res.set.callCount, 2);
-        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.public}));
+        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.publicTenMinutes}));
         assert.ok(res.set.calledWith({'X-Member-Cache-Tier': 'freeTierId'}));
     });
 
