@@ -16,35 +16,10 @@ describe('ExplorePingService', function () {
     beforeEach(function () {
         // Setup stubs
         settingsCacheStub = {
-            getPublic: sinon.stub().returns({
-                title: 'Test Blog',
-                description: 'Test Description',
-                icon: 'icon.png',
-                accent_color: '#000000',
-                lang: 'en',
-                timezone: 'Etc/UTC',
-                navigation: JSON.stringify([]),
-                secondary_navigation: JSON.stringify([]),
-                meta_title: null,
-                meta_description: null,
-                og_image: null,
-                og_title: null,
-                og_description: null,
-                twitter_image: null,
-                twitter_title: null,
-                twitter_description: null,
-                active_theme: 'casper',
-                cover_image: null,
-                logo: null,
-                portal_button: true,
-                portal_name: true,
-                locale: 'en',
-                twitter: '@test',
-                facebook: 'testfb',
-                labs: JSON.stringify({}),
-                site_uuid: '123e4567-e89b-12d3-a456-426614174000'
-            })
+            get: sinon.stub()
         };
+
+        settingsCacheStub.get.withArgs('site_uuid').returns('123e4567-e89b-12d3-a456-426614174000');
 
         configStub = {
             get: sinon.stub()
@@ -106,13 +81,6 @@ describe('ExplorePingService', function () {
                 ghost: '4.0.0',
                 site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
-                title: 'Test Blog',
-                description: 'Test Description',
-                icon: 'icon.png',
-                accent_color: '#000000',
-                locale: 'en',
-                twitter: '@test',
-                facebook: 'testfb',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z',
@@ -134,18 +102,6 @@ describe('ExplorePingService', function () {
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, null);
-        });
-
-        // test that the payload is correct if the timezone is not UTC
-        it('returns correct payload if the timezone is not UTC', async function () {
-            settingsCacheStub.getPublic.returns({
-                ...settingsCacheStub.getPublic(),
-                timezone: 'America/New_York'
-            });
-
-            const payload = await explorePingService.constructPayload();
-            assert.equal(payload.posts_first, '2020-01-01T00:00:00.000Z');
-            assert.equal(payload.posts_last, '2023-01-01T00:00:00.000Z');
         });
     });
 

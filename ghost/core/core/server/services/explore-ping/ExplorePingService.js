@@ -1,7 +1,7 @@
 module.exports = class ExplorePingService {
     /**
      * @param {object} deps
-     * @param {{getPublic: () => import('../../../shared/settings-cache/CacheManager').PublicSettingsCache}} deps.settingsCache
+     * @param {{get: (string) => string}} deps.settingsCache
      * @param {object} deps.config
      * @param {object} deps.labs
      * @param {object} deps.logging
@@ -29,7 +29,7 @@ module.exports = class ExplorePingService {
 
     async constructPayload() {
         /* eslint-disable camelcase */
-        const {title, description, icon, locale, accent_color, twitter, facebook, site_uuid} = this.settingsCache.getPublic();
+        const site_uuid = this.settingsCache.get('site_uuid');
 
         // Get post statistics
         const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
@@ -54,13 +54,6 @@ module.exports = class ExplorePingService {
             ghost: this.ghostVersion.full,
             site_uuid,
             url: this.config.get('url'),
-            title,
-            description,
-            icon,
-            locale,
-            accent_color,
-            twitter,
-            facebook,
             posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
             posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
             posts_total: totalPosts,
@@ -98,6 +91,11 @@ module.exports = class ExplorePingService {
         const exploreUrl = this.config.get('explore:url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
+            return;
+        }
+
+        if (this.settingsCache.get('explore_ping') === 'false') {
+            this.logging.info('Explore ping disabled');
             return;
         }
 
