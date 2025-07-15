@@ -803,9 +803,6 @@ jobs:
         image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
         options: >-
           --health-cmd "curl -f http://localhost:7181/"
           --health-interval 2s
@@ -821,9 +818,6 @@ jobs:
           MYSQL_PASSWORD: ghost
         ports:
           - 3306:3306
-        credentials:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
         options: >-
           --health-cmd "mysqladmin ping -h localhost"
           --health-interval 2s
