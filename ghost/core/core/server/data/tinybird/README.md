@@ -31,7 +31,7 @@ with the following information.
 
 ### Config
 Sample config:
-```json
+```jsonc
 {
    "someOtherConfigurationForEmail": {
         "transport": "SMTP",
@@ -40,25 +40,20 @@ Sample config:
         }
     },
     "tinybird": {
+        "workspaceId": "workspace-id-from-tinybird",
+        "adminToken": "admin-token-from-tinybird",
         "tracker": {
-            "endpoint": "https://e.ghost.org/tb/web_analytics",
-            "token": "xxxxx",
-            "datasource": "analytics_events",
-            "local": {
-                "enabled": true,
-                "token": "xxxxx",
-                "endpoint": "http://localhost:7181/v0/events",
-                "datasource": "analytics_events"
-            }
+            // -- needs to be present, and required Traffic Analytics service running with correct setup
+            "endpoint": "http://localhost:3000/tb/web_analytics"
         },
         "stats": {
+            //  -- optional override for site uuid
+            // "id": "106a623d-9792-4b63-acde-4a0c28ead3dc",
             "endpoint": "https://api.tinybird.co",
-            "token": "xxxxx",
+            // -- tinybird local configuration (optional)
             "local": {
                 "enabled": true,
-                "token": "xxxxx",
-                "endpoint": "http://localhost:7181",
-                "datasource": "analytics_events"
+                "token": "local-stats-or-admin-token",
             }
         }
     }
