@@ -28,6 +28,18 @@ function buildExpectedSameAs(website, usernames) {
     return urls;
 }
 
+// Base metadata structure commonly used across tests
+const BASE_METADATA = {
+    site: {
+        title: 'Site Title'
+    },
+    metaTitle: 'Post Title',
+    url: 'http://mysite.com/post/my-post-slug/',
+    authorUrl: 'http://mysite.com/author/me/',
+    publishedDate: '2015-12-25T05:35:01.234Z',
+    modifiedDate: '2016-01-21T22:13:05.412Z'
+};
+
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {
         const metadata = {
@@ -724,14 +736,7 @@ describe('getSchema', function () {
 
     it('should include all supported social links in sameAs', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -812,14 +817,7 @@ describe('getSchema', function () {
     // Contributors tests
     it('should not include contributors when post has only one author', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -847,14 +845,7 @@ describe('getSchema', function () {
 
     it('should include contributors when post has multiple authors', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -907,14 +898,7 @@ describe('getSchema', function () {
 
     it('should include multiple contributors when post has more than two authors', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -972,14 +956,7 @@ describe('getSchema', function () {
 
     it('should handle contributors with all social platforms', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -1011,14 +988,7 @@ describe('getSchema', function () {
 
     it('should handle contributors with missing or null data', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -1058,14 +1028,9 @@ describe('getSchema', function () {
 
     it('should include contributors for pages with multiple authors', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
+            ...BASE_METADATA,
             metaTitle: 'Page Title',
-            url: 'http://mysite.com/page/my-page-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            url: 'http://mysite.com/page/my-page-slug/'
         };
 
         const data = {
@@ -1107,14 +1072,7 @@ describe('getSchema', function () {
 
     it('should escape special characters in contributor social platform urls', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
