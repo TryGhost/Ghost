@@ -1,5 +1,6 @@
 import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
 import React from 'react';
+import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -51,7 +52,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
         testId='explore'
         title='Ghost Explore'
     >
-        {exploreEnabled &&
+        {exploreEnabled ?
             <SettingGroupContent columns={1}>
                 <Separator />
                 <Toggle
@@ -98,6 +99,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             </SettingGroupContent>
+            :
+            <img src={SettingImg} />
         }
     </TopLevelGroup>);
 };
