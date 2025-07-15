@@ -56,7 +56,7 @@ export default class Analytics extends AuthenticatedRoute {
                 return this.transitionTo('site');
             }
 
-            // This ensures that we don't load this page if the stats config is not set
+            // ensure we don't load the app if flags aren't set
             if (!this.feature.trafficAnalytics || !this.feature.ui60) {
                 return this.transitionTo('home');
             }
