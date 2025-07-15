@@ -117,7 +117,7 @@ describe('Frontend Routing', function () {
             it('should respond with html', function (done) {
                 request.get('/static-page-test/')
                     .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(function (err, res) {
                         const $ = cheerio.load(res.text);
@@ -155,7 +155,7 @@ describe('Frontend Routing', function () {
                 it('should redirect to editor for post resource', async function () {
                     await request.get('//welcome/edit/')
                         .expect('Location', /ghost\/#\/editor\/post\/\w+/)
-                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                         .expect(302)
                         .expect(assertCorrectFrontendHeaders);
                 });
@@ -163,7 +163,7 @@ describe('Frontend Routing', function () {
                 it('should redirect to editor for page resource', async function () {
                     await request.get('/static-page-test/edit/')
                         .expect('Location', /ghost\/#\/editor\/page\/\w+/)
-                        .expect('Cache-Control', testUtils.cacheRules.public)
+                        .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                         .expect(302)
                         .expect(assertCorrectFrontendHeaders);
                 });
@@ -228,7 +228,7 @@ describe('Frontend Routing', function () {
             // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
             it('should retrieve a blog post with ghost at the start of the url', function (done) {
                 request.get('/ghostly-kitchen-sink/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             });

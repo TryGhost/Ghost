@@ -48,7 +48,7 @@ describe('api/endpoints/content/posts', function () {
         const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.password:'${hashedPassword}'`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         const data = JSON.parse(res.text);
@@ -87,7 +87,7 @@ describe('api/endpoints/content/posts', function () {
         const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.email:'${userEmail}'`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         const data = JSON.parse(res.text);
@@ -104,7 +104,7 @@ describe('api/endpoints/content/posts', function () {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -145,7 +145,7 @@ describe('api/endpoints/content/posts', function () {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -198,7 +198,7 @@ describe('api/endpoints/content/posts', function () {
     it('browse posts with published and draft status, should not return drafts', function (done) {
         request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .end(function (err, res) {
                 if (err) {
@@ -215,7 +215,7 @@ describe('api/endpoints/content/posts', function () {
     it('browse posts with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=slug:[write,ghostly-kitchen-sink,grow]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
@@ -230,7 +230,7 @@ describe('api/endpoints/content/posts', function () {
     it('browse posts with slug filter should order taking order parameter into account', function () {
         return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&order=slug%20DESC&filter=slug:[write,ghostly-kitchen-sink,grow]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;
@@ -281,7 +281,7 @@ describe('api/endpoints/content/posts', function () {
             .get(localUtils.API.getApiQuery(`posts/${complexPostId}/?key=${validKey}&fields=title,slug,excerpt&formats=plaintext`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .then((res) => {
                 localUtils.API.checkResponse(res.body.posts[0], 'post', null, null, ['id', 'title', 'slug', 'excerpt', 'plaintext']);
@@ -337,7 +337,7 @@ describe('api/endpoints/content/posts', function () {
                 .get(localUtils.API.getApiQuery(`posts/${publicPost.id}/?key=${validKey}&fields=slug,html,plaintext&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
@@ -356,7 +356,7 @@ describe('api/endpoints/content/posts', function () {
                 .get(localUtils.API.getApiQuery(`posts/${membersPost.id}/?key=${validKey}`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
@@ -375,7 +375,7 @@ describe('api/endpoints/content/posts', function () {
                 .get(localUtils.API.getApiQuery(`posts/${paidPost.id}/?key=${validKey}`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
@@ -394,7 +394,7 @@ describe('api/endpoints/content/posts', function () {
                 .get(localUtils.API.getApiQuery(`posts/${membersPost.id}/?key=${validKey}&formats=html,plaintext&fields=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
@@ -412,7 +412,7 @@ describe('api/endpoints/content/posts', function () {
                 .get(localUtils.API.getApiQuery(`posts/${membersPostWithPaywallCard.id}/?key=${validKey}&formats=html,plaintext`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     const jsonResponse = res.body;
@@ -430,7 +430,7 @@ describe('api/endpoints/content/posts', function () {
             return request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
                 .set('Origin', testUtils.API.getURL())
                 .expect('Content-Type', /json/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .then((res) => {
                     res.headers.vary.should.eql('Accept-Version, Accept-Encoding');

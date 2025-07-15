@@ -45,7 +45,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=password:'${hashedPassword}'`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         const data = JSON.parse(res.text);
@@ -84,7 +84,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=email:'${userEmail}'`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         const data = JSON.parse(res.text);
@@ -101,7 +101,7 @@ describe('Authors Content API', function () {
         return request.get(localUtils.API.getApiQuery(`authors/${DataGenerator.Content.users[0].id}/?key=${validKey}&fields=name`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .then((res) => {
                 should.not.exist(res.headers['x-cache-invalidate']);
@@ -114,7 +114,7 @@ describe('Authors Content API', function () {
     it('browse authors with slug filter, should order in slug order', function () {
         return request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&filter=slug:[joe-bloggs,ghost,slimer-mcectoplasm]`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200)
             .then((res) => {
                 const jsonResponse = res.body;

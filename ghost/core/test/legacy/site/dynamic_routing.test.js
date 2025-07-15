@@ -49,7 +49,7 @@ describe('Dynamic Routing', function () {
         it('should respond with html', function (done) {
             request.get('/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -92,7 +92,7 @@ describe('Dynamic Routing', function () {
         it('should render page with slug permalink', function (done) {
             request.get('/static-page-test/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -122,7 +122,7 @@ describe('Dynamic Routing', function () {
                 .expect(200)
                 .expect('Content-Type', /html/)
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .end(function (err, res) {
                     if (err) {
@@ -179,7 +179,7 @@ describe('Dynamic Routing', function () {
             it('should respond with xml', function (done) {
                 request.get('/tag/getting-started/rss/')
                     .expect('Content-Type', /xml/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -197,7 +197,7 @@ describe('Dynamic Routing', function () {
             it('should redirect to tag settings', function (done) {
                 request.get('/tag/getting-started/edit/')
                     .expect('Location', 'http://127.0.0.1:2369/ghost/#/tags/getting-started/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(302)
                     .end(doEnd(done));
             });
@@ -331,14 +331,14 @@ describe('Dynamic Routing', function () {
 
         it('[success] author is locked', function (done) {
             request.get('/author/' + lockedUser.slug + '/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .end(doEnd(done));
         });
 
         it('[success] author is suspended', function (done) {
             request.get('/author/' + suspendedUser.slug + '/')
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .end(doEnd(done));
         });
@@ -349,7 +349,7 @@ describe('Dynamic Routing', function () {
                 status: 'inactive'
             }).then(function () {
                 request.get('/author/ghost-owner/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             }).catch(done);
@@ -361,7 +361,7 @@ describe('Dynamic Routing', function () {
                 status: 'active'
             }).then(function () {
                 request.get('/author/ghost-owner/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -379,7 +379,7 @@ describe('Dynamic Routing', function () {
             it('should respond with xml', function (done) {
                 request.get('/author/ghost-owner/rss/')
                     .expect('Content-Type', /xml/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             });
@@ -397,7 +397,7 @@ describe('Dynamic Routing', function () {
             it('should redirect to editor', function (done) {
                 request.get('/author/ghost-owner/edit/')
                     .expect('Location', 'http://127.0.0.1:2369/ghost/#/settings/staff/ghost-owner/')
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(302)
                     .end(doEnd(done));
             });
@@ -476,7 +476,7 @@ describe('Dynamic Routing', function () {
             it('should respond with html', function (done) {
                 request.get('/author/ghost-owner/page/2/')
                     .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
+                    .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                     .expect(200)
                     .end(doEnd(done));
             });
