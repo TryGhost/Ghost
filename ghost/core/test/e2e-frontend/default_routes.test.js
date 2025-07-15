@@ -57,7 +57,7 @@ describe('Default Frontend routing', function () {
         it('/ should respond with valid HTML', async function () {
             await request.get('/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -76,7 +76,7 @@ describe('Default Frontend routing', function () {
         it('/author/ghost/ should respond with valid HTML', async function () {
             await request.get('/author/ghost/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -96,7 +96,7 @@ describe('Default Frontend routing', function () {
         it('/tag/getting-started/ should respond with valid HTML', async function () {
             await request.get('/tag/getting-started/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -118,7 +118,7 @@ describe('Default Frontend routing', function () {
         it('/welcome/ should respond with valid HTML', async function () {
             await request.get('/welcome/')
                 .expect('Content-Type', /html/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -147,7 +147,7 @@ describe('Default Frontend routing', function () {
         it('should redirect to editor', async function () {
             await request.get('/welcome/edit/')
                 .expect('Location', /ghost\/#\/editor\/\w+/)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect(302)
                 .expect(assertCorrectFrontendHeaders);
         });
@@ -216,7 +216,7 @@ describe('Default Frontend routing', function () {
         it('/rss/ should serve an RSS feed', async function () {
             await request.get('/rss/')
                 .expect(200)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -228,7 +228,7 @@ describe('Default Frontend routing', function () {
         it('/author/ghost/rss/ should serve an RSS feed', async function () {
             await request.get('/author/ghost/rss/')
                 .expect(200)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
@@ -240,7 +240,7 @@ describe('Default Frontend routing', function () {
         it('/tag/getting-started/rss/ should serve an RSS feed', async function () {
             await request.get('/tag/getting-started/rss/')
                 .expect(200)
-                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
                 .expect('Content-Type', 'application/rss+xml; charset=utf-8')
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {

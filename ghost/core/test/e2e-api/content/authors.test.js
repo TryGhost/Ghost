@@ -28,7 +28,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);
@@ -57,7 +57,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/?key=${validKey}&include=count.posts&order=count.posts ASC`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         const jsonResponse = res.body;
@@ -87,7 +87,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/slug/ghost/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);
@@ -104,7 +104,7 @@ describe('Authors Content API', function () {
         const res = await request.get(localUtils.API.getApiQuery(`authors/${fixtureManager.get('users', 0).id}/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
 
         should.not.exist(res.headers['x-cache-invalidate']);

@@ -26,7 +26,7 @@ describe('Content API key authentication', function () {
 
         await request.get(localUtils.API.getApiQuery(`posts/?key=${key}`))
             .expect('Content-Type', /json/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.publicTenMinutes)
             .expect(200);
     });
 
