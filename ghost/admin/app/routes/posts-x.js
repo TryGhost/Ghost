@@ -27,7 +27,7 @@ export default class PostsXRoute extends AuthenticatedRoute {
 
         // This ensures that we don't load this page if the stats config is not set
         if (!(this.config.stats && this.feature.trafficAnalytics)) {
-            return this.transitionTo('home');
+            return this.transitionTo('posts');
         }
     }
 }
