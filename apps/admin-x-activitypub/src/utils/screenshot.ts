@@ -26,24 +26,31 @@ export async function takeScreenshot(
             imageTimeout: 0
         });
 
-        canvas.toBlob((blob) => {
-            if (!blob) {
-                // eslint-disable-next-line no-console
-                console.error('Failed to create blob from canvas');
-                return;
-            }
+        await new Promise<void>((resolve, reject) => {
+            canvas.toBlob((blob) => {
+                if (!blob) {
+                    reject(new Error('Failed to create blob from canvas'));
+                    return;
+                }
 
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.href = url;
-            link.download = filename;
+                try {
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = filename;
 
-            document.body.appendChild(link);
-            link.click();
+                    document.body.appendChild(link);
+                    link.click();
 
-            document.body.removeChild(link);
-            URL.revokeObjectURL(url);
-        }, 'image/png');
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            }, 'image/png');
+        });
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Failed to take screenshot:', error);
