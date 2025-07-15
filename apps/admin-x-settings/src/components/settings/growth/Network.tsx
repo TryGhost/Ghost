@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import validator from 'validator';
 import {Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -12,21 +12,12 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
-    const limiter = useLimiter();
 
     // The Network toggle is disabled in Admin settings if:
     // 1. (Ghost (Pro) only) the feature is disabled by config
     // 2. The site is hosted on a subdirectory, localhost or an IP address in production
-    const [isDisabledByConfig, setIsDisabledByConfig] = useState(false);
-    useEffect(() => {
-        async function checkLimiter() {
-            if (limiter?.isLimited('limitSocialWeb') && await limiter.checkWouldGoOverLimit('limitSocialWeb')) {
-                setIsDisabledByConfig(true);
-            }
-        }
-
-        checkLimiter();
-    }, [limiter]);
+    const limiter = useLimiter();
+    const isDisabledByConfig = limiter?.isDisabled('limitSocialWeb');
 
     const {subdir} = getGhostPaths();
     const isProduction = process.env.NODE_ENV === 'production';
@@ -58,6 +49,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
     return (<TopLevelGroup
         customButtons={
             <Toggle
+                key={`${isChecked}-${isDisabled}`}
                 checked={isChecked}
                 direction='rtl'
                 disabled={isDisabled}
