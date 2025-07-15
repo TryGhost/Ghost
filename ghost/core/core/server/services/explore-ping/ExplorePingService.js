@@ -28,38 +28,44 @@ module.exports = class ExplorePingService {
     }
 
     async constructPayload() {
-        /* eslint-disable camelcase */
-        const site_uuid = this.settingsCache.get('site_uuid');
+        const payload = {
+            ghost: this.ghostVersion.full,
+            site_uuid: this.settingsCache.get('site_uuid'),
+            url: this.config.get('url')
+        };
 
-        // Get post statistics
-        const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
-            this.posts.stats.getTotalPostsPublished(),
-            this.posts.stats.getMostRecentlyPublishedPostDate(),
-            this.posts.stats.getFirstPublishedPostDate()
-        ]);
-
-        // Get member statistics with error handling
-        let totalMembers = null;
         try {
-            totalMembers = await this.members.stats.getTotalMembers();
+            const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
+                this.posts.stats.getTotalPostsPublished(),
+                this.posts.stats.getMostRecentlyPublishedPostDate(),
+                this.posts.stats.getFirstPublishedPostDate()
+            ]);
+
+            payload.posts_total = totalPosts;
+            payload.posts_last = lastPublishedAt ? lastPublishedAt.toISOString() : null;
+            payload.posts_first = firstPublishedAt ? firstPublishedAt.toISOString() : null;
+        } catch (err) {
+            this.logging.warn('Failed to fetch post statistics', {
+                error: err.message,
+                context: 'explore-ping-service'
+            });
+            payload.posts_total = null;
+            payload.posts_last = null;
+            payload.posts_first = null;
+        }
+
+        try {
+            const totalMembers = await this.members.stats.getTotalMembers();
+            payload.members_total = totalMembers;
         } catch (err) {
             this.logging.warn('Failed to fetch member statistics', {
                 error: err.message,
                 context: 'explore-ping-service'
             });
-            // Continue without member statistics
+            payload.members_total = null;
         }
 
-        return {
-            ghost: this.ghostVersion.full,
-            site_uuid,
-            url: this.config.get('url'),
-            posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
-            posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
-            posts_total: totalPosts,
-            members_total: totalMembers
-        };
-        /* eslint-enable camelcase */
+        return payload;
     }
 
     async makeRequest(exploreUrl, payload) {
@@ -91,11 +97,6 @@ module.exports = class ExplorePingService {
         const exploreUrl = this.config.get('explore:url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
-            return;
-        }
-
-        if (this.settingsCache.get('explore_ping') === 'false') {
-            this.logging.info('Explore ping disabled');
             return;
         }
 

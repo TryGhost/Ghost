@@ -88,17 +88,35 @@ describe('ExplorePingService', function () {
             });
         });
 
-        it('returns null for posts_first and posts_last if no posts', async function () {
+        it('returns null for post stats if no posts', async function () {
             postsStub.stats.getFirstPublishedPostDate.resolves(null);
             postsStub.stats.getMostRecentlyPublishedPostDate.resolves(null);
+            postsStub.stats.getTotalPostsPublished.resolves(null);
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.posts_first, null);
             assert.equal(payload.posts_last, null);
+            assert.equal(payload.posts_total, null);
+        });
+
+        it('returns null for post stats if getTotalPostsPublished throws an error', async function () {
+            postsStub.stats.getTotalPostsPublished.rejects(new Error('Test error'));
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.posts_total, null);
+            assert.equal(payload.posts_last, null);
+            assert.equal(payload.posts_first, null);
         });
 
         it('returns null for members_total if no members data available', async function () {
             membersStub.stats.getTotalMembers.resolves(null);
+
+            const payload = await explorePingService.constructPayload();
+            assert.equal(payload.members_total, null);
+        });
+
+        it('returns null for members_total if getTotalMembers throws an error', async function () {
+            membersStub.stats.getTotalMembers.rejects(new Error('Test error'));
 
             const payload = await explorePingService.constructPayload();
             assert.equal(payload.members_total, null);
