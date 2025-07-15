@@ -5,7 +5,7 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
+import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount, abbreviateNumber} from '@tryghost/shade';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
@@ -215,15 +215,15 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     <TabsTrigger value="posts">Posts</TabsTrigger>
                                     {!params.handle && <TabsTrigger value="likes">
                                         Likes
-                                        <TabsTriggerCount>{account?.likedCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.likedCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>}
                                     <TabsTrigger value="following">
                                         Following
-                                        <TabsTriggerCount>{account?.followingCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.followingCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>
                                     <TabsTrigger value="followers">
                                         Followers
-                                        <TabsTriggerCount>{account?.followerCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.followerCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>
                                 </TabsList>
                                 <TabsContent value='posts'>
