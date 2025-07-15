@@ -230,17 +230,25 @@ export class ActivityPubAPI {
             return null;
         }
 
-        const json = await response.json();
-
         if (!response.ok) {
+            let message: string;
+
+            try {
+                const json = await response.json();
+                message = json?.message || json?.error || 'Something went wrong, please try again.';
+            } catch {
+                message = 'Something went wrong, please try again.';
+            }
+
             const error = {
-                message: json?.message || json?.error || 'Unexpected Error',
+                message,
                 statusCode: response.status
             };
+
             throw error;
         }
 
-        return json;
+        return await response.json();
     }
 
     async blockDomain(domain: URL): Promise<boolean> {
