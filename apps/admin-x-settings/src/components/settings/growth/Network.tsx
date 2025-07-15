@@ -1,4 +1,5 @@
 import React from 'react';
+import SettingImg from '../../../assets/images/network.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import validator from 'validator';
 import {Icon, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
@@ -62,12 +63,13 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
         testId='network'
         title='Network'
     >
-        <SettingGroupContent
-            columns={1}
-            values={[
-                {
-                    key: 'private',
-                    value:
+        <>
+            <SettingGroupContent
+                columns={1}
+                values={[
+                    {
+                        key: 'private',
+                        value:
                         isDisabled &&
                             <div className='flex w-full gap-1.5 rounded-md border border-grey-200 bg-grey-75 p-3 text-sm'>
                                 <Icon name='info' size={16} />
@@ -75,9 +77,13 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                     Network is disabled because your domain isn’t configured correctly. <a className='text-green' href="https://ghost.org/docs" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
                                 </div>
                             </div>
-                }
-            ]}
-        />
+                    }
+                ]}
+            />
+            <div className='-mx-7 -mb-7'>
+                <img src={SettingImg} />
+            </div>
+        </>
     </TopLevelGroup>);
 };
 
