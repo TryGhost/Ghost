@@ -800,7 +800,7 @@ jobs:
     name: E2E tests
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest
+        image: ghcr.io/tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
         options: >-
@@ -810,7 +810,7 @@ jobs:
           --health-retries 5
           --health-start-period 30s
       mysql:
-        image: mysql:8.0
+        image: ghcr.io/mysql/mysql-server:8.0
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: ghost_testing
@@ -899,7 +899,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest
+        image: ghcr.io/tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
     env:
