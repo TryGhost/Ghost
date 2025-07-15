@@ -175,11 +175,7 @@ describe('TinybirdService', function () {
             assert.equal(result.token, 'local-token');
             assert.equal(result.exp, undefined);
         });
-
-        // Removed test for deprecated stats.token configuration
-        // The validator now requires either valid remote config (workspaceId + adminToken + tracker.endpoint)
-        // or valid local config (stats.local.enabled or tracker.local.enabled with token and endpoint)
-
+        
         it('should return the tracker local token if available', function () {
             tinybirdConfig = {
                 tracker: {
