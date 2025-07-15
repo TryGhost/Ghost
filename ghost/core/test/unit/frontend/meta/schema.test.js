@@ -28,6 +28,17 @@ function buildExpectedSameAs(website, usernames) {
     return urls;
 }
 
+const BASE_METADATA = {
+    site: {
+        title: 'Site Title'
+    },
+    metaTitle: 'Post Title',
+    url: 'http://mysite.com/post/my-post-slug/',
+    authorUrl: 'http://mysite.com/author/me/',
+    publishedDate: '2015-12-25T05:35:01.234Z',
+    modifiedDate: '2016-01-21T22:13:05.412Z'
+};
+
 describe('getSchema', function () {
     it('should return post schema if context starts with post', function (done) {
         const metadata = {
@@ -724,14 +735,7 @@ describe('getSchema', function () {
 
     it('should include all supported social links in sameAs', function () {
         const metadata = {
-            site: {
-                title: 'Site Title'
-            },
-            metaTitle: 'Post Title',
-            url: 'http://mysite.com/post/my-post-slug/',
-            authorUrl: 'http://mysite.com/author/me/',
-            publishedDate: '2015-12-25T05:35:01.234Z',
-            modifiedDate: '2016-01-21T22:13:05.412Z'
+            ...BASE_METADATA
         };
 
         const data = {
@@ -807,5 +811,294 @@ describe('getSchema', function () {
         const schema = getSchema(metadata, data);
 
         should.deepEqual(schema, null);
+    });
+
+    // Contributors tests
+    it('should not include contributors when post has only one author', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Post Author',
+                    website: 'http://myblogsite.com/',
+                    twitter: '@testuser'
+                },
+                authors: [
+                    {
+                        name: 'Post Author',
+                        website: 'http://myblogsite.com/',
+                        twitter: '@testuser'
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.not.exist(schema.contributor);
+    });
+
+    it('should include contributors when post has multiple authors', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Primary Author',
+                    website: 'http://primarysite.com/',
+                    twitter: '@primaryuser'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author',
+                        website: 'http://primarysite.com/',
+                        twitter: '@primaryuser',
+                        url: 'http://mysite.com/author/me/'
+                    },
+                    {
+                        name: 'Co-Author',
+                        website: 'http://coauthorsite.com/',
+                        twitter: '@coauthor',
+                        profile_image: 'http://mysite.com/co-author.jpg',
+                        meta_description: 'Co-author bio',
+                        url: 'http://mysite.com/author/co-author/'
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.deepEqual(schema.contributor, [
+            {
+                '@type': 'Person',
+                name: 'Co-Author',
+                image: {
+                    '@type': 'ImageObject',
+                    url: 'http://mysite.com/co-author.jpg'
+                },
+                url: 'http://mysite.com/author/co-author/',
+                sameAs: [
+                    'http://coauthorsite.com/',
+                    'https://x.com/coauthor'
+                ],
+                description: 'Co-author bio'
+            }
+        ]);
+    });
+
+    it('should include multiple contributors when post has more than two authors', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Primary Author',
+                    website: 'http://primarysite.com/'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author',
+                        website: 'http://primarysite.com/',
+                        url: 'http://mysite.com/author/me/'
+                    },
+                    {
+                        name: 'Co-Author 1',
+                        website: 'http://coauthor1.com/',
+                        twitter: '@coauthor1',
+                        url: 'http://mysite.com/author/co-author-1/'
+                    },
+                    {
+                        name: 'Co-Author 2',
+                        website: 'http://coauthor2.com/',
+                        facebook: 'coauthor2fb',
+                        url: 'http://mysite.com/author/co-author-2/'
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.equal(schema.contributor.length, 2);
+        should.deepEqual(schema.contributor[0], {
+            '@type': 'Person',
+            name: 'Co-Author 1',
+            url: 'http://mysite.com/author/co-author-1/',
+            sameAs: [
+                'http://coauthor1.com/',
+                'https://x.com/coauthor1'
+            ]
+        });
+        should.deepEqual(schema.contributor[1], {
+            '@type': 'Person',
+            name: 'Co-Author 2',
+            url: 'http://mysite.com/author/co-author-2/',
+            sameAs: [
+                'http://coauthor2.com/',
+                'https://www.facebook.com/coauthor2fb'
+            ]
+        });
+    });
+
+    it('should handle contributors with all social platforms', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Primary Author'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author'
+                    },
+                    {
+                        name: 'Co-Author',
+                        website: 'http://coauthorsite.com/',
+                        ...USERNAMES
+                    }
+                ]
+            }
+        };
+
+        const expectedSameAs = buildExpectedSameAs('http://coauthorsite.com/', USERNAMES);
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.deepEqual(schema.contributor[0].sameAs, expectedSameAs);
+    });
+
+    it('should handle contributors with missing or null data', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Primary Author'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author',
+                        url: 'http://mysite.com/author/me/'
+                    },
+                    {
+                        name: 'Co-Author',
+                        website: null,
+                        profile_image: null,
+                        meta_description: null,
+                        twitter: null,
+                        facebook: null,
+                        url: 'http://mysite.com/author/co-author/'
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.deepEqual(schema.contributor[0], {
+            '@type': 'Person',
+            name: 'Co-Author',
+            url: 'http://mysite.com/author/co-author/',
+            sameAs: []
+        });
+    });
+
+    it('should include contributors for pages with multiple authors', function () {
+        const metadata = {
+            ...BASE_METADATA,
+            metaTitle: 'Page Title',
+            url: 'http://mysite.com/page/my-page-slug/'
+        };
+
+        const data = {
+            context: ['page'],
+            page: {
+                primary_author: {
+                    name: 'Primary Author',
+                    website: 'http://primarysite.com/'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author',
+                        website: 'http://primarysite.com/',
+                        url: 'http://mysite.com/author/me/'
+                    },
+                    {
+                        name: 'Co-Author',
+                        website: 'http://coauthorsite.com/',
+                        twitter: '@coauthor',
+                        url: 'http://mysite.com/author/co-author/'
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.deepEqual(schema.contributor[0], {
+            '@type': 'Person',
+            name: 'Co-Author',
+            url: 'http://mysite.com/author/co-author/',
+            sameAs: [
+                'http://coauthorsite.com/',
+                'https://x.com/coauthor'
+            ]
+        });
+    });
+
+    it('should escape special characters in contributor social platform urls', function () {
+        const metadata = {
+            ...BASE_METADATA
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {
+                    name: 'Primary Author'
+                },
+                authors: [
+                    {
+                        name: 'Primary Author'
+                    },
+                    {
+                        name: 'Co-Author',
+                        website: 'http://coauthorsite.com/?user=name&param=<script>alert("test")</script>',
+                        facebook: 'user=name='
+                    }
+                ]
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        should.exist(schema.contributor);
+        should.deepEqual(schema.contributor[0].sameAs, [
+            'http://coauthorsite.com/?user&#x3D;name&amp;param&#x3D;&lt;script&gt;alert(&quot;test&quot;)&lt;/script&gt;',
+            'https://www.facebook.com/user&#x3D;name&#x3D;'
+        ]);
     });
 });
