@@ -4,8 +4,7 @@ interface StatsErrorPageProps {
     error?: Error;
 }
 
-const StatsErrorPage: React.FC<StatsErrorPageProps> = ({error}) => {
-    console.error(error);
+const StatsErrorPage: React.FC<StatsErrorPageProps> = () => {
     return (
         <div className="admin-x-container-error">
             <div className="admin-x-error">
