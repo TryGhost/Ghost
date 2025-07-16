@@ -6,17 +6,6 @@ test.describe('SEO Meta settings', async () => {
     test('Supports editing metadata in Search tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        labs: {
-                            ...responseFixtures.config.config.labs
-                        }
-                    }
-                }
-            },
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
                 {key: 'meta_title', value: 'Alternative title'},
                 {key: 'meta_description', value: 'Alternative description'}
@@ -48,17 +37,6 @@ test.describe('SEO Meta settings', async () => {
     test('Supports editing Facebook card in Facebook tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        labs: {
-                            ...responseFixtures.config.config.labs
-                        }
-                    }
-                }
-            },
             uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
             editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
         }});
@@ -100,17 +78,6 @@ test.describe('SEO Meta settings', async () => {
     test('Supports editing X card in X card tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        labs: {
-                            ...responseFixtures.config.config.labs
-                        }
-                    }
-                }
-            },
             uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/image.png', ref: null}]}},
             editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
         }});
@@ -152,17 +119,6 @@ test.describe('SEO Meta settings', async () => {
     test('Supports editing all SEO meta data across tabs', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        labs: {
-                            ...responseFixtures.config.config.labs
-                        }
-                    }
-                }
-            },
             uploadImage: {method: 'POST', path: '/images/upload/', response: {images: [{url: 'http://example.com/facebook.png', ref: null}]}},
             editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
         }});
@@ -221,18 +177,7 @@ test.describe('SEO Meta settings', async () => {
 
     test('Tab navigation works correctly', async ({page}) => {
         await mockApi({page, requests: {
-            ...globalDataRequests,
-            browseConfig: {
-                ...globalDataRequests.browseConfig,
-                response: {
-                    config: {
-                        ...responseFixtures.config.config,
-                        labs: {
-                            ...responseFixtures.config.config.labs
-                        }
-                    }
-                }
-            }
+            ...globalDataRequests
         }});
 
         await page.goto('/');
