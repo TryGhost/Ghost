@@ -13,21 +13,27 @@ describe('Acceptance: Analytics Navigation', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    async function createUserAndSignIn(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
-        await invalidateSession();
-        
+    function createUser(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
         let roleObj = server.create('role', {name: role});
-        server.create('user', {
+        return server.create('user', {
             id: '1',
             roles: [roleObj], 
             slug: `${role.toLowerCase()}-user`, 
             email: email
         });
-        
+    }
+    
+    async function signIn(email = 'admin@example.com', password = 'thisissupersafe') {
         await visit('/signin');
         await fillIn('[name="identification"]', email);
-        await fillIn('[name="password"]', 'thisissupersafe');
+        await fillIn('[name="password"]', password);
         await click('[data-test-button="sign-in"]');
+    }
+    
+    async function createUserAndSignIn(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
+        await invalidateSession();
+        createUser(server, {role, email});
+        await signIn(email);
     }
     
     function updateUserRole(server, roleName) {
@@ -50,11 +56,13 @@ describe('Acceptance: Analytics Navigation', function () {
     
     async function clickPostAnalytics() {
         let analyticsButton = document.querySelector('[data-test-button="analytics"]');
-        if (analyticsButton) {
-            await click('[data-test-button="analytics"]');
-            return true;
-        }
-        return false;
+        expect(analyticsButton, 'Analytics button should exist').to.exist;
+        await click('[data-test-button="analytics"]');
+    }
+    
+    async function clickPostAnalyticsAndExpectRoute(expectedRoute) {
+        await clickPostAnalytics();
+        expect(currentURL()).to.equal(expectedRoute);
     }
 
     beforeEach(async function () {
@@ -233,9 +241,7 @@ describe('Acceptance: Analytics Navigation', function () {
 
             await visit('/posts');
             await clickPost(post.id);
-            if (await clickPostAnalytics()) {
-                expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
-            }
+            await clickPostAnalyticsAndExpectRoute(`/posts/analytics/beta/${post.id}`);
         });
 
         it('navigates to old post analytics when clicking on post analytics', async function () {
@@ -246,9 +252,7 @@ describe('Acceptance: Analytics Navigation', function () {
 
             await visit('/posts');
             await clickPost(post.id);
-            if (await clickPostAnalytics()) {
-                expect(currentURL()).to.equal(`/posts/analytics/${post.id}`);
-            }
+            await clickPostAnalyticsAndExpectRoute(`/posts/analytics/${post.id}`);
         });
     });
 
