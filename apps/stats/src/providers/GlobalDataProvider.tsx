@@ -62,9 +62,6 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         title: site.data?.site.title
     };
 
-    // Uncomment this line to test the error boundary
-    // throw new Error('test');
-
     return <GlobalDataContext.Provider value={{
         data: config.data || undefined,
         site: siteData,
