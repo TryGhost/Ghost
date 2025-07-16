@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Theme settings', async () => {
     test('Browsing and installing default themes', async ({page}) => {
@@ -491,12 +490,12 @@ test.describe('Theme settings', async () => {
         const installButton = confirmation.getByRole('button', {name: 'Install'});
         await expect(installButton).toBeVisible();
         await expect(installButton).toBeEnabled();
-        
+
         await installButton.click();
-        
+
         // Wait for the confirmation modal to close
         await expect(confirmation).not.toBeVisible();
-        
+
         await expect(page.getByTestId('toast-success')).toHaveText(/taste is now your active theme/);
     });
 

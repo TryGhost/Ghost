@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../utils/acceptance';
-import {meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User permissions', async () => {
     test('Editors can only see users', async ({page}) => {

@@ -1,6 +1,5 @@
-import {chooseOptionInSelect, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, globalDataRequests, meWithRole, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../../utils/acceptance';
 
 test.describe('User roles', async () => {
     test('Shows users under their role', async ({page}) => {

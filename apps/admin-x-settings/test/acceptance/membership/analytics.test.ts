@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 // Helper functions to reduce mockApi boilerplate
 const createConfigWithFeatureFlags = (trafficAnalytics: boolean, ui60 = false, limits?: any) => ({
@@ -236,7 +235,7 @@ test.describe('Analytics settings', async () => {
         const webAnalyticsToggle = section.getByLabel('Web analytics');
         await expect(webAnalyticsToggle).toBeVisible();
         await expect(webAnalyticsToggle).toBeDisabled();
-        
+
         // Should show as unchecked when disabled (even if web_analytics setting is true)
         await expect(webAnalyticsToggle).not.toBeChecked();
 
@@ -294,13 +293,13 @@ test.describe('Analytics settings', async () => {
         const section = page.getByTestId('analytics');
 
         const webAnalyticsToggle = section.getByLabel('Web analytics');
-        
+
         // Toggle should be disabled
         await expect(webAnalyticsToggle).toBeDisabled();
-        
+
         // Try to click it (should not work)
         await webAnalyticsToggle.click({force: true});
-        
+
         // Should not show save/cancel buttons since nothing changed
         await expect(section.getByRole('button', {name: 'Save'})).not.toBeVisible();
     });
@@ -362,10 +361,10 @@ test.describe('Analytics settings', async () => {
         const webAnalyticsToggle = section.getByLabel('Web analytics');
         await expect(webAnalyticsToggle).toBeVisible();
         await expect(webAnalyticsToggle).toBeDisabled();
-        
+
         // Should still show the configuration help block (not controlled by ui60)
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
-        
+
         // The hint text on the toggle should not be shown when ui60 is disabled
         // (This is what ui60 controls - the hint text on toggles, not the help blocks)
     });
@@ -403,7 +402,7 @@ test.describe('Analytics settings', async () => {
         // Should show the upgrade CTA instead of configuration message
         await expect(section.getByText(/Web analytics is available on the Publisher plan and above/)).toBeVisible();
         await expect(section.getByText('Upgrade now →')).toBeVisible();
-        
+
         // Should NOT show the configuration message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
     });
@@ -428,7 +427,7 @@ test.describe('Analytics settings', async () => {
 
         // Should show the configuration message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
-        
+
         // Should NOT show the upgrade CTA
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
         await expect(section.getByText('Upgrade now →')).not.toBeVisible();
@@ -455,7 +454,7 @@ test.describe('Analytics settings', async () => {
         // Should NOT show either message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
-        
+
         // Should show the separator
         await expect(section.locator('.border-grey-200').first()).toBeVisible();
     });
@@ -486,7 +485,7 @@ test.describe('Analytics settings', async () => {
         // Verify the upgrade link is shown
         const upgradeLink = section.getByText('Upgrade now →');
         await expect(upgradeLink).toBeVisible();
-        
+
         // Click the upgrade link - should not throw an error
         await upgradeLink.click();
     });

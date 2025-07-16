@@ -1,12 +1,12 @@
 import {
     chooseOptionInSelect,
+    globalDataRequests,
     mockApi,
     mockSitePreview,
     responseFixtures,
     updatedSettingsResponse
 } from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Design settings', async () => {
     test('Working with the preview', async ({page}) => {
