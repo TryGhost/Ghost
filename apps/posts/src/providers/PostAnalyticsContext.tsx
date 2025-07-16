@@ -75,7 +75,10 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const site = useBrowseSite();
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
-    const tinybirdTokenQuery = useTinybirdToken();
+    
+    // Only fetch Tinybird token if stats config is present
+    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
@@ -88,7 +91,8 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         }
     });
 
-    const requests = [config, site, settings, tinybirdTokenQuery];
+    // Only include tinybirdTokenQuery in requests if stats config is present
+    const requests = hasStatsConfig ? [config, site, settings, tinybirdTokenQuery] : [config, site, settings];
     const error = requests.map(request => request.error).find(Boolean);
     const isLoading = requests.some(request => request.isLoading);
 

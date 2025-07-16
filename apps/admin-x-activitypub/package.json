@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-x-activitypub",
-  "version": "0.9.2",
+  "version": "0.9.5",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@playwright/test": "1.53.2",
+    "@playwright/test": "1.54.1",
     "@testing-library/react": "14.3.1",
     "@types/jest": "29.5.14",
     "@types/react": "18.3.23",
@@ -70,6 +70,7 @@
     "@tryghost/admin-x-framework": "0.0.0",
     "@tryghost/shade": "0.0.0",
     "clsx": "2.1.1",
+    "html2canvas-objectfit-fix": "1.2.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "use-debounce": "10.0.5"
