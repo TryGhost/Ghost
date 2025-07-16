@@ -1,6 +1,5 @@
 import APAvatar from '@src/components/global/APAvatar';
-import DotsPattern from '@assets/images/dots-pattern.png';
-import DotsPatternn from './DotsPattern';
+import DotsPattern from './DotsPattern';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem} from '@tryghost/shade';
 import {takeScreenshot} from '@src/utils/screenshot';
@@ -67,9 +66,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         case 'light':
             return `linear-gradient(to bottom left, #EBEEF0, ${hexToRgba('#EBEEF0', 0)})`;
         case 'dark':
-            return `linear-gradient(to bottom left, ${hexToRgba('#1A1E22', 0.6)}, ${hexToRgba('#343C48', 0.6)})`;
+            return `linear-gradient(to bottom left, ${hexToRgba('#1A1E22', 1)}, ${hexToRgba('#343C48', 1)})`;
         case 'accent':
-            return `linear-gradient(to bottom left, ${hexToRgba(accentColor || '#15171a', 0.1)}, ${hexToRgba(accentColor || '#15171a', 0.08)})`;
+            return `linear-gradient(to bottom left, ${hexToRgba(accentColor || '#15171a', 0.08)}, ${hexToRgba(accentColor || '#15171a', 0.06)})`;
         default:
             return `linear-gradient(to bottom left, #EBEEF0, ${hexToRgba('#EBEEF0', 0)})`;
         }
@@ -93,14 +92,14 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const ProfileCard: React.FC<ProfileCardProps> = ({isScreenshot = false, format}) => {
         const cardBackgroundColor = getBackgroundColor();
         const textColor = getTextColor();
-        const margin = isScreenshot ? 'm-4' : 'm-12';
+        const margin = isScreenshot ? 'm-4' : 'm-16';
         const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
 
         const cardWidth = format === 'square' ? 'w-[392px]' : 'w-[316px]';
         const cardHeight = 'h-[392px]';
 
         return (
-            <div className={`relative z-10 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
+            <div className={`relative z-20 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
                 <div className='relative h-48 p-2'>
                     {(account?.bannerImageUrl || coverImage) ?
                         <img
@@ -110,7 +109,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                             src={account?.bannerImageUrl || coverImage}
                         /> :
                         <div className='relative size-full overflow-hidden rounded-[26px] rounded-b-none' style={{background: `linear-gradient(to bottom, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 1)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 0.5)})`}}>
-                            <DotsPatternn className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-50px' : '-100px', left: isScreenshot ? '-69px' : '-138px'}} />
+                            <DotsPattern className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-42px' : '-84px', left: isScreenshot ? '-69px' : '-138px'}} />
                         </div>
                     }
                     {(account?.avatarUrl || publicationIcon) &&
@@ -131,10 +130,10 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     }
                 </div>
                 <div className={`flex grow flex-col items-center p-6 ${(account?.avatarUrl || publicationIcon) ? 'pt-9' : 'pt-3'} text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
-                    <H2 style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
-                    <span className='mt-0.5 text-lg' style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
+                    <H2 className={`${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
+                    <span className={`mt-0.5 text-lg ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
                     <div
-                        className='mt-auto min-h-12 w-full truncate rounded-full border px-4 py-3 font-medium'
+                        className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 font-medium leading-7 ${isScreenshot && 'pb-3 tracking-normal'}`}
                         style={{
                             color: backgroundColor === 'accent' ? '#fff' : accentColor,
                             borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, 0.2) : undefined,
@@ -205,7 +204,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             </div>
             <div className='relative flex flex-col items-center overflow-hidden rounded-2xl bg-gray-50'>
                 <ProfileCard format={cardFormat} />
-                <div className='relative z-10 flex w-full items-center justify-between px-6 pb-6'>
+                <div className='relative z-20 flex w-full items-center justify-between px-6 pb-6'>
                     <div className='flex items-center gap-2'>
                         <a className='flex h-[34px] w-10 items-center justify-center rounded-sm bg-white px-3 shadow-xs hover:bg-gray-50 [&_svg]:size-4' href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`} rel="noopener noreferrer" target='_blank'>
                             <svg aria-hidden="true" viewBox="0 0 24 24"><path className="social-x_svg__x" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>
@@ -220,13 +219,13 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                             <svg fill="none" viewBox="0 0 16 16"><g clipPath="url(#social-linkedin_svg__clip0_537_833)"><path className="social-linkedin_svg__linkedin" clipRule="evenodd" d="M1.778 16h12.444c.982 0 1.778-.796 1.778-1.778V1.778C16 .796 15.204 0 14.222 0H1.778C.796 0 0 .796 0 1.778v12.444C0 15.204.796 16 1.778 16z" fill="#007ebb" fillRule="evenodd"></path><path clipRule="evenodd" d="M13.778 13.778h-2.374V9.734c0-1.109-.421-1.729-1.299-1.729-.955 0-1.453.645-1.453 1.729v4.044H6.363V6.074h2.289v1.038s.688-1.273 2.322-1.273c1.634 0 2.804.997 2.804 3.061v4.878zM3.634 5.065c-.78 0-1.411-.636-1.411-1.421s.631-1.422 1.41-1.422c.78 0 1.411.637 1.411 1.422 0 .785-.631 1.421-1.41 1.421zm-1.182 8.713h2.386V6.074H2.452v7.704z" fill="#fff" fillRule="evenodd"></path></g><defs><clipPath id="social-linkedin_svg__clip0_537_833"><path d="M0 0h16v16H0z" fill="#fff"></path></clipPath></defs></svg>
                         </a>
                     </div>
-                    <Button className='dark:bg-black dark:text-white dark:hover:bg-black/90' onClick={handleDownload}>
+                    <Button className={`dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`} onClick={handleDownload}>
                         <LucideIcon.Download />
                         Download image
                     </Button>
                 </div>
                 {(account?.bannerImageUrl || coverImage) &&
-                    <img className='absolute inset-0 size-full object-cover' src={DotsPattern} />
+                    <DotsPattern className={`absolute left-1/2 top-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: 'rgba(0, 0, 0, 0.04)'}} />
                 }
                 <div className='absolute inset-0' style={{background: getGradient()}} />
             </div>
@@ -236,21 +235,13 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 ref={profileCardRef}
                 className='fixed left-[-9999px] top-0 z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                 style={{
-                    width: cardFormat === 'square' ? '424px' : '348px'
+                    width: cardFormat === 'square' ? '424px' : '348px',
+                    fontFamily: 'system-ui'
                 }}
             >
                 <ProfileCard format={cardFormat} isScreenshot={true} />
                 {(account?.bannerImageUrl || coverImage) &&
-                    <img
-                        className='absolute left-0 top-0'
-                        src={DotsPattern}
-                        style={{
-                            height: '456px',
-                            maxHeight: 'none',
-                            maxWidth: 'none',
-                            width: '456px'
-                        }}
-                    />
+                    <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: 'rgba(0, 0, 0, 0.04)'}} />
                 }
                 <div
                     className='absolute left-0 top-0'
