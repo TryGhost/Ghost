@@ -26,7 +26,7 @@
         {{#unless this.session.user.isContributor}}
         <div class="gh-nav-top">
 
-            {{#if (and (feature "ui60") this.session.user.isAdmin)}}
+            {{#if this.session.user.isAdmin}}
                 <ul class="gh-nav-list gh-nav-main">
                     {{#if (and (gh-user-can-admin this.session.user))}}
                         <li class="relative">
@@ -56,59 +56,6 @@
                             <span>{{svg-jar "external"}}</span>
                         </a>
                     </li>
-                </ul>
-            {{else}}
-                <ul class="gh-nav-list gh-nav-main">
-                    {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
-                        <li class="relative gh-nav-list-ap">
-                            <LinkTo @route="activitypub-x" @current-when="activitypub-x">{{svg-jar "ap-network"}} Network
-                                {{#unless this.notificationsCount.isLoading}}
-                                    {{#if (gt this.notificationsCount.count 0)}}
-                                        <span class="gh-nav-member-count">{{format-number this.notificationsCount.count}}</span>
-                                    {{/if}}
-                                {{/unless}}
-                            </LinkTo>
-                        </li>
-                    {{/if}}
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "trafficAnalytics"))}}
-                        <li class="relative">
-                            <LinkTo @route="stats-x">{{svg-jar "graph-chart-up-arrow"}}Analytics</LinkTo>
-                        </li>
-                    {{/if}}
-                    {{#if (gh-user-can-admin this.session.user)}}
-                        <li class="relative gh-nav-list-home">
-                            <LinkTo @route="dashboard" @alt="Dashboard" data-test-nav="dashboard">
-                                {{#if (and this.settings.socialWebEnabled this.session.user.isAdmin)}}
-                                    {{svg-jar "gauge"}}
-                                {{else}}
-                                    {{svg-jar "house"}}
-                                {{/if}}
-                                Dashboard
-                            </LinkTo>
-                        </li>
-                    {{/if}}
-                    <li class="relative">
-                        <span {{action "transitionToOrRefreshSite" on="click" }} class="{{if this.isOnSite "active"}}">
-                            <LinkTo @route="site" data-test-nav="site" @current-when={{this.isOnSite}}
-                                @preventDefault={{false}}>
-                                {{svg-jar "view-site"}} View site
-                            </LinkTo>
-                        </span>
-                        <a href="{{this.config.blogUrl}}/" class="gh-secondary-action" title="Open site in new tab"
-                            target="_blank" rel="noopener noreferrer">
-                            <span>{{svg-jar "external"}}</span>
-                        </a>
-                    </li>
-                    {{#if (gh-user-can-admin this.session.user)}}
-                        {{#if (not (and this.settings.socialWebEnabled this.session.user.isAdmin))}}
-                            <li class="relative">
-                                <a href="javascript:void(0)" class={{if this.explore.exploreWindowOpen "active" }} {{on "click" (fn
-                                    this.toggleExploreWindow "" )}} data-test-nav="explore">
-                                    {{svg-jar "globe-simple"}} Explore
-                                </a>
-                            </li>
-                        {{/if}}
-                    {{/if}}
                 </ul>
             {{/if}}
             <ul class="gh-nav-list gh-nav-manage">
