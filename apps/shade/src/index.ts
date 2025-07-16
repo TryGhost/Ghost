@@ -32,6 +32,7 @@ export * from './components/ui/sonner';
 export * from './components/ui/table';
 export * from './components/ui/tabs';
 export * from './components/ui/textarea';
+export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
