@@ -1,6 +1,6 @@
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-objectfit-fix';
 
 import {takeScreenshot} from '../../../src/utils/screenshot';
 
@@ -24,21 +24,21 @@ describe('takeScreenshot', function () {
     beforeEach(function () {
         // Create mock element
         mockElement = document.createElement('div');
-        
+
         // Create mock canvas
         mockCanvas = document.createElement('canvas');
         mockBlob = new Blob(['fake-image-data'], {type: 'image/png'});
-        
+
         // Mock canvas.toBlob method
         mockCanvas.toBlob = vi.fn();
-        
+
         // Mock html2canvas to return our mock canvas
         vi.mocked(html2canvas).mockResolvedValue(mockCanvas);
-        
+
         // Mock URL methods
         vi.mocked(window.URL.createObjectURL).mockReturnValue('blob:fake-url');
         vi.mocked(window.URL.revokeObjectURL).mockImplementation(() => {});
-        
+
         // Mock DOM methods
         const originalCreateElement = document.createElement.bind(document);
         vi.spyOn(document, 'createElement').mockImplementation((tagName: string) => {
@@ -52,10 +52,10 @@ describe('takeScreenshot', function () {
             }
             return originalCreateElement(tagName);
         });
-        
+
         vi.spyOn(document.body, 'appendChild').mockImplementation(() => undefined as unknown as Node);
         vi.spyOn(document.body, 'removeChild').mockImplementation(() => undefined as unknown as Node);
-        
+
         // Mock console.error
         vi.spyOn(console, 'error').mockImplementation(() => {});
     });
@@ -109,7 +109,7 @@ describe('takeScreenshot', function () {
             download: '',
             click: vi.fn()
         };
-        
+
         vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
         vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
             callback(mockBlob);
@@ -132,7 +132,7 @@ describe('takeScreenshot', function () {
             download: '',
             click: vi.fn()
         };
-        
+
         vi.mocked(document.createElement).mockReturnValue(mockLink as unknown as HTMLAnchorElement);
         vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
             callback(mockBlob);
@@ -169,7 +169,7 @@ describe('takeScreenshot', function () {
         vi.mocked(window.URL.createObjectURL).mockImplementation(() => {
             throw error;
         });
-        
+
         vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
             callback(mockBlob);
         });
@@ -182,7 +182,7 @@ describe('takeScreenshot', function () {
         vi.mocked(document.body.appendChild).mockImplementation(() => {
             throw error;
         });
-        
+
         vi.mocked(mockCanvas.toBlob).mockImplementation((callback) => {
             callback(mockBlob);
         });

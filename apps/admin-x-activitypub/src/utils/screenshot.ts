@@ -1,4 +1,4 @@
-import html2canvas from 'html2canvas';
+import html2canvas from 'html2canvas-objectfit-fix';
 
 export interface ScreenshotOptions {
     filename?: string;
@@ -44,7 +44,7 @@ export async function takeScreenshot(
 
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
-                    
+
                     resolve();
                 } catch (error) {
                     reject(error);
