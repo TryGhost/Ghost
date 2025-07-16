@@ -1,6 +1,6 @@
 # Ghost Stats App
 
-The Ghost Stats App provides analytics and insights for Ghost sites.
+Ghost Admin Stats micro-frontend that provides analytics and insights for Ghost sites.
 
 ## Features
 
