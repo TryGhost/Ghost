@@ -1,11 +1,7 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, toggleLabsFlag, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Ghost Explore', () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('ui60', true);
-    });
-
     test('can join Ghost Explore', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
