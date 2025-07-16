@@ -75,13 +75,12 @@ describe('useTinybirdToken', () => {
         // Second render in same QueryClient context 
         renderHook(() => useTinybirdToken(), {wrapper});
         
-        // Verify that getTinybirdToken is called without any options
-        // Options are now built-in to the query itself
-        expect(mockGetTinybirdToken).toHaveBeenCalledWith();
+        // Verify that getTinybirdToken is called with default enabled: true
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
         
-        // Verify both calls used no parameters (built-in options)
-        expect(mockGetTinybirdToken.mock.calls[0]).toHaveLength(0);
-        expect(mockGetTinybirdToken.mock.calls[1]).toHaveLength(0);
+        // Verify both calls used the default enabled option
+        expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{enabled: true}]);
+        expect(mockGetTinybirdToken.mock.calls[1]).toEqual([{enabled: true}]);
     });
 
     it('uses built-in query options for optimal token refresh behavior', () => {
@@ -94,9 +93,9 @@ describe('useTinybirdToken', () => {
 
         renderHook(() => useTinybirdToken(), {wrapper});
 
-        // Verify no options needed - they're built into getTinybirdToken
-        expect(mockGetTinybirdToken).toHaveBeenCalledWith();
-        expect(mockGetTinybirdToken.mock.calls[0]).toHaveLength(0);
+        // Verify default enabled option is passed
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
+        expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{enabled: true}]);
     });
 
     it('creates validation error for invalid token types', () => {
@@ -231,5 +230,51 @@ describe('useTinybirdToken', () => {
         expect(fetchCount).toBe(2);
 
         vi.useRealTimers();
+    });
+
+    it('respects enabled option when true', () => {
+        mockGetTinybirdToken.mockReturnValue({
+            data: {tinybird: {token: 'enabled-token'}},
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        } as any);
+
+        const {result} = renderHook(() => useTinybirdToken({enabled: true}), {wrapper});
+
+        expect(result.current.token).toBe('enabled-token');
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.error).toBe(null);
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
+    });
+
+    it('respects enabled option when false', () => {
+        mockGetTinybirdToken.mockReturnValue({
+            data: null,
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        } as any);
+
+        const {result} = renderHook(() => useTinybirdToken({enabled: false}), {wrapper});
+
+        expect(result.current.token).toBeUndefined();
+        expect(result.current.isLoading).toBe(false);
+        expect(result.current.error).toBe(null);
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: false});
+    });
+
+    it('defaults enabled to true when not specified', () => {
+        mockGetTinybirdToken.mockReturnValue({
+            data: {tinybird: {token: 'default-token'}},
+            isLoading: false,
+            error: null,
+            refetch: vi.fn()
+        } as any);
+
+        const {result} = renderHook(() => useTinybirdToken(), {wrapper});
+
+        expect(result.current.token).toBe('default-token');
+        expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
     });
 });

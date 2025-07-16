@@ -246,6 +246,40 @@ describe('Match helper', function () {
             }, hash);
         });
 
+        describe('Explicit contains', function () {
+            runTests({
+                // Using string values
+                '{{match empty "~" ""}}': 'true',
+                '{{match " " "~" empty}}': 'true',
+                '{{match empty "~" " "}}': 'false',
+                '{{match string "~" "Hello"}}': 'true',
+                '{{match string "~" "world"}}': 'true',
+                '{{match string "~" "lo wo"}}': 'true',
+                '{{match string_true "~" "ru"}}': 'true',
+                '{{match string_false "~" "ru"}}': 'false',
+                '{{match safestring_string_false "~" "als"}}': 'true',
+                '{{match safestring_string_true "~" "als"}}': 'false',
+                '{{match string_five "~" "5"}}': 'true',
+                '{{match string_five "~" "6"}}': 'false',
+                '{{match object.foo "~" "fo"}}': 'true',
+                '{{match object.foo "~" "ba"}}': 'false',
+                '{{match array.[0] "~" "fo"}}': 'true',
+                '{{match array.[0] "~" "ba"}}': 'false',
+
+                // Using non-string values
+                '{{match zero "~" 0}}': 'false',
+                '{{match zero "~" "0"}}': 'false',
+                '{{match "1" "~" one}}': 'false',
+                '{{match null "~" "null"}}': 'false',
+                '{{match truthy_bool "~" "tr"}}': 'false',
+                '{{match safestring_bool_false "~" "fa"}}': 'false',
+                '{{match undefined "~" "undefined"}}': 'false',
+                '{{match unknown "~" "unknown" }}': 'false',
+                '{{match object "~" "object" }}': 'false',
+                '{{match array "~" "array" }}': 'false'
+            }, hash);
+        });
+
         describe('Explicit Starts With', function () {
             runTests({
                 // Using string values

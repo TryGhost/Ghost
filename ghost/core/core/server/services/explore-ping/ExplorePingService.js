@@ -14,6 +14,7 @@ module.exports = class ExplorePingService {
      * }}} deps.posts
      * @param {{stats: {
      *   getTotalMembers: () => Promise<number>
+     *   getMRRHistory: () => Promise<number>
      * }}} deps.members
      */
     constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members}) {
@@ -31,7 +32,8 @@ module.exports = class ExplorePingService {
         const payload = {
             ghost: this.ghostVersion.full,
             site_uuid: this.settingsCache.get('site_uuid'),
-            url: this.config.get('url')
+            url: this.config.get('url'),
+            theme: this.settingsCache.get('active_theme')
         };
 
         try {
@@ -54,15 +56,20 @@ module.exports = class ExplorePingService {
             payload.posts_first = null;
         }
 
-        try {
-            const totalMembers = await this.members.stats.getTotalMembers();
-            payload.members_total = totalMembers;
-        } catch (err) {
-            this.logging.warn('Failed to fetch member statistics', {
-                error: err.message,
-                context: 'explore-ping-service'
-            });
-            payload.members_total = null;
+        if (this.settingsCache.get('explore_ping_growth')) {
+            try {
+                const totalMembers = await this.members.stats.getTotalMembers();
+                const mrr = await this.members.stats.getMRRHistory();
+                payload.members_total = totalMembers;
+                payload.mrr = mrr;
+            } catch (err) {
+                this.logging.warn('Failed to fetch member statistics', {
+                    error: err.message,
+                    context: 'explore-ping-service'
+                });
+                payload.members_total = null;
+                payload.mrr = null;
+            }
         }
 
         return payload;
@@ -94,9 +101,14 @@ module.exports = class ExplorePingService {
             return;
         }
 
-        const exploreUrl = this.config.get('explore:url');
+        const exploreUrl = this.config.get('explore:update_url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
+            return;
+        }
+
+        if (!this.settingsCache.get('explore_ping')) {
+            this.logging.info('Explore ping disabled');
             return;
         }
 
