@@ -128,7 +128,6 @@ const Sidebar: React.FC = () => {
 
     const {settings, config} = useGlobalData();
     const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
-    const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -244,19 +243,6 @@ const Sidebar: React.FC = () => {
                         {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords5x.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                         {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords5x.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
                     </SettingNavSection>
-                }
-
-                {!ui60 &&
-                <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
-                    <NavItem icon='email-check' keywords={emailSearchKeywords.enableNewsletters} navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
-                    {newslettersEnabled !== 'disabled' && (
-                        <>
-                            <NavItem icon='recepients' keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
-                            <NavItem icon='email' keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
-                            {!config.mailgunIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.mailgun} navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
-                        </>
-                    )}
-                </SettingNavSection>
                 }
 
                 {ui60 ?
