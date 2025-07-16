@@ -19395,7 +19395,7 @@ goober@^2.1.16:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  resolved "https://git@github.com/acburdine/google-caja-bower.git#275cb75249f038492094a499756a73719ae071fd"
+  resolved "https://github.com/acburdine/google-caja-bower.git#275cb75249f038492094a499756a73719ae071fd"
 
 gopd@^1.0.1, gopd@^1.2.0:
   version "1.2.0"
@@ -24274,7 +24274,7 @@ mocha@^2.5.3:
 
 mock-knex@TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009:
   version "0.4.13"
-  resolved "git+ssh://git@github.com/TryGhost/mock-knex.git#68948e11b0ea4fe63456098dfdc169bea7f62009"
+  resolved "https://github.com/TryGhost/mock-knex.git#68948e11b0ea4fe63456098dfdc169bea7f62009"
   integrity sha512-mZQSq0MikwLMlJr138oClIw1K7GhKJzHaxG67hBIWYwKkVnh3ubUhdk96TQsPiEQ0D3caOPZeE1dJrLQI1thOA==
   dependencies:
     bluebird "^3.4.1"
