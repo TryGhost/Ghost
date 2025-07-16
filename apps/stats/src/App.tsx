@@ -1,6 +1,6 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
 import React from 'react';
-import StatsErrorPage from './components/StatsErrorPage';
+import StatsErrorPage from './components/errors/StatsErrorPage';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade';
@@ -15,11 +15,6 @@ class StatsErrorBoundary extends React.Component<{children: React.ReactNode}, {h
 
     static getDerivedStateFromError(error: Error) {
         return {hasError: true, error};
-    }
-
-    componentDidCatch(error: unknown, errorInfo: React.ErrorInfo) {
-        console.error('Stats app error:', error, errorInfo);
-        console.log('Stats app error:', error, errorInfo);
     }
 
     render() {
