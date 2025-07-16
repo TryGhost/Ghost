@@ -33,7 +33,9 @@ const Tiers: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const limiter = useLimiter();
 
     const openConnectModal = async () => {
-        if (limiter?.isLimited('limitStripeConnect')) {
+        // Allow Stripe despite the limit when it's already connected, so it's
+        // possible to disconnect or update the settings.
+        if (limiter?.isDisabled('limitStripeConnect') && !checkStripeEnabled(settings, config)) {
             try {
                 await limiter.errorIfWouldGoOverLimit('limitStripeConnect');
             } catch (error) {
