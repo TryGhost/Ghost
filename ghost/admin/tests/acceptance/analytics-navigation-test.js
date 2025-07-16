@@ -39,6 +39,10 @@ describe('Acceptance: Analytics Navigation', function () {
     function findAnalyticsNavLink() {
         return document.querySelector('.gh-nav-list a[href*="analytics"]');
     }
+
+    function findDashboardNavLink() {
+        return document.querySelector('.gh-nav-list a[href*="dashboard"]');
+    }
     
     async function clickPost(postId) {
         await click(`[data-test-post-id="${postId}"]`);
@@ -152,9 +156,8 @@ describe('Acceptance: Analytics Navigation', function () {
         });
     });
 
-    describe('Analytics in Navigation Menu', function () {
-        it('shows Analytics link when both flags are enabled for admin', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
+    describe('Navigation Menu', function () {
+        it('shows Analytics link when ui60 flag is enabled for admin', async function () {
             enableLabsFlag(this.server, 'ui60');
 
             await visit('/dashboard');
@@ -164,9 +167,21 @@ describe('Acceptance: Analytics Navigation', function () {
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
-        it('hides Analytics link when trafficAnalytics is disabled', async function () {
-            enableLabsFlag(this.server, 'ui60');
+        it('shows Analytics and Dashboard link when trafficAnalytics flag is enabled for admin', async function () {
+            enableLabsFlag(this.server, 'trafficAnalytics');
 
+            await visit('/dashboard');
+            
+            let analyticsLink = findAnalyticsNavLink();
+            expect(analyticsLink).to.exist;
+            expect(analyticsLink.textContent).to.contain('Analytics');
+
+            let dashboardLink = findDashboardNavLink();
+            expect(dashboardLink).to.exist;
+            expect(dashboardLink.textContent).to.contain('Dashboard');
+        });
+
+        it('hides Analytics link when flags are disabled', async function () {
             await visit('/dashboard');
             
             let analyticsLink = findAnalyticsNavLink();

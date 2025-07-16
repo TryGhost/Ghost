@@ -28,7 +28,7 @@
 
             {{#if (and (feature "ui60") this.session.user.isAdmin)}}
                 <ul class="gh-nav-list gh-nav-main">
-                    {{#if (and (gh-user-can-admin this.session.user) (feature "trafficAnalytics"))}}
+                    {{#if (and (gh-user-can-admin this.session.user))}}
                         <li class="relative">
                             <LinkTo @route="stats-x">{{svg-jar "graph-chart-up-arrow"}}Analytics</LinkTo>
                         </li>
