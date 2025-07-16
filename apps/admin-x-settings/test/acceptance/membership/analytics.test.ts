@@ -3,15 +3,14 @@ import {globalDataRequests} from '../../utils/acceptance';
 import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 // Helper functions to reduce mockApi boilerplate
-const createConfigWithFeatureFlags = (trafficAnalytics: boolean, ui60 = false, limits?: any) => ({
+const createConfigWithFeatureFlags = (trafficAnalytics: boolean, limits?: any) => ({
     ...globalDataRequests.browseConfig,
     response: {
         config: {
             ...responseFixtures.config.config,
             labs: {
                 ...responseFixtures.config.config.labs,
-                trafficAnalytics,
-                ui60
+                trafficAnalytics
             },
             hostSettings: limits ? {
                 ...responseFixtures.config.config.hostSettings,
@@ -34,7 +33,6 @@ const createSettingsWithAnalytics = (additionalSettings: Array<{key: string, val
 
 const createMockApiConfig = (options: {
     trafficAnalytics?: boolean;
-    ui60?: boolean;
     limits?: any;
     analyticsSettings?: Array<{key: string, value: any, is_read_only?: boolean}>;
     editSettingsResponse?: Array<{key: string, value: any}>;
@@ -42,7 +40,6 @@ const createMockApiConfig = (options: {
 }) => {
     const {
         trafficAnalytics = false,
-        ui60 = false,
         limits,
         analyticsSettings = [],
         editSettingsResponse,
@@ -51,7 +48,7 @@ const createMockApiConfig = (options: {
 
     const requests: any = {
         ...globalDataRequests,
-        browseConfig: createConfigWithFeatureFlags(trafficAnalytics, ui60, limits),
+        browseConfig: createConfigWithFeatureFlags(trafficAnalytics, limits),
         ...additionalRequests
     };
 
@@ -134,9 +131,11 @@ test.describe('Analytics settings', async () => {
 
         await page.goto('/');
 
-        const section = page.getByTestId('analytics');
+        const section = page.getByTestId('migrationtools');
 
-        await section.getByRole('button', {name: 'Export'}).click();
+        await section.getByRole('tab', {name: 'Export'}).click();
+
+        await section.getByRole('button', {name: 'Export post analytics'}).click();
 
         const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);
@@ -218,7 +217,6 @@ test.describe('Analytics settings', async () => {
     test('Shows web analytics toggle as disabled when web_analytics_configured is false', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
             trafficAnalytics: true,
-            ui60: true,
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
                 {key: 'web_analytics_enabled', value: false},
@@ -236,7 +234,7 @@ test.describe('Analytics settings', async () => {
         const webAnalyticsToggle = section.getByLabel('Web analytics');
         await expect(webAnalyticsToggle).toBeVisible();
         await expect(webAnalyticsToggle).toBeDisabled();
-        
+
         // Should show as unchecked when disabled (even if web_analytics setting is true)
         await expect(webAnalyticsToggle).not.toBeChecked();
 
@@ -294,13 +292,13 @@ test.describe('Analytics settings', async () => {
         const section = page.getByTestId('analytics');
 
         const webAnalyticsToggle = section.getByLabel('Web analytics');
-        
+
         // Toggle should be disabled
         await expect(webAnalyticsToggle).toBeDisabled();
-        
+
         // Try to click it (should not work)
         await webAnalyticsToggle.click({force: true});
-        
+
         // Should not show save/cancel buttons since nothing changed
         await expect(section.getByRole('button', {name: 'Save'})).not.toBeVisible();
     });
@@ -341,39 +339,9 @@ test.describe('Analytics settings', async () => {
         });
     });
 
-    test('Does not show hint text when ui60 flag is disabled', async ({page}) => {
-        await mockApi({page, requests: createMockApiConfig({
-            trafficAnalytics: true,
-            ui60: false,
-            analyticsSettings: [
-                {key: 'web_analytics', value: true},
-                {key: 'web_analytics_enabled', value: false},
-                {key: 'web_analytics_configured', value: false}
-            ]
-        })});
-
-        await page.goto('/');
-
-        const section = page.getByTestId('analytics');
-
-        await expect(section).toBeVisible();
-
-        // Web analytics toggle should be visible but disabled
-        const webAnalyticsToggle = section.getByLabel('Web analytics');
-        await expect(webAnalyticsToggle).toBeVisible();
-        await expect(webAnalyticsToggle).toBeDisabled();
-        
-        // Should still show the configuration help block (not controlled by ui60)
-        await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
-        
-        // The hint text on the toggle should not be shown when ui60 is disabled
-        // (This is what ui60 controls - the hint text on toggles, not the help blocks)
-    });
-
     test('Shows upgrade CTA when analytics is limited (trial plan)', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
             trafficAnalytics: true,
-            ui60: true,
             limits: {
                 ...responseFixtures.config.config.hostSettings?.limits,
                 limitAnalytics: {
@@ -403,7 +371,7 @@ test.describe('Analytics settings', async () => {
         // Should show the upgrade CTA instead of configuration message
         await expect(section.getByText(/Web analytics is available on the Publisher plan and above/)).toBeVisible();
         await expect(section.getByText('Upgrade now →')).toBeVisible();
-        
+
         // Should NOT show the configuration message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
     });
@@ -411,7 +379,6 @@ test.describe('Analytics settings', async () => {
     test('Shows configuration message when not limited but not configured', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
             trafficAnalytics: true,
-            ui60: true,
             limits: {}, // No limits
             analyticsSettings: [
                 {key: 'web_analytics', value: false},
@@ -428,7 +395,7 @@ test.describe('Analytics settings', async () => {
 
         // Should show the configuration message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird.*and requires configuration/)).toBeVisible();
-        
+
         // Should NOT show the upgrade CTA
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
         await expect(section.getByText('Upgrade now →')).not.toBeVisible();
@@ -437,7 +404,6 @@ test.describe('Analytics settings', async () => {
     test('Shows separator when configured and not limited', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
             trafficAnalytics: true,
-            ui60: true,
             limits: {}, // No limits
             analyticsSettings: [
                 {key: 'web_analytics', value: true},
@@ -455,7 +421,7 @@ test.describe('Analytics settings', async () => {
         // Should NOT show either message
         await expect(section.getByText(/Web analytics in Ghost is powered by.*Tinybird/)).not.toBeVisible();
         await expect(section.getByText(/Get the full picture of what.*s working with detailed, cookie-free traffic analytics/)).not.toBeVisible();
-        
+
         // Should show the separator
         await expect(section.locator('.border-grey-200').first()).toBeVisible();
     });
@@ -463,7 +429,6 @@ test.describe('Analytics settings', async () => {
     test('Upgrade now button navigates to /pro', async ({page}) => {
         await mockApi({page, requests: createMockApiConfig({
             trafficAnalytics: true,
-            ui60: true,
             limits: {
                 ...responseFixtures.config.config.hostSettings?.limits,
                 limitAnalytics: {
@@ -486,7 +451,7 @@ test.describe('Analytics settings', async () => {
         // Verify the upgrade link is shown
         const upgradeLink = section.getByText('Upgrade now →');
         await expect(upgradeLink).toBeVisible();
-        
+
         // Click the upgrade link - should not throw an error
         await upgradeLink.click();
     });
