@@ -13,7 +13,7 @@
     "prepare": "tsc",
     "test": "playwright test",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers --ext .ts --cache"
+    "lint": "eslint helpers data-factory --ext .ts --cache"
   },
   "files": [
     "build"
@@ -24,5 +24,9 @@
     "ts-node": "10.9.2",
     "typescript": "5.8.3"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@faker-js/faker": "^9.3.0",
+    "knex": "^3.1.0",
+    "mysql2": "^3.12.0"
+  }
 }
