@@ -1,6 +1,8 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentRouteName, fillIn, find, focus} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {describe, it} from 'mocha';
+import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -10,9 +12,8 @@ describe('Acceptance: Signup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    it('can signup successfully', async function () {
-        let server = this.server;
-
+    // Helper function to setup signup flow
+    async function setupSignupFlow(server, {fillForm = true} = {}) {
         server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: true}]
@@ -42,6 +43,17 @@ describe('Acceptance: Signup', function () {
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
         expect(currentRouteName()).to.equal('signup');
+
+        if (fillForm) {
+            await fillIn('[data-test-input="name"]', 'Test User');
+            await fillIn('[data-test-input="email"]', 'kevin+test2@ghost.org');
+            await fillIn('[data-test-input="password"]', 'thisissupersafe');
+        }
+    }
+
+    it('can signup successfully', async function () {
+        // Setup the signup flow but don't fill the form yet (we'll test validation)
+        await setupSignupFlow(this.server, {fillForm: false});
 
         // focus out in Name field triggers inline error
         await focus('[data-test-input="name"]');
@@ -169,6 +181,46 @@ describe('Acceptance: Signup', function () {
         await click('[data-test-button="signup"]');
 
         expect(currentRouteName()).to.equal('site');
+    });
+
+    describe('Sign up success routing', function () {
+        beforeEach(function () {
+            mockAnalyticsApps();
+            disableLabsFlag(this.server, 'trafficAnalytics');
+            disableLabsFlag(this.server, 'ui60');
+        });
+
+        afterEach(function () {
+            cleanupMockAnalyticsApps();
+        });
+
+        it('signup with author user redirects to site with no flags', async function () {
+            await setupSignupFlow(this.server);
+            await click('[data-test-button="signup"]');
+
+            // Non-admin users go to site regardless of flags
+            expect(currentRouteName()).to.equal('site');
+        });
+
+        it('signup with author user redirects to site with ui60 flag', async function () {
+            enableLabsFlag(this.server, 'ui60');
+
+            await setupSignupFlow(this.server);
+            await click('[data-test-button="signup"]');
+
+            // Non-admin users go to site regardless of flags
+            expect(currentRouteName()).to.equal('site');
+        });
+
+        it('signup with author user redirects to site with trafficAnalytics flag', async function () {
+            enableLabsFlag(this.server, 'trafficAnalytics');
+
+            await setupSignupFlow(this.server);
+            await click('[data-test-button="signup"]');
+
+            // Non-admin users go to site regardless of flags
+            expect(currentRouteName()).to.equal('site');
+        });
     });
 
     it('redirects if already logged in', async function () {
