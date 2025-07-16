@@ -19395,7 +19395,7 @@ goober@^2.1.16:
 
 "google-caja-bower@https://github.com/acburdine/google-caja-bower#ghost":
   version "6011.0.0"
-  resolved "git+ssh://git@github.com/acburdine/google-caja-bower.git#275cb75249f038492094a499756a73719ae071fd"
+  resolved "https://git@github.com/acburdine/google-caja-bower.git#275cb75249f038492094a499756a73719ae071fd"
 
 gopd@^1.0.1, gopd@^1.2.0:
   version "1.2.0"
