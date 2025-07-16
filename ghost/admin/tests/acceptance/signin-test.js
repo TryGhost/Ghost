@@ -1,14 +1,14 @@
 import config from 'ghost-admin/config/environment';
 import {Response} from 'miragejs';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {
     afterEach,
     beforeEach,
     describe,
     it
 } from 'mocha';
-import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
