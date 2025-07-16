@@ -1,5 +1,4 @@
 import Access from './Access';
-import Analytics from './Analytics';
 import Portal from './Portal';
 import React from 'react';
 import SearchableSection from '../../SearchableSection';
@@ -13,8 +12,7 @@ import {useGlobalData} from '../../providers/GlobalDataProvider';
 export const searchKeywords5x = {
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting'],
-    tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
-    analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership']
+    tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe']
 };
 
 export const searchKeywords = {
@@ -36,7 +34,6 @@ const MembershipSettings: React.FC = () => {
                 <Portal keywords={searchKeywords5x.portal} />
                 <Access keywords={searchKeywords5x.access} />
                 <Tiers keywords={searchKeywords5x.tiers} />
-                <Analytics keywords={searchKeywords5x.analytics} />
             </SearchableSection>
         );
     }

@@ -219,7 +219,6 @@ const Sidebar: React.FC = () => {
                         <NavItem icon='portal' keywords={membershipSearchKeywords5x.portal} navid='portal' title="Portal settings" onClick={handleSectionClick} />
                         <NavItem icon='key' keywords={membershipSearchKeywords5x.access} navid='members' title="Access" onClick={handleSectionClick} />
                         <NavItem icon='bills' keywords={membershipSearchKeywords5x.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                        <NavItem icon='baseline-chart' keywords={membershipSearchKeywords5x.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
                     </SettingNavSection>
                 }
 
