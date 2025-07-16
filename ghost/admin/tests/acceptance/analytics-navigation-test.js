@@ -50,19 +50,44 @@ describe('Acceptance: Analytics Navigation', function () {
         return document.querySelector('.gh-nav-list a[href*="dashboard"]');
     }
     
-    async function clickPost(postId) {
-        await click(`[data-test-post-id="${postId}"]`);
+    async function clickPostAnalytics(postId) {
+        // The analytics link is in the post row, find the specific one for this post
+        let postRow = document.querySelector(`[data-test-post-id="${postId}"]`);
+        expect(postRow, `Post row for post ${postId} should exist`).to.exist;
+        
+        // Find the analytics link within this post's row
+        let analyticsLink = postRow.parentElement.querySelector('.gh-post-list-cta.stats');
+        expect(analyticsLink, `Analytics link for post ${postId} should exist`).to.exist;
+        await click(analyticsLink);
     }
     
-    async function clickPostAnalytics() {
-        let analyticsButton = document.querySelector('[data-test-button="analytics"]');
-        expect(analyticsButton, 'Analytics button should exist').to.exist;
-        await click('[data-test-button="analytics"]');
+    function createPostWithEmail(server, overrides = {}) {
+        // Create an email record first
+        let email = server.create('email', {
+            emailCount: 100,
+            trackOpens: true,
+            ...(overrides.email || {})
+        });
+
+        return server.create('post', {
+            status: 'published',
+            title: 'Test Post for Analytics',
+            email: email,
+            hasBeenEmailed: true,
+            ...overrides
+        });
     }
     
-    async function clickPostAnalyticsAndExpectRoute(expectedRoute) {
-        await clickPostAnalytics();
-        expect(currentURL()).to.equal(expectedRoute);
+    async function expectPostAnalyticsRoute(postId) {
+        expect(currentURL()).to.equal(`/posts/analytics/beta/${postId}`);
+    }
+    
+    async function expectOldPostAnalyticsRoute(postId) {
+        expect(currentURL()).to.equal(`/posts/analytics/${postId}`);
+    }
+    
+    async function expectStatsAnalyticsRoute() {
+        expect(currentURL()).to.equal('/analytics');
     }
 
     beforeEach(async function () {
@@ -86,14 +111,14 @@ describe('Acceptance: Analytics Navigation', function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
 
             await visit('/analytics');
-            expect(currentURL()).to.equal('/analytics');
+            await expectStatsAnalyticsRoute();
         });
 
         it('allows access when ui60 is enabled', async function () {
             enableLabsFlag(this.server, 'ui60');
 
             await visit('/analytics');
-            expect(currentURL()).to.equal('/analytics');
+            await expectStatsAnalyticsRoute();
         });
 
         it('redirects to dashboard when flags are disabled', async function () {
@@ -127,7 +152,7 @@ describe('Acceptance: Analytics Navigation', function () {
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
+            await expectPostAnalyticsRoute(post.id);
         });
 
         it('allows access when only trafficAnalytics is enabled', async function () {
@@ -135,7 +160,7 @@ describe('Acceptance: Analytics Navigation', function () {
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
+            await expectPostAnalyticsRoute(post.id);
         });
 
         it('allows access when only ui60 is enabled', async function () {
@@ -143,13 +168,13 @@ describe('Acceptance: Analytics Navigation', function () {
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
+            await expectPostAnalyticsRoute(post.id);
         });
 
         it('redirects to old post analytics when both flags are disabled', async function () {
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal(`/posts/analytics/${post.id}`);
+            await expectOldPostAnalyticsRoute(post.id);
         });
 
         it('redirects contributors to posts', async function () {
@@ -234,25 +259,19 @@ describe('Acceptance: Analytics Navigation', function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
-            let post = this.server.create('post', {
-                status: 'published',
-                title: 'Test Post for Analytics'
-            });
+            let post = createPostWithEmail(this.server);
 
             await visit('/posts');
-            await clickPost(post.id);
-            await clickPostAnalyticsAndExpectRoute(`/posts/analytics/beta/${post.id}`);
+            await clickPostAnalytics(post.id);
+            await expectPostAnalyticsRoute(post.id);
         });
 
         it('navigates to old post analytics when clicking on post analytics', async function () {
-            let post = this.server.create('post', {
-                status: 'published',
-                title: 'Test Post for Analytics'
-            });
+            let post = createPostWithEmail(this.server);
 
             await visit('/posts');
-            await clickPost(post.id);
-            await clickPostAnalyticsAndExpectRoute(`/posts/analytics/${post.id}`);
+            await clickPostAnalytics(post.id);
+            await expectOldPostAnalyticsRoute(post.id);
         });
     });
 
