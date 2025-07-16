@@ -33,7 +33,7 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    navigateAway('/analytics');
+                    navigateAway('/');
                 });
             }
         };

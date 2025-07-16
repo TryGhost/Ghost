@@ -5,7 +5,7 @@ const ExitSettingsButton: React.FC = () => {
     const {isDirty} = useGlobalDirtyState();
 
     const navigateAway = () => {
-        window.location.hash = '/analytics';
+        window.location.hash = '/';
     };
 
     return (
