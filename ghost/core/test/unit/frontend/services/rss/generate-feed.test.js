@@ -261,7 +261,7 @@ describe('RSS: Generate Feed', function () {
             });
 
             data.posts = [postWithBookmark, postWithVideo, postWithAudio];
-        })
+        });
 
         it('should remove clutter from bookmark card', function (done) {
 
@@ -301,9 +301,9 @@ describe('RSS: Generate Feed', function () {
         it('should remove clutter from audio card', function (done) {
 
             // Check if original card content is present
-            data.posts[2].html.html.should.match(/kg-audio-thumbnail/)
-            data.posts[2].html.html.should.match(/kg-audio-player/)
-            data.posts[2].html.html.should.match(/kg-audio-title/)
+            data.posts[2].html.html.should.match(/kg-audio-thumbnail/);
+            data.posts[2].html.html.should.match(/kg-audio-player/);
+            data.posts[2].html.html.should.match(/kg-audio-title/);
 
             generateFeed(baseUrl, data).then(function (xmlData) {
                 should.exist(xmlData);
