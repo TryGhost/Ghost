@@ -7,6 +7,9 @@ module.exports = (event, model) => {
     const resourceName = event.match(/(\w+)\./)[1];
     const docName = `${resourceName}s`;
 
+    const POST_FORMATS = ['html', 'plaintext'];
+    const POST_WITH_RELATED = ['tags', 'authors'];
+
     const ops = [];
 
     if (Object.keys(model.attributes).length) {
@@ -16,10 +19,10 @@ module.exports = (event, model) => {
             // @NOTE: below options are lost during event processing, a more holistic approach would be
             //       to pass them somehow along with the model
             if (['posts', 'pages'].includes(docName)) {
-                frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
-                frame.options.withRelated = ['tags', 'authors'];
+                frame.options.formats = POST_FORMATS;
+                frame.options.withRelated = POST_WITH_RELATED;
                 model._originalOptions = {
-                    withRelated: ['tags', 'authors']
+                    withRelated: POST_WITH_RELATED
                 };
             }
 
@@ -42,8 +45,8 @@ module.exports = (event, model) => {
             const frame = {options: {previous: true, context: {user: true}}};
 
             if (['posts', 'pages'].includes(docName)) {
-                frame.options.formats = ['mobiledoc', 'html', 'plaintext'];
-                frame.options.withRelated = ['tags', 'authors'];
+                frame.options.formats = POST_FORMATS;
+                frame.options.withRelated = POST_WITH_RELATED;
             }
 
             return apiFramework
