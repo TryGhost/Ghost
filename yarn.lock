@@ -22207,7 +22207,7 @@ keygrip@~1.1.0:
 
 "keymaster@https://github.com/madrobby/keymaster.git":
   version "1.6.3"
-  resolved "git+ssh://git@github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
+  resolved "https://github.com/madrobby/keymaster.git#f8f43ddafad663b505dc0908e72853bcf8daea49"
 
 keypair@1.0.4:
   version "1.0.4"
