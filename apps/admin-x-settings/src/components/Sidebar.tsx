@@ -14,7 +14,6 @@ import {searchKeywords as generalSearchKeywords} from './settings/general/Genera
 import {searchKeywords5x as generalSearchKeywords5x} from './settings/general/GeneralSettings';
 
 import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSettings';
-import {searchKeywords5x as growthSearchKeywords5x} from './settings/growth/GrowthSettings';
 
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords5x as membershipSearchKeywords5x} from './settings/membership/MembershipSettings';
@@ -97,7 +96,7 @@ const Sidebar: React.FC = () => {
             if (!checkVisible(Object.values(generalSearchKeywords5x).flat()) &&
                 !checkVisible(Object.values(siteSearchKeywords).flat()) &&
                 !checkVisible(Object.values(membershipSearchKeywords5x).flat()) &&
-                !checkVisible(Object.values(growthSearchKeywords5x).flat()) &&
+                !checkVisible(Object.values(growthSearchKeywords).flat()) &&
                 !checkVisible(Object.values(emailSearchKeywords).flat()) &&
                 !checkVisible(Object.values(advancedSearchKeywords).flat())) {
                 setNoResult(true);
@@ -239,23 +238,13 @@ const Sidebar: React.FC = () => {
                 }
 
                 {/* Growth */}
-
-                {ui60 ?
-                    <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
-                        <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
-                        <NavItem icon='globe-simple' keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
-                        <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
-                        <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
-                        {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                    </SettingNavSection>
-                    :
-                    <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords5x).flat())} title="Growth">
-                        <NavItem icon='heart' keywords={growthSearchKeywords5x.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
-                        <NavItem icon='emailfield' keywords={growthSearchKeywords5x.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
-                        {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords5x.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                        {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords5x.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                    </SettingNavSection>
-                }
+                <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
+                    <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
+                    <NavItem icon='globe-simple' keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
+                    <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
+                    <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
+                    {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
+                </SettingNavSection>
 
                 {!ui60 &&
                 <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
