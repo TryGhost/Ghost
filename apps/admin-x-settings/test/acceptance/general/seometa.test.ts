@@ -12,8 +12,7 @@ test.describe('SEO Meta settings', async () => {
                     config: {
                         ...responseFixtures.config.config,
                         labs: {
-                            ...responseFixtures.config.config.labs,
-                            ui60: true
+                            ...responseFixtures.config.config.labs
                         }
                     }
                 }
@@ -55,8 +54,7 @@ test.describe('SEO Meta settings', async () => {
                     config: {
                         ...responseFixtures.config.config,
                         labs: {
-                            ...responseFixtures.config.config.labs,
-                            ui60: true
+                            ...responseFixtures.config.config.labs
                         }
                     }
                 }
@@ -108,8 +106,7 @@ test.describe('SEO Meta settings', async () => {
                     config: {
                         ...responseFixtures.config.config,
                         labs: {
-                            ...responseFixtures.config.config.labs,
-                            ui60: true
+                            ...responseFixtures.config.config.labs
                         }
                     }
                 }
@@ -161,8 +158,7 @@ test.describe('SEO Meta settings', async () => {
                     config: {
                         ...responseFixtures.config.config,
                         labs: {
-                            ...responseFixtures.config.config.labs,
-                            ui60: true
+                            ...responseFixtures.config.config.labs
                         }
                     }
                 }
@@ -232,8 +228,7 @@ test.describe('SEO Meta settings', async () => {
                     config: {
                         ...responseFixtures.config.config,
                         labs: {
-                            ...responseFixtures.config.config.labs,
-                            ui60: true
+                            ...responseFixtures.config.config.labs
                         }
                     }
                 }
