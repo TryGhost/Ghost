@@ -235,14 +235,27 @@ export function abbreviateNumber(number: number) {
         return formatNumber(num);
     }
 
-    // For numbers >= 1000, show as x.yk format
-    const abbreviated = num / 1000;
-    const rounded = Math.round(abbreviated * 10) / 10; // Round to 1 decimal place
+    if (num < 1000000) {
+        // For thousands: round to nearest 100 for 10.3k, nearest 1000 for 101k
+        const roundTo = num < 100000 ? 100 : 1000;
 
-    // Remove .0 if it's a whole number
-    const formatted = rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(1);
+        const rounded = Math.round(num / roundTo) * roundTo;
+        const abbreviated = rounded / 1000;
 
-    return `${formatted}k`;
+        if (abbreviated === 1000) {
+            return '1M';
+        }
+
+        const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+        return `${formatted}k`;
+    }
+
+    // For millions: round to nearest 100,000 for 1.1M
+    const roundTo = 100000;
+    const rounded = Math.round(num / roundTo) * roundTo;
+    const abbreviated = rounded / 1000000;
+    const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+    return `${formatted}M`;
 }
 
 // Format time duration
