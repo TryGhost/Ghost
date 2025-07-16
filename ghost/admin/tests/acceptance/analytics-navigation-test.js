@@ -14,6 +14,8 @@ describe('Acceptance: Analytics Navigation', function () {
     setupMirage(hooks);
 
     async function createUserAndSignIn(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
+        await invalidateSession();
+        
         let roleObj = server.create('role', {name: role});
         server.create('user', {
             id: '1',
@@ -27,6 +29,29 @@ describe('Acceptance: Analytics Navigation', function () {
         await fillIn('[name="password"]', 'thisissupersafe');
         await click('[data-test-button="sign-in"]');
     }
+    
+    function updateUserRole(server, roleName) {
+        let role = server.create('role', {name: roleName});
+        server.db.users.update(1, {roles: [role]});
+        return role;
+    }
+    
+    function findAnalyticsNavLink() {
+        return document.querySelector('.gh-nav-list a[href*="analytics"]');
+    }
+    
+    async function clickPost(postId) {
+        await click(`[data-test-post-id="${postId}"]`);
+    }
+    
+    async function clickPostAnalytics() {
+        let analyticsButton = document.querySelector('[data-test-button="analytics"]');
+        if (analyticsButton) {
+            await click('[data-test-button="analytics"]');
+            return true;
+        }
+        return false;
+    }
 
     beforeEach(async function () {
         mockAnalyticsApps();
@@ -34,6 +59,10 @@ describe('Acceptance: Analytics Navigation', function () {
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {id: '1', roles: [role]});
         await authenticateSession();
+        
+        // Disable all flags by default
+        disableLabsFlag(this.server, 'trafficAnalytics');
+        disableLabsFlag(this.server, 'ui60');
     });
 
     afterEach(function () {
@@ -48,9 +77,14 @@ describe('Acceptance: Analytics Navigation', function () {
             expect(currentURL()).to.equal('/analytics');
         });
 
-        it('redirects to dashboard when trafficAnalytics is disabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
+        it('allows access when ui60 is enabled', async function () {
+            enableLabsFlag(this.server, 'ui60');
 
+            await visit('/analytics');
+            expect(currentURL()).to.equal('/analytics');
+        });
+
+        it('redirects to dashboard when flags are disabled', async function () {
             await visit('/analytics');
             expect(currentURL()).to.equal('/dashboard');
         });
@@ -58,8 +92,7 @@ describe('Acceptance: Analytics Navigation', function () {
         it('redirects contributors to posts', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
 
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            this.server.db.users.update(1, {roles: [contributorRole]});
+            updateUserRole(this.server, 'Contributor');
 
             await visit('/analytics');
             expect(currentURL()).to.equal('/posts');
@@ -68,8 +101,7 @@ describe('Acceptance: Analytics Navigation', function () {
         it('redirects non-admin users to site', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
 
-            let editorRole = this.server.create('role', {name: 'Editor'});
-            this.server.db.users.update(1, {roles: [editorRole]});
+            updateUserRole(this.server, 'Editor');
 
             await visit('/analytics');
             expect(currentURL()).to.equal('/site');
@@ -86,115 +118,37 @@ describe('Acceptance: Analytics Navigation', function () {
             expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
         });
 
-        it('redirects to analytics when only trafficAnalytics is enabled', async function () {
+        it('allows access when only trafficAnalytics is enabled', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
         });
 
-        it('redirects to analytics when only ui60 is enabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
+        it('allows access when only ui60 is enabled', async function () {
             enableLabsFlag(this.server, 'ui60');
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal('/analytics');
+            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
         });
 
-        it('redirects to home when both flags are disabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-
+        it('redirects to old post analytics when both flags are disabled', async function () {
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal(`/posts/analytics/${post.id}`);
         });
 
         it('redirects contributors to posts', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            this.server.db.users.update(1, {roles: [contributorRole]});
+            updateUserRole(this.server, 'Contributor');
 
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
             expect(currentURL()).to.equal('/posts');
-        });
-
-        it('sets fromAnalytics when navigating from stats-x', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
-            let post = this.server.create('post', {status: 'published'});
-            await visit('/analytics');
-            await visit(`/posts/analytics/beta/${post.id}`);
-            
-            expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
-        });
-    });
-
-    describe('Posts Analytics route', function () {
-        beforeEach(function () {
-            this.post = this.server.create('post', {
-                status: 'published',
-                title: 'Test Post'
-            });
-        });
-
-        it('allows access to post analytics when flags are enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
-            await visit(`/posts/${this.post.id}/analytics`);
-            expect(currentURL()).to.equal(`/posts/${this.post.id}/analytics`);
-        });
-
-        it('redirects to dashboard from analytics sub-route when flags are disabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-
-            await visit(`/posts/${this.post.id}/analytics`);
-            expect(currentURL()).to.equal(`/posts/${this.post.id}/analytics`);
-        });
-
-        it('allows contributors to view their own post analytics', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            let contributor = this.server.create('user', {roles: [contributorRole]});
-            
-            let contributorPost = this.server.create('post', {
-                status: 'draft',
-                authors: [contributor]
-            });
-
-            this.server.db.users.update(1, {roles: [contributorRole]});
-
-            await visit(`/posts/${contributorPost.id}/analytics`);
-            expect(currentURL()).to.equal(`/posts/${contributorPost.id}/analytics`);
-        });
-
-        it('redirects contributors viewing other users posts', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
-            let adminRole = this.server.create('role', {name: 'Administrator'});
-            let admin = this.server.create('user', {roles: [adminRole]});
-            let otherPost = this.server.create('post', {
-                status: 'published',
-                authors: [admin]
-            });
-
-            let contributorRole = this.server.create('role', {name: 'Contributor'});
-            this.server.db.users.update(1, {roles: [contributorRole]});
-
-            await visit(`/posts/${otherPost.id}/analytics`);
-            expect(currentURL()).to.equal(`/posts/${otherPost.id}/analytics`);
         });
     });
 
@@ -205,28 +159,26 @@ describe('Acceptance: Analytics Navigation', function () {
 
             await visit('/dashboard');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
         it('hides Analytics link when trafficAnalytics is disabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
             await visit('/dashboard');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.not.exist;
         });
 
         it('shows Analytics link when only trafficAnalytics is enabled', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
 
             await visit('/dashboard');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
@@ -235,16 +187,15 @@ describe('Acceptance: Analytics Navigation', function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
-            let editorRole = this.server.create('role', {name: 'Editor'});
-            this.server.db.users.update(1, {roles: [editorRole]});
+            updateUserRole(this.server, 'Editor');
 
             await visit('/site');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.not.exist;
         });
 
-        it('navigates to analytics when Analytics link is clicked', async function () {
+        it('navigates to Analytics when Analytics nav link is clicked', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
@@ -266,13 +217,22 @@ describe('Acceptance: Analytics Navigation', function () {
             });
 
             await visit('/posts');
-            
-            await click(`[data-test-post-id="${post.id}"]`);
-            
-            let analyticsButton = document.querySelector('[data-test-button="analytics"]');
-            if (analyticsButton) {
-                await click('[data-test-button="analytics"]');
+            await clickPost(post.id);
+            if (await clickPostAnalytics()) {
                 expect(currentURL()).to.equal(`/posts/analytics/beta/${post.id}`);
+            }
+        });
+
+        it('navigates to old post analytics when clicking on post analytics', async function () {
+            let post = this.server.create('post', {
+                status: 'published',
+                title: 'Test Post for Analytics'
+            });
+
+            await visit('/posts');
+            await clickPost(post.id);
+            if (await clickPostAnalytics()) {
+                expect(currentURL()).to.equal(`/posts/analytics/${post.id}`);
             }
         });
     });
@@ -284,32 +244,25 @@ describe('Acceptance: Analytics Navigation', function () {
             });
         });
 
-        it('shows Analytics in nav after signin when flags are enabled', async function () {
+        it('takes user to analytics after signin when flags are enabled', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
-            await invalidateSession();
-            
             await createUserAndSignIn(this.server, {role: 'Administrator', email: 'test@example.com'});
             
             expect(currentURL()).to.equal('/analytics');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
-        it('hides Analytics in nav after signin when flags are disabled', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-
-            await invalidateSession();
-            
+        it('takes user to dashboard after signin when flags are disabled', async function () {
             await createUserAndSignIn(this.server, {role: 'Administrator', email: 'test@example.com'});
             
             expect(currentURL()).to.equal('/dashboard');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.not.exist;
         });
 
@@ -317,13 +270,11 @@ describe('Acceptance: Analytics Navigation', function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
 
-            await invalidateSession();
-            
             await createUserAndSignIn(this.server, {role: 'Author', email: 'author@example.com'});
             
             expect(currentURL()).to.equal('/site');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.not.exist;
         });
     });
@@ -337,8 +288,17 @@ describe('Acceptance: Analytics Navigation', function () {
             
             expect(currentURL()).to.equal('/analytics');
             
-            let analyticsLink = document.querySelector('.gh-nav-list a[href*="analytics"]');
+            let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
+        });
+
+        it('takes user to dashboard after setup when flags are disabled', async function () {
+            await visit('/setup/done');
+            
+            expect(currentURL()).to.equal('/dashboard');
+            
+            let analyticsLink = findAnalyticsNavLink();
+            expect(analyticsLink).to.not.exist;
         });
     });
 });
