@@ -11,7 +11,6 @@ import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
-import {searchKeywords5x as generalSearchKeywords5x} from './settings/general/GeneralSettings';
 
 import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSettings';
 import {searchKeywords5x as growthSearchKeywords5x} from './settings/growth/GrowthSettings';
@@ -94,7 +93,7 @@ const Sidebar: React.FC = () => {
                 setNoResult(false);
             }
         } else {
-            if (!checkVisible(Object.values(generalSearchKeywords5x).flat()) &&
+            if (!checkVisible(Object.values(generalSearchKeywords).flat()) &&
                 !checkVisible(Object.values(siteSearchKeywords).flat()) &&
                 !checkVisible(Object.values(membershipSearchKeywords5x).flat()) &&
                 !checkVisible(Object.values(growthSearchKeywords5x).flat()) &&
@@ -187,30 +186,16 @@ const Sidebar: React.FC = () => {
                 }
 
                 {/* General settings */}
-                {ui60 ?
-                    <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
-                        <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
-                        <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
-                        <NavItem icon='language' keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
-                        <NavItem icon='user-pen' keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
-                        <NavItem icon='layer' keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                        <NavItem icon='like' keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
-                        <NavItem icon='baseline-chart' keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
-                        <NavItem icon='lock-locked' keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
-                    </SettingNavSection>
-                    :
-                    <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
-                        <NavItem icon='textfield' keywords={generalSearchKeywords5x.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
-                        <NavItem icon='world-clock' keywords={generalSearchKeywords5x.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
-                        <NavItem icon='language' keywords={generalSearchKeywords5x.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
-                        <NavItem icon='layer' keywords={generalSearchKeywords5x.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                        <NavItem icon='twitter-x' keywords={generalSearchKeywords5x.twitter} navid='twitter' title="X card" onClick={handleSectionClick} />
-                        <NavItem icon='facebook' keywords={generalSearchKeywords5x.facebook} navid='facebook' title="Facebook card" onClick={handleSectionClick} />
-                        <NavItem icon='like' keywords={generalSearchKeywords5x.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
-                        <NavItem icon='lock-locked' keywords={generalSearchKeywords5x.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
-                        <NavItem icon='user-page' keywords={generalSearchKeywords5x.users} navid='staff' title="Staff" onClick={handleSectionClick} />
-                    </SettingNavSection>
-                }
+                <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
+                    <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
+                    <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
+                    <NavItem icon='language' keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
+                    <NavItem icon='user-pen' keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
+                    <NavItem icon='layer' keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
+                    <NavItem icon='like' keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
+                    <NavItem icon='baseline-chart' keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                    <NavItem icon='lock-locked' keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
+                </SettingNavSection>
 
                 {/* Site settings */}
                 <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
