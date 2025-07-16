@@ -17,7 +17,6 @@ import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSe
 import {searchKeywords5x as growthSearchKeywords5x} from './settings/growth/GrowthSettings';
 
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
-import {searchKeywords5x as membershipSearchKeywords5x} from './settings/membership/MembershipSettings';
 
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
 import {useGlobalData} from './providers/GlobalDataProvider';
@@ -96,7 +95,7 @@ const Sidebar: React.FC = () => {
         } else {
             if (!checkVisible(Object.values(generalSearchKeywords5x).flat()) &&
                 !checkVisible(Object.values(siteSearchKeywords).flat()) &&
-                !checkVisible(Object.values(membershipSearchKeywords5x).flat()) &&
+                !checkVisible(Object.values(membershipSearchKeywords).flat()) &&
                 !checkVisible(Object.values(growthSearchKeywords5x).flat()) &&
                 !checkVisible(Object.values(emailSearchKeywords).flat()) &&
                 !checkVisible(Object.values(advancedSearchKeywords).flat())) {
@@ -221,25 +220,15 @@ const Sidebar: React.FC = () => {
                 </SettingNavSection>
 
                 {/* Membership settings */}
-                {ui60 ?
-                    <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
-                        <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
-                        <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                        <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
-                        {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                        <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
-                    </SettingNavSection>
-                    :
-                    <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords5x).flat())} title="Membership">
-                        <NavItem icon='portal' keywords={membershipSearchKeywords5x.portal} navid='portal' title="Portal settings" onClick={handleSectionClick} />
-                        <NavItem icon='key' keywords={membershipSearchKeywords5x.access} navid='members' title="Access" onClick={handleSectionClick} />
-                        <NavItem icon='bills' keywords={membershipSearchKeywords5x.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                        <NavItem icon='baseline-chart' keywords={membershipSearchKeywords5x.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
-                    </SettingNavSection>
-                }
+                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                    <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
+                    <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
+                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
+                    {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                    <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
+                </SettingNavSection>
 
                 {/* Growth */}
-
                 {ui60 ?
                     <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
                         <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
