@@ -1,12 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, toggleLabsFlag, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Network settings', async () => {
-    test.beforeEach(async () => {
-        toggleLabsFlag('ui60', true);
-    });
-
     test('Network toggle is disabled if the feature is disabled by config', async ({page}) => {
         await mockApi({page, requests: {
             ...globalDataRequests,
