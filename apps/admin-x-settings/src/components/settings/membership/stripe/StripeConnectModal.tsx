@@ -256,11 +256,18 @@ const StripeConnectModal: React.FC = () => {
     const mainModal = useModal();
     const limiter = useLimiter();
 
+    // Extract specific values needed for checkStripeEnabled, so not to
+    // cause unnecessary re-renders by passing the whole settings object
+    const stripeEnabled = checkStripeEnabled(settings, config);
+    const hasStripeConnectLimit = limiter?.isDisabled('limitStripeConnect');
+
     useEffect(() => {
         const checkLimit = async () => {
-            if (limiter?.isLimited('limitStripeConnect')) {
+            // Allow Stripe despite the limit when it's already connected, so it's
+            // possible to disconnect or update the settings.
+            if (hasStripeConnectLimit && !stripeEnabled) {
                 try {
-                    await limiter.errorIfWouldGoOverLimit('limitStripeConnect');
+                    await limiter?.errorIfWouldGoOverLimit('limitStripeConnect');
                 } catch (error) {
                     if (error instanceof HostLimitError) {
                         mainModal.remove();
@@ -274,7 +281,7 @@ const StripeConnectModal: React.FC = () => {
         };
 
         checkLimit();
-    }, [limiter, mainModal, updateRoute]);
+    }, [limiter, mainModal, updateRoute, stripeEnabled, hasStripeConnectLimit]);
 
     const startFlow = () => {
         setStep('connect');
