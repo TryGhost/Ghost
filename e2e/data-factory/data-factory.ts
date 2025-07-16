@@ -1,5 +1,5 @@
-import knex from 'knex';
 import {GhostFactory} from './factories/ghost-factory';
+import {getGhostDatabaseManager} from './factories/ghost-database-manager';
 import type {DataFactory} from './types';
 
 // Factory builder that creates a data factory instance
@@ -9,22 +9,11 @@ export class DataFactoryBuilder {
     // private tinybirdFactory?: TinybirdFactory;
     
     async build(): Promise<DataFactory> {
-        // Initialize Ghost database connection
-        const ghostDb = knex({
-            client: 'mysql2',
-            connection: {
-                host: process.env.database__connection__host || 'localhost',
-                port: parseInt(process.env.database__connection__port || '3306'),
-                user: process.env.database__connection__user || 'root',
-                password: process.env.database__connection__password || 'root',
-                database: process.env.database__connection__database || 'ghost',
-                charset: 'utf8mb4'
-            },
-            pool: {min: 0, max: 5}
-        });
+        const databaseManager = getGhostDatabaseManager();
+        await databaseManager.ensureReady();
         
         // Create factory instances
-        this.ghostFactory = new GhostFactory(ghostDb);
+        this.ghostFactory = new GhostFactory(databaseManager.getDb());
         await this.ghostFactory.setup();
         
         // Return data factory with all methods bound
