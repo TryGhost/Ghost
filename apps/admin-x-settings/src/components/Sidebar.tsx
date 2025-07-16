@@ -257,9 +257,6 @@ const Sidebar: React.FC = () => {
                     <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords5x).flat())} title="Advanced">
                         <NavItem icon='modules-3' keywords={advancedSearchKeywords5x.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                         <NavItem icon='download' keywords={advancedSearchKeywords5x.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
-                        {!ui60 &&
-                        <NavItem icon='block' keywords={advancedSearchKeywords5x.spamFilters} navid='spam-filters' title="Spam filters" onClick={handleSectionClick} />
-                        }
                         <NavItem icon='brackets' keywords={advancedSearchKeywords5x.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
                         <NavItem icon='labs-flask' keywords={advancedSearchKeywords5x.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                         <NavItem icon='time-back' keywords={advancedSearchKeywords5x.history} navid='history' title="History" onClick={handleSectionClick} />

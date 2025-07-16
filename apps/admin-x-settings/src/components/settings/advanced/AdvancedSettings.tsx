@@ -6,7 +6,6 @@ import Labs from './Labs';
 import MigrationTools from './MigrationTools';
 import React from 'react';
 import SearchableSection from '../../SearchableSection';
-import SpamFilters from './SpamFilters';
 import useFeatureFlag from '../../../hooks/useFeatureFlag';
 
 export const searchKeywords5x = {
@@ -15,8 +14,7 @@ export const searchKeywords5x = {
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
-    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site'],
-    spamFilters: ['membership', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email']
+    dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site']
 };
 
 export const searchKeywords = {
@@ -36,7 +34,6 @@ const AdvancedSettings: React.FC = () => {
             <SearchableSection keywords={Object.values(searchKeywords5x).flat()} title='Advanced'>
                 <Integrations keywords={searchKeywords5x.integrations} />
                 <MigrationTools keywords={searchKeywords5x.migrationtools} />
-                <SpamFilters keywords={searchKeywords5x.spamFilters} />
                 <CodeInjection keywords={searchKeywords5x.codeInjection} />
                 <Labs keywords={searchKeywords5x.labs} />
                 <History keywords={searchKeywords5x.history} />
