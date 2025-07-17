@@ -234,12 +234,6 @@ class SettingsHelpers {
             return false;
         }
 
-        // Labs setting
-        if (!this.labs.isSet('ActivityPub')) {
-            debug('Social web is disabled in labs');
-            return false;
-        }
-
         // Ghost (Pro) limits
         if (this.limitService.isDisabled('limitSocialWeb')) {
             debug('Social web is not available for Ghost (Pro) sites without a custom domain, or hosted on a subdirectory');

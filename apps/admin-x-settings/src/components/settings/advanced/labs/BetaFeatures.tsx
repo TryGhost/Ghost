@@ -1,64 +1,20 @@
 import FeatureToggle from './FeatureToggle';
 import LabItem from './LabItem';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {Button, FileUpload, List, showToast} from '@tryghost/admin-x-design-system';
-import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {downloadRedirects, useUploadRedirects} from '@tryghost/admin-x-framework/api/redirects';
 import {downloadRoutes, useUploadRoutes} from '@tryghost/admin-x-framework/api/routes';
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
 const BetaFeatures: React.FC = () => {
-    const limiter = useLimiter();
     const {mutateAsync: uploadRedirects} = useUploadRedirects();
     const {mutateAsync: uploadRoutes} = useUploadRoutes();
     const handleError = useHandleError();
     const [redirectsUploading, setRedirectsUploading] = useState<boolean>(false);
     const [routesUploading, setRoutesUploading] = useState<boolean>(false);
-    const [limitSocialWeb, setLimitSocialWeb] = useState<boolean>(false);
-    const [socialWebLimitMessage, setSocialWebLimitMessage] = useState<string>('Please setup a custom domain to enable.');
-    const {config} = useGlobalData();
-    const isPro = !!config.hostSettings?.siteId;
-
-    useEffect(() => {
-        if (limiter?.isLimited('limitSocialWeb')) {
-            limiter.errorIfWouldGoOverLimit('limitSocialWeb').catch((error) => {
-                if (error instanceof HostLimitError) {
-                    const {subdir} = getGhostPaths();
-                    // ensure subdir is defined and not empty
-                    const hasSubdir = subdir?.length > 0;
-
-                    const socialWebNotAvailableMsg = hasSubdir ?
-                        'Not compatible with /subdirectory installations.' :
-                        'Please setup a custom domain to enable.';
-
-                    setSocialWebLimitMessage(socialWebNotAvailableMsg);
-                    setLimitSocialWeb(true);
-                } else {
-                    handleError(error);
-                }
-            });
-        }
-    }, [limiter, handleError]);
 
     return (
         <List titleSeparator={false}>
-            {isPro && (
-                <LabItem
-                    action={<FeatureToggle disabled={limitSocialWeb} flag="ActivityPub"/>}
-                    detail={
-                        <>
-                        Federate your site with ActivityPub to join the world&apos;s largest open network.
-                            {limitSocialWeb &&
-                                (<><br></br>{socialWebLimitMessage} </>)
-                            }
-                            &nbsp;
-                            <a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
-                        </>
-                    }
-                    title='Social web (beta)' />
-            )}
             <LabItem
                 action={<FeatureToggle flag="superEditors" />}
                 detail={<>Allows newly-assigned editors to manage members and comments in addition to regular roles.</>}
