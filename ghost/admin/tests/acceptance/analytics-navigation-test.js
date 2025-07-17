@@ -3,7 +3,6 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -88,10 +87,6 @@ describe('Acceptance: Analytics Navigation', function () {
         let role = this.server.create('role', {name: 'Administrator'});
         this.server.create('user', {id: '1', roles: [role]});
         await authenticateSession();
-        
-        // Disable all flags by default
-        disableLabsFlag(this.server, 'trafficAnalytics');
-        disableLabsFlag(this.server, 'ui60');
     });
 
     afterEach(function () {
