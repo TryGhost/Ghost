@@ -1,4 +1,4 @@
-import {memo, useCallback, useEffect, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
@@ -18,7 +18,124 @@ type ProfileProps = {
 type ProfileCardProps = {
     isScreenshot?: boolean
     format?: 'vertical' | 'square'
+    account?: Account
+    isLoading: boolean
+    bannerDataUrl: string | null
+    avatarDataUrl: string | null
+    coverImage?: string
+    publicationIcon?: string
+    siteTitle?: string
+    backgroundColor: 'light' | 'dark' | 'accent'
+    accentColor?: string
 }
+
+const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const ProfileCard: React.FC<ProfileCardProps> = memo(({
+    isScreenshot = false,
+    format = 'vertical',
+    account,
+    isLoading,
+    bannerDataUrl,
+    avatarDataUrl,
+    coverImage,
+    publicationIcon,
+    siteTitle,
+    backgroundColor,
+    accentColor
+}) => {
+    const getBackgroundColor = () => {
+        switch (backgroundColor) {
+        case 'light':
+            return '#fff';
+        case 'dark':
+            return '#15171a';
+        case 'accent':
+            return accentColor || '#15171a';
+        default:
+            return '#fff';
+        }
+    };
+
+    const getTextColor = () => {
+        switch (backgroundColor) {
+        case 'light':
+            return '#15171a';
+        case 'dark':
+            return '#fff';
+        case 'accent':
+            return '#fff';
+        default:
+            return '#15171a';
+        }
+    };
+
+    const cardBackgroundColor = getBackgroundColor();
+    const textColor = getTextColor();
+    const margin = isScreenshot ? 'm-4' : 'm-16';
+    const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
+
+    const cardWidth = format === 'square' ? 'w-[392px]' : 'w-[316px]';
+    const cardHeight = 'h-[392px]';
+
+    const bannerImageSrc = isScreenshot && bannerDataUrl ? bannerDataUrl : (account?.bannerImageUrl || coverImage);
+    const avatarImageSrc = isScreenshot && avatarDataUrl ? avatarDataUrl : (account?.avatarUrl || publicationIcon);
+
+    return (
+        <div className={`relative z-20 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
+            <div className='relative h-48 p-2'>
+                {bannerImageSrc ?
+                    <img
+                        alt={account?.name}
+                        className='size-full rounded-[26px] rounded-b-none object-cover'
+                        referrerPolicy='no-referrer'
+                        src={bannerImageSrc}
+                    /> :
+                    <div className='relative size-full overflow-hidden rounded-[26px] rounded-b-none' style={{background: `linear-gradient(to bottom, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 1)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 0.5)})`}}>
+                        <DotsPattern className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-42px' : '-84px', left: isScreenshot ? '-69px' : '-138px'}} />
+                    </div>
+                }
+                {avatarImageSrc &&
+                    <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
+                        <APAvatar
+                            author={
+                                {
+                                    icon: {
+                                        url: avatarImageSrc || ''
+                                    },
+                                    name: account?.name || siteTitle || '',
+                                    handle: account?.handle
+                                }
+                            }
+                            size='md'
+                        />
+                    </div>
+                }
+            </div>
+            <div className={`flex grow flex-col items-center p-6 ${(account?.avatarUrl || publicationIcon) ? 'pt-9' : 'pt-3'} text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
+                <H2 className={`${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
+                <span className={`mt-0.5 text-lg ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
+                <div
+                    className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 font-medium leading-7 ${isScreenshot && 'tracking-normal'}`}
+                    style={{
+                        color: backgroundColor !== 'light' ? '#fff' : accentColor,
+                        borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor !== 'light' ? 0.7 : 0.2) : undefined,
+                        background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.12 : 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.48 : 0.16)})` : undefined
+                    }}
+                >
+                    {account?.handle}
+                </div>
+            </div>
+        </div>
+    );
+});
+
+ProfileCard.displayName = 'ProfileCard';
 
 const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const {isEnabled} = useFeatureFlags();
@@ -98,39 +215,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         };
     }, [isAltKeyHeld]);
 
-    const hexToRgba = (hex: string, alpha: number) => {
-        const r = parseInt(hex.slice(1, 3), 16);
-        const g = parseInt(hex.slice(3, 5), 16);
-        const b = parseInt(hex.slice(5, 7), 16);
-        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
-    };
-
-    const getBackgroundColor = () => {
-        switch (backgroundColor) {
-        case 'light':
-            return '#fff';
-        case 'dark':
-            return '#15171a';
-        case 'accent':
-            return accentColor || '#15171a';
-        default:
-            return '#fff';
-        }
-    };
-
-    const getTextColor = () => {
-        switch (backgroundColor) {
-        case 'light':
-            return '#15171a';
-        case 'dark':
-            return '#fff';
-        case 'accent':
-            return '#fff';
-        default:
-            return '#15171a';
-        }
-    };
-
     const getGradient = () => {
         switch (backgroundColor) {
         case 'light':
@@ -156,6 +240,20 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             return hexToRgba('#15171a', 0.025);
         }
     };
+
+    // Memoize ProfileCard props to prevent re-renders
+    const profileCardProps = useMemo(() => ({
+        accentColor,
+        account,
+        avatarDataUrl,
+        backgroundColor,
+        bannerDataUrl,
+        coverImage,
+        format: cardFormat,
+        isLoading,
+        publicationIcon,
+        siteTitle: siteData?.site?.title
+    }), [accentColor, account, avatarDataUrl, backgroundColor, bannerDataUrl, coverImage, cardFormat, isLoading, publicationIcon, siteData?.site?.title]);
 
     const handleDownload = async (event: React.MouseEvent) => {
         if (!profileCardRef.current || isProcessing) {
@@ -192,70 +290,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             setIsProcessing(false);
         }
     };
-
-    const ProfileCard: React.FC<ProfileCardProps> = memo(({isScreenshot = false, format}) => {
-        const cardBackgroundColor = getBackgroundColor();
-        const textColor = getTextColor();
-        const margin = isScreenshot ? 'm-4' : 'm-16';
-        const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
-
-        const cardWidth = format === 'square' ? 'w-[392px]' : 'w-[316px]';
-        const cardHeight = 'h-[392px]';
-
-        const bannerImageSrc = isScreenshot && bannerDataUrl ? bannerDataUrl : (account?.bannerImageUrl || coverImage);
-        const avatarImageSrc = isScreenshot && avatarDataUrl ? avatarDataUrl : (account?.avatarUrl || publicationIcon);
-
-        return (
-            <div className={`relative z-20 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
-                <div className='relative h-48 p-2'>
-                    {bannerImageSrc ?
-                        <img
-                            alt={account?.name}
-                            className='size-full rounded-[26px] rounded-b-none object-cover'
-                            crossOrigin="anonymous"
-                            referrerPolicy='no-referrer'
-                            src={bannerImageSrc}
-                        /> :
-                        <div className='relative size-full overflow-hidden rounded-[26px] rounded-b-none' style={{background: `linear-gradient(to bottom, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 1)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 0.5)})`}}>
-                            <DotsPattern className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-42px' : '-84px', left: isScreenshot ? '-69px' : '-138px'}} />
-                        </div>
-                    }
-                    {avatarImageSrc &&
-                        <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
-                            <APAvatar
-                                author={
-                                    {
-                                        icon: {
-                                            url: avatarImageSrc || ''
-                                        },
-                                        name: account?.name || siteData?.site?.title || '',
-                                        handle: account?.handle
-                                    }
-                                }
-                                size='md'
-                            />
-                        </div>
-                    }
-                </div>
-                <div className={`flex grow flex-col items-center p-6 ${(account?.avatarUrl || publicationIcon) ? 'pt-9' : 'pt-3'} text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
-                    <H2 className={`${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
-                    <span className={`mt-0.5 text-lg ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
-                    <div
-                        className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 font-medium leading-7 ${isScreenshot && 'pb-3 tracking-normal'}`}
-                        style={{
-                            color: backgroundColor !== 'light' ? '#fff' : accentColor,
-                            borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor !== 'light' ? 0.7 : 0.2) : undefined,
-                            background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.12 : 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.48 : 0.16)})` : undefined
-                        }}
-                    >
-                        {account?.handle}
-                    </div>
-                </div>
-            </div>
-        );
-    });
-
-    ProfileCard.displayName = 'ProfileCard';
 
     if (!isEnabled('share')) {
         return (
@@ -339,7 +373,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     </div>
                 </div>
                 <div className='relative flex flex-col items-center overflow-hidden rounded-2xl bg-gray-50'>
-                    <ProfileCard format={cardFormat} />
+                    <ProfileCard
+                        {...profileCardProps}
+                    />
                     <div className='relative z-20 flex w-full items-center justify-between px-6 pb-6'>
                         <div className='flex items-center gap-2'>
                             <a className='flex h-[34px] w-10 items-center justify-center rounded-sm bg-white px-3 shadow-xs hover:bg-gray-50 [&_svg]:size-4' href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`} rel="noopener noreferrer" target='_blank'>
@@ -380,7 +416,10 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         fontFamily: 'system-ui'
                     }}
                 >
-                    <ProfileCard format={cardFormat} isScreenshot={true} />
+                    <ProfileCard
+                        {...profileCardProps}
+                        isScreenshot={true}
+                    />
                     {(account?.bannerImageUrl || coverImage) &&
                     <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                     }
