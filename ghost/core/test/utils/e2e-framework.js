@@ -25,7 +25,6 @@ const crypto = require('crypto');
 const assert = require('assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
-const cacheRules = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
@@ -546,6 +545,5 @@ module.exports = {
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
     urlUtils: require('./urlUtils'),
-    resetRateLimits,
-    cacheRules
+    resetRateLimits
 };

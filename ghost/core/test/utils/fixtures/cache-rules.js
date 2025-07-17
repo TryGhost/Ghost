@@ -1,5 +1,5 @@
 module.exports = {
-    public: 'public, max-age=600',
+    public: 'public, max-age=0',
     hour: 'public, max-age=' + 3600,
     day: 'public, max-age=' + 86400,
     year: 'public, max-age=' + 31536000,

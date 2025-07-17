@@ -137,7 +137,7 @@
             "maxAge": 31536000
         },
         "frontend": {
-            "maxAge": 600
+            "maxAge": 0
         },
         "publicAssets": {
             "maxAge": 31536000
@@ -164,10 +164,10 @@
             "maxAge": 86400
         },
         "contentAPI": {
-            "maxAge": 600
+            "maxAge": 0
         },
         "commentsCountAPI": {
-            "maxAge": 30
+            "maxAge": 0
         },
         "admin": {
             "maxAge": 31536000
