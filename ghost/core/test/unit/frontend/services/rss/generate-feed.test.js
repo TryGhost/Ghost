@@ -264,7 +264,6 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('should remove clutter from bookmark card', function (done) {
-
             // Check if original card content is present
             data.posts[0].html.html.should.match(/kg-bookmark-thumbnail/);
             data.posts[0].html.html.should.match(/kg-bookmark-icon/);
@@ -282,7 +281,6 @@ describe('RSS: Generate Feed', function () {
         });
 
         it('should remove clutter from video card', function (done) {
-
             // Check if original card content is present
             data.posts[1].html.html.should.match(/kg-video-overlay/);
             data.posts[1].html.html.should.match(/kg-video-player-container/);
@@ -297,9 +295,7 @@ describe('RSS: Generate Feed', function () {
             }).catch(done);
         });
 
-
         it('should remove clutter from audio card', function (done) {
-
             // Check if original card content is present
             data.posts[2].html.html.should.match(/kg-audio-thumbnail/);
             data.posts[2].html.html.should.match(/kg-audio-player/);
