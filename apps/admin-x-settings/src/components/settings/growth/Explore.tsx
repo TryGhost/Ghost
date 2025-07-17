@@ -7,11 +7,13 @@ import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary}
 import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
+    const {updateRoute} = useRouting();
 
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const {localSettings, siteData} = useSettingGroup();
@@ -103,7 +105,9 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <span className='font-medium'>Get featured on Ghost Explore!</span>
                         <span className='text-pretty text-sm text-black/80'>Share your love about Ghost and get ranked higher on Explore.</span>
                     </div>
-                    <Button className='border border-purple bg-white text-purple hover:bg-purple/10 hover:text-purple' icon="sparkle" label="Send a testimonial" />
+                    <Button className='border border-purple bg-white text-purple hover:bg-purple/5 hover:text-purple' icon="quote" label="Send a testimonial" onClick={() => {
+                        updateRoute('explore/testimonial');
+                    }} />
                 </div>
             </SettingGroupContent>
             :
