@@ -13,13 +13,17 @@ describe('staticTheme', function () {
 
     beforeEach(function () {
         req = {};
-        res = {};
+        res = {
+            setHeader: sinon.stub()
+        };
 
         activeThemeStub = sinon.stub(themeEngine, 'getActive').returns({
             path: 'my/fake/path'
         });
 
-        expressStaticStub = sinon.spy(express, 'static');
+        expressStaticStub = sinon.stub(express, 'static').returns(function (_req, _res, _next) {
+            _next();
+        });
     });
 
     afterEach(function () {
@@ -223,6 +227,103 @@ describe('staticTheme', function () {
             expressStaticStub.called.should.be.false();
 
             done();
+        });
+    });
+
+    describe('paths without file extensions', function () {
+        it('should skip for root path /', function (done) {
+            req.path = '/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for /about/', function (done) {
+            req.path = '/about/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for /blog/my-post/', function (done) {
+            req.path = '/blog/my-post/';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should skip for path without trailing slash /contact', function (done) {
+            req.path = '/contact';
+
+            staticTheme()(req, res, function next() {
+                activeThemeStub.called.should.be.false();
+                expressStaticStub.called.should.be.false();
+
+                done();
+            });
+        });
+
+        it('should NOT skip for file with extension without trailing slash', function (done) {
+            req.path = '/somefile.txt';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
+        });
+
+        it('should NOT skip for file with extension with trailing slash', function (done) {
+            req.path = '/somefile.txt/';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
+        });
+
+        it('should NOT skip for deeply nested file with extension', function (done) {
+            req.path = '/deep/nested/path/file.css';
+
+            staticTheme()(req, res, function next() {
+                // Specifically gets called twice
+                activeThemeStub.calledTwice.should.be.true();
+                expressStaticStub.called.should.be.true();
+
+                // Check that express static gets called with the theme path + maxAge
+                should.exist(expressStaticStub.firstCall.args);
+                expressStaticStub.firstCall.args[0].should.eql('my/fake/path');
+                expressStaticStub.firstCall.args[1].should.be.an.Object().with.property('maxAge');
+
+                done();
+            });
         });
     });
 });
