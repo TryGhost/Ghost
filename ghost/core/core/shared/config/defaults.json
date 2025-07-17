@@ -168,6 +168,12 @@
         },
         "commentsCountAPI": {
             "maxAge": 0
+        },
+        "admin": {
+            "maxAge": 31536000
+        },
+        "theme": {
+            "maxAge": 31536000
         }
     },
     "optimization": {
