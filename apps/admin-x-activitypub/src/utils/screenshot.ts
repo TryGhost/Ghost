@@ -4,6 +4,7 @@ export interface ScreenshotOptions {
     filename?: string;
     scale?: number;
     backgroundColor?: string | null;
+    copyToClipboard?: boolean;
 }
 
 export async function takeScreenshot(
@@ -13,7 +14,8 @@ export async function takeScreenshot(
     const {
         filename = `screenshot-${Date.now()}.png`,
         scale = 2,
-        backgroundColor = null
+        backgroundColor = null,
+        copyToClipboard = false
     } = options;
 
     try {
@@ -27,23 +29,32 @@ export async function takeScreenshot(
         });
 
         await new Promise<void>((resolve, reject) => {
-            canvas.toBlob((blob) => {
+            canvas.toBlob(async (blob) => {
                 if (!blob) {
                     reject(new Error('Failed to create blob from canvas'));
                     return;
                 }
 
                 try {
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.href = url;
-                    link.download = filename;
+                    if (copyToClipboard) {
+                        if (navigator.clipboard && 'write' in navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+                            const clipboardItem = new ClipboardItem({'image/png': blob});
+                            await navigator.clipboard.write([clipboardItem]);
+                        } else {
+                            throw new Error('Clipboard API not supported in this browser');
+                        }
+                    } else {
+                        const url = URL.createObjectURL(blob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = filename;
 
-                    document.body.appendChild(link);
-                    link.click();
+                        document.body.appendChild(link);
+                        link.click();
 
-                    document.body.removeChild(link);
-                    URL.revokeObjectURL(url);
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(url);
+                    }
 
                     resolve();
                 } catch (error) {
