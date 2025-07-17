@@ -1,3 +1,4 @@
+import PostsErrorBoundary from './components/errors/PostsErrorBoundary';
 import React, {createContext, useContext} from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {AppContextType, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
@@ -41,9 +42,11 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
         >
             <PostsAppContext.Provider value={appContextValue}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                    <ShadeApp className="shade-posts" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                        <Outlet />
-                    </ShadeApp>
+                    <PostsErrorBoundary>
+                        <ShadeApp className="shade-posts" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                            <Outlet />
+                        </ShadeApp>
+                    </PostsErrorBoundary>
                 </RouterProvider>
             </PostsAppContext.Provider>
         </FrameworkProvider>
