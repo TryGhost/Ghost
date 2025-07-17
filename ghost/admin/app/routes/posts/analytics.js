@@ -4,7 +4,7 @@ import {pluralize} from 'ember-inflector';
 import {inject as service} from '@ember/service';
 export default class Analytics extends AuthenticatedRoute {
     @inject config;
-    @service feature;
+    @service session;
 
     model(params) {
         let {post_id: id} = params;
@@ -54,11 +54,6 @@ export default class Analytics extends AuthenticatedRoute {
                 return this.transitionTo('posts');
             } else if (!this.session.user.isAdmin) {
                 return this.transitionTo('site');
-            }
-
-            // ensure we don't load the app if flags aren't set
-            if (!this.feature.trafficAnalytics || !this.feature.ui60) {
-                return this.transitionTo('home');
             }
         }
     }

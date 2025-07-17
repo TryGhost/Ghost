@@ -13,13 +13,15 @@ export default class HomeRoute extends AuthenticatedRoute {
 
         // This is needed to initialize the checklist for sites that have been already set up
         if (transition.to?.queryParams?.firstStart === 'true') {
-            return this.router.transitionTo('setup.done');
+            return this.replaceWith('setup.done');
         }
 
-        if ((this.feature.ui60 || this.feature.trafficAnalytics) && this.session.user?.isAdmin) {
-            this.router.transitionTo('stats-x');
+        if (this.session.user?.isAdmin) {
+            return this.replaceWith('stats-x');
+        } else if (this.session.user?.isContributor) {
+            return this.replaceWith('posts');
         } else {
-            this.router.transitionTo('dashboard');
+            return this.replaceWith('site');
         }
     }
 }

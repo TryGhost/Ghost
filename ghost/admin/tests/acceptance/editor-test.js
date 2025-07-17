@@ -9,6 +9,7 @@ import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
 import {enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
+import {mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {selectChoose} from 'ember-power-select/test-support';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -23,6 +24,7 @@ describe('Acceptance: Editor', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        mockAnalyticsApps();
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -601,7 +603,7 @@ describe('Acceptance: Editor', function () {
             });
 
             // visit the analytics page for the post
-            await visit(`/posts/analytics/${post.id}`);
+            await visit(`/posts/analytics/beta/${post.id}`);
             // now visit the editor for the same post
             await visit(`/editor/post/${post.id}`);
 
@@ -614,7 +616,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+            ).to.equal(`/ghost/posts/analytics/beta/${post.id}`);
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {

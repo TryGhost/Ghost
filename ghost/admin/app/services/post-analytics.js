@@ -6,7 +6,6 @@ import {tracked} from '@glimmer/tracking';
 export default class PostAnalyticsService extends Service {
     @service ajax;
     @service ghostPaths;
-    @service feature;
     @service settings;
 
     /**

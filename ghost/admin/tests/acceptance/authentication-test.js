@@ -5,6 +5,7 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
+import {mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -61,6 +62,7 @@ describe('Acceptance: Authentication', function () {
 
     beforeEach(async function () {
         this.server.loadFixtures('configs');
+        mockAnalyticsApps();
     });
 
     describe('setup redirect', function () {
@@ -205,7 +207,7 @@ describe('Acceptance: Authentication', function () {
             await completeSignIn();
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
             await completeVerification();
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('handles 2fa code verification failure', async function () {
@@ -295,7 +297,7 @@ describe('Acceptance: Authentication', function () {
             // can correctly submit after failed attempts
             await fillIn(codeInput, '123456');
             await click(verifyButton);
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('can resend verification code', async function () {
