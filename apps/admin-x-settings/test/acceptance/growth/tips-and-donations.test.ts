@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tips and donations', () => {
     test('Is not shown when Stripe is disabled', async ({page}) => {

@@ -14,8 +14,7 @@ export default class StatsXRoute extends AuthenticatedRoute {
             return this.transitionTo('site');
         }
 
-        // This ensures that we don't load this page if the stats config is not set
-        if (!(this.config.stats && this.feature.trafficAnalytics)) {
+        if (!this.feature.trafficAnalytics && !this.feature.ui60) {
             return this.transitionTo('home');
         }
     }

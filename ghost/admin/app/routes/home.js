@@ -15,7 +15,7 @@ export default class HomeRoute extends AuthenticatedRoute {
             return this.router.transitionTo('setup.done');
         }
         
-        if (this.config.labs?.ui60 && this.feature.trafficAnalytics) {
+        if (this.feature.ui60 || this.feature.trafficAnalytics) {
             this.router.transitionTo('stats-x');
         } else {
             this.router.transitionTo('dashboard');

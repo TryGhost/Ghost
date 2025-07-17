@@ -59,12 +59,10 @@ function forwardToExpressStatic(req, res, next) {
         return next();
     }
 
-    const configMaxAge = config.get('caching:theme:maxAge');
-
-    // @NOTE: the maxAge config passed below are in milliseconds and the config
-    //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
     express.static(themeEngine.getActive().path, {
-        maxAge: (configMaxAge || configMaxAge === 0) ? configMaxAge : (365 * 24 * 60 * 60 * 1000) // Default to 1 year in ms
+        // @NOTE: the maxAge config passed below are in milliseconds and the config
+        //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
+        maxAge: config.get('caching:theme:maxAge') * 1000
     }
     )(req, res, next);
 }

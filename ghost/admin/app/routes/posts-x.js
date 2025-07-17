@@ -25,9 +25,10 @@ export default class PostsXRoute extends AuthenticatedRoute {
             return this.transitionTo('site');
         }
 
-        // This ensures that we don't load this page if the stats config is not set
-        if (!(this.config.stats && this.feature.trafficAnalytics)) {
-            return this.transitionTo('home');
+        // ensure we don't load the app if flags aren't set
+        if (!this.feature.trafficAnalytics && !this.feature.ui60) {
+            // Redirect to the old post analytics route
+            return this.transitionTo('posts.analytics', this.paramsFor('posts-x').post_id);
         }
     }
 }
