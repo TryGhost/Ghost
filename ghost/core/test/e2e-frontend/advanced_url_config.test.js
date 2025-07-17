@@ -96,5 +96,20 @@ describe('Advanced URL Configurations', function () {
             await request.get('/welcome/amp/')
                 .expect(404);
         });
+
+        describe('Preview routes', function () {
+            before(async function () {
+                // NOTE: ideally we'd only insert the single draft post we want to test here
+                // but we don't have a way to do that just now and are already planning to
+                // replace the fixture system
+                await testUtils.fixtures.insertPostsAndTags();
+            });
+
+            it('should not cache preview routes', async function () {
+                await request.get('/blog/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
+                    .expect(200)
+                    .expect('Cache-Control', testUtils.cacheRules.noCache);
+            });
+        });
     });
 });
