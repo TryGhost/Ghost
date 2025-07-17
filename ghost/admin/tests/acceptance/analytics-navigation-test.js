@@ -103,28 +103,12 @@ describe('Acceptance: Analytics Navigation', function () {
     });
 
     describe('Stats-X route (/analytics)', function () {
-        it('allows access when trafficAnalytics is enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
+        it('allows access', async function () {
             await visit('/analytics');
             await expectStatsAnalyticsRoute();
-        });
-
-        it('allows access when ui60 is enabled', async function () {
-            enableLabsFlag(this.server, 'ui60');
-
-            await visit('/analytics');
-            await expectStatsAnalyticsRoute();
-        });
-
-        it('redirects to dashboard when flags are disabled', async function () {
-            await visit('/analytics');
-            expect(currentURL()).to.equal('/dashboard');
         });
 
         it('redirects contributors to posts', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
             updateUserRole(this.server, 'Contributor');
 
             await visit('/analytics');
@@ -132,8 +116,6 @@ describe('Acceptance: Analytics Navigation', function () {
         });
 
         it('redirects non-admin users to site', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
             updateUserRole(this.server, 'Editor');
 
             await visit('/analytics');
@@ -186,30 +168,14 @@ describe('Acceptance: Analytics Navigation', function () {
     });
 
     describe('Navigation Menu', function () {
-        it('shows Analytics link when ui60 flag is enabled for admin', async function () {
-            enableLabsFlag(this.server, 'ui60');
-
-            await visit('/dashboard');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.exist;
-            expect(analyticsLink.textContent).to.contain('Analytics');
-        });
-
-        it('shows Analytics link when only trafficAnalytics is enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
-            await visit('/dashboard');
-            
+        it('shows Analytics link in nav', async function () {
+            await visit('/home');
             let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
         it('hides Analytics link for non-admin users', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
             updateUserRole(this.server, 'Editor');
 
             await visit('/site');
@@ -219,10 +185,7 @@ describe('Acceptance: Analytics Navigation', function () {
         });
 
         it('navigates to Analytics when Analytics nav link is clicked', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
-            await visit('/dashboard');
+            await visit('/site');
             await click('.gh-nav-list a[href*="analytics"]');
             
             expect(currentURL()).to.equal('/analytics');
@@ -258,9 +221,6 @@ describe('Acceptance: Analytics Navigation', function () {
         });
 
         it('takes user to analytics after signin when flags are enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
             await createUserAndSignIn(this.server, {role: 'Administrator', email: 'test@example.com'});
             
             expect(currentURL()).to.equal('/analytics');
@@ -271,9 +231,6 @@ describe('Acceptance: Analytics Navigation', function () {
         });
 
         it('redirects non-admin after signin based on role', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
             await createUserAndSignIn(this.server, {role: 'Author', email: 'author@example.com'});
             
             expect(currentURL()).to.equal('/site');
@@ -284,10 +241,7 @@ describe('Acceptance: Analytics Navigation', function () {
     });
 
     describe('Setup Flow Navigation', function () {
-        it('shows Analytics after setup when flags are enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
+        it('shows Analytics after setup', async function () {
             await visit('/setup/done');
             
             expect(currentURL()).to.equal('/analytics');
