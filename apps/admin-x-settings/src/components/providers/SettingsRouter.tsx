@@ -33,6 +33,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'offers/edit': 'OffersContainerModal',
     'offers/edit/:id': 'OffersContainerModal',
     'offers/new': 'OffersContainerModal',
+    'explore/testimonial': 'TestimonialsModal',
     about: 'AboutModal'
 };
 
