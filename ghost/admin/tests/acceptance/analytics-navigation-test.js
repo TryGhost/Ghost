@@ -94,7 +94,7 @@ describe('Acceptance: Analytics Navigation', function () {
     });
 
     describe('Stats-X route (/analytics)', function () {
-        it('allows access when trafficAnalytics is enabled', async function () {
+        it('allows access', async function () {
             await visit('/analytics');
             await expectStatsAnalyticsRoute();
         });
