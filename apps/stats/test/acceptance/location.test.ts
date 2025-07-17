@@ -1,4 +1,4 @@
-import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/builders';
+import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/builders/index';
 import LocationsTab from './pages/LocationsTab.ts';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
