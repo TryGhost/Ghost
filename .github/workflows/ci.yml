@@ -818,12 +818,12 @@ jobs:
           docker system info | grep -A 1 "Registry Mirrors"
 
       - name: Start E2E services
-        run: docker-compose -f e2e/compose.e2e.yml up -d
+        run: docker compose -f e2e/compose.e2e.yml up -d
         
       - name: Wait for services to be healthy
         run: |
           echo "Waiting for MySQL to be ready..."
-          timeout 60 bash -c 'until docker-compose -f e2e/compose.e2e.yml exec -T mysql mysqladmin ping -h localhost --silent; do sleep 2; done'
+          timeout 60 bash -c 'until docker compose -f e2e/compose.e2e.yml exec -T mysql mysqladmin ping -h localhost --silent; do sleep 2; done'
           echo "Waiting for Tinybird to be ready..."
           timeout 60 bash -c 'until curl -f http://localhost:7181/; do sleep 2; done'
 
@@ -882,7 +882,7 @@ jobs:
 
       - name: Stop E2E services
         if: always()
-        run: docker-compose -f e2e/compose.e2e.yml down
+        run: docker compose -f e2e/compose.e2e.yml down
 
   job_tinybird-tests:
     name: Tinybird Tests
