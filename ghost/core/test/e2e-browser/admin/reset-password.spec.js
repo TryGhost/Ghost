@@ -31,7 +31,7 @@ test.describe('Admin', () => {
             await sharedPage.getByRole('button', {name: 'Save new password'}).click();
 
             await sharedPage.waitForLoadState('networkidle');
-            await expect(sharedPage).toHaveURL(/\/ghost\/#\/dashboard/);
+            await expect(sharedPage).toHaveURL(/\/ghost\/#\/analytics/);
         });
 
         test.describe('2FA Reset Password', () => {
@@ -65,7 +65,7 @@ test.describe('Admin', () => {
                 await sharedPage.getByRole('button', {name: 'Save new password'}).click();
 
                 await sharedPage.waitForLoadState('networkidle');
-                await expect(sharedPage).toHaveURL(/\/ghost\/#\/dashboard/);
+                await expect(sharedPage).toHaveURL(/\/ghost\/#\/analytics/);
             });
         });
     });
