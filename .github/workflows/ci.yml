@@ -824,8 +824,24 @@ jobs:
 
       - name: Start E2E services
         run: |
+          echo "=== Starting network monitoring ==="
+          # Start tcpdump in background to monitor registry connections
+          sudo tcpdump -i any -n host mirror.gcr.io or host registry-1.docker.io or host index.docker.io > /tmp/registry_traffic.log 2>&1 &
+          TCPDUMP_PID=$!
+          
           echo "=== Pulling images with debug info ==="
           docker compose -f e2e/compose.e2e.yml pull
+          
+          echo "=== Stopping network monitoring ==="
+          sleep 2  # Let tcpdump capture any remaining packets
+          sudo kill $TCPDUMP_PID 2>/dev/null || true
+          
+          echo "=== Registry traffic analysis ==="
+          echo "Connections to mirror.gcr.io:"
+          grep "mirror.gcr.io" /tmp/registry_traffic.log || echo "No connections to mirror.gcr.io detected"
+          echo "Connections to Docker Hub:"
+          grep -E "(registry-1\.docker\.io|index\.docker\.io)" /tmp/registry_traffic.log || echo "No connections to Docker Hub detected"
+          
           echo "=== Inspecting pulled images ==="
           docker image inspect mysql:8.0 --format='{{.RepoDigests}}' || echo "MySQL image not found"
           docker image inspect tinybirdco/tinybird-local:latest --format='{{.RepoDigests}}' || echo "Tinybird image not found"
