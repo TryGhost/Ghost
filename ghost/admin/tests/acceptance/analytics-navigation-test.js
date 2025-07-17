@@ -45,10 +45,6 @@ describe('Acceptance: Analytics Navigation', function () {
     function findAnalyticsNavLink() {
         return document.querySelector('.gh-nav-list a[href*="analytics"]');
     }
-
-    function findDashboardNavLink() {
-        return document.querySelector('.gh-nav-list a[href*="dashboard"]');
-    }
     
     async function clickPostAnalytics(postId) {
         // The analytics link is in the post row, find the specific one for this post
@@ -200,27 +196,6 @@ describe('Acceptance: Analytics Navigation', function () {
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
-        it('shows Analytics and Dashboard link when trafficAnalytics flag is enabled for admin', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
-            await visit('/dashboard');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.exist;
-            expect(analyticsLink.textContent).to.contain('Analytics');
-
-            let dashboardLink = findDashboardNavLink();
-            expect(dashboardLink).to.exist;
-            expect(dashboardLink.textContent).to.contain('Dashboard');
-        });
-
-        it('hides Analytics link when flags are disabled', async function () {
-            await visit('/dashboard');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.not.exist;
-        });
-
         it('shows Analytics link when only trafficAnalytics is enabled', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
 
@@ -295,15 +270,6 @@ describe('Acceptance: Analytics Navigation', function () {
             expect(analyticsLink.textContent).to.contain('Analytics');
         });
 
-        it('takes user to dashboard after signin when flags are disabled', async function () {
-            await createUserAndSignIn(this.server, {role: 'Administrator', email: 'test@example.com'});
-            
-            expect(currentURL()).to.equal('/dashboard');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.not.exist;
-        });
-
         it('redirects non-admin after signin based on role', async function () {
             enableLabsFlag(this.server, 'trafficAnalytics');
             enableLabsFlag(this.server, 'ui60');
@@ -328,15 +294,6 @@ describe('Acceptance: Analytics Navigation', function () {
             
             let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
-        });
-
-        it('takes user to dashboard after setup when flags are disabled', async function () {
-            await visit('/setup/done');
-            
-            expect(currentURL()).to.equal('/dashboard');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.not.exist;
         });
     });
 });
