@@ -199,7 +199,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'publish+send'});
-            await closePublishFlow(sharedPage);
             await checkPostPublished(sharedPage, postData);
         });
 
@@ -231,7 +230,6 @@ test.describe('Publishing', () => {
             await sharedPage.goto('/ghost');
             await createPostDraft(sharedPage, postData);
             await publishPost(sharedPage, {type: 'send'});
-            await closePublishFlow(sharedPage);
             await checkPostNotPublished(sharedPage, postData);
         });
     });
