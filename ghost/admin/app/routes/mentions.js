@@ -19,12 +19,16 @@ export default class MentionsRoute extends AuthenticatedRoute {
     @service store;
     @service feature;
     @service infinity;
+    @service session;
 
     perPage = 10;
 
-    beforeModel() {
+    beforeModel() {   
         super.beforeModel(...arguments);
-        if (!this.feature.webmentions) {
+        
+        // Check feature flag only when user exists (implicitly requires authentication)
+        // This follows the same pattern as other routes like tags, admin, etc.
+        if (this.session.user && !this.feature.webmentions) {
             return this.transitionTo('home');
         }
     }
