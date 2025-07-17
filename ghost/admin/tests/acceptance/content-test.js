@@ -951,12 +951,9 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
-            it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
+            it('shows visitor count column when webAnalyticsEnabled is enabled', async function () {
                 // Enable webAnalyticsEnabled setting
                 this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
-
-                // Enable trafficAnalytics feature flag
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
 
                 await visit('/posts');
 
