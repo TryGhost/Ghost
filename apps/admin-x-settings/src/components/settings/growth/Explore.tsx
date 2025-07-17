@@ -1,4 +1,4 @@
-import FakeLogo from '../../../assets/images/portal-splash-default-logo.png';
+import FakeLogo from '../../../assets/images/explore-default-logo.png';
 import React from 'react';
 import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
@@ -74,10 +74,10 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 backgroundImage: `url(${icon})`
                             }} />
                             :
-                            <div className='flex aspect-square items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
+                            <div className='flex aspect-square size-10 items-center justify-center overflow-hidden rounded-full p-1 text-white' style={{
                                 backgroundColor: color
                             }}>
-                                <img className='h-auto w-5' src={FakeLogo} />
+                                <img className='h-auto w-8' src={FakeLogo} />
                             </div>
                         }
                         <div className='mt-3 text-lg font-semibold tracking-tight'>{title}</div>
