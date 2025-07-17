@@ -4,7 +4,7 @@ exports[`Config API As Owner Can retrieve config and all expected properties 1: 
 Object {
   "config": Object {
     "clientExtensions": Object {},
-    "database": StringMatching /sqlite3\\|mysql\\|mysql2/,
+    "database": StringMatching /sqlite3\\|node-sqlite\\|mysql\\|mysql2/,
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
