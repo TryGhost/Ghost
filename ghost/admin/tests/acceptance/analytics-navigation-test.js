@@ -78,10 +78,6 @@ describe('Acceptance: Analytics Navigation', function () {
         expect(currentURL()).to.equal(`/posts/analytics/beta/${postId}`);
     }
     
-    async function expectOldPostAnalyticsRoute(postId) {
-        expect(currentURL()).to.equal(`/posts/analytics/${postId}`);
-    }
-    
     async function expectStatsAnalyticsRoute() {
         expect(currentURL()).to.equal('/analytics');
     }
@@ -124,41 +120,13 @@ describe('Acceptance: Analytics Navigation', function () {
     });
 
     describe('Posts-X route (/posts/analytics/beta/:post_id)', function () {
-        it('allows access when both trafficAnalytics and ui60 are enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
+        it('allows access', async function () {
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);
             await expectPostAnalyticsRoute(post.id);
-        });
-
-        it('allows access when only trafficAnalytics is enabled', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
-            let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
-            await expectPostAnalyticsRoute(post.id);
-        });
-
-        it('allows access when only ui60 is enabled', async function () {
-            enableLabsFlag(this.server, 'ui60');
-
-            let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
-            await expectPostAnalyticsRoute(post.id);
-        });
-
-        it('redirects to old post analytics when both flags are disabled', async function () {
-            let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
-            await expectOldPostAnalyticsRoute(post.id);
         });
 
         it('redirects contributors to posts', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
             updateUserRole(this.server, 'Contributor');
 
             let post = this.server.create('post', {status: 'published'});
@@ -194,22 +162,11 @@ describe('Acceptance: Analytics Navigation', function () {
 
     describe('Posts Index Navigation', function () {
         it('navigates to posts-x route when clicking on post analytics', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-
             let post = createPostWithEmail(this.server);
 
             await visit('/posts');
             await clickPostAnalytics(post.id);
             await expectPostAnalyticsRoute(post.id);
-        });
-
-        it('navigates to old post analytics when clicking on post analytics', async function () {
-            let post = createPostWithEmail(this.server);
-
-            await visit('/posts');
-            await clickPostAnalytics(post.id);
-            await expectOldPostAnalyticsRoute(post.id);
         });
     });
 

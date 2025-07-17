@@ -24,11 +24,5 @@ export default class PostsXRoute extends AuthenticatedRoute {
         } else if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
         }
-
-        // ensure we don't load the app if flags aren't set
-        if (!this.feature.trafficAnalytics && !this.feature.ui60) {
-            // Redirect to the old post analytics route
-            return this.transitionTo('posts.analytics', this.paramsFor('posts-x').post_id);
-        }
     }
 }
