@@ -37,7 +37,7 @@ describe('Config API', function () {
                 .expectStatus(200)
                 .matchBodySnapshot({
                     config: {
-                        database: stringMatching(/sqlite3|mysql|mysql2/),
+                        database: stringMatching(/sqlite3|node-sqlite|mysql|mysql2/),
                         environment: stringMatching(/^testing/),
                         version: stringMatching(/\d+\.\d+\.\d+/)
                     }
