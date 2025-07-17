@@ -26,7 +26,7 @@ export default class PostsXRoute extends AuthenticatedRoute {
         }
 
         // ensure we don't load the app if flags aren't set
-        if (!this.feature.trafficAnalytics && !this.feature.ui60) {
+        if (!this.feature.trafficAnalytics) {
             // Redirect to the old post analytics route
             return this.transitionTo('posts.analytics', this.paramsFor('posts-x').post_id);
         }

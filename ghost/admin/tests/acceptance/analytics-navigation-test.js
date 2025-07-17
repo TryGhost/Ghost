@@ -159,14 +159,6 @@ describe('Acceptance: Analytics Navigation', function () {
             await expectPostAnalyticsRoute(post.id);
         });
 
-        it('allows access when only ui60 is enabled', async function () {
-            enableLabsFlag(this.server, 'ui60');
-
-            let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
-            await expectPostAnalyticsRoute(post.id);
-        });
-
         it('redirects to old post analytics when both flags are disabled', async function () {
             let post = this.server.create('post', {status: 'published'});
             await visit(`/posts/analytics/beta/${post.id}`);

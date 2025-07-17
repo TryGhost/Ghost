@@ -57,7 +57,7 @@ export default class Analytics extends AuthenticatedRoute {
             }
 
             // ensure we don't load the app if flags aren't set
-            if (!this.feature.trafficAnalytics || !this.feature.ui60) {
+            if (!this.feature.trafficAnalytics) {
                 return this.transitionTo('home');
             }
         }
