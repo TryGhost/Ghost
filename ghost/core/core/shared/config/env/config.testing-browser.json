@@ -72,6 +72,17 @@
             "freeRetries": 10
         }
     },
+    "caching": {
+        "frontend": {
+            "maxAge": 0
+        },
+        "contentAPI": {
+            "maxAge": 0
+        },
+        "commentsCountAPI": {
+            "maxAge": 0
+        }
+    },
     "privacy": {
         "useTinfoil": true,
         "useStructuredData": true
