@@ -17,11 +17,8 @@ export default class SetupFinishingTouchesRoute extends AuthenticatedRoute {
             this.onboarding.startChecklist();
         }
 
-        // Redirect to Analytics if trafficAnalytics or ui60 is enabled and user has access
-        if ((this.feature.trafficAnalytics || this.feature.ui60) && this.session.user?.isAdmin) {
+        if (this.session.user?.isAdmin) {
             return this.router.transitionTo('stats-x');
-        } else {
-            return this.router.transitionTo('dashboard');
         }
     }
 }
