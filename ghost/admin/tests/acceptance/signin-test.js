@@ -1,12 +1,10 @@
-import config from 'ghost-admin/config/environment';
 import {Response} from 'miragejs';
-import {
-    afterEach,
+import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {    
     beforeEach,
     describe,
     it
 } from 'mocha';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
@@ -17,48 +15,6 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Signin', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
-
-    // Helper function to setup signin flow
-    async function setupSigninFlow(server, {role = 'Administrator', fillForm = true} = {}) {
-        // Ensure fixtures are loaded
-        if (!server.schema.configs.all().length) {
-            server.loadFixtures('configs');
-        }
-        if (!server.schema.settings.all().length) {
-            server.loadFixtures('settings');
-        }
-        
-        let roleObj = server.create('role', {name: role});
-        server.create('user', {roles: [roleObj], slug: 'test-user'});
-
-        server.post('/session', function (schema, {requestBody}) {
-            let {
-                username,
-                password
-            } = JSON.parse(requestBody);
-
-            expect(username).to.equal('test@example.com');
-
-            if (password === 'thisissupersafe') {
-                return new Response(201);
-            } else {
-                return new Response(401, {}, {
-                    errors: [{
-                        type: 'UnauthorizedError',
-                        message: 'Invalid Password'
-                    }]
-                });
-            }
-        });
-
-        await invalidateSession();
-        await visit('/signin');
-
-        if (fillForm) {
-            await fillIn('[name="identification"]', 'test@example.com');
-            await fillIn('[name="password"]', 'thisissupersafe');
-        }
-    }
 
     it('redirects if already authenticated', async function () {
         let role = this.server.create('role', {name: 'Author'});
