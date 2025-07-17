@@ -55,11 +55,6 @@ export default class Analytics extends AuthenticatedRoute {
             } else if (!this.session.user.isAdmin) {
                 return this.transitionTo('site');
             }
-
-            // ensure we don't load the app if flags aren't set
-            if (!this.feature.trafficAnalytics) {
-                return this.transitionTo('home');
-            }
         }
     }
 
