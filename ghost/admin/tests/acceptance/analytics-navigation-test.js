@@ -45,6 +45,7 @@ describe('Acceptance: Analytics Navigation', function () {
         return document.querySelector('.gh-nav-list a[href*="analytics"]');
     }
 
+  
     async function clickPostAnalytics(postId) {
         // The analytics link is in the post row, find the specific one for this post
         let postRow = document.querySelector(`[data-test-post-id="${postId}"]`);
@@ -137,8 +138,7 @@ describe('Acceptance: Analytics Navigation', function () {
 
     describe('Navigation Menu', function () {
         it('shows Analytics link', async function () {
-            await visit('/site');
-            
+            await visit('/site');            
             let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.exist;
             expect(analyticsLink.textContent).to.contain('Analytics');
