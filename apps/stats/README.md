@@ -43,8 +43,6 @@ yarn
 yarn dev
 ```
 
-The Stats app is only displayed if the `trafficAnalytics` labs flag is enabled. With this enabled, the "Stats" tab should appear in your site's dashboard.
-
 ### Build
 
 ```bash
