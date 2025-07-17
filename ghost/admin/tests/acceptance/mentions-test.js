@@ -1,4 +1,5 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {currentURL, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableLabsFlag} from '../helpers/labs-flag';
@@ -10,8 +11,15 @@ describe('Acceptance: Mentions', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    beforeEach(function () {
+        mockAnalyticsApps();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
+
     it('redirects to signin when not authenticated', async function () {
-        enableLabsFlag(this.server, 'webmentions');
         await invalidateSession();
         await visit('/mentions');
         expect(currentURL()).to.equal('/signin');
@@ -20,7 +28,6 @@ describe('Acceptance: Mentions', function () {
     describe('as admin', function () {
         beforeEach(async function () {
             enableLabsFlag(this.server, 'webmentions');
-
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
             await authenticateSession();
