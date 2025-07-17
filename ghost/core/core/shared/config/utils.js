@@ -70,7 +70,7 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
 
     nconf.set('database', database);
 
-    if (nconf.get('database:client') === 'sqlite3') {
+    if (['sqlite3', 'node-sqlite'].includes(nconf.get('database:client'))) {
         makePathsAbsolute(nconf, nconf.get('database:connection'), 'database:connection');
     }
 };

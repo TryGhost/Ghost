@@ -506,7 +506,7 @@ function deleteTable(table, transaction = db.knex) {
 async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
+    if (client === 'sqlite3' || client === 'node-sqlite') {
         const response = await transaction.raw('select * from sqlite_master where type = "table"');
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
@@ -524,7 +524,7 @@ async function getTables(transaction = db.knex) {
 async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
+    if (client === 'sqlite3' || client === 'node-sqlite') {
         const response = await transaction.raw(`pragma index_list("${table}")`);
         return _.flatten(_.map(response, 'name'));
     } else if (client === 'mysql2') {
@@ -542,7 +542,7 @@ async function getIndexes(table, transaction = db.knex) {
 async function getColumns(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
+    if (client === 'sqlite3' || client === 'node-sqlite') {
         const response = await transaction.raw(`pragma table_info("${table}")`);
         return _.flatten(_.map(response, 'name'));
     } else if (client === 'mysql2') {
