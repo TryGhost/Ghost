@@ -1,4 +1,4 @@
-import OverviewTab from './pages/OverviewTab.ts';
+import {AnalyticsOverviewPage} from '@tryghost/e2e/build/helpers/pages/admin';
 import {
     createMockRequests,
     mockApi
@@ -17,15 +17,15 @@ test.describe('Stats App', () => {
             }}
         )});
 
-        const overviewPage = new OverviewTab(page);
-        await overviewPage.visit();
+        const overviewPage = new AnalyticsOverviewPage(page);
+        await overviewPage.goto();
 
         await expect(overviewPage.header).toBeVisible();
     });
 
     test('shows an error without mocked data', async ({page}) => {
-        const overviewPage = new OverviewTab(page);
-        await overviewPage.visit();
+        const overviewPage = new AnalyticsOverviewPage(page);
+        await overviewPage.goto();
 
         await expect(overviewPage.body).toContainText(/Unexpected Application Error/);
     });
@@ -51,8 +51,8 @@ test.describe('Stats App', () => {
             }
         })});
 
-        const overviewPage = new OverviewTab(page);
-        await overviewPage.visit();
+        const overviewPage = new AnalyticsOverviewPage(page);
+        await overviewPage.goto();
 
         await expect(overviewPage.body).toContainText('155');
     });
