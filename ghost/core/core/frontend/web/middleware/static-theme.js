@@ -69,6 +69,10 @@ function forwardToExpressStatic(req, res, next) {
 
 function staticTheme() {
     return function denyStatic(req, res, next) {
+        if (!path.extname(req.path)) {
+            return next();
+        }
+
         if (!isAllowedFile(req.path.toLowerCase()) && isDeniedFile(req.path.toLowerCase())) {
             return next();
         }

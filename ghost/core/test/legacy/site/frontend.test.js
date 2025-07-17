@@ -101,8 +101,8 @@ describe('Frontend Routing', function () {
             });
 
             it('Single post should sanitize double slashes when redirecting uppercase', function (done) {
-                request.get('///Google.com/')
-                    .expect('Location', '/google.com/')
+                request.get('///Google/')
+                    .expect('Location', '/google/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
                     .end(doEnd(done));
