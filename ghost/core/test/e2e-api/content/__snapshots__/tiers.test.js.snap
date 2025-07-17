@@ -51,7 +51,7 @@ Object {
 exports[`Tiers Content API Can filter on visibility 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "727",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -129,7 +129,7 @@ Object {
 exports[`Tiers Content API Can request only active tiers 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "1051",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
