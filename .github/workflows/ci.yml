@@ -819,8 +819,8 @@ jobs:
           cat /etc/docker/daemon.json
           echo "=== Docker system info (Registry Mirrors) ==="
           docker system info | grep -A 3 "Registry Mirrors" || echo "No registry mirrors found in system info"
-          echo "=== Testing mirror connectivity ==="
-          curl -I https://mirror.gcr.io/v2/ || echo "Mirror connectivity test failed"
+          echo "=== Ensuring no Docker Hub authentication to avoid credential forwarding bug ==="
+          docker logout || echo "No Docker Hub login found"
 
       - name: Start E2E services
         run: |
