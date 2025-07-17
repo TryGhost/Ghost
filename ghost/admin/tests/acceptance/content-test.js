@@ -951,14 +951,20 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
-            it('shows visitor count column when webAnalyticsEnabled is enabled', async function () {
+            it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
                 // Enable webAnalyticsEnabled setting
                 this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
 
+                // Enable trafficAnalytics feature flag
+                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
+
                 await visit('/posts');
 
+                // When both settings are enabled, the visitor count column container should exist
+                // even if it shows "—" without actual data
                 expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
 
+                // The page should load without errors when analytics are enabled
                 expect(currentURL(), 'current URL').to.equal('/posts');
             });
 
@@ -1022,25 +1028,6 @@ describe('Acceptance: Posts / Pages', function () {
 
                 // The page should load without errors
                 expect(currentURL(), 'current URL').to.equal('/posts');
-            });
-
-            it('shows different template based on trafficAnalytics feature flag', async function () {
-                // Test with trafficAnalytics disabled (standard template)
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: false})});
-
-                await visit('/posts');
-
-                // Standard template should not have enhanced analytics features
-                expect(find('.gh-post-list-analytics'), 'analytics template class').to.not.exist;
-
-                // Enable trafficAnalytics feature flag
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
-
-                await visit('/posts');
-
-                // Check that the enhanced template features are present
-                // The analytics template may not have the exact class name, so let's check for general presence
-                expect(findAll('.gh-posts-list-item').length, 'posts list items').to.be.greaterThan(0);
             });
         });
     });

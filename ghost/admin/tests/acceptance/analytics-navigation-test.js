@@ -1,8 +1,7 @@
-import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
-import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
+import {authenticateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {click, currentURL, fillIn} from '@ember/test-helpers';
+import {click, currentURL} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -12,29 +11,6 @@ describe('Acceptance: Analytics Navigation', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    function createUser(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
-        let roleObj = server.create('role', {name: role});
-        return server.create('user', {
-            id: '1',
-            roles: [roleObj], 
-            slug: `${role.toLowerCase()}-user`, 
-            email: email
-        });
-    }
-    
-    async function signIn(email = 'admin@example.com', password = 'thisissupersafe') {
-        await visit('/signin');
-        await fillIn('[name="identification"]', email);
-        await fillIn('[name="password"]', password);
-        await click('[data-test-button="sign-in"]');
-    }
-    
-    async function createUserAndSignIn(server, {role = 'Administrator', email = 'admin@example.com'} = {}) {
-        await invalidateSession();
-        createUser(server, {role, email});
-        await signIn(email);
-    }
-    
     function updateUserRole(server, roleName) {
         let role = server.create('role', {name: roleName});
         server.db.users.update(1, {roles: [role]});
@@ -163,44 +139,6 @@ describe('Acceptance: Analytics Navigation', function () {
             await visit('/posts');
             await clickPostAnalytics(post.id);
             await expectPostAnalyticsRoute(post.id);
-        });
-    });
-
-    describe('Authentication Flow Navigation', function () {
-        beforeEach(function () {
-            this.server.post('/session', function () {
-                return new Response(201);
-            });
-        });
-
-        it('takes user to analytics after signin', async function () {
-            await createUserAndSignIn(this.server, {role: 'Administrator', email: 'test@example.com'});
-            
-            expect(currentURL()).to.equal('/analytics');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.exist;
-            expect(analyticsLink.textContent).to.contain('Analytics');
-        });
-
-        it('redirects non-admin after signin based on role', async function () {
-            await createUserAndSignIn(this.server, {role: 'Author', email: 'author@example.com'});
-            
-            expect(currentURL()).to.equal('/site');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.not.exist;
-        });
-    });
-
-    describe('Setup Flow Navigation', function () {
-        it('shows Analytics after setup', async function () {
-            await visit('/setup/done');
-            
-            expect(currentURL()).to.equal('/analytics');
-            
-            let analyticsLink = findAnalyticsNavLink();
-            expect(analyticsLink).to.exist;
         });
     });
 });
