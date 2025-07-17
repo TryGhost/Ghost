@@ -3,15 +3,17 @@ import React from 'react';
 import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {settings} = useGlobalData();
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
+    const {updateRoute} = useRouting();
 
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const {localSettings, siteData} = useSettingGroup();
@@ -66,7 +68,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     testId='explore-growth-toggle'
                     onChange={event => toggleSetting('explore_ping_growth', event)}
                 />
-                <div className='-mx-5 -mb-5 flex flex-col items-center rounded-b-xl bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
+                <div className='-mx-5 -mb-5 flex flex-col items-center bg-grey-75 px-7 py-10 md:-mx-7 md:-mb-7' data-testid='explore-preview'>
                     <div className='relative w-full max-w-[320px] rounded-lg bg-white p-6 text-black shadow-lg'>
                         <div className='absolute right-3 top-2.5 text-xs uppercase text-grey-300'>Preview</div>
                         {icon ?
@@ -97,6 +99,15 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             }
                         </a>
                     </div>
+                </div>
+                <div className='-mx-5 -mb-5 flex items-center justify-between gap-4 rounded-b-xl border-t border-[rgba(142,66,255,0.1)] bg-gradient-to-tr from-[rgba(142,66,255,0.07)] to-[rgba(142,66,255,0.02)] p-6 px-7 md:-mx-7 md:-mb-7'>
+                    <div className='flex flex-col'>
+                        <span className='font-medium'>Get featured on Ghost Explore!</span>
+                        <span className='text-pretty text-sm text-black/80'>Share your love about Ghost and get ranked higher on Explore.</span>
+                    </div>
+                    <Button className='border border-purple bg-white text-purple hover:bg-purple/5 hover:text-purple' icon="quote" label="Send a testimonial" onClick={() => {
+                        updateRoute('explore/testimonial');
+                    }} />
                 </div>
             </SettingGroupContent>
             :
