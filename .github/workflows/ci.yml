@@ -818,15 +818,7 @@ jobs:
           docker logout || echo "No Docker Hub login found"
 
       - name: Start E2E services
-        run: docker compose -f e2e/compose.e2e.yml up -d
-        
-      - name: Wait for services to be healthy
-        run: |
-          echo "Waiting for MySQL to be ready..."
-          timeout 60 bash -c 'until docker compose -f e2e/compose.e2e.yml exec -T mysql mysqladmin ping -h localhost --silent; do sleep 2; done'
-          echo "Waiting for Tinybird to be ready..."
-          timeout 60 bash -c 'until curl -f http://localhost:7181/; do sleep 2; done'
-
+        run: docker compose -f e2e/compose.e2e.yml up -d --wait
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
