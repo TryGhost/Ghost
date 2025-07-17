@@ -22,7 +22,7 @@ const getWorkerCount = () => {
 
 const config = {
     timeout: 75 * 1000,
-    expect: {
+    expect: {p
         timeout: 10000
     },
     // save trace on fail
