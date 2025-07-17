@@ -1,5 +1,5 @@
 import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/builders/index';
-import LocationsTab from './pages/LocationsTab.ts';
+import {AnalyticsLocationsPage} from '@tryghost/e2e/build/helpers/pages/admin';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
@@ -15,8 +15,8 @@ test.describe('Stats App - Locations', () => {
         options: {useAnalytics: true}}
         );
 
-        const locationsPage = new LocationsTab(page);
-        await locationsPage.visit();
+        const locationsPage = new AnalyticsLocationsPage(page);
+        await locationsPage.goto();
 
         await expect(locationsPage.body).toContainText('United States');
         await expect(locationsPage.body).toContainText('100');
@@ -35,8 +35,8 @@ test.describe('Stats App - Locations', () => {
                 ]
             })}}, options: {useAnalytics: true}});
 
-        const locationsPage = new LocationsTab(page);
-        await locationsPage.visit();
+        const locationsPage = new AnalyticsLocationsPage(page);
+        await locationsPage.goto();
 
         await expect(locationsPage.body).toContainText('United States');
         await expect(locationsPage.body).toContainText('United Kingdom');
@@ -52,8 +52,8 @@ test.describe('Stats App - Locations', () => {
         options: {useAnalytics: true}}
         );
 
-        const locationsPage = new LocationsTab(page);
-        await locationsPage.visit();
+        const locationsPage = new AnalyticsLocationsPage(page);
+        await locationsPage.goto();
 
         await expect(locationsPage.body).toContainText('No visitors');
     });
