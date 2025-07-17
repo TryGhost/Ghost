@@ -9,7 +9,6 @@ import {
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -68,6 +67,7 @@ describe('Acceptance: Signin', function () {
         await authenticateSession();
         await visit('/signin');
 
+        // With analytics mocks, authors get redirected to home first, then to site
         expect(currentURL(), 'current url').to.equal('/site');
     });
 
@@ -130,33 +130,8 @@ describe('Acceptance: Signin', function () {
         });
 
         it('submits successfully', async function () {
-            invalidateSession();
-
-            await visit('/signin');
-            expect(currentURL(), 'current url').to.equal('/signin');
-
-            await fillIn('[name="identification"]', 'test@example.com');
-            await fillIn('[name="password"]', 'thisissupersafe');
-            await click('[data-test-button="sign-in"]');
-            expect(currentURL(), 'currentURL').to.equal('/dashboard');
-        });
-
-        it('submits successfully with traffic analytics enabled', async function () {
-            // Mock the asset delivery config for stats component (comes from Admin config, not Ghost backend [fixture] config)
-            config.statsFilename = 'stats.js';
-            config.statsHash = 'development';
+            mockAnalyticsApps();
             
-            // Mock the stats component to prevent actual loading
-            // The component expects an object with AdminXApp property
-            window['@tryghost/stats'] = {
-                AdminXApp: function MockStatsComponent() {
-                    return <div data-test-stats-component>Mock Stats Component</div>;
-                }
-            };
-            
-            this.server.loadFixtures('configs');
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
             invalidateSession();
 
             await visit('/signin');
@@ -166,77 +141,8 @@ describe('Acceptance: Signin', function () {
             await fillIn('[name="password"]', 'thisissupersafe');
             await click('[data-test-button="sign-in"]');
             expect(currentURL(), 'currentURL').to.equal('/analytics');
-            expect(find('[data-test-stats-component]')).to.exist;
-        });
-    });
-
-    describe('Success beta flags routing', function () {
-        beforeEach(function () {
-            mockAnalyticsApps();
-        });
-
-        afterEach(function () {
+            
             cleanupMockAnalyticsApps();
-        });
-
-        it('administrators with no flags redirects to dashboard', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Administrator'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/dashboard');
-        });
-
-        it('administrators with trafficAnalytics flag redirects to analytics', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Administrator'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/analytics');
-        });
-
-        it('administrators with ui60 flag redirects to analytics', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Administrator'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/analytics');
-        });
-
-        it('non-admins with no flags redirects to site', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Author'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/site');
-        });
-
-        it('non-admins with trafficAnalytics flag redirects to site', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Author'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/site');
-        });
-
-        it('non-admins with ui60 flag redirects to site', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-            
-            await setupSigninFlow(this.server, {role: 'Author'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/site');
         });
     });
 });

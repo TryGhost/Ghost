@@ -16,10 +16,8 @@ export default class HomeRoute extends AuthenticatedRoute {
             return this.router.transitionTo('setup.done');
         }
 
-        if ((this.feature.ui60 || this.feature.trafficAnalytics) && this.session.user?.isAdmin) {
+        if (this.session.user?.isAdmin) {
             this.router.transitionTo('stats-x');
-        } else {
-            this.router.transitionTo('dashboard');
         }
     }
 }

@@ -1,8 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {blur, click, currentRouteName, fillIn, find, focus} from '@ember/test-helpers';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {describe, it} from 'mocha';
-import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -181,46 +179,6 @@ describe('Acceptance: Signup', function () {
         await click('[data-test-button="signup"]');
 
         expect(currentRouteName()).to.equal('site');
-    });
-
-    describe('Sign up success routing', function () {
-        beforeEach(function () {
-            mockAnalyticsApps();
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
-        });
-
-        it('signup with author user redirects to site with no flags', async function () {
-            await setupSignupFlow(this.server);
-            await click('[data-test-button="signup"]');
-
-            // Non-admin users go to site regardless of flags
-            expect(currentRouteName()).to.equal('site');
-        });
-
-        it('signup with author user redirects to site with ui60 flag', async function () {
-            enableLabsFlag(this.server, 'ui60');
-
-            await setupSignupFlow(this.server);
-            await click('[data-test-button="signup"]');
-
-            // Non-admin users go to site regardless of flags
-            expect(currentRouteName()).to.equal('site');
-        });
-
-        it('signup with author user redirects to site with trafficAnalytics flag', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-
-            await setupSignupFlow(this.server);
-            await click('[data-test-button="signup"]');
-
-            // Non-admin users go to site regardless of flags
-            expect(currentRouteName()).to.equal('site');
-        });
     });
 
     it('redirects if already logged in', async function () {
