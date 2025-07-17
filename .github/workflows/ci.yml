@@ -824,23 +824,38 @@ jobs:
 
       - name: Start E2E services
         run: |
-          echo "=== Starting network monitoring ==="
-          # Start tcpdump in background to monitor registry connections
-          sudo tcpdump -i any -n host mirror.gcr.io or host registry-1.docker.io or host index.docker.io > /tmp/registry_traffic.log 2>&1 &
+          echo "=== Pre-pull image status ==="
+          docker images mysql:8.0 || echo "MySQL image not present"
+          docker images tinybirdco/tinybird-local:latest || echo "Tinybird image not present"
+          
+          echo "=== Force remove images to ensure fresh pull ==="
+          docker rmi mysql:8.0 tinybirdco/tinybird-local:latest 2>/dev/null || echo "Images not present to remove"
+          
+          echo "=== Starting enhanced network monitoring ==="
+          # Monitor HTTPS traffic to registries with more comprehensive logging
+          sudo tcpdump -i any -n -s 0 'host mirror.gcr.io or host registry-1.docker.io or host index.docker.io or host docker.io' > /tmp/registry_traffic.log 2>&1 &
           TCPDUMP_PID=$!
           
           echo "=== Pulling images with debug info ==="
           docker compose -f e2e/compose.e2e.yml pull
           
           echo "=== Stopping network monitoring ==="
-          sleep 2  # Let tcpdump capture any remaining packets
+          sleep 3  # Let tcpdump capture any remaining packets
           sudo kill $TCPDUMP_PID 2>/dev/null || true
           
           echo "=== Registry traffic analysis ==="
+          echo "All captured traffic:"
+          cat /tmp/registry_traffic.log | head -20 || echo "No traffic captured"
           echo "Connections to mirror.gcr.io:"
           grep "mirror.gcr.io" /tmp/registry_traffic.log || echo "No connections to mirror.gcr.io detected"
-          echo "Connections to Docker Hub:"
-          grep -E "(registry-1\.docker\.io|index\.docker\.io)" /tmp/registry_traffic.log || echo "No connections to Docker Hub detected"
+          echo "Connections to Docker registries:"
+          grep -E "(registry-1\.docker\.io|index\.docker\.io|docker\.io)" /tmp/registry_traffic.log || echo "No connections to Docker Hub detected"
+          
+          echo "=== Docker daemon logs ==="
+          echo "Recent daemon logs (last 50 lines):"
+          sudo journalctl -u docker.service --no-pager -n 50 || echo "Could not read daemon logs"
+          echo "Daemon logs mentioning registries:"
+          sudo journalctl -u docker.service --no-pager -n 100 | grep -i -E "(mirror|registry|pull)" || echo "No registry-related logs found"
           
           echo "=== Inspecting pulled images ==="
           docker image inspect mysql:8.0 --format='{{.RepoDigests}}' || echo "MySQL image not found"
