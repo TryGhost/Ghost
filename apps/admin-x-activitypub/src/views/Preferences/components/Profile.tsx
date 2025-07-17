@@ -54,7 +54,19 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
 
     useEffect(() => {
-        convertImagesToDataUrls();
+        let isMounted = true;
+
+        const convert = async () => {
+            await convertImagesToDataUrls();
+        };
+
+        if (isMounted) {
+            convert();
+        }
+
+        return () => {
+            isMounted = false;
+        };
     }, [convertImagesToDataUrls]);
 
     // Listen for Alt key press/release
