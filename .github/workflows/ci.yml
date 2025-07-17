@@ -815,10 +815,19 @@ jobs:
         run: |
           echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
           sudo systemctl restart docker
-          docker system info | grep -A 1 "Registry Mirrors"
+          echo "=== Docker daemon configuration ==="
+          cat /etc/docker/daemon.json
+          echo "=== Docker system info (Registry Mirrors) ==="
+          docker system info | grep -A 3 "Registry Mirrors" || echo "No registry mirrors found in system info"
+          echo "=== Testing mirror connectivity ==="
+          curl -I https://mirror.gcr.io/v2/ || echo "Mirror connectivity test failed"
 
       - name: Start E2E services
-        run: docker compose -f e2e/compose.e2e.yml up -d
+        run: |
+          echo "=== Pulling images with debug info ==="
+          DOCKER_BUILDKIT=0 docker compose -f e2e/compose.e2e.yml pull --verbose
+          echo "=== Starting services ==="
+          docker compose -f e2e/compose.e2e.yml up -d
         
       - name: Wait for services to be healthy
         run: |
