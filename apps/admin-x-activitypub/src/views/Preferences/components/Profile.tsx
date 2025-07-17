@@ -1,4 +1,4 @@
-import {memo, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {memo, useCallback, useEffect, useRef, useState} from 'react';
 
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
@@ -241,20 +241,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
-    // Memoize ProfileCard props to prevent re-renders
-    const profileCardProps = useMemo(() => ({
-        accentColor,
-        account,
-        avatarDataUrl,
-        backgroundColor,
-        bannerDataUrl,
-        coverImage,
-        format: cardFormat,
-        isLoading,
-        publicationIcon,
-        siteTitle: siteData?.site?.title
-    }), [accentColor, account, avatarDataUrl, backgroundColor, bannerDataUrl, coverImage, cardFormat, isLoading, publicationIcon, siteData?.site?.title]);
-
     const handleDownload = async (event: React.MouseEvent) => {
         if (!profileCardRef.current || isProcessing) {
             return;
@@ -374,7 +360,16 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 </div>
                 <div className='relative flex flex-col items-center overflow-hidden rounded-2xl bg-gray-50'>
                     <ProfileCard
-                        {...profileCardProps}
+                        accentColor={accentColor}
+                        account={account}
+                        avatarDataUrl={avatarDataUrl}
+                        backgroundColor={backgroundColor}
+                        bannerDataUrl={bannerDataUrl}
+                        coverImage={coverImage}
+                        format={cardFormat}
+                        isLoading={isLoading}
+                        publicationIcon={publicationIcon}
+                        siteTitle={siteData?.site?.title}
                     />
                     <div className='relative z-20 flex w-full items-center justify-between px-6 pb-6'>
                         <div className='flex items-center gap-2'>
@@ -417,8 +412,17 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     }}
                 >
                     <ProfileCard
-                        {...profileCardProps}
+                        accentColor={accentColor}
+                        account={account}
+                        avatarDataUrl={avatarDataUrl}
+                        backgroundColor={backgroundColor}
+                        bannerDataUrl={bannerDataUrl}
+                        coverImage={coverImage}
+                        format={cardFormat}
+                        isLoading={isLoading}
                         isScreenshot={true}
+                        publicationIcon={publicationIcon}
+                        siteTitle={siteData?.site?.title}
                     />
                     {(account?.bannerImageUrl || coverImage) &&
                     <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
