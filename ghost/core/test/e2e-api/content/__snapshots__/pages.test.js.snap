@@ -48,7 +48,7 @@ Hopefully you don't find it a bore.",
 exports[`Pages Content API Can request page 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "1119",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -280,7 +280,7 @@ Hopefully you don't find it a bore.",
 exports[`Pages Content API Can request pages 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "9413",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

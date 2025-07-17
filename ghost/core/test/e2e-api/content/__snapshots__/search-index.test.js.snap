@@ -24,7 +24,7 @@ Object {
 exports[`Search Index Content API fetchAuthors should return a list of authors 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "370",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -143,7 +143,7 @@ Object {
 exports[`Search Index Content API fetchPosts should return a list of posts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "4387",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -255,7 +255,7 @@ Object {
 exports[`Search Index Content API fetchTags should return a list of tags 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": "693",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,

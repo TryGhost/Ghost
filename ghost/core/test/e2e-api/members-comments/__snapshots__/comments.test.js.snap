@@ -618,7 +618,7 @@ Object {
 exports[`Comments API when commenting enabled for all when authenticated Can fetch counts 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=30",
   "content-length": "88",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
