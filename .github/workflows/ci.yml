@@ -825,7 +825,10 @@ jobs:
       - name: Start E2E services
         run: |
           echo "=== Pulling images with debug info ==="
-          DOCKER_BUILDKIT=0 docker compose -f e2e/compose.e2e.yml pull --verbose
+          docker compose -f e2e/compose.e2e.yml pull
+          echo "=== Inspecting pulled images ==="
+          docker image inspect mysql:8.0 --format='{{.RepoDigests}}' || echo "MySQL image not found"
+          docker image inspect tinybirdco/tinybird-local:latest --format='{{.RepoDigests}}' || echo "Tinybird image not found"
           echo "=== Starting services ==="
           docker compose -f e2e/compose.e2e.yml up -d
         
