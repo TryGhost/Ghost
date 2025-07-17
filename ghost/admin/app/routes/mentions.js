@@ -25,11 +25,7 @@ export default class MentionsRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);
         if (!this.feature.webmentions) {
-            if (this.config?.labs?.ui60) {
-                return this.transitionTo('stats-x');
-            } else {
-                return this.transitionTo('dashboard');
-            }
+            return this.transitionTo('analytics');
         }
     }
 

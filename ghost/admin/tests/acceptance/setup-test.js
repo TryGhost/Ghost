@@ -3,7 +3,6 @@ import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
-import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -12,6 +11,14 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    beforeEach(function () {
+        mockAnalyticsApps();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
 
     // Helper function to setup the setup flow
     async function setupSetupFlow(server, {fillForm = true} = {}) {
@@ -115,7 +122,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the dashboard
             expect(currentURL(), 'url after submitting account details')
-                .to.equal('/dashboard');
+                .to.equal('/analytics');
         });
 
         it('handles validation errors in setup', async function () {
@@ -215,46 +222,6 @@ describe('Acceptance: Setup', function () {
 
         it('transitions to dashboard', async function () {
             await visit('/?firstStart=true');
-            expect(currentURL()).to.equal('/dashboard');
-        });
-    });
-    
-    describe('Success beta flags routing', function () {
-        beforeEach(function () {
-            mockAnalyticsApps();
-        });
-
-        afterEach(function () {
-            cleanupMockAnalyticsApps();
-        });
-
-        it('administrators with no flags redirects to dashboard', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSetupFlow(this.server);
-            await click('[data-test-button="setup"]');
-
-            expect(currentURL()).to.equal('/dashboard');
-        });
-
-        it('administrators with trafficAnalytics flag redirects to analytics', async function () {
-            enableLabsFlag(this.server, 'trafficAnalytics');
-            disableLabsFlag(this.server, 'ui60');
-            
-            await setupSetupFlow(this.server);
-            await click('[data-test-button="setup"]');
-
-            expect(currentURL()).to.equal('/analytics');
-        });
-
-        it('administrators with ui60 flag redirects to analytics', async function () {
-            disableLabsFlag(this.server, 'trafficAnalytics');
-            enableLabsFlag(this.server, 'ui60');
-            
-            await setupSetupFlow(this.server);
-            await click('[data-test-button="setup"]');
-
             expect(currentURL()).to.equal('/analytics');
         });
     });
