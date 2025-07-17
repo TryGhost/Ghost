@@ -108,7 +108,7 @@ describe('Advanced URL Configurations', function () {
             it('should not cache preview routes', async function () {
                 await request.get('/blog/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
                     .expect(200)
-                    .expect('Cache-Control', testUtils.cacheRules.public);
+                    .expect('Cache-Control', testUtils.cacheRules.noCache);
             });
         });
     });
