@@ -1,11 +1,13 @@
+import {memo, useCallback, useEffect, useRef, useState} from 'react';
+
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
+import {imageUrlToDataUrl} from '@src/utils/image';
 import {takeScreenshot} from '@src/utils/screenshot';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 type ProfileProps = {
@@ -29,7 +31,43 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
     const [isAltKeyHeld, setIsAltKeyHeld] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
+    const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
+    const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
     const shareText = `You can now follow ${account?.name} on the social web, on ${account?.handle}`;
+
+    const convertImagesToDataUrls = useCallback(async () => {
+        if (account?.bannerImageUrl || coverImage) {
+            const bannerUrl = account?.bannerImageUrl || coverImage;
+            if (bannerUrl) {
+                const dataUrl = await imageUrlToDataUrl(bannerUrl);
+                setBannerDataUrl(dataUrl);
+            }
+        }
+
+        if (account?.avatarUrl || publicationIcon) {
+            const avatarUrl = account?.avatarUrl || publicationIcon;
+            if (avatarUrl) {
+                const dataUrl = await imageUrlToDataUrl(avatarUrl);
+                setAvatarDataUrl(dataUrl);
+            }
+        }
+    }, [account?.bannerImageUrl, account?.avatarUrl, coverImage, publicationIcon]);
+
+    useEffect(() => {
+        let isMounted = true;
+
+        const convert = async () => {
+            await convertImagesToDataUrls();
+        };
+
+        if (isMounted) {
+            convert();
+        }
+
+        return () => {
+            isMounted = false;
+        };
+    }, [convertImagesToDataUrls]);
 
     // Listen for Alt key press/release
     useEffect(() => {
@@ -155,7 +193,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
-    const ProfileCard: React.FC<ProfileCardProps> = ({isScreenshot = false, format}) => {
+    const ProfileCard: React.FC<ProfileCardProps> = memo(({isScreenshot = false, format}) => {
         const cardBackgroundColor = getBackgroundColor();
         const textColor = getTextColor();
         const margin = isScreenshot ? 'm-4' : 'm-16';
@@ -164,27 +202,31 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         const cardWidth = format === 'square' ? 'w-[392px]' : 'w-[316px]';
         const cardHeight = 'h-[392px]';
 
+        const bannerImageSrc = isScreenshot && bannerDataUrl ? bannerDataUrl : (account?.bannerImageUrl || coverImage);
+        const avatarImageSrc = isScreenshot && avatarDataUrl ? avatarDataUrl : (account?.avatarUrl || publicationIcon);
+
         return (
             <div className={`relative z-20 flex flex-col ${margin} ${cardWidth} ${cardHeight} rounded-[32px] ${borderClass} ${format === 'square' ? 'flex flex-col' : ''}`} style={{backgroundColor: cardBackgroundColor}}>
                 <div className='relative h-48 p-2'>
-                    {(account?.bannerImageUrl || coverImage) ?
+                    {bannerImageSrc ?
                         <img
                             alt={account?.name}
                             className='size-full rounded-[26px] rounded-b-none object-cover'
+                            crossOrigin="anonymous"
                             referrerPolicy='no-referrer'
-                            src={account?.bannerImageUrl || coverImage}
+                            src={bannerImageSrc}
                         /> :
                         <div className='relative size-full overflow-hidden rounded-[26px] rounded-b-none' style={{background: `linear-gradient(to bottom, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 1)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor || '#15171a', 0.5)})`}}>
                             <DotsPattern className='absolute' style={{color: backgroundColor === 'accent' ? hexToRgba(accentColor || '#15171a', 0.2) : 'rgba(255, 255, 255, 0.2)', top: isScreenshot ? '-42px' : '-84px', left: isScreenshot ? '-69px' : '-138px'}} />
                         </div>
                     }
-                    {(account?.avatarUrl || publicationIcon) &&
+                    {avatarImageSrc &&
                         <div className='absolute bottom-0 left-1/2 -mb-8 -translate-x-1/2 rounded-full border-8 [&>div]:!size-16 [&_img]:!size-16' style={{borderColor: cardBackgroundColor}}>
                             <APAvatar
                                 author={
                                     {
                                         icon: {
-                                            url: account?.avatarUrl || publicationIcon || ''
+                                            url: avatarImageSrc || ''
                                         },
                                         name: account?.name || siteData?.site?.title || '',
                                         handle: account?.handle
@@ -211,7 +253,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 </div>
             </div>
         );
-    };
+    });
+
+    ProfileCard.displayName = 'ProfileCard';
 
     if (!isEnabled('share')) {
         return (

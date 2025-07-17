@@ -5,6 +5,30 @@ export const PROFILE_MAX_DIMENSIONS = {width: 400, height: 400};
 export const COVER_MAX_DIMENSIONS = {width: 4000, height: 3000};
 
 /**
+ * Converts an image URL to a data URL to avoid CORS issues
+ */
+export const imageUrlToDataUrl = async (url: string): Promise<string> => {
+    try {
+        const response = await fetch(url, {
+            mode: 'cors'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        const blob = await response.blob();
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        // Return original URL as fallback if conversion fails
+        return url;
+    }
+};
+
+/**
  * Checks if an image file's dimensions are within specified maximum limits
  */
 export const checkImageDimensions = (
