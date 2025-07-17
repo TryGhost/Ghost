@@ -186,7 +186,7 @@ describe('Acceptance: Analytics Navigation', function () {
         it('redirects non-admin after signin based on role', async function () {
             await createUserAndSignIn(this.server, {role: 'Author', email: 'author@example.com'});
             
-            expect(currentURL()).to.equal('/posts');
+            expect(currentURL()).to.equal('/site');
             
             let analyticsLink = findAnalyticsNavLink();
             expect(analyticsLink).to.not.exist;
