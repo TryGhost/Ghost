@@ -192,6 +192,22 @@ export interface PaginatedPostsResponse {
     next: string | null;
 }
 
+export type ApiError = {
+    message: string;
+    statusCode: number;
+};
+
+export const isApiError = (error: unknown): error is ApiError => {
+    return (
+        typeof error === 'object' &&
+        error !== null &&
+        'statusCode' in error &&
+        'message' in error &&
+        typeof error.statusCode === 'number' &&
+        typeof error.message === 'string'
+    );
+};
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -231,19 +247,21 @@ export class ActivityPubAPI {
         }
 
         if (!response.ok) {
-            let message: string;
+            const error: ApiError = {
+                message: 'Something went wrong, please try again.',
+                statusCode: response.status
+            };
 
             try {
                 const json = await response.json();
-                message = json?.message || json?.error || 'Something went wrong, please try again.';
-            } catch {
-                message = 'Something went wrong, please try again.';
-            }
+                const errorMessage = json.message || json.error;
 
-            const error = {
-                message,
-                statusCode: response.status
-            };
+                if (errorMessage) {
+                    error.message = errorMessage;
+                }
+            } catch {
+                // Leave the default message
+            }
 
             throw error;
         }
