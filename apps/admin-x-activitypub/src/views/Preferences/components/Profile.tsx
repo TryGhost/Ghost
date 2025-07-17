@@ -1,3 +1,5 @@
+import {memo, useCallback, useEffect, useRef, useState} from 'react';
+
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
 import {Account} from '@src/api/activitypub';
@@ -6,7 +8,6 @@ import {imageUrlToDataUrl} from '@src/utils/image';
 import {takeScreenshot} from '@src/utils/screenshot';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useCallback, useEffect, useRef, useState} from 'react';
 import {useFeatureFlags} from '@src/lib/feature-flags';
 
 type ProfileProps = {
@@ -180,7 +181,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
-    const ProfileCard: React.FC<ProfileCardProps> = ({isScreenshot = false, format}) => {
+    const ProfileCard: React.FC<ProfileCardProps> = memo(({isScreenshot = false, format}) => {
         const cardBackgroundColor = getBackgroundColor();
         const textColor = getTextColor();
         const margin = isScreenshot ? 'm-4' : 'm-16';
@@ -240,7 +241,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                 </div>
             </div>
         );
-    };
+    });
+
+    ProfileCard.displayName = 'ProfileCard';
 
     if (!isEnabled('share')) {
         return (
