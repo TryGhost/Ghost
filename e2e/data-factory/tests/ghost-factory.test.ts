@@ -190,7 +190,7 @@ test.describe('Ghost Factory', () => {
         expect(post.mobiledoc).toBeTruthy();
         
         // Parse mobiledoc to ensure it's valid JSON
-        const mobiledoc = JSON.parse(post.mobiledoc);
+        const mobiledoc = JSON.parse(post.mobiledoc!);
         expect(mobiledoc.version).toBe('0.3.1');
         expect(mobiledoc.atoms).toEqual([]);
         expect(mobiledoc.cards).toEqual([]);

@@ -1,8 +1,9 @@
-import knex from 'knex';
+import {Knex} from 'knex';
 import {faker} from '@faker-js/faker';
 import {execSync} from 'child_process';
 import * as path from 'path';
-import * as bcrypt from 'bcryptjs';
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const bcrypt = require('bcryptjs');
 import * as crypto from 'crypto';
 
 export interface GhostSetupOptions {
@@ -22,9 +23,9 @@ export interface GhostSetupResult {
 }
 
 export class GhostSetup {
-    private db: knex.Knex;
+    private db: Knex;
 
-    constructor(db: knex.Knex) {
+    constructor(db: Knex) {
         this.db = db;
     }
 
@@ -88,7 +89,7 @@ export class GhostSetup {
      */
     async performSetup(options: GhostSetupOptions = {}): Promise<GhostSetupResult> {
         const setupData = {
-            name: options.name || faker.person.fullName(),
+            name: options.name || faker.name.fullName(),
             email: options.email || 'test+admin@test.com',
             password: options.password || 'P4ssw0rd123$',
             blogTitle: options.blogTitle || faker.company.name(),

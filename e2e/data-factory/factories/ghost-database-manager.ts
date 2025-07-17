@@ -1,4 +1,4 @@
-import knex from 'knex';
+import knex, {Knex} from 'knex';
 import {GhostSetup} from './ghost-setup';
 
 export interface GhostDatabaseConfig {
@@ -17,7 +17,7 @@ export interface GhostDatabaseConfig {
  * This class is tightly coupled to Ghost's database schema and setup requirements.
  */
 export class GhostDatabaseManager {
-    private db: knex.Knex;
+    private db: Knex;
     private ghostSetup: GhostSetup;
 
     constructor(config: GhostDatabaseConfig = {}) {
@@ -41,8 +41,43 @@ export class GhostDatabaseManager {
     /**
      * Get the underlying knex database connection for Ghost
      */
-    getDb(): knex.Knex {
+    getDb(): Knex {
         return this.db;
+    }
+    
+    /**
+     * Get site UUID from Ghost settings
+     */
+    async getSiteUuid(): Promise<string | null> {
+        try {
+            const result = await this.db('settings')
+                .where('key', 'site_uuid')
+                .first();
+            
+            return result?.value || null;
+        } catch (error) {
+            return null;
+        }
+    }
+    
+    /**
+     * Wait for Ghost to be fully booted (site_uuid exists)
+     */
+    async waitForGhostBoot(maxRetries: number = 30, retryDelayMs: number = 1000): Promise<boolean> {
+        for (let i = 0; i < maxRetries; i++) {
+            const siteUuid = await this.getSiteUuid();
+            if (siteUuid) {
+                return true;
+            }
+            
+            if (i < maxRetries - 1) {
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, retryDelayMs);
+                });
+            }
+        }
+        
+        return false;
     }
 
     /**

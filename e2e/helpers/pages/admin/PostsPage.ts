@@ -85,15 +85,15 @@ export class PostsPage extends AdminPage {
 
     async filterByStatus(status: 'published' | 'draft' | 'scheduled') {
         switch (status) {
-            case 'published':
-                await this.publishedFilter.click();
-                break;
-            case 'draft':
-                await this.draftFilter.click();
-                break;
-            case 'scheduled':
-                await this.scheduledFilter.click();
-                break;
+        case 'published':
+            await this.publishedFilter.click();
+            break;
+        case 'draft':
+            await this.draftFilter.click();
+            break;
+        case 'scheduled':
+            await this.scheduledFilter.click();
+            break;
         }
         await this.waitForPostsToLoad();
     }

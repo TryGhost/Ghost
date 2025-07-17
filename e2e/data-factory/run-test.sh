@@ -8,6 +8,11 @@ echo "=============================================="
 # Change to the e2e directory
 cd "$(dirname "$0")/.."
 
+# Load environment variables if .env exists
+if [ -f "data-factory/.env" ]; then
+    export $(cat data-factory/.env | grep -v '^#' | xargs)
+fi
+
 # Ensure dependencies are installed
 if [ ! -d "node_modules" ]; then
     echo "Installing dependencies..."

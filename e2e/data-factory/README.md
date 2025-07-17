@@ -21,9 +21,18 @@ await withDataFactory(async (factory) => {
         status: 'published'
     });
 });
+
+// For analytics tests, wait for Ghost to be fully booted
+await withDataFactory(async (factory) => {
+    const hit = await factory.createPageHit({
+        pathname: '/blog/my-post/'
+    });
+}, {waitForGhostBoot: true});
 ```
 
 > **Note**: The factory automatically handles database connections and cleanup. You should always use `withDataFactory` to ensure proper resource management.
+> 
+> **Important**: Tinybird features require Ghost to be fully booted (site_uuid must exist in settings). Use `{waitForGhostBoot: true}` option when testing analytics.
 
 ## Usage Examples
 
@@ -40,6 +49,12 @@ await withDataFactory(async (factory) => {
         title: 'My Custom Post',
         status: 'published',
         featured: true
+    });
+    
+    // Create analytics events
+    await factory.createPageHit({
+        pathname: '/blog/my-post/',
+        referrer: 'https://www.google.com/'
     });
     
     // When you add more factories, their methods will also be directly available
@@ -102,7 +117,9 @@ describe('My Feature', () => {
 
 ## Available Methods
 
-### `createPost(options?)`
+### Ghost Methods
+
+#### `createPost(options?)`
 
 Creates a Ghost post with the specified options.
 
@@ -129,15 +146,79 @@ const post = await factory.createPost({
 });
 ```
 
+### Tinybird Methods
+
+> **Important**: These methods require Ghost to be fully booted. Use `{waitForGhostBoot: true}` when calling `withDataFactory`.
+
+#### `createPageHit(options?)`
+
+Creates and sends a page hit event to Tinybird (local instance at localhost:7181 by default).
+
+**Options:**
+- `timestamp?: Date` - Event timestamp (default: now)
+- `post_uuid?: string` - UUID of the post being viewed
+- `member_uuid?: string` - UUID of the member viewing
+- `member_status?: 'free' | 'paid' | 'comped' | 'undefined'` - Member subscription status
+- `pathname?: string` - URL path being viewed (default: '/')
+- `referrer?: string` - Referrer URL
+- `user_agent?: string` - User agent string (auto-generated if not provided)
+- `locale?: string` - Browser locale (default: 'en-US')
+- `location?: string` - Country code (default: 'US')
+
+**Returns:** Promise of the page hit event that was sent
+
+**Example:**
+```typescript
+// Always use waitForGhostBoot when using Tinybird
+await withDataFactory(async (factory) => {
+    const hit = await factory.createPageHit({
+        pathname: '/blog/my-post/',
+        referrer: 'https://www.google.com/',
+        member_status: 'paid'
+    });
+}, {waitForGhostBoot: true});
+```
+
+#### `createPageHits(count, options?)`
+
+Creates multiple page hit events at once.
+
+**Parameters:**
+- `count: number` - Number of page hits to create
+- `options?: PageHitOptions` - Same options as createPageHit
+
+**Returns:** Promise of array of page hit events
+
+**Example:**
+```typescript
+// Create 10 page hits for the homepage
+const hits = await factory.createPageHits(10, {
+    pathname: '/',
+    member_status: 'free'
+});
+```
+
 ## Configuration
 
-The factory uses environment variables for database configuration:
+The factory uses environment variables for configuration. Copy `.env.example` to `.env` and update with your values:
 
+```bash
+cp .env.example .env
+```
+
+### Database Configuration
 - `database__connection__host` - Database host (default: 'localhost')
 - `database__connection__port` - Database port (default: 3306)
 - `database__connection__user` - Database user (default: 'root')
 - `database__connection__password` - Database password (default: 'root')
 - `database__connection__database` - Database name (default: 'ghost')
+
+### Tinybird Configuration
+- `TINYBIRD_HOST` - Tinybird endpoint (default: 'http://localhost:7181/v0/events')
+- `TINYBIRD_TOKEN` - Tinybird authentication token (required for local Tinybird)
+- `FAIL_ON_TINYBIRD_ERROR` - Whether to fail tests if Tinybird is unavailable (default: 'false')
+
+**Note**: Tinybird is a separate analytics service. Make sure to run `yarn tb` at the top level to start the local Tinybird container before running tests that use analytics.
 
 ## Running Tests
 
@@ -162,6 +243,7 @@ The factory system is built around a few key components:
 - **`DataFactoryBuilder`** - Internal builder that creates and configures factory instances
 - **`Base Factory`** - Abstract base class with common utilities (ID generation, slug creation, etc.)
 - **`Ghost Factory`** - Specific implementation for Ghost database operations
+- **`Tinybird Factory`** - HTTP client for sending analytics events to Tinybird
 
 ## Adding New Factories
 
