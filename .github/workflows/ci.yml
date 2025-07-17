@@ -894,7 +894,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: mirror.gcr.io/tinybirdco/tinybird-local:latest
+        image: tinybirdco/tinybird-local:latest
         ports:
           - 7181:7181
     env:
