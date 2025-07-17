@@ -1,5 +1,4 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
-import React from 'react';
 import StatsErrorBoundary from './components/errors/StatsErrorBoundary';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
