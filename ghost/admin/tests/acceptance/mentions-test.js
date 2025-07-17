@@ -1,5 +1,4 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {currentURL, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableLabsFlag} from '../helpers/labs-flag';
@@ -11,16 +10,8 @@ describe('Acceptance: Mentions', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    beforeEach(function () {
-        mockAnalyticsApps();
-        enableLabsFlag(this.server, 'webmentions');
-    });
-
-    afterEach(function () {
-        cleanupMockAnalyticsApps();
-    });
-
     it('redirects to signin when not authenticated', async function () {
+        enableLabsFlag(this.server, 'webmentions');
         await invalidateSession();
         await visit('/mentions');
         expect(currentURL()).to.equal('/signin');
@@ -28,14 +19,13 @@ describe('Acceptance: Mentions', function () {
 
     describe('as admin', function () {
         beforeEach(async function () {
-            this.server.loadFixtures('configs');
-            this.server.loadFixtures('settings');
+            enableLabsFlag(this.server, 'webmentions');
 
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role]});
-            enableLabsFlag(this.server, 'webmentions');
             await authenticateSession();
         });
+        
         it('can render mentions page', async function () {
             await visit('/mentions');
             expect(currentURL(), 'currentURL').to.equal('/mentions');
