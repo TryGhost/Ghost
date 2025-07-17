@@ -1,4 +1,3 @@
-import config from 'ghost-admin/config/environment';
 import {Response} from 'miragejs';
 import {
     afterEach,
