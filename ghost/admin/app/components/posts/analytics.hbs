@@ -73,11 +73,6 @@
                             <li>
                                 <a class="view-browser" href="{{this.post.url}}" target="_blank" rel="noopener noreferrer">View in browser</a>
                             </li>
-                            {{#if (and (gh-user-can-admin this.session.user) (or (feature "trafficAnalytics") (feature "ui60")))}}
-                                <li>
-                                    <LinkTo class="edit-post" @route="posts-x" @model={{this.post.id}}>Switch to Analytics (beta)</LinkTo>
-                                </li>
-                            {{/if}}
                             <li>
                                 <button
                                     type="button"
