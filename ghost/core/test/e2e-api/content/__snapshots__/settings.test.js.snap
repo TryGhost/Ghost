@@ -97,7 +97,7 @@ Object {
 exports[`Settings Content API Can request settings 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "*",
-  "cache-control": "public, max-age=0",
+  "cache-control": "public, max-age=600",
   "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
