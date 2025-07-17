@@ -74,6 +74,19 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
+    const getDotsPatternColor = () => {
+        switch (backgroundColor) {
+        case 'light':
+            return hexToRgba('#15171a', 0.025);
+        case 'dark':
+            return hexToRgba('#15171a', 0.23);
+        case 'accent':
+            return 'rgba(0, 0, 0, 0.02)';
+        default:
+            return hexToRgba('#15171a', 0.025);
+        }
+    };
+
     const handleDownload = async () => {
         if (!profileCardRef.current) {
             return;
@@ -135,9 +148,9 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     <div
                         className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 font-medium leading-7 ${isScreenshot && 'pb-3 tracking-normal'}`}
                         style={{
-                            color: backgroundColor === 'accent' ? '#fff' : accentColor,
-                            borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, 0.2) : undefined,
-                            background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, 0.16)})` : undefined
+                            color: backgroundColor !== 'light' ? '#fff' : accentColor,
+                            borderColor: accentColor ? hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor !== 'light' ? 0.7 : 0.2) : undefined,
+                            background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.12 : 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.48 : 0.16)})` : undefined
                         }}
                     >
                         {account?.handle}
@@ -225,7 +238,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     </Button>
                 </div>
                 {(account?.bannerImageUrl || coverImage) &&
-                    <DotsPattern className={`absolute left-1/2 top-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: 'rgba(0, 0, 0, 0.04)'}} />
+                    <DotsPattern className={`absolute left-1/2 top-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                 }
                 <div className='absolute inset-0' style={{background: getGradient()}} />
             </div>
@@ -241,7 +254,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
             >
                 <ProfileCard format={cardFormat} isScreenshot={true} />
                 {(account?.bannerImageUrl || coverImage) &&
-                    <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: 'rgba(0, 0, 0, 0.04)'}} />
+                    <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                 }
                 <div
                     className='absolute left-0 top-0'
