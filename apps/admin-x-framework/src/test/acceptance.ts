@@ -208,7 +208,28 @@ export function createMockRequests(overrides: Record<string, MockRequestConfig> 
     };
 }
 
-export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: {useActivityPub?: boolean}}) {
+type apiTypeUsed = {useActivityPub?: boolean; useAnalytics?: boolean}
+
+function getRoutePatterns(options: apiTypeUsed = {}) {
+    if (options?.useAnalytics) {
+        return {
+            routeRegex: /\/v0\/pipes\//,
+            routeReplaceRegex: /^.*\/v0\/pipes/
+        };
+    } else if (options?.useActivityPub) {
+        return {
+            routeRegex: /\/.ghost\/activitypub\//,
+            routeReplaceRegex: /^.*\/.ghost\/activitypub/
+        };
+    } else {
+        return {
+            routeRegex: /\/ghost\/api\/admin\//,
+            routeReplaceRegex: /^.*\/ghost\/api\/admin/
+        };
+    }
+}
+
+export async function mockApi<Requests extends Record<string, MockRequestConfig>>({page, requests, options = {}}: {page: Page, requests: Requests, options?: apiTypeUsed}) {
     const lastApiRequests: {[key in keyof Requests]?: RequestRecord} = {};
 
     const namedRequests = Object.entries(requests).reduce(
@@ -216,8 +237,7 @@ export async function mockApi<Requests extends Record<string, MockRequestConfig>
         [] as Array<MockRequestConfig & {name: keyof Requests}>
     );
 
-    const routeRegex = options?.useActivityPub ? /\/.ghost\/activitypub\// : /\/ghost\/api\/admin\//;
-    const routeReplaceRegex = options?.useActivityPub ? /^.*\/.ghost\/activitypub/ : /^.*\/ghost\/api\/admin/;
+    const {routeRegex, routeReplaceRegex} = getRoutePatterns(options);
 
     await page.route(routeRegex, async (route) => {
         const apiPath = route.request().url().replace(routeReplaceRegex, '');
