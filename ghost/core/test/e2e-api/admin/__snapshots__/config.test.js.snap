@@ -9,7 +9,6 @@ Object {
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
     "labs": Object {
-      "ActivityPub": true,
       "additionalPaymentMethods": true,
       "announcementBar": true,
       "audienceFeedback": true,
