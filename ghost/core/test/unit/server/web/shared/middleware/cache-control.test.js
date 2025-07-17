@@ -20,7 +20,7 @@ describe('Cache-Control middleware', function () {
         cacheControl('public')(null, res, function (a) {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=0'}).should.be.true();
+            res.set.calledWith({'Cache-Control': 'public, max-age=0, must-revalidate'}).should.be.true();
             done();
         });
     });
@@ -29,7 +29,7 @@ describe('Cache-Control middleware', function () {
         cacheControl('public', {maxAge: 123456})(null, res, function (a) {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=123456'}).should.be.true();
+            res.set.calledWith({'Cache-Control': 'public, max-age=123456, must-revalidate'}).should.be.true();
             done();
         });
     });
@@ -38,7 +38,7 @@ describe('Cache-Control middleware', function () {
         cacheControl('public', {maxAge: 1, staleWhileRevalidate: 9})(null, res, function (a) {
             should.not.exist(a);
             res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=1, stale-while-revalidate=9'}).should.be.true();
+            res.set.calledWith({'Cache-Control': 'public, max-age=1, must-revalidate, stale-while-revalidate=9'}).should.be.true();
             done();
         });
     });
@@ -77,7 +77,7 @@ describe('Cache-Control middleware', function () {
 
         publicCC(null, res, function () {
             res.set.calledOnce.should.be.true();
-            res.set.calledWith({'Cache-Control': 'public, max-age=0'}).should.be.true();
+            res.set.calledWith({'Cache-Control': 'public, max-age=0, must-revalidate'}).should.be.true();
 
             privateCC(null, res, function () {
                 res.set.calledTwice.should.be.true();
@@ -87,7 +87,7 @@ describe('Cache-Control middleware', function () {
 
                 publicCC(null, res, function () {
                     res.set.calledThrice.should.be.true();
-                    res.set.calledWith({'Cache-Control': 'public, max-age=0'});
+                    res.set.calledWith({'Cache-Control': 'public, max-age=0, must-revalidate'});
 
                     privateCC(null, res, function () {
                         res.set.calledWith({

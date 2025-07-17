@@ -19,6 +19,7 @@ const cacheControl = (profile, options = {maxAge: 0}) => {
     const publicOptions = [
         'public',
         `max-age=${options.maxAge}`,
+        'must-revalidate',
         isOptionHasProperty('staleWhileRevalidate') ? `stale-while-revalidate=${options.staleWhileRevalidate}` : ''
     ];
 
