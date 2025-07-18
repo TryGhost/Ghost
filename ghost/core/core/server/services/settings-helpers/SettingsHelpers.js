@@ -273,12 +273,6 @@ class SettingsHelpers {
             return false;
         }
 
-        // Labs setting
-        if (!this.labs.isSet('trafficAnalytics')) {
-            debug('Web analytics is disabled in labs');
-            return false;
-        }
-
         // Check if web analytics can be configured (limit service and required config)
         if (!this.isWebAnalyticsConfigured()) {
             return false;

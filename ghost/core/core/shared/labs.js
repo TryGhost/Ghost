@@ -27,8 +27,6 @@ const GA_FEATURES = [
     'announcementBar',
     'customFonts',
     'contentVisibility',
-    'trafficAnalytics',
-    'ui60',
     'explore'
 ];
 

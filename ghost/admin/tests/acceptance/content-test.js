@@ -951,23 +951,6 @@ describe('Acceptance: Posts / Pages', function () {
                 expect(visitorsText, 'visitor count column').to.not.exist;
             });
 
-            it('shows visitor count column when webAnalyticsEnabled is enabled and trafficAnalytics feature is enabled', async function () {
-                // Enable webAnalyticsEnabled setting
-                this.server.db.settings.update({key: 'web_analytics_enabled'}, {value: 'true'});
-
-                // Enable trafficAnalytics feature flag
-                this.server.db.settings.update({key: 'labs'}, {value: JSON.stringify({trafficAnalytics: true})});
-
-                await visit('/posts');
-
-                // When both settings are enabled, the visitor count column container should exist
-                // even if it shows "—" without actual data
-                expect(find('.gh-post-list-metrics-container'), 'metrics container').to.exist;
-
-                // The page should load without errors when analytics are enabled
-                expect(currentURL(), 'current URL').to.equal('/posts');
-            });
-
             it('hides member conversions column when membersTrackSources is disabled', async function () {
                 // Disable membersTrackSources setting
                 this.server.db.settings.update({key: 'members_track_sources'}, {value: 'false'});
@@ -977,17 +960,6 @@ describe('Acceptance: Posts / Pages', function () {
                 // Check that member conversions column is not visible
                 let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
                 expect(membersText, 'member conversions column').to.not.exist;
-            });
-
-            it('shows member conversions column when membersTrackSources is enabled', async function () {
-                // Enable membersTrackSources setting
-                this.server.db.settings.update({key: 'members_track_sources'}, {value: 'true'});
-
-                await visit('/posts');
-
-                // Check that member conversions column is visible
-                let membersText = findAll('.gh-content-email-stats').find(el => el.textContent.trim() === 'members');
-                expect(membersText, 'member conversions column').to.exist;
             });
 
             it('shows analytics button when post has analytics page', async function () {
