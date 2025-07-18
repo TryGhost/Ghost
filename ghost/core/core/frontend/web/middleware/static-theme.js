@@ -59,16 +59,35 @@ function forwardToExpressStatic(req, res, next) {
         return next();
     }
 
+    // We allow robots.txt to fall through to the next middleware, so that we can return our default robots.txt
+    // We also allow sitemap.xml and sitemap-:resource.xml to fall through so that we can serve our defaults if they're not found in the theme
+    const fallthroughFiles = [
+        '/robots.txt',
+        '/sitemap.xml',
+        '/sitemap-posts.xml',
+        '/sitemap-pages.xml',
+        '/sitemap-tags.xml',
+        '/sitemap-authors.xml',
+        '/sitemap-users.xml',
+        '/sitemap.xsl'
+    ];
+    const fallthrough = fallthroughFiles.includes(req.path) ? true : false;
+
     express.static(themeEngine.getActive().path, {
         // @NOTE: the maxAge config passed below are in milliseconds and the config
         //        is specified in seconds. See https://github.com/expressjs/serve-static/issues/150 for more context
-        maxAge: config.get('caching:theme:maxAge') * 1000
+        maxAge: config.get('caching:theme:maxAge') * 1000,
+        fallthrough
     }
     )(req, res, next);
 }
 
 function staticTheme() {
     return function denyStatic(req, res, next) {
+        if (!path.extname(req.path)) {
+            return next();
+        }
+
         if (!isAllowedFile(req.path.toLowerCase()) && isDeniedFile(req.path.toLowerCase())) {
             return next();
         }
