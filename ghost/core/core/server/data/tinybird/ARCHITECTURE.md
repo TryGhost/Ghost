@@ -303,10 +303,6 @@ Click Tracking → redirects → members_click_events
 2. MySQL tracks member signup with attribution
 3. MySQL tracks paid conversion with attribution
 
-## API Endpoints
-
-All endpoints require authentication (`mw.authAdminApi`) and are gated behind `labs.isSet('trafficAnalytics')`.
-
 ### Core Stats Endpoints
 
 ```javascript

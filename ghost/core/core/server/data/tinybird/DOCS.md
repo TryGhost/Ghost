@@ -311,10 +311,6 @@ Click Tracking → redirects → members_click_events
 3. MySQL tracks paid conversion with attribution
 4. Combined view shows complete funnel
 
-## API Endpoints
-
-All endpoints require authentication (`mw.authAdminApi`) and are gated behind `labs.isSet('trafficAnalytics')`.
-
 ### Core Stats Endpoints
 
 ```javascript

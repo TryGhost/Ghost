@@ -24,10 +24,6 @@ const features: Feature[] = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
-    title: 'UI 6.0 (internal alpha)',
-    description: 'General structural changes to the admin UI in 6.0',
-    flag: 'ui60'
-}, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
