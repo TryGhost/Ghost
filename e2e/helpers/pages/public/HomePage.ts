@@ -3,23 +3,13 @@ import PublicPage from './PublicPage';
 
 export class HomePage extends PublicPage {
     readonly title: Locator;
-    readonly navigation: Locator;
-    readonly posts: Locator;
+    readonly mainSubscribeButton: Locator;
 
     constructor(page: Page) {
         super(page);
 
         this.pageUrl = '/';
-        this.title = page.locator('h1, .site-title');
-        this.navigation = page.locator('.site-nav');
-        this.posts = page.locator('.post-card');
-    }
-
-    async getPostCount() {
-        return await this.posts.count();
-    }
-
-    async clickFirstPost() {
-        await this.posts.first().click();
+        this.mainSubscribeButton = page.getByRole('button', {name: 'Subscribe'}).first();
+        this.title = page.getByRole('heading', {level: 1});
     }
 }
