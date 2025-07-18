@@ -181,7 +181,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="gh-post-list-analytics-metric">
+                            <div class="gh-post-list-analytics-metric" data-test-analytics-visitors>
                                 {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
                                     {{abbreviate-number this.visitorCount}}
@@ -224,7 +224,7 @@
                 {{!-- Opened / Signups column --}}
                 {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
                     <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-                        <div class="gh-post-list-analytics-metric">
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-opens>
                             {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
                                 {{@post.email.openRate}}%
@@ -236,7 +236,7 @@
                 {{!-- Clicked / Conversions column --}}
                 {{#if @post.showEmailClickAnalytics }}
                     <LinkTo @route="members" @query={{hash filterParam=(concat "clicked_links.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-                        <div class="gh-post-list-analytics-metric">
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-clicks>
                             {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
                                 {{@post.clickRate}}%
@@ -246,7 +246,7 @@
                 {{else}}
                     {{#if @post.showEmailOpenAnalytics }}
                         <LinkTo @route="members" @query={{hash filterParam=(concat "opened_emails.post_id:" @post.id) }} class="permalink gh-list-data gh-post-list-metrics">
-                            <div class="gh-post-list-analytics-metric">
+                            <div class="gh-post-list-analytics-metric" data-test-analytics-opens>
                                 {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
                                         {{@post.email.openRate}}%
@@ -258,7 +258,7 @@
             </div>
 
             {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
-            {{#if (or this.settings.membersTrackSources false)}}
+            {{#if this.settings.membersTrackSources}}
                 {{#if @post.isPublished}}
                     {{#if this.hasMemberData}}
                         <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
@@ -281,7 +281,7 @@
                                 </div>
                             </div>
                         </div>
-                            <div class="gh-post-list-analytics-metric">
+                            <div class="gh-post-list-analytics-metric" data-test-analytics-member-conversions>
                                 {{svg-jar "analytics-members" class="gh-list-analytics-icon"}}
                                 <span class="gh-content-email-stats-value">
                                     {{format-number this.totalMemberConversions}}
