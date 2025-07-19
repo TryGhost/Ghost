@@ -8958,10 +8958,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/node@*", "@types/node@22.16.4", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
-  version "22.16.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.16.4.tgz#00c763ad4d4e45f62d5a270c040ae1a799c7e38a"
-  integrity sha512-PYRhNtZdm2wH/NT2k/oAJ6/f2VD2N2Dag0lGlx2vWgMSJXGNmlce5MiTQzoWAiIJtso30mjnfQCOKVH+kAQC/g==
+"@types/node@*", "@types/node@22.16.5", "@types/node@>=10.0.0", "@types/node@>=18.0.0", "@types/node@>=8.1.0":
+  version "22.16.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.16.5.tgz#cc46ac3994cd957000d0c11095a0b1dae2ea2368"
+  integrity sha512-bJFoMATwIGaxxx8VJPeM8TonI8t579oRvgAuT8zFugJsJZgzqv0Fu8Mhp68iecjzG7cnN3mO2dJQ5uUM2EFrgQ==
   dependencies:
     undici-types "~6.21.0"
 
