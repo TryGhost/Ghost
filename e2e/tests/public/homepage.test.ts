@@ -7,5 +7,6 @@ test.describe('Ghost Homepage', () => {
 
         await homePage.goto();
         await expect(homePage.title).toBeVisible();
+        await expect(homePage.mainSubscribeButton).toBeVisible();
     });
 });
