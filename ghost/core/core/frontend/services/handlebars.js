@@ -19,7 +19,7 @@ module.exports = {
     // Theme i18n
     // @TODO: this should live somewhere else...
     themeI18n: require('./theme-engine/i18n'),
-
+    themeI18next: require('./theme-engine/i18next'),
     // TODO: these need a more sensible home
     localUtils: require('./theme-engine/handlebars/utils')
 };
