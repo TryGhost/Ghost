@@ -9,8 +9,7 @@
     </div>
 {{/if}}
 
-{{!-- {{#if (and this.showWhatsNew this.whatsNew.hasNew)}} --}}
-{{#if true}}
+{{#if (and this.showWhatsNew this.whatsNew.hasNew)}}
     {{#let (get this.whatsNew.entries "0") as |entry|}}
     <div class="gh-sidebar-banner gh-whatsnew-toast">
         <button class="gh-sidebar-banner-close" type="button" {{on "click" this.dismissWhatsNewToast}}>&#xd7;</button>
