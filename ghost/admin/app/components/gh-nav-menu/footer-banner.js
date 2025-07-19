@@ -82,8 +82,7 @@ export default class FooterBanner extends Component {
     }
 
     @action
-    openFeaturedWhatsNew(href) {
-        window.open(href, '_blank');
+    openFeaturedWhatsNew() {
         this.whatsNew.seen();
     }
 }
