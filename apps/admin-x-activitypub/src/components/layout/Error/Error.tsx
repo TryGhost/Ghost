@@ -4,8 +4,8 @@ import {H3, LucideIcon} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useRouteError} from 'react-router';
 
-const Error = () => {
-    const error = useRouteError();
+const Error = ({statusCode}: {statusCode?: number}) => {
+    const routeError = useRouteError();
     const navigate = useNavigate();
 
     const toDashboard = (e: React.MouseEvent<HTMLElement>) => {
@@ -13,8 +13,8 @@ const Error = () => {
         navigate('/dashboard', {crossApp: true});
     };
 
-    return (
-        !error ? (
+    if (routeError) {
+        return (
             <Layout>
                 <EmptyViewIndicator>
                     <EmptyViewIcon><LucideIcon.SearchX /></EmptyViewIcon>
@@ -22,15 +22,29 @@ const Error = () => {
                     <div>We couldn&apos;t find the page you were looking for. It may have been moved, deleted, or never existed in the first place.</div>
                 </EmptyViewIndicator>
             </Layout>
-        ) : (
+        );
+    }
+
+    if (statusCode === 429) {
+        return (
             <div className="admin-x-container-error">
                 <div className="admin-x-error max-w-xl">
-                    <h1>Loading interrupted</h1>
-                    <p>They say life is a series of trials and tribulations. This moment right here? It&apos;s a tribulation. Our app was supposed to load, and yet here we are. Loadless. Click back to the dashboard to try again.</p>
-                    <a className='cursor-pointer text-green' onClick={toDashboard}>&larr; Back to the dashboard</a>
+                    <h1>Rate limit exceeded</h1>
+                    <p>You&apos;ve made too many requests. Please try again in a moment.</p>
+                    <p><a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></p>
                 </div>
             </div>
-        )
+        );
+    }
+
+    return (
+        <div className="admin-x-container-error">
+            <div className="admin-x-error max-w-xl">
+                <h1>Loading interrupted</h1>
+                <p>They say life is a series of trials and tribulations. This moment right here? It&apos;s a tribulation. Our app was supposed to load, and yet here we are. Loadless. Click back to the dashboard to try again.</p>
+                <a className='cursor-pointer text-green' onClick={toDashboard}>&larr; Back to the dashboard</a>
+            </div>
+        </div>
     );
 };
 
