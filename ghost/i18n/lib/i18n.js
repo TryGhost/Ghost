@@ -1,6 +1,4 @@
 const i18next = require('i18next');
-const fs = require('fs-extra');
-const path = require('path');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -88,61 +86,16 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
- * @param {object} [options]
- * @param {string} [options.themePath] - Path to theme's locales directory for theme namespace
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
  */
-module.exports = (lng = 'en', ns = 'portal', options = {}) => {
+module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
     const interpolation = {
         prefix: '{',
         suffix: '}'
     };
 
-    // Only disable HTML escaping for theme namespace
-    if (ns === 'theme') {
-        interpolation.escapeValue = false;
-    }
-
-    let resources;
-    if (ns !== 'theme') {
-        resources = generateResources(SUPPORTED_LOCALES, ns);
-    } else {
-        // For theme namespace, we need to load translations from the theme's locales directory
-        resources = {};
-        const themeLocalesPath = options.themePath;
-
-        if (themeLocalesPath) {
-            // Try to load the requested locale first
-            try {
-                const localePath = path.join(themeLocalesPath, `${lng}.json`);
-                const content = fs.readFileSync(localePath, 'utf8');
-                resources[lng] = {
-                    theme: JSON.parse(content)
-                };
-            } catch (err) {
-                // If the requested locale fails, try English as fallback
-                try {
-                    const enPath = path.join(themeLocalesPath, 'en.json');
-                    const content = fs.readFileSync(enPath, 'utf8');
-                    resources[lng] = {
-                        theme: JSON.parse(content)
-                    };
-                } catch (enErr) {
-                    // If both fail, use an empty object
-                    resources[lng] = {
-                        theme: {}
-                    };
-                }
-            }
-        } else {
-            // If no theme path provided, use empty translations
-            resources[lng] = {
-                theme: {}
-            };
-        }
-    }
-
+    let resources = generateResources(SUPPORTED_LOCALES, ns);
     i18nextInstance.init({
         lng,
 
@@ -151,11 +104,9 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
         keySeparator: false,
 
         // if the value is an empty string, return the key
-        // this allows empty strings for the en files, and causes all other languages to fallback to en.
         returnEmptyString: false,
 
-        // load en as the fallback for any missing language.
-        // load nb as the fallback for no for backwards compatibility
+        // do not load a fallback
         fallbackLng: {
             no: ['nb', 'en'],
             default: ['en']
