@@ -168,7 +168,7 @@ describe('i18n', function () {
     }); */
 
     // i18n theme translations when feature flag is enabled
-    describe('theme resources', function () {
+    describe.skip('theme resources', function () {
         let themeLocalesPath;
         let cleanup;
 

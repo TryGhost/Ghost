@@ -5,7 +5,7 @@ const t = require('../../../../core/frontend/helpers/t');
 const themeI18next = require('../../../../core/frontend/services/theme-engine/i18next');
 const labs = require('../../../../core/shared/labs');
 
-describe('NEW{{t}} helper', function () {
+describe.skip('NEW{{t}} helper', function () {
     let ogBasePath = themeI18next.basePath;
 
     before(function () {

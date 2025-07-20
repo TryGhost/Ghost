@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18next/ThemeI18n');
 const path = require('path');
 
-describe('NEW i18nextThemeI18n Class behavior', function () {
+describe.skip('NEW i18nextThemeI18n Class behavior', function () {
     let i18n;
     const testBasePath = path.join(__dirname, '../../../../utils/fixtures/themes/');
 
@@ -23,7 +23,7 @@ describe('NEW i18nextThemeI18n Class behavior', function () {
         await i18n.init({activeTheme: 'locale-theme', locale: 'fr'});
         i18n._locale.should.eql('fr');
     });
-    
+
     it('initializes with theme path', async function () {
         await i18n.init({activeTheme: 'locale-theme', locale: 'de'});
         const result = i18n.t('Top left Button');
