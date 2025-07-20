@@ -88,7 +88,7 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'|'theme'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'theme'} ns
  * @param {object} [options]
  * @param {string} [options.themePath] - Path to theme's locales directory for theme namespace
  */
