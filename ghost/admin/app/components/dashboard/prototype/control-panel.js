@@ -1,5 +1,6 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
+import {loadDashboardMockState} from '../../../utils/load-dashboard-mock-state';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -72,32 +73,18 @@ export default class ControlPanel extends Component {
     }
 
     loadState() {
-        try {
-            const savedState = localStorage.getItem('dashboard5-prototype-state');
-            if (savedState) {
-                const parsed = JSON.parse(savedState);
-                if (parsed) {
-                    this.state = parsed;
-                }
-            }
+        const {savedState, savedStatus, enabledStr} = loadDashboardMockState();
+        
+        if (savedState) {
+            this.state = savedState;
+        }
 
-            const savedStatus = localStorage.getItem('dashboard5-prototype-status');
-            if (savedStatus) {
-                const parsed = JSON.parse(savedStatus);
-                if (parsed) {
-                    this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...parsed};
-                }
-            }
+        if (savedStatus) {
+            this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...savedStatus};
+        }
 
-            const enabledStr = localStorage.getItem('dashboard5-prototype-enabled');
-            if (enabledStr) {
-                const parsed = JSON.parse(enabledStr);
-                if (typeof parsed === 'boolean' && parsed !== this.dashboardMocks.enabled) {
-                    this.dashboardMocks.enabled = parsed;
-                }
-            }
-        } catch (e) {
-            // ignore localStorage not supported errors
+        if (typeof enabledStr === 'boolean' && enabledStr !== this.dashboardMocks.enabled) {
+            this.dashboardMocks.enabled = enabledStr;
         }
     }
 
