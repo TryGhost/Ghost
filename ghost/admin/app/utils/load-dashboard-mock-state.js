@@ -1,11 +1,11 @@
 export function loadDashboardMockState() {
-    try {
-        const state = {
-            savedState: null,
-            savedStatus: null,
-            enabledStr: null
-        };
+    const state = {
+        savedState: null,
+        savedStatus: null,
+        enabledStr: null
+    };
 
+    try {
         const savedState = localStorage.getItem('dashboard5-prototype-state');
         if (savedState) {
             const parsed = JSON.parse(savedState);
@@ -29,10 +29,9 @@ export function loadDashboardMockState() {
                 state.enabledStr = parsed;
             }
         }
-
-        return state;
     } catch (e) {
         // localStorage might not be available
-        return {};
     }
+
+    return state;
 }
