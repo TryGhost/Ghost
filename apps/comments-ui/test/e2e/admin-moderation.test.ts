@@ -44,15 +44,7 @@ test.describe('Admin moderation', async () => {
         });
     }
 
-    test('skips rendering the auth frame with no comments', async ({page}) => {
-        await initializeTest(page);
-
-        const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(0);
-    });
-
-    test('renders the auth frame when there are comments', async ({page}) => {
-        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+    test('renders the auth frame', async ({page}) => {
         await initializeTest(page);
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
@@ -227,6 +219,15 @@ test.describe('Admin moderation', async () => {
         await expect(comments.nth(1)).toContainText('Hidden for members');
 
         expect(adminBrowseSpy.called).toBe(true);
+    });
+
+    test('comment panel is shown when all comments are hidden', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>', status: 'hidden'});
+        mockedApi.addComment({html: '<p>This is comment 2</p>', status: 'hidden'});
+
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(2);
     });
 
     test('can hide and show comments', async ({page}) => {
