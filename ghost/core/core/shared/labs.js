@@ -28,6 +28,7 @@ const GA_FEATURES = [
     'customFonts',
     'contentVisibility',
     'ActivityPub',
+    'trafficAnalytics',
     'ui60',
     'explore'
 ];
@@ -44,7 +45,6 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'trafficAnalytics',
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
