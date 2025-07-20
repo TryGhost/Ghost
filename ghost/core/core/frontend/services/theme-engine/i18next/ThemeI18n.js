@@ -38,7 +38,7 @@ class ThemeI18n {
      * @param {string} options.activeTheme - name of the currently loaded theme
      * @param {string} options.locale - name of the currently loaded locale
      */
-    async init(options) {
+    init(options) {
         if (!options || !options.activeTheme) {
             throw new errors.IncorrectUsageError({message: 'activeTheme is required'});
         }
@@ -49,7 +49,7 @@ class ThemeI18n {
         const themeLocalesPath = path.join(this._basePath, this._activeTheme, 'locales');
 
         // Check if the theme path exists
-        const themePathExists = await fs.pathExists(themeLocalesPath);
+        const themePathExists = fs.existsSync(themeLocalesPath);
 
         if (!themePathExists) {
             // If the theme path doesn't exist, use the key as the translation
@@ -63,22 +63,22 @@ class ThemeI18n {
         // Note: @tryghost/i18n uses synchronous file operations internally
         // This is fine in production but in tests we need to ensure the files exist first
         const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
-        const localeExists = await fs.pathExists(localePath);
-        
+        const localeExists = fs.existsSync(localePath);
+
         if (localeExists) {
             this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
             return;
         }
-        
+
         // If the requested locale doesn't exist, try English as fallback
         const enPath = path.join(themeLocalesPath, 'en.json');
-        const enExists = await fs.pathExists(enPath);
-        
+        const enExists = fs.existsSync(enPath);
+
         if (enExists) {
             this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
             return;
         }
-        
+
         // If both fail, use the key as the translation
         this._i18n = {
             t: key => key

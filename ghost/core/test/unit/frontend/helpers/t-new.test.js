@@ -18,13 +18,13 @@ describe('NEW{{t}} helper', function () {
         themeI18next.basePath = ogBasePath;
     });
 
-    beforeEach(async function () {
+    beforeEach(function () {
         // Reset the i18n instance before each test
         themeI18next._i18n = null;
     });
 
-    it('theme translation is DE', async function () {
-        await themeI18next.init({activeTheme: 'locale-theme', locale: 'de'});
+    it('theme translation is DE', function () {
+        themeI18next.init({activeTheme: 'locale-theme', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -33,8 +33,8 @@ describe('NEW{{t}} helper', function () {
         rendered.should.eql('Oben Links.');
     });
 
-    it('theme translation is EN', async function () {
-        await themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
+    it('theme translation is EN', function () {
+        themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -43,8 +43,8 @@ describe('NEW{{t}} helper', function () {
         rendered.should.eql('Left Button on Top');
     });
 
-    it('[fallback] no theme translation file found for FR', async function () {
-        await themeI18next.init({activeTheme: 'locale-theme', locale: 'fr'});
+    it('[fallback] no theme translation file found for FR', function () {
+        themeI18next.init({activeTheme: 'locale-theme', locale: 'fr'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -53,8 +53,8 @@ describe('NEW{{t}} helper', function () {
         rendered.should.eql('Left Button on Top');
     });
 
-    it('[fallback] no theme files at all, use key as translation', async function () {
-        await themeI18next.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
+    it('[fallback] no theme files at all, use key as translation', function () {
+        themeI18next.init({activeTheme: 'locale-theme-1.4', locale: 'de'});
 
         let rendered = t.call({}, 'Top left Button', {
             hash: {}
@@ -79,8 +79,8 @@ describe('NEW{{t}} helper', function () {
         rendered.should.eql('');
     });
 
-    it('returns a translated string even if no options are passed', async function () {
-        await themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
+    it('returns a translated string even if no options are passed', function () {
+        themeI18next.init({activeTheme: 'locale-theme', locale: 'en'});
 
         let rendered = t.call({}, 'Top left Button');
 
