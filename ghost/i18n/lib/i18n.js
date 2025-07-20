@@ -1,4 +1,6 @@
 const i18next = require('i18next');
+const fs = require('fs-extra');
+const path = require('path');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -86,16 +88,54 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'theme'} ns
  */
-module.exports = (lng = 'en', ns = 'portal') => {
+module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     const i18nextInstance = i18next.createInstance();
     const interpolation = {
         prefix: '{',
         suffix: '}'
     };
+    if (ns === 'theme') {
+        interpolation.escapeValue = false;
+    }
+    let resources;
+    if (ns !== 'theme') {
+        resources = generateResources(SUPPORTED_LOCALES, ns);
+    } else {
+        resources = {};
+        const themeLocalesPath = options.themePath;
 
-    let resources = generateResources(SUPPORTED_LOCALES, ns);
+        if (themeLocalesPath) {
+            // Try to load the requested locale first
+            try {
+                const localePath = path.join(themeLocalesPath, `${lng}.json`);
+                const content = fs.readFileSync(localePath, 'utf8');
+                resources[lng] = {
+                    theme: JSON.parse(content)
+                };
+            } catch (err) {
+                // If the requested locale fails, try English as fallback
+                try {
+                    const enPath = path.join(themeLocalesPath, 'en.json');
+                    const content = fs.readFileSync(enPath, 'utf8');
+                    resources[lng] = {
+                        theme: JSON.parse(content)
+                    };
+                } catch (enErr) {
+                    // If both fail, use an empty object
+                    resources[lng] = {
+                        theme: {}
+                    };
+                }
+            }
+        } else {
+            // If no theme path provided, use empty translations
+            resources[lng] = {
+                theme: {}
+            };
+        }
+    }
     i18nextInstance.init({
         lng,
 
