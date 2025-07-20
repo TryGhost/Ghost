@@ -104,7 +104,7 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
         resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
         resources = {};
-        const themeLocalesPath = options.themePath;
+     /*   const themeLocalesPath = options.themePath;
 
         if (themeLocalesPath) {
             // Try to load the requested locale first
@@ -134,7 +134,7 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
             resources[lng] = {
                 theme: {}
             };
-        }
+        }*/
     }
     i18nextInstance.init({
         lng,
