@@ -45,7 +45,6 @@ const PUBLIC_BETA_FEATURES = [
 const PRIVATE_FEATURES = [
     'stripeAutomaticTax',
     'webmentions',
-    'trafficAnalytics',
     'importMemberTier',
     'urlCache',
     'lexicalIndicators',
