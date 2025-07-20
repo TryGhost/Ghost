@@ -1,6 +1,6 @@
 const i18next = require('i18next');
-//const fs = require('fs-extra');
 const path = require('path');
+const fs = require('fs-extra');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -104,37 +104,36 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
         resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
         resources = {};
-     /*   const themeLocalesPath = options.themePath;
 
+        const themeLocalesPath = options.themePath;
         if (themeLocalesPath) {
             // Try to load the requested locale first
-            try {
-                const localePath = path.join(themeLocalesPath, `${lng}.json`);
+
+            const localePath = path.join(themeLocalesPath, `${lng}.json`);
+            const localePathExists = fs.existsSync(localePath);
+            if (localePathExists) {
                 const content = fs.readFileSync(localePath, 'utf8');
                 resources[lng] = {
                     theme: JSON.parse(content)
                 };
-            } catch (err) {
-                // If the requested locale fails, try English as fallback
-                try {
-                    const enPath = path.join(themeLocalesPath, 'en.json');
-                    const content = fs.readFileSync(enPath, 'utf8');
-                    resources[lng] = {
-                        theme: JSON.parse(content)
-                    };
-                } catch (enErr) {
-                    // If both fail, use an empty object
-                    resources[lng] = {
-                        theme: {}
-                    };
-                }
+                return;
             }
-        } else {
-            // If no theme path provided, use empty translations
+            // If the requested locale fails, try English as fallback
+            const enPath = path.join(themeLocalesPath, 'en.json');
+            const enPathExists = fs.existsSync(enPath);
+            if (enPathExists) {
+                const content = fs.readFileSync(enPath, 'utf8');
+                resources[lng] = {
+                    theme: JSON.parse(content)
+                };
+                return;
+            }
+
+            // If both fail, use an empty object
             resources[lng] = {
                 theme: {}
             };
-        }*/
+        }
     }
     i18nextInstance.init({
         lng,
