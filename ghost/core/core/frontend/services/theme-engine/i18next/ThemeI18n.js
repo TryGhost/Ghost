@@ -38,7 +38,7 @@ class ThemeI18n {
      * @param {string} options.activeTheme - name of the currently loaded theme
      * @param {string} options.locale - name of the currently loaded locale
      */
-    async init(options) {
+    init(options) {
         if (!options || !options.activeTheme) {
             throw new errors.IncorrectUsageError({message: 'activeTheme is required'});
         }
@@ -49,7 +49,7 @@ class ThemeI18n {
         const themeLocalesPath = path.join(this._basePath, this._activeTheme, 'locales');
 
         // Check if the theme path exists
-        const themePathExists = await fs.pathExists(themeLocalesPath);
+        const themePathExists = fs.existsSync(themeLocalesPath);
 
         if (!themePathExists) {
             // If the theme path doesn't exist, use the key as the translation
@@ -62,26 +62,29 @@ class ThemeI18n {
         // Initialize i18n with the theme path
         // Note: @tryghost/i18n uses synchronous file operations internally
         // This is fine in production but in tests we need to ensure the files exist first
-        try {
-            // Verify the locale file exists
-            const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
-            await fs.access(localePath);
 
+        const localePath = path.join(themeLocalesPath, `${this._locale}.json`);
+        const localeExists = fs.existsSync(localePath);
+
+        if (localeExists) {
             // Initialize i18n
             this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
-        } catch (err) {
-            // If the requested locale fails, try English as fallback
-            try {
-                const enPath = path.join(themeLocalesPath, 'en.json');
-                await fs.access(enPath);
-                this._i18n = i18nLib(this._locale, 'theme', {themePath: themeLocalesPath});
-            } catch (enErr) {
-                // If both fail, use the key as the translation
-                this._i18n = {
-                    t: key => key
-                };
-            }
-        }
+            return;
+        } 
+            
+        // If the requested locale fails, try English as fallback
+        const enPath = path.join(themeLocalesPath, 'en.json');
+        const enExists = fs.existsSync(enPath);
+
+        if (enExists) {
+            this._i18n = i18nLib('en', 'theme', {themePath: themeLocalesPath});
+            return;
+        }   
+        
+        // If both fail, use the key as the translation
+        this._i18n = {
+            t: key => key
+        };           
     }
 
     /**
