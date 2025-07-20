@@ -32,7 +32,7 @@ module.exports = function t(text, options = {}) {
 
     if (labs.isSet('themeTranslation')) {
         // Use the new translation package when feature flag is enabled
-        
+
         // Initialize only if needed
         if (!themeI18next._i18n) {
             themeI18next.init({
@@ -40,19 +40,9 @@ module.exports = function t(text, options = {}) {
                 locale: config.get('locale')
             });
         }
-        
+
         return themeI18next.t(text, bindings);
-    } else {
-        // Use the existing translation package when feature flag is disabled
-        
-        // Initialize only if needed
-        if (!themeI18n._strings) {
-            themeI18n.init({
-                activeTheme: settingsCache.get('active_theme'),
-                locale: config.get('locale')
-            });
-        }
-        
-        return themeI18n.t(text, bindings);
     }
+
+    return themeI18n.t(text, bindings);
 };
