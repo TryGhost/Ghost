@@ -93,7 +93,11 @@ module.exports = {
      */
     async getLastJobRunTimestamp(jobName) {
         const jobData = await this.getJobData(jobName);
-        return jobData ? jobData.finished_at || jobData.started_at : null;
+        if (!jobData) {
+            return null;
+        }
+
+        return jobData.finished_at || jobData.started_at || null;
     },
 
     /**
