@@ -1,5 +1,5 @@
 const i18next = require('i18next');
-const fs = require('fs-extra');
+//const fs = require('fs-extra');
 const path = require('path');
 
 const SUPPORTED_LOCALES = [
