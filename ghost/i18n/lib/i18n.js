@@ -1,6 +1,7 @@
 const i18next = require('i18next');
 const path = require('path');
-const fs = require('fs-extra');
+const fs = require('fs');
+const errors = require('@tryghost/errors');
 
 const SUPPORTED_LOCALES = [
     'af', // Afrikaans
@@ -120,7 +121,10 @@ function generateThemeResources(lng, themeLocalesPath) {
                 delete require.cache[require.resolve(localePath)];
                 res = require(localePath);
             } else {
-                throw new Error(`Locale file not found: ${locale}`);
+                throw new errors.IncorrectUsageError({
+                    message: `Locale file not found: ${locale}`,
+                    context: locale
+                });
             }
         } catch (err) {
             // Fallback to English if it's not the locale we're already trying
@@ -167,6 +171,8 @@ module.exports = (lng = 'en', ns = 'portal', options = {}) => {
     if (ns !== 'theme') {
         resources = generateResources(SUPPORTED_LOCALES, ns);
     } else {
+        // eslint-disable-next-line no-console
+        console.log('generateThemeResources', lng, options.themePath);
         resources = generateThemeResources(lng, options.themePath);
     }
     
