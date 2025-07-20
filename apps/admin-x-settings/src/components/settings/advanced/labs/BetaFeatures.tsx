@@ -60,6 +60,10 @@ const BetaFeatures: React.FC = () => {
                     title='Social web (beta)' />
             )}
             <LabItem
+                action={<FeatureToggle flag="themeTranslation" />}
+                detail={<>Enable theme translation using i18next instead of the old translation package.</>}
+                title='Updated theme translation (beta)' />
+            <LabItem
                 action={<FeatureToggle flag="superEditors" />}
                 detail={<>Allows newly-assigned editors to manage members and comments in addition to regular roles.</>}
                 title='Enhanced Editor role (beta)' />
