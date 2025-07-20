@@ -2,12 +2,14 @@ import Component from '@glimmer/component';
 import envConfig from 'ghost-admin/config/environment';
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {loadDashboardMockState} from '../../utils/load-dashboard-mock-state';
 import {inject as service} from '@ember/service';
 import {task} from 'ember-concurrency';
 
 export default class FooterBanner extends Component {
     @service session;
     @service dashboardStats;
+    @service dashboardMocks;
     @service feature;
     @service membersUtils;
     @service modals;
@@ -53,7 +55,24 @@ export default class FooterBanner extends Component {
 
     @task
     *loadCurrentMRR() {
-        if (this.isAdminOrOwnern) {
+        if (this.isAdminOrOwner) {
+            // If Mocks are enabled on the Dashboard control panel, then update mocked data.
+            if (envConfig.environment !== 'production') {
+                const {savedState, savedStatus, enabledStr} = loadDashboardMockState();
+
+                if (savedState) {
+                    this.dashboardMocks.updateMockedData(savedState);
+                }
+
+                if (savedStatus) {
+                    this.dashboardMocks.siteStatus = {...this.dashboardMocks.siteStatus, ...savedStatus};
+                }
+
+                if (typeof enabledStr === 'boolean' && enabledStr !== this.dashboardMocks.enabled) {
+                    this.dashboardMocks.enabled = enabledStr;
+                }
+            }
+
             try {
                 yield this.dashboardStats.loadMrrStats();
             } catch (error) {
