@@ -27,13 +27,13 @@ const GA_FEATURES = [
     'announcementBar',
     'customFonts',
     'contentVisibility',
+    'ActivityPub',
     'ui60',
     'explore'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
 const PUBLIC_BETA_FEATURES = [
-    'ActivityPub',
     'superEditors',
     'editorExcerpt',
     'additionalPaymentMethods'
