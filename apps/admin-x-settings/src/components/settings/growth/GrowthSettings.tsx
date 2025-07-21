@@ -13,12 +13,15 @@ export const searchKeywords = {
     explore: ['ghost explore', 'explore', 'growth', 'share', 'list', 'listing'],
     recommendations: ['growth', 'recommendations', 'recommend', 'blogroll'],
     embedSignupForm: ['growth', 'embeddable signup form', 'embeddable form', 'embeddable sign up form', 'embeddable sign up'],
-    offers: ['growth', 'offers', 'discounts', 'coupons', 'promotions']
+    offers: [] as string[] // keywords conditionally populated for eligible accounts
 };
 
 const GrowthSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
+    if (hasStripeEnabled) {
+        searchKeywords.offers = ['growth', 'offers', 'discounts', 'coupons', 'promotions'];
+    }
 
     return (
         <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Growth'>
