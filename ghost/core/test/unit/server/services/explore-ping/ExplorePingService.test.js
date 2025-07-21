@@ -23,8 +23,8 @@ describe('ExplorePingService', function () {
         settingsCacheStub.get.withArgs('active_theme').returns('alto');
         settingsCacheStub.get.withArgs('explore_ping').returns(true);
         settingsCacheStub.get.withArgs('explore_ping_growth').returns(false);
-        settingsCacheStub.get.withArgs('facebook').returns('https://facebook.com/example');
-        settingsCacheStub.get.withArgs('twitter').returns('https://twitter.com/example');
+        settingsCacheStub.get.withArgs('facebook').returns('my-profile');
+        settingsCacheStub.get.withArgs('twitter').returns('my-handle');
 
         configStub = {
             get: sinon.stub()
@@ -88,8 +88,8 @@ describe('ExplorePingService', function () {
                 site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
                 theme: 'alto',
-                facebook: 'https://facebook.com/example',
-                twitter: 'https://twitter.com/example',
+                facebook: 'my-profile',
+                twitter: 'my-handle',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z'
@@ -130,8 +130,8 @@ describe('ExplorePingService', function () {
                 site_uuid: '123e4567-e89b-12d3-a456-426614174000',
                 url: 'https://example.com',
                 theme: 'alto',
-                facebook: 'https://facebook.com/example',
-                twitter: 'https://twitter.com/example',
+                facebook: 'my-profile',
+                twitter: 'my-handle',
                 posts_total: 100,
                 posts_last: '2023-01-01T00:00:00.000Z',
                 posts_first: '2020-01-01T00:00:00.000Z',
