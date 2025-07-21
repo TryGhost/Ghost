@@ -12,7 +12,7 @@ export const searchKeywords = {
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun', 'tips', 'donations', 'one time', 'payment']
+    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun']
 };
 
 const EmailSettings: React.FC = () => {
