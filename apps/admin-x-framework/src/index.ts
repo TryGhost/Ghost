@@ -46,3 +46,6 @@ export {useQueryClient} from '@tanstack/react-query';
 // API
 export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
 export {getTinybirdToken} from './api/tinybird';
+
+// App routes
+export {POSTS_ANALYTICS_ROUTES, STATS_ROUTES, buildCrossAppPostsRoute, TEST_ROUTES} from './utils/app-routes';
