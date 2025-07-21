@@ -38,6 +38,17 @@ class Bridge {
             debug('Active theme init18n');
             this.getActiveTheme().initI18n({locale: model.get('value')});
         });
+        events.on('settings.labs.edited', (model) => {
+            debug('theme setting changed');
+            if (model.get('value').themeTranslation) {
+                debug('theme setting changed to true');
+            } else {
+                debug('theme setting changed to false');
+            }
+            const locale = settingsCache.get('locale');
+            this.getActiveTheme().initI18n({locale});
+
+        });
 
         // NOTE: eventually this event should somehow be listened on and handled by the URL Service
         //       for now this eliminates the need for the frontend routing to listen to
