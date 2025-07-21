@@ -1,3 +1,3 @@
 export * from './top-locations';
-export * from './top-resources'
+export * from './top-resources';
 
