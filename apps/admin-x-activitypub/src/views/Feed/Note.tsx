@@ -199,7 +199,7 @@ const Note = () => {
             <div className='mx-auto flex h-full max-w-[620px] flex-col'>
                 <div className='relative flex-1'>
                     <div className='grow overflow-y-auto'>
-                        <div className={`mx-auto px-8 pb-10 pt-5`}>
+                        <div className={`mx-auto px-8 pb-10 pt-5 max-lg:px-0`}>
                             {!threadParents.length &&
                             <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
                                 <div className='relative z-10'>

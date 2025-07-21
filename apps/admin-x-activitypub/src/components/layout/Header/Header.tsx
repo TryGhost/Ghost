@@ -14,7 +14,7 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
         return <BackButton className='-ml-2' />;
     }
     return (
-        <H1>{title}</H1>
+        <H1 className='max-md:text-[2.4rem]'>{title}</H1>
     );
 };
 
@@ -45,7 +45,7 @@ const Header: React.FC = () => {
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>
-                    <div className='relative flex h-[102px] items-center justify-between gap-5 px-8 before:absolute before:inset-x-8 before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] before:dark:border-gray-950'>
+                    <div className='relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] max-md:h-[68px] before:dark:border-gray-950'>
                         <HeaderTitle
                             backIcon={backActive}
                             title={activeRoute?.pageTitle || ''}

@@ -34,7 +34,7 @@ const Sidebar: React.FC = () => {
     }, [notificationsCount, resetNotificationsCount]);
 
     return (
-        <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 dark:border-gray-950'>
+        <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 max-lg:hidden dark:border-gray-950'>
             <div className='flex grow flex-col justify-between'>
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>
