@@ -1,5 +1,4 @@
 import {Locator, Page} from '@playwright/test';
-import {TEST_ROUTES} from '@tryghost/admin-x-framework';
 
 class AdminPage {
     protected pageUrl:string;
@@ -8,7 +7,7 @@ class AdminPage {
 
     constructor(page: Page) {
         this.page = page;
-        this.pageUrl = TEST_ROUTES.STATS.OVERVIEW;
+        this.pageUrl = '/ghost/#/analytics';
         this.body = page.locator('body');
     }
 
