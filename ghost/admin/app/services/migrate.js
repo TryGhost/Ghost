@@ -1,6 +1,5 @@
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
-import {SignJWT} from 'jose';
 import {tracked} from '@glimmer/tracking';
 
 export default class MigrateService extends Service {
