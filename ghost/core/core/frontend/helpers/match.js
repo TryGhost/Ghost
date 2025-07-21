@@ -1,9 +1,11 @@
-const {SafeString} = require('../services/handlebars');
+const {hbs, SafeString} = require('../services/handlebars');
 
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
+const nql = require('@tryghost/nql');
 
 const _ = require('lodash');
+const {handlebars: {createFrame}} = hbs;
 
 const messages = {
     invalidAttribute: 'Invalid or no attribute given to match helper'
@@ -73,6 +75,48 @@ const handleMatch = (data, operator, value) => {
     return result;
 };
 
+const handleNql = (data, value, frame) => {
+    if (!(_.isArray(data) || _.isPlainObject(data)) || !_.isString(value)) {
+        return false;
+    }
+
+    let result = false;
+    let matches;
+
+    try {
+        // Prepare NQL query with common replacements
+        const engine = nql(value, {
+            expansions: [
+                {key: 'tags', replacement: 'tags.slug'},
+                {key: 'primary_tag', replacement: 'primary_tag.slug'},
+                {key: 'authors', replacement: 'authors.slug'},
+                {key: 'primary_author', replacement: 'primary_author.slug'}
+            ]
+        });
+    
+        // Test if the data matches
+        result = engine.queryJSON(data);
+    
+        // In case of an array of data, retrieve the list of matches
+        if (_.isArray(data)) {
+            matches = engine.query?.find(data).all() || [];
+            result = matches.length > 0;
+        }
+    } catch (error) {
+        // Likely a parsing error due to an invalid NQL expression
+        result = false;
+        matches = undefined;
+        logging.error(error);
+    }
+
+    // Add the matches to hbs frame
+    if (frame && matches) {
+        frame.matches = matches;
+    }
+    
+    return result;
+};
+
 module.exports = function match(...attrs) {
     // options = options || {};
     // options.hash = options.hash || {};
@@ -80,6 +124,7 @@ module.exports = function match(...attrs) {
 
     const options = attrs.pop();
     const isBlock = _.has(options, 'fn');
+    const frame = options.data ? createFrame(options.data) : undefined;
     let result;
 
     if (_.isEmpty(attrs)) {
@@ -99,6 +144,9 @@ module.exports = function match(...attrs) {
     if (attrs.length === 1) {
         // CASE: single attribute, treat it as simple true/false (like the if helper)
         result = handleConditional(attrs[0], options);
+    } else if (attrs.length === 2 && (_.isArray(attrs[0]) || _.isPlainObject(attrs[0])) && _.isString(attrs[1])) {
+        // CASE: two attributes, data is array or plain object, handle it with "nql"        
+        result = handleNql(attrs[0], attrs[1], frame);
     } else if (attrs.length === 2) {
         // CASE: two attributes, assume the operator is "="
         result = handleMatch(attrs[0], '=', attrs[1]);
@@ -113,7 +161,7 @@ module.exports = function match(...attrs) {
     // If we're in block mode, return the outcome from the fn/inverse functions
     if (isBlock) {
         if (result) {
-            return options.fn(this);
+            return options.fn(this, {data: frame});
         }
 
         return options.inverse(this);
