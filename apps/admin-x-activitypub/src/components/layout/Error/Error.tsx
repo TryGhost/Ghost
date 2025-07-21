@@ -1,5 +1,5 @@
 import Layout from '@components/layout/Layout';
-import {Button, H3, LucideIcon} from '@tryghost/shade';
+import {Button, H4, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useRouteError} from 'react-router';
@@ -18,7 +18,7 @@ const Error = ({statusCode}: {statusCode?: number}) => {
             <Layout>
                 <EmptyViewIndicator>
                     <EmptyViewIcon><LucideIcon.SearchX /></EmptyViewIcon>
-                    <H3 className='-mb-3'>Oops, page not found!</H3>
+                    <H4 className='-mb-4'>Oops, page not found!</H4>
                     <div>We couldn&apos;t find the page you were looking for. It may have been moved, deleted, or never existed in the first place.</div>
                 </EmptyViewIndicator>
             </Layout>
@@ -30,7 +30,7 @@ const Error = ({statusCode}: {statusCode?: number}) => {
             <Layout>
                 <EmptyViewIndicator>
                     <EmptyViewIcon><LucideIcon.TriangleAlert /></EmptyViewIcon>
-                    <H3 className='-mb-3'>Rate limit exceeded</H3>
+                    <H4 className='-mb-4'>Rate limit exceeded</H4>
                     <div>You&apos;ve made too many requests. Please try again in a moment.</div>
                     <Button asChild>
                         <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
@@ -45,7 +45,7 @@ const Error = ({statusCode}: {statusCode?: number}) => {
             <Layout>
                 <EmptyViewIndicator>
                     <EmptyViewIcon><LucideIcon.Ban /></EmptyViewIcon>
-                    <H3 className='-mb-3'>Account suspended</H3>
+                    <H4 className='-mb-4'>Account suspended</H4>
                     <div>Your account has been suspended due to policy violations.</div>
                     <Button asChild>
                         <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
