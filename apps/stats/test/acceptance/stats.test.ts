@@ -1,4 +1,4 @@
-import {AnalyticsOverviewPage} from '@tryghost/e2e/build/helpers/pages/admin';
+import {AnalyticsOverviewPage} from '@tryghost/e2e/helpers/pages/admin';
 import {
     createMockRequests,
     mockApi
