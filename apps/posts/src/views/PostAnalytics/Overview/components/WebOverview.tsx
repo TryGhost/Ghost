@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/Sources';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
-import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {BaseSourceData, POSTS_ANALYTICS_ROUTES, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 interface WebOverviewProps {
@@ -41,7 +41,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                         </CardTitle>
                     </CardHeader>
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                        navigate(`/analytics/beta/${postId}/web`);
+                        navigate(POSTS_ANALYTICS_ROUTES.WEB(postId!));
                     }}>View more</Button>
                 </div>
                 <CardContent>

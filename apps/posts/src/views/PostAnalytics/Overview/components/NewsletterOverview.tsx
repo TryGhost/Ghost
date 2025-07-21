@@ -1,9 +1,9 @@
 import React, {useMemo} from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
+import {POSTS_ANALYTICS_ROUTES, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
 import {cleanTrackedUrl, processAndGroupTopLinks} from '@src/utils/link-helpers';
-import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useTopLinks} from '@tryghost/admin-x-framework/api/links';
 
 interface NewsletterOverviewProps {
@@ -72,7 +72,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     </CardTitle>
                 </CardHeader>
                 <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                    navigate(`/analytics/beta/${postId}/newsletter`);
+                    navigate(POSTS_ANALYTICS_ROUTES.NEWSLETTER(postId!));
                 }}>View more</Button>
             </div>
             {isNewsletterStatsLoading ?
@@ -172,7 +172,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         </div>
                     </div>
                     {/* <Button variant='outline' onClick={() => {
-                        navigate(`/analytics/beta/${postId}/newsletter`);
+                        navigate(POSTS_ANALYTICS_ROUTES.NEWSLETTER(postId!));
                     }}>
                         View all
                         <LucideIcon.ArrowRight />

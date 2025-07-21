@@ -1,8 +1,8 @@
 import React, {useMemo, useState} from 'react';
 import moment from 'moment-timezone';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, H1, LucideIcon, Navbar, NavbarActions, PageMenu, PageMenuItem, PostShareModal, formatNumber} from '@tryghost/shade';
+import {POSTS_ANALYTICS_ROUTES, hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '../../../App';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -200,28 +200,28 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
                             <PageMenuItem value="Overview" onClick={() => {
-                                navigate(`/analytics/${postId}`);
+                                navigate(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId!));
                             }}>
                                     Overview
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
-                                navigate(`/analytics/${postId}/web`);
+                                navigate(POSTS_ANALYTICS_ROUTES.WEB(postId!));
                             }}>
                                     Web traffic
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
-                                navigate(`/analytics/${postId}/newsletter`);
+                                navigate(POSTS_ANALYTICS_ROUTES.NEWSLETTER(postId!));
                             }}>
                                     Newsletter
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Growth') && (
                             <PageMenuItem value="Growth" onClick={() => {
-                                navigate(`/analytics/${postId}/growth`);
+                                navigate(POSTS_ANALYTICS_ROUTES.GROWTH(postId!));
                             }}>
                                     Growth
                             </PageMenuItem>

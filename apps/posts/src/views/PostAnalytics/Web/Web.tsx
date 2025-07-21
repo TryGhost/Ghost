@@ -6,7 +6,7 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import Sources from './components/Sources';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, LucideIcon, formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade';
-import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {BaseSourceData, POSTS_ANALYTICS_ROUTES, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 
 import {useEffect, useMemo} from 'react';
@@ -34,7 +34,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
         if (!isPostLoading && post?.email_only) {
-            navigate(`/analytics/beta/${postId}`);
+            navigate(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId!));
         }
     }, [isPostLoading, post?.email_only, navigate, postId]);
 
