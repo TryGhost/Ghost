@@ -1,4 +1,4 @@
-import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/builders/index';
+import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/factories/index';
 import {AnalyticsLocationsPage} from '@tryghost/e2e/build/helpers/pages/admin';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
