@@ -11,8 +11,7 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'emails', 'mailgun']
+    mailgun: ['mailgun', 'emails', 'newsletters']
 };
 
 const EmailSettings: React.FC = () => {
