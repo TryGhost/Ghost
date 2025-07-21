@@ -8,8 +8,39 @@ const baseUtils = require('../../../models/base/utils');
 const moment = require('moment');
 
 class FixtureManager {
-    constructor(fixtures) {
-        this.fixtures = fixtures;
+    /**
+     * Create a new FixtureManager instance
+     *
+     * @param {Object} fixtures - The fixture data
+     * @param {Object<string, Function>} placeholderMap - Map of placeholder
+     * strings to replacement functions that will be called with the models
+     * object. The replacement function will be called with the models object
+     * and should return the replacement value. The replacement function will
+     * only be called once and its value will be cached for subsequent calls.
+     * The placeholder string will be replaced with the replacement value in
+     * the fixtures.
+     * @example
+     * new FixtureManager(fixtures, {
+     *     __OWNER_USER_ID__: (models) => models.User.generateId()
+     * })
+     */
+    constructor(fixtures, placeholderMap = {}) {
+        this._fixtures = fixtures;
+        this.placeholderMap = placeholderMap;
+        this.hasProcessedFixtures = false;
+    }
+
+    /**
+     * Lazily get the fixtures, processing placeholders on first access
+     * @returns {Object}
+     */
+    get fixtures() {
+        if (!this.hasProcessedFixtures) {
+            this._fixtures = this.processFixtures(this._fixtures, this.placeholderMap);
+            this.hasProcessedFixtures = true;
+        }
+
+        return this._fixtures;
     }
 
     /**
@@ -68,9 +99,17 @@ class FixtureManager {
      * @returns
      */
     async addAllFixtures(options) {
+        const ownerUserId = this.findOwnerUserId();
+
         const localOptions = _.merge({
             autoRefresh: false,
-            context: {internal: true},
+            context: {
+                internal: true,
+                // Ensure the owner user is set in the context when creating
+                // the fixtures so that attribution gets correctly set (i.e
+                // the owner user is set as the `published_by` user on posts)
+                user: ownerUserId
+            },
             migrating: true
         }, options);
 
@@ -85,7 +124,6 @@ class FixtureManager {
 
         await sequence(this.fixtures.models.filter(m => !['User', 'Role'].includes(m.name)).map(model => () => {
             logging.info('Model: ' + model.name);
-
             return this.addFixturesForModel(model, localOptions);
         }));
 
@@ -175,9 +213,94 @@ class FixtureManager {
         return foundRelation;
     }
 
+    /**
+     * ### Find Owner User ID
+     * Find the owner user ID from the relation fixture
+     * @returns {string}
+     */
+    findOwnerUserId() {
+        const relation = this.findRelationFixture('User', 'Role');
+
+        return Object.keys(relation.entries).find(
+            key => relation.entries[key].includes('Owner')
+        );
+    }
+
     /******************************************************
      * From here down, the methods require access to models
-     * But aren't dependent on this.fixtures
+     ******************************************************/
+
+    /**
+     * Process fixtures by replacing placeholder strings with dynamic values
+     *
+     * @param {Object} fixtures - The fixture data to process
+     * @param {Object<string, Function>} placeholderMap - Map of placeholder
+     * strings to replacement functions that will be called with the models
+     * object. The replacement function will be called with the models object
+     * and should return the replacement value. The replacement function will
+     * only be called once and its value will be cached for subsequent calls.
+     * The placeholder string will be replaced with the replacement value in
+     * the fixtures.
+     * @returns {Object}
+     */
+    processFixtures(fixtures, placeholderMap) {
+        const cache = new Map();
+
+        const processString = (str, replacements) => {
+            let result = str;
+
+            for (const placeholder in replacements) {
+                if (result.includes(placeholder)) {
+                    if (!cache.has(placeholder)) {
+                        cache.set(placeholder, replacements[placeholder](models));
+                    }
+
+                    const processedValue = cache.get(placeholder);
+
+                    result = result.replaceAll(placeholder, processedValue);
+                }
+            }
+
+            return result;
+        };
+
+        const replacePlaceholders = (obj, replacements) => {
+            if (obj === null || obj === undefined) {
+                return obj;
+            }
+
+            if (typeof obj === 'string') {
+                return processString(obj, replacements);
+            }
+
+            if (Array.isArray(obj)) {
+                return obj.map(item => replacePlaceholders(item, replacements));
+            }
+
+            if (typeof obj === 'object') {
+                const result = {};
+
+                for (const key in obj) {
+                    if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                        // Process the key itself for placeholders
+                        const newKey = processString(key, replacements);
+
+                        result[newKey] = replacePlaceholders(obj[key], replacements);
+                    }
+                }
+
+                return result;
+            }
+
+            return obj;
+        };
+
+        return replacePlaceholders(fixtures, placeholderMap);
+    }
+
+    /******************************************************
+     * From here down, the methods aren't dependent on
+     * this.fixtures
      ******************************************************/
 
     /**
