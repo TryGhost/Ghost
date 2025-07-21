@@ -1,7 +1,9 @@
 import {Response} from 'miragejs';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {beforeEach, describe, it} from 'mocha';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {disableLabsFlag, enableLabsFlag} from '../helpers/labs-flag';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -10,6 +12,38 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    // Helper function to setup the setup flow
+    async function setupSetupFlow(server, {fillForm = true} = {}) {
+        await invalidateSession();
+        server.loadFixtures('roles');
+        
+        // Ensure fixtures are loaded
+        if (!server.schema.configs.all().length) {
+            server.loadFixtures('configs');
+        }
+        if (!server.schema.settings.all().length) {
+            server.loadFixtures('settings');
+        }
+        
+        // mimick a new blog
+        server.get('/authentication/setup/', function () {
+            return {
+                setup: [
+                    {status: false}
+                ]
+            };
+        });
+        
+        await visit('/setup');
+        
+        if (fillForm) {
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'thisissupersafe');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
+        }
+    }
 
     it('redirects if already authenticated', async function () {
         let role = this.server.create('role', {name: 'Author'});
@@ -50,10 +84,7 @@ describe('Acceptance: Setup', function () {
         });
 
         it('has a successful happy path', async function () {
-            await invalidateSession();
-            this.server.loadFixtures('roles');
-
-            await visit('/setup');
+            await setupSetupFlow(this.server, {fillForm: false});
 
             // email field is focused by default
             // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
@@ -185,6 +216,46 @@ describe('Acceptance: Setup', function () {
         it('transitions to dashboard', async function () {
             await visit('/?firstStart=true');
             expect(currentURL()).to.equal('/dashboard');
+        });
+    });
+    
+    describe('Success beta flags routing', function () {
+        beforeEach(function () {
+            mockAnalyticsApps();
+        });
+
+        afterEach(function () {
+            cleanupMockAnalyticsApps();
+        });
+
+        it('administrators with no flags redirects to dashboard', async function () {
+            disableLabsFlag(this.server, 'trafficAnalytics');
+            disableLabsFlag(this.server, 'ui60');
+            
+            await setupSetupFlow(this.server);
+            await click('[data-test-button="setup"]');
+
+            expect(currentURL()).to.equal('/dashboard');
+        });
+
+        it('administrators with trafficAnalytics flag redirects to analytics', async function () {
+            enableLabsFlag(this.server, 'trafficAnalytics');
+            disableLabsFlag(this.server, 'ui60');
+            
+            await setupSetupFlow(this.server);
+            await click('[data-test-button="setup"]');
+
+            expect(currentURL()).to.equal('/analytics');
+        });
+
+        it('administrators with ui60 flag redirects to analytics', async function () {
+            disableLabsFlag(this.server, 'trafficAnalytics');
+            enableLabsFlag(this.server, 'ui60');
+            
+            await setupSetupFlow(this.server);
+            await click('[data-test-button="setup"]');
+
+            expect(currentURL()).to.equal('/analytics');
         });
     });
 });

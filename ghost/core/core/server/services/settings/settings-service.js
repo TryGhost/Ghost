@@ -5,6 +5,7 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
+const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
@@ -30,6 +31,7 @@ const getSettingsBREADServiceInstance = () => {
         SettingsModel: models.Settings,
         settingsCache: SettingsCache,
         labsService: labs,
+        limitsService: limits,
         mail,
         singleUseTokenProvider: new SingleUseTokenProvider({
             SingleUseTokenModel: models.SingleUseToken,
