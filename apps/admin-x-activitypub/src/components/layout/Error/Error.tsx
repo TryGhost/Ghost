@@ -1,6 +1,6 @@
 import Layout from '@components/layout/Layout';
+import {Button, H3, LucideIcon} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {H3, LucideIcon} from '@tryghost/shade';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useRouteError} from 'react-router';
 
@@ -27,13 +27,31 @@ const Error = ({statusCode}: {statusCode?: number}) => {
 
     if (statusCode === 429) {
         return (
-            <div className="admin-x-container-error">
-                <div className="admin-x-error max-w-xl">
-                    <h1>Rate limit exceeded</h1>
-                    <p>You&apos;ve made too many requests. Please try again in a moment.</p>
-                    <p><a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></p>
-                </div>
-            </div>
+            <Layout>
+                <EmptyViewIndicator>
+                    <EmptyViewIcon><LucideIcon.TriangleAlert /></EmptyViewIcon>
+                    <H3 className='-mb-3'>Rate limit exceeded</H3>
+                    <div>You&apos;ve made too many requests. Please try again in a moment.</div>
+                    <Button asChild>
+                        <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
+                    </Button>
+                </EmptyViewIndicator>
+            </Layout>
+        );
+    }
+
+    if (statusCode === 403) {
+        return (
+            <Layout>
+                <EmptyViewIndicator>
+                    <EmptyViewIcon><LucideIcon.Ban /></EmptyViewIcon>
+                    <H3 className='-mb-3'>Account suspended</H3>
+                    <div>Your account has been suspended due to policy violations.</div>
+                    <Button asChild>
+                        <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
+                    </Button>
+                </EmptyViewIndicator>
+            </Layout>
         );
     }
 
