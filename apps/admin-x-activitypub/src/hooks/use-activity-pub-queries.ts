@@ -1061,6 +1061,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             if (error.statusCode === 429) {
                 renderRateLimitError();
             }
+            onError();
         }
     });
 }
@@ -2340,7 +2341,7 @@ function useFilteredAccountsFromJSON(options: {
     }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
     const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
-    
+
     // Track if we have finished loading all following data
     const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
