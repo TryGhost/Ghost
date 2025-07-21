@@ -1,4 +1,5 @@
 import {Locator, Page} from '@playwright/test';
+import {TEST_ROUTES} from '@tryghost/admin-x-framework';
 import AdminPage from '../AdminPage';
 
 class GrowthSection extends AdminPage {
@@ -34,10 +35,13 @@ export class PostAnalyticsPage extends AdminPage {
 
     private readonly growthSection: GrowthSection;
     private readonly webPerformanceSection: WebPerformanceSection;
+    private postId?: string;
 
-    constructor(page: Page) {
+    constructor(page: Page, postId?: string) {
         super(page);
-        this.pageUrl = '/ghost/#/analytics/beta';
+        this.postId = postId;
+        // If postId is provided, use the post-specific route, otherwise use the general analytics route
+        this.pageUrl = postId ? TEST_ROUTES.POSTS_ANALYTICS.OVERVIEW(postId) : TEST_ROUTES.STATS.OVERVIEW;
 
         this.overviewButton = this.page.getByRole('button', {name: 'Overview'});
         this.webTrafficButton = this.page.getByRole('button', {name: 'Web traffic'});
