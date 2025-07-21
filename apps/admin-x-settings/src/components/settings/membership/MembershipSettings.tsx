@@ -12,7 +12,7 @@ export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
+    tips: ['membership', 'tips', 'donations', 'one time', 'payment']
 };
 
 const MembershipSettings: React.FC = () => {
