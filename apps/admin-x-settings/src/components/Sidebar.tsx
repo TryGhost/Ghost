@@ -201,6 +201,7 @@ const Sidebar: React.FC = () => {
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
+<<<<<<< HEAD
                 <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
                     <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                     <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
@@ -208,6 +209,29 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                     <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
                 </SettingNavSection>
+=======
+                {/* Advanced */}
+                {ui60 ?
+                    <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
+                        <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
+                        <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
+                        <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
+                        <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
+                        <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />
+                    </SettingNavSection>
+                    :
+                    <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords5x).flat())} title="Advanced">
+                        <NavItem icon='modules-3' keywords={advancedSearchKeywords5x.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
+                        <NavItem icon='download' keywords={advancedSearchKeywords5x.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
+                        {!ui60 &&
+                        <NavItem icon='block' keywords={advancedSearchKeywords5x.spamFilters} navid='spam-filters' title="Spam filters" onClick={handleSectionClick} />
+                        }
+                        <NavItem icon='brackets' keywords={advancedSearchKeywords5x.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
+                        <NavItem icon='labs-flask' keywords={advancedSearchKeywords5x.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
+                        <NavItem icon='time-back' keywords={advancedSearchKeywords5x.history} navid='history' title="History" onClick={handleSectionClick} />
+                    </SettingNavSection>
+                }
+>>>>>>> 0e929b1806 (Updated general settings visibility check to use 5x search keywords)
 
                 {!filter &&
                 <a className='w-100 mb-10 mt-1 flex h-[38px] cursor-pointer items-center rounded-lg px-3 py-2 text-left text-[14px] font-medium text-grey-800 transition-all hover:bg-grey-200 focus:bg-grey-100 dark:text-grey-600 dark:hover:bg-grey-950 dark:focus:bg-grey-925' onClick={() => {
