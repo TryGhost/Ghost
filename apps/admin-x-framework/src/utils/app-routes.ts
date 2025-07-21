@@ -18,7 +18,10 @@ export const STATS_ROUTES = {
 
 // Helper to build full cross-app navigation paths
 // When navigating from Stats to Posts, prepend /posts
-export const buildCrossAppPostsRoute = (route: string) => `/posts${route}`;
+export const buildCrossAppPostsRoute = (route: string) => {
+    const normalizedRoute = route.startsWith('/') ? route : `/${route}`;
+    return `/posts${normalizedRoute}`;
+};
 
 // Test routes - These are the hash-based routes used in Ember admin for tests
 export const TEST_ROUTES = {

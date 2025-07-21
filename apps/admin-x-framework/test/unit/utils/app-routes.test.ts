@@ -10,11 +10,11 @@ describe('app-routes', () => {
         });
 
         it('should handle routes without leading slash', () => {
-            expect(buildCrossAppPostsRoute('analytics/123')).toBe('/postsanalytics/123');
+            expect(buildCrossAppPostsRoute('analytics/123')).toBe('/posts/analytics/123');
         });
 
         it('should handle empty string', () => {
-            expect(buildCrossAppPostsRoute('')).toBe('/posts');
+            expect(buildCrossAppPostsRoute('')).toBe('/posts/');
         });
     });
 
