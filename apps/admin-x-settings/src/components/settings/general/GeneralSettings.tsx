@@ -18,7 +18,7 @@ export const searchKeywords = {
     metadata: ['general', 'metadata', 'title', 'description', 'search', 'engine', 'google', 'meta data', 'twitter card', 'structured data', 'rich cards', 'x card', 'social', 'facebook card'],
     socialAccounts: ['general', 'social accounts', 'facebook', 'twitter', 'structured data', 'rich cards'],
     lockSite: ['general', 'password protection', 'lock site', 'make this site private'],
-    analytics: ['membership', 'analytics', 'tracking', 'privacy', 'membership']
+    analytics: ['general', 'analytics', 'tracking', 'privacy', 'membership']
 };
 
 const GeneralSettings: React.FC = () => {
