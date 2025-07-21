@@ -1,5 +1,5 @@
 import * as fixtureResponses from '@tryghost/admin-x-framework/test/responses/factories/index';
-import {AnalyticsWebTrafficPage} from '@tryghost/e2e/build/helpers/pages/admin';
+import {AnalyticsWebTrafficPage} from '@tryghost/e2e/helpers/pages/admin';
 import {expect, test} from '@playwright/test';
 import {faker} from '@faker-js/faker';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
