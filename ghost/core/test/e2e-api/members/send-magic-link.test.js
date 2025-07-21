@@ -413,5 +413,49 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
         });
     });
-});
 
+    describe('Homograph attack prevention', function () {
+        it('should prevent homograph attacks by normalizing unicode domains', async function () {
+            const asciiEmail = 'user@example.com';
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: asciiEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            const unicodeEmail = 'user@exаmple.com'; // Using Cyrillic 'а'
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: unicodeEmail,
+                    emailType: 'signin'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'No member exists with this e-mail address. Please sign up first.'
+                    }]
+                });
+        });
+
+        it('should normalize unicode domains for signup', async function () {
+            const unicodeEmail = 'user@tëst.com';
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: unicodeEmail,
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            const mail = mockManager.assert.sentEmail({
+                to: 'user@xn--tst-jma.com' // Punycode version
+            });
+
+            should.exist(mail);
+        });
+    });
+});
