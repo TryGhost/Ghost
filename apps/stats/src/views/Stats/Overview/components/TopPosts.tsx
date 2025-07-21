@@ -1,10 +1,10 @@
 import FeatureImagePlaceholder from '../../components/FeatureImagePlaceholder';
 import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade';
+import {POSTS_ANALYTICS_ROUTES, buildCrossAppPostsRoute, useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
-import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface PostlistTooptipProps {
@@ -84,7 +84,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
                                     <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent' onClick={() => {
-                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                        navigate(buildCrossAppPostsRoute(POSTS_ANALYTICS_ROUTES.OVERVIEW(post.post_id)), {crossApp: true});
                                     }}>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]'>
                                             {post.feature_image ?

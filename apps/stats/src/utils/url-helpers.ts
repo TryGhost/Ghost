@@ -1,3 +1,5 @@
+import {POSTS_ANALYTICS_ROUTES, buildCrossAppPostsRoute} from '@tryghost/admin-x-framework';
+
 /**
  * Generate a frontend URL from an attribution path and site URL
  * @param attributionUrl - The path from attribution data (e.g., '/', '/tag/slug/', '/author/slug/')
@@ -100,7 +102,8 @@ export function getClickHandler(
     return () => {
         // For posts with analytics, go to analytics page
         if (postId && attributionUrl && attributionType === 'post') {
-            navigate(`/posts/analytics/beta/${postId}`, {crossApp: true});
+            const route = buildCrossAppPostsRoute(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId));
+            navigate(route, {crossApp: true});
             return;
         }
         
