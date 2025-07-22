@@ -19,7 +19,7 @@ const TestimonialsModal = NiceModal.create(() => {
 
     const exploreTestimonialsUrl = config.exploreTestimonialsUrl as string;
 
-    const siteUrl = siteData.url.replace(/\/$/, '');
+    const siteUuid = siteData.site_uuid;
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const staffUserName = currentUser.name;
     const staffUserEmail = currentUser.email;
@@ -33,10 +33,8 @@ const TestimonialsModal = NiceModal.create(() => {
         },
         onSave: async (): Promise<void> => {
             const payload = {
-                site_url: siteUrl,
-                staff_user_name: staffUserName,
+                ghost_uuid: siteUuid,
                 staff_user_email: staffUserEmail,
-                staff_user_role: staffUserRole,
                 content: formState.content,
                 prev_platform: formState.prev_platform
             };
