@@ -106,7 +106,7 @@ const Note = () => {
     if (isLoading) {
         return (
             <Layout>
-                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 px-8 pt-9'>
+                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 pt-9 lg:px-8'>
                     <div className='flex w-full items-center gap-3'>
                         <Skeleton className='size-10 rounded-full' />
                         <div className='grow pt-1'>

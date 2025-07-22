@@ -109,7 +109,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
 
     return (
         <Layout>
-            <div className='z-0 -mx-8 -mt-9 flex flex-col items-center pb-16'>
+            <div className='z-0 mx-[max(-4vw,-32px)] -mt-9 flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
                     <>
                         {account?.bannerImageUrl ?
