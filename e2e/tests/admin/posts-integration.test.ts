@@ -1,7 +1,6 @@
 import {test} from '@playwright/test';
 import {createPublishedPost, clearCreatedPosts} from '../../data-factory';
-import {PostsPage} from '../../helpers/pages/admin';
-import {loginAsAdmin} from '../../helpers/auth';
+import {loginAsAdmin, gotoPosts} from '../../helpers';
 
 test.describe('Posts Integration', () => {
     test.afterEach(async () => {
@@ -21,11 +20,8 @@ test.describe('Posts Integration', () => {
         // Login to Ghost admin
         await loginAsAdmin(page);
         
-        // Navigate to posts page
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-        
-        // Assert post is present using composable page object method
+        // Navigate to posts page and assert post exists
+        const postsPage = await gotoPosts(page);
         await postsPage.assertPostExists(post.title);
     });
 });

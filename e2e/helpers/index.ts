@@ -8,3 +8,11 @@ export {
     assertLoggedIn,
     assertNotLoggedIn
 } from './auth';
+
+// Export navigation helpers
+export {
+    gotoPosts,
+    gotoLogin,
+    gotoAdminPage,
+    goto
+} from './navigation';
