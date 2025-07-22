@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "5.130.2",
+  "version": "6.0.0-alpha.2",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -62,7 +62,7 @@
     "reset:data:tinybird": "cd core/server/data/tinybird/scripts && node reset-data-tinybird.js"
   },
   "engines": {
-    "node": "^18.12.1 || ^20.11.1 || ^22.13.1",
+    "node": "^22.13.1",
     "cli": "^1.27.0"
   },
   "dependencies": {
@@ -122,7 +122,6 @@
     "@tryghost/validator": "0.2.17",
     "@tryghost/version": "0.1.33",
     "@tryghost/zip": "1.1.49",
-    "amperize": "0.6.1",
     "body-parser": "1.20.3",
     "bookshelf": "1.2.0",
     "bookshelf-relations": "2.8.0",
