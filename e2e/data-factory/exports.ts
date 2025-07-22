@@ -1,4 +1,4 @@
-import {TinybirdFactory} from './factories/tinybird-factory';
+import {TinybirdFactory} from './tinybird/tinybird-factory';
 import {setupTestFactory} from './setup';
 import type {PostOptions, PostResult, PageHitOptions, PageHitResult} from './types';
 import type {Factories} from './setup';

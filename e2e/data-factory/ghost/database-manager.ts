@@ -1,5 +1,5 @@
 import knex, {Knex} from 'knex';
-import {GhostSetup} from './ghost-setup';
+import {GhostSetup} from './setup';
 
 export interface GhostDatabaseConfig {
     host?: string;

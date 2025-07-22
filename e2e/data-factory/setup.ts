@@ -1,6 +1,6 @@
-import {GhostFactory} from './factories/ghost-factory';
-import {TinybirdFactory} from './factories/tinybird-factory';
-import {getGhostDatabaseManager} from './factories/ghost-database-manager';
+import {GhostFactory} from './ghost/ghost-factory';
+import {TinybirdFactory} from './tinybird/tinybird-factory';
+import {getGhostDatabaseManager} from './ghost/database-manager';
 
 // Factory instances storage
 export interface Factories {

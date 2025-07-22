@@ -16,5 +16,5 @@ export type {PostOptions, PostResult, PageHitOptions, PageHitResult} from './typ
 
 // Export individual components for advanced use cases
 export {Factory, FactoryPlugin} from './base-factory';
-export {GhostFactory} from './factories/ghost-factory';
-export {TinybirdFactory} from './factories/tinybird-factory';
+export {GhostFactory} from './ghost/ghost-factory';
+export {TinybirdFactory} from './tinybird/tinybird-factory';

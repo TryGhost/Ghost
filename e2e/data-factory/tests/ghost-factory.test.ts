@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test';
-import {GhostFactory} from '../factories/ghost-factory';
+import {GhostFactory} from '../ghost/ghost-factory';
 
 // Mock knex interface for testing
 interface MockKnex {
