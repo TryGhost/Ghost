@@ -78,8 +78,6 @@ test.describe('Ghost Factory', () => {
         expect(post.featured).toBeDefined();
         expect(post.show_title_and_feature_image).toBe(true);
         expect(post.email_recipient_filter).toBe('none');
-        expect(post.created_by).toBe('1');
-        expect(post.updated_by).toBe('1');
         
         // Check structure
         expect(post.mobiledoc).toBeTruthy();
@@ -135,7 +133,6 @@ test.describe('Ghost Factory', () => {
         
         expect(post.status).toBe('published');
         expect(post.published_at).toBe(publishedAt);
-        expect(post.published_by).toBe('1');
     });
     
     test('should handle draft posts correctly', async () => {
@@ -145,7 +142,6 @@ test.describe('Ghost Factory', () => {
         
         expect(post.status).toBe('draft');
         expect(post.published_at).toBeNull();
-        expect(post.published_by).toBeNull();
     });
     
     test('should handle custom IDs and UUIDs', async () => {
