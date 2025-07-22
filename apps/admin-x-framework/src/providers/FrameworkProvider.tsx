@@ -3,6 +3,7 @@ import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ReactNode, createContext, useContext, useMemo} from 'react';
 import queryClient from '../utils/queryClient';
 import {ExternalLink} from './RoutingProvider';
+import {useFakeData} from '../hooks/useFakeData';
 
 // Stats-specific configuration
 export interface StatsConfig {
@@ -14,6 +15,11 @@ export interface StatsConfig {
         endpoint?: string;
         token?: string;
     };
+}
+
+export interface FakeDataConfig {
+    enabled: boolean;
+    dataProvider?: (endpoint: string, options?: RequestInit) => Promise<unknown>;
 }
 
 export interface FrameworkProviderProps {
@@ -43,7 +49,9 @@ export interface FrameworkProviderProps {
 
 export type TopLevelFrameworkProps = Omit<FrameworkProviderProps, 'children'>;
 
-export type FrameworkContextType = Omit<FrameworkProviderProps, 'children'>;
+export type FrameworkContextType = Omit<FrameworkProviderProps, 'children'> & {
+    fakeDataConfig?: FakeDataConfig;
+};
 
 const FrameworkContext = createContext<FrameworkContextType>({
     ghostVersion: '',
@@ -62,6 +70,8 @@ const FrameworkContext = createContext<FrameworkContextType>({
 });
 
 export function FrameworkProvider({children, queryClientOptions, ...props}: FrameworkProviderProps) {
+    const fakeDataConfig = useFakeData();
+
     const client = useMemo(() => {
         if (!queryClientOptions) {
             return queryClient;
@@ -85,7 +95,7 @@ export function FrameworkProvider({children, queryClientOptions, ...props}: Fram
     return (
         <SentryErrorBoundary>
             <QueryClientProvider client={client}>
-                <FrameworkContext.Provider value={props}>
+                <FrameworkContext.Provider value={{...props, fakeDataConfig}}>
                     {children}
                 </FrameworkContext.Provider>
             </QueryClientProvider>
