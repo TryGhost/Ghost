@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 import knex, {Knex} from 'knex';
-import {withDataFactory} from '../index';
+import {createPost, clearCreatedPosts} from '../index';
 
 // Direct database connection for verification
 async function getDirectDbConnection(): Promise<Knex> {
@@ -27,19 +27,17 @@ async function testDatabaseInsertion(): Promise<void> {
     try {
         // Step 1: Create a post using the factory
         console.log('1️⃣  Creating post using factory...');
-        await withDataFactory(async (factory) => {
-            const post = await factory.createPost({
-                title: 'Test Post - Factory DB Test',
-                status: 'published',
-                featured: true,
-                custom_excerpt: 'This is a test post created by the factory'
-            });
-            
-            postId = post.id;
-            console.log(`   ✅ Post created with ID: ${postId}`);
-            console.log(`   📝 Title: ${post.title}`);
-            console.log(`   📊 Status: ${post.status}`);
+        const post = await createPost({
+            title: 'Test Post - Factory DB Test',
+            status: 'published',
+            featured: true,
+            custom_excerpt: 'This is a test post created by the factory'
         });
+        
+        postId = post.id;
+        console.log(`   ✅ Post created with ID: ${postId}`);
+        console.log(`   📝 Title: ${post.title}`);
+        console.log(`   📊 Status: ${post.status}`);
         
         // Step 2: Verify the post exists in the database
         console.log('\n2️⃣  Verifying post in database...');
@@ -92,6 +90,8 @@ async function testDatabaseInsertion(): Promise<void> {
         
         throw error;
     } finally {
+        // Clean up using factory method
+        await clearCreatedPosts();
         // Always destroy the direct database connection
         await db.destroy();
     }
