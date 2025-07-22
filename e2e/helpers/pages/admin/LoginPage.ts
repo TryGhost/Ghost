@@ -24,8 +24,12 @@ export class LoginPage extends AdminPage {
         await this.passwordInput.fill(password);
         await this.signInButton.click();
         
-        // Wait for login to complete - we expect to be redirected away from /signin
-        await this.page.waitForURL(url => !url.toString().includes('/signin'), {timeout: 10000});
+        // Wait for either redirect (success) or error message (failure)
+        await Promise.race([
+            this.page.waitForURL(url => !url.toString().includes('/signin'), {timeout: 5000}).catch(() => {}),
+            this.errorMessage.waitFor({state: 'visible', timeout: 5000}).catch(() => {}),
+            this.page.waitForTimeout(2000) // Fallback timeout
+        ]);
     }
 
     async getErrorMessage(): Promise<string | null> {
@@ -69,5 +73,16 @@ export class LoginPage extends AdminPage {
     async loginAndAssertSuccess(email: string, password: string) {
         await this.login(email, password);
         await this.assertLoginSuccessful();
+    }
+    
+    // Login expecting failure
+    async loginAndAssertFailure(email: string, password: string, expectedError?: string) {
+        await this.login(email, password);
+        await this.assertLoginFailed();
+        if (expectedError) {
+            await this.assertErrorMessage(expectedError);
+        } else {
+            await this.assertErrorMessage();
+        }
     }
 }
