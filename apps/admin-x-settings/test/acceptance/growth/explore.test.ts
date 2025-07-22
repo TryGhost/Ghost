@@ -114,6 +114,16 @@ test.describe('Ghost Explore', () => {
                         {key: 'explore_ping_growth', value: true}
                     ]
                 }
+            },
+            browseSite: {
+                ...globalDataRequests.browseSite,
+                response: {
+                    ...responseFixtures.site,
+                    site: {
+                        ...responseFixtures.site.site,
+                        site_uuid: '9a604cf9-4c27-4a05-9991-be9974a764c5'
+                    }
+                }
             }
         }});
 
@@ -167,10 +177,8 @@ test.describe('Ghost Explore', () => {
 
         // Verify the API request was made with correct payload
         expect(testimonialRequestBody).toEqual({
-            site_url: 'http://test.com/',
-            staff_user_name: 'Owner User',
+            ghost_uuid: '9a604cf9-4c27-4a05-9991-be9974a764c5',
             staff_user_email: 'owner@test.com',
-            staff_user_role: 'Owner',
             content: 'I love Ghost!',
             prev_platform: 'wordpress'
         });
