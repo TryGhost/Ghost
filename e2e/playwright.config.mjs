@@ -1,5 +1,6 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
+    globalSetup: './global-setup.ts',
     timeout: 30 * 1000,
     expect: {
         timeout: 10000
