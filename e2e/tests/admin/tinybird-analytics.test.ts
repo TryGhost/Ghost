@@ -86,7 +86,7 @@ test.describe('Tinybird Analytics', () => {
             }))
         );
         
-        hits.forEach((hit, i) => {
+        hits.forEach((hit: PageHitResult, i: number) => {
             expectPageHit(hit).toHaveMemberStatus(statuses[i]);
         });
     });
@@ -123,7 +123,7 @@ test.describe('Tinybird Analytics', () => {
             pageTests.map(page => createPageHit(page))
         );
         
-        hits.forEach((hit, i) => {
+        hits.forEach((hit: PageHitResult, i: number) => {
             expect(hit.payload.pathname).toBe(pageTests[i].pathname);
             expect(hit.payload.location).toBe(pageTests[i].location);
         });
