@@ -1,5 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Button, Form, Icon, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Form, Icon, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
+import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
@@ -23,6 +24,7 @@ const TestimonialsModal = NiceModal.create(() => {
     const staffUserName = currentUser.name;
     const staffUserEmail = currentUser.email;
     const staffUserRole = currentUser.roles[0].name;
+    const staffUserProfileImage = currentUser.profile_image;
 
     const {formState, updateForm, saveState, handleSave, errors, clearError} = useForm<FormState>({
         initialState: {
@@ -108,7 +110,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 </svg>
             </div>
             <Form>
-                <div className='p-7 pt-3'>
+                <div className='-mb-1 p-7 pt-3'>
                     <div>
                         <div className='text-xl font-semibold tracking-tight'>Send a testimonial</div>
                         <div className='mt-1 text-pretty'>
@@ -129,11 +131,9 @@ const TestimonialsModal = NiceModal.create(() => {
                     </div>
                     <div className='ml-0.5 mt-4'>
                         <div className='flex items-center gap-2'>
-                            <div className='flex size-9 items-center justify-center rounded-full bg-grey-100'>
-                                <Icon colorClass='text-grey-700' name='user' size={16} />
-                            </div>
+                            <Avatar bgColor={generateAvatarColor((staffUserName ? staffUserName : staffUserEmail))} image={staffUserProfileImage ?? undefined} label={getInitials(staffUserName)} labelColor='white' size='lg' />
                             <div className='flex flex-col'>
-                                <span className='text-sm font-medium'>By {staffUserName}</span>
+                                <span className='text-sm font-medium'>By {staffUserName ? staffUserName : staffUserEmail}</span>
                                 <span className='text-xs text-grey-700'>{staffUserRole} — {siteTitle}</span>
                             </div>
                         </div>
