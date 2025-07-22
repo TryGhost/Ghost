@@ -135,7 +135,9 @@ export class TinybirdFactory {
             }
         } catch (error) {
             // Log the error for debugging
+            // eslint-disable-next-line no-console
             console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
+            // eslint-disable-next-line no-console
             console.warn('URL:', url);
             
             // For e2e tests, we might want to continue even if Tinybird is not available
@@ -192,9 +194,8 @@ export class TinybirdFactory {
                     const text = await response.text();
                     throw new Error(`Failed to clear ${datasource}: ${response.status} - ${text}`);
                 }
-                
-                console.log(`Cleared ${datasource} from Tinybird`);
             } catch (error) {
+                // eslint-disable-next-line no-console
                 console.warn(`Failed to clear ${datasource}:`, error instanceof Error ? error.message : String(error));
                 if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
                     throw error;

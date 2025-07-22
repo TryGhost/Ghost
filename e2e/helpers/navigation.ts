@@ -27,7 +27,6 @@ export async function gotoAnalytics(page: Page): Promise<AnalyticsOverviewPage> 
     return analyticsPage;
 }
 
-
 /**
  * Generic navigation helper for any admin page
  * Usage: await gotoAdminPage(page, '/ghost/#/settings')
