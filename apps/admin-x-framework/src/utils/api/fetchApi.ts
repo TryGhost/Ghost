@@ -3,6 +3,7 @@ import {useFramework} from '../../providers/FrameworkProvider';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {getGhostPaths} from '../helpers';
 import handleResponse from './handleResponse';
+import {tryInterceptWithFakeData} from '../fake-data';
 
 export interface RequestOptions {
     method?: string;
@@ -16,10 +17,18 @@ export interface RequestOptions {
 }
 
 export const useFetchApi = () => {
-    const {ghostVersion, sentryDSN} = useFramework();
+    const {ghostVersion, sentryDSN, fakeDataConfig} = useFramework();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return async <ResponseData = any>(endpoint: string | URL, {headers = {}, retry, ...options}: RequestOptions = {}): Promise<ResponseData> => {
+        // Try to intercept with fake data first
+        if (fakeDataConfig?.enabled) {
+            const fakeResponse = await tryInterceptWithFakeData<ResponseData>(fakeDataConfig, endpoint.toString(), {headers, ...options});
+            if (fakeResponse !== undefined) {
+                return fakeResponse;
+            }
+        }
+
         // By default, we set the Content-Type header to application/json
         const defaultHeaders: Record<string, string> = {
             'app-pragma': 'no-cache',
