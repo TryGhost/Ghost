@@ -15,5 +15,4 @@ export {
 } from './exports';
 
 // Re-export types for convenience
-export type {PostOptions, PostResult} from './types';
-export type {PageHitOptions, PageHitResult} from './factories/tinybird-factory';
+export type {PostOptions, PostResult, PageHitOptions, PageHitResult} from './types';

@@ -12,8 +12,7 @@ export {
 } from './data-factory';
 
 // Export types for convenience
-export type {PostOptions, PostResult} from './types';
-export type {PageHitOptions, PageHitResult} from './factories/tinybird-factory';
+export type {PostOptions, PostResult, PageHitOptions, PageHitResult} from './types';
 
 // Export individual components for advanced use cases
 export {Factory, FactoryPlugin} from './base-factory';
