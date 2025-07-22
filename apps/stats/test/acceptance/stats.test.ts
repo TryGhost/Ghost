@@ -22,7 +22,7 @@ test.describe('Stats App', () => {
 
         await expect(overviewPage.header).toBeVisible();
     });
-    
+
     test('loads with custom mocked data', async ({page}) => {
         const customMemberHistory = {
             stats: [
