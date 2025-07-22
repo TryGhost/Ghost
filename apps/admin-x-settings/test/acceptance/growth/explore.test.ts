@@ -88,4 +88,91 @@ test.describe('Ghost Explore', () => {
             settings: [{key: 'explore_ping_growth', value: true}]
         });
     });
+
+    test('can send a testimonial', async ({page}) => {
+        const testimonialApiUrl = 'https://mocked.com/api/testimonials';
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: {
+                ...globalDataRequests.browseConfig,
+                response: {
+                    ...responseFixtures.config,
+                    config: {
+                        ...responseFixtures.config.config,
+                        exploreTestimonialsUrl: testimonialApiUrl
+                    }
+                }
+            },
+            browseSettings: {
+                ...globalDataRequests.browseSettings,
+                response: {
+                    ...responseFixtures.settings,
+                    settings: [
+                        ...responseFixtures.settings.settings,
+                        {key: 'explore_ping', value: true},
+                        {key: 'explore_ping_growth', value: true}
+                    ]
+                }
+            }
+        }});
+
+        // Mock the external testimonials API endpoint
+        let testimonialRequestBody = null;
+        await page.route(testimonialApiUrl, async (route) => {
+            if (route.request().method() === 'POST') {
+                testimonialRequestBody = JSON.parse(route.request().postData() || '{}');
+                await route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({status: 'success'})
+                });
+            }
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('explore');
+        await expect(section).toBeVisible();
+
+        // Click on the testimonials link/button to open the modal
+        await section.getByText('Send a testimonial').click();
+
+        // Wait for modal to open
+        const modal = page.getByTestId('explore-testimonials-modal');
+        await expect(modal).toBeVisible();
+        await expect(modal.getByText('Send a testimonial')).toBeVisible();
+
+        // Try to submit with empty content
+        const submitButton = modal.getByRole('button', {name: 'Send testimonial'});
+        await submitButton.click();
+
+        // Verify validation error appears
+        await expect(modal.getByText('This field is required')).toBeVisible();
+
+        // Fill in the testimonial content
+        const contentTextarea = modal.getByPlaceholder('Share your love for Ghost');
+        await contentTextarea.fill('I love Ghost!');
+
+        // Select a platform from the dropdown
+        const platformSelect = modal.getByTestId('migrated-from');
+        await platformSelect.click();
+        await page.getByRole('option', {name: 'Wordpress'}).click();
+
+        // Submit the form
+        await submitButton.click();
+
+        // Wait for success toast
+        await expect(page.getByText('Thank you for your testimonial!')).toBeVisible();
+
+        // Verify the API request was made with correct payload
+        expect(testimonialRequestBody).toEqual({
+            site_url: 'http://test.com/',
+            staff_user_name: 'Owner User',
+            staff_user_email: 'owner@test.com',
+            staff_user_role: 'Owner',
+            content: 'I love Ghost!',
+            prev_platform: 'wordpress'
+        });
+    });
 });
