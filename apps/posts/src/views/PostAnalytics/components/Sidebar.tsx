@@ -1,7 +1,7 @@
 import React from 'react';
 import {LucideIcon, RightSidebarMenu, RightSidebarMenuLink} from '@tryghost/shade';
+import {POSTS_ANALYTICS_ROUTES, useLocation, useNavigate} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
 
 const Sidebar:React.FC = () => {
     const navigate = useNavigate();
@@ -19,15 +19,15 @@ const Sidebar:React.FC = () => {
     return (
         <div className='grow py-8 pr-0'>
             <RightSidebarMenu>
-                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}`} onClick={() => {
-                    navigate(`/analytics/beta/${postId}`);
+                <RightSidebarMenuLink active={location.pathname === POSTS_ANALYTICS_ROUTES.OVERVIEW(postId!)} onClick={() => {
+                    navigate(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId!));
                 }}>
                     <LucideIcon.LayoutTemplate size={16} strokeWidth={1.25} />
                     Overview
                 </RightSidebarMenuLink>
                 {!post?.email_only && (
-                    <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/web`} onClick={() => {
-                        navigate(`/analytics/beta/${postId}/web`);
+                    <RightSidebarMenuLink active={location.pathname === POSTS_ANALYTICS_ROUTES.WEB(postId!)} onClick={() => {
+                        navigate(POSTS_ANALYTICS_ROUTES.WEB(postId!));
                     }}>
                         <LucideIcon.MousePointer size={16} strokeWidth={1.25} />
                         Web
@@ -35,16 +35,16 @@ const Sidebar:React.FC = () => {
                 )}
 
                 {hasBeenEmailed && (
-                    <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/newsletter`} onClick={() => {
-                        navigate(`/analytics/beta/${postId}/newsletter`);
+                    <RightSidebarMenuLink active={location.pathname === POSTS_ANALYTICS_ROUTES.NEWSLETTER(postId!)} onClick={() => {
+                        navigate(POSTS_ANALYTICS_ROUTES.NEWSLETTER(postId!));
                     }}>
                         <LucideIcon.Mail size={16} strokeWidth={1.25} />
                         Newsletter
                     </RightSidebarMenuLink>
                 )}
 
-                <RightSidebarMenuLink active={location.pathname === `/analytics/beta/${postId}/growth`} onClick={() => {
-                    navigate(`/analytics/beta/${postId}/growth`);
+                <RightSidebarMenuLink active={location.pathname === POSTS_ANALYTICS_ROUTES.GROWTH(postId!)} onClick={() => {
+                    navigate(POSTS_ANALYTICS_ROUTES.GROWTH(postId!));
                 }}>
                     <LucideIcon.Sprout size={16} strokeWidth={1.25} />
                 Growth

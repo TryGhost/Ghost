@@ -34,10 +34,13 @@ export class PostAnalyticsPage extends AdminPage {
 
     private readonly growthSection: GrowthSection;
     private readonly webPerformanceSection: WebPerformanceSection;
+    private postId?: string;
 
-    constructor(page: Page) {
+    constructor(page: Page, postId?: string) {
         super(page);
-        this.pageUrl = '/ghost/#/analytics/beta';
+        this.postId = postId;
+        // If postId is provided, use the post-specific route, otherwise use the general analytics route
+        this.pageUrl = postId ? `/ghost/#/posts/analytics/${postId}` : '/ghost/#/analytics';
 
         this.overviewButton = this.page.getByRole('button', {name: 'Overview'});
         this.webTrafficButton = this.page.getByRole('button', {name: 'Web traffic'});

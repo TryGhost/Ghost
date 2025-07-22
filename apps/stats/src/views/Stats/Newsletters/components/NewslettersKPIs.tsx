@@ -1,8 +1,8 @@
 import React, {useEffect, useMemo, useState} from 'react';
 import {AvgsDataItem} from '../Newsletters';
 import {BarChartLoadingIndicator, ChartConfig, ChartContainer, ChartTooltip, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, EmptyIndicator, GhAreaChart, KpiDropdownButton, KpiTabTrigger, KpiTabValue, LucideIcon, Recharts, Tabs, TabsList, calculateYAxisWidth, formatDisplayDate, formatNumber, formatPercentage} from '@tryghost/shade';
+import {POSTS_ANALYTICS_ROUTES, buildCrossAppPostsRoute, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText, sanitizeChartData} from '@src/utils/chart-helpers';
-import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
 
 interface BarTooltipPayload {
@@ -319,7 +319,7 @@ const NewsletterKPIs: React.FC<{
                                             }}
                                             onClick={(e) => {
                                                 if (e.activePayload && e.activePayload![0].payload.post_id) {
-                                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                                    navigate(buildCrossAppPostsRoute(POSTS_ANALYTICS_ROUTES.OVERVIEW(e.activePayload![0].payload.post_id)), {crossApp: true});
                                                 }
                                             }}
                                             onMouseLeave={() => setIsHoveringClickable(false)}

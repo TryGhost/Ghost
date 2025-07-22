@@ -17,7 +17,7 @@ export default AuthenticatedRoute.extend({
     },
 
     setupController(controller, model, transition) {
-        if ((transition.from?.name === 'posts.analytics' || transition.from?.name?.startsWith('posts-x')) && transition.to?.name !== 'lexical-editor.new') {
+        if (transition.from?.name?.startsWith('posts-x') && transition.to?.name !== 'lexical-editor.new') {
             // Extract the analytics path from window.location.href to preserve the exact tab
             let currentUrl = window.location.href;
             // Convert editor URL back to analytics URL and extract just the hash portion

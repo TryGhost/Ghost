@@ -1,6 +1,6 @@
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
-import {useNavigate} from '@tryghost/admin-x-framework';
+import {POSTS_ANALYTICS_ROUTES, buildCrossAppPostsRoute, useNavigate} from '@tryghost/admin-x-framework';
 
 interface PostMenuProps {
     postId?: string;
@@ -27,7 +27,7 @@ const PostMenu:React.FC<PostMenuProps> = ({
             <DropdownMenuContent align='end'>
                 {postId && (
                     <DropdownMenuItem onClick={() => {
-                        navigate(`/posts/analytics/${postId}`, {crossApp: true});
+                        navigate(buildCrossAppPostsRoute(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId)), {crossApp: true});
                     }}>
                         <LucideIcon.BarChart2 />
                         Post analytics

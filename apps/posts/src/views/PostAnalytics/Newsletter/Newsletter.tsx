@@ -5,9 +5,9 @@ import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from './components/NewsLetterRadialChart';
+import {POSTS_ANALYTICS_ROUTES, hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {Post, useGlobalData} from '@src/providers/PostAnalyticsContext';
 import {getLinkById} from '@src/utils/link-helpers';
-import {hasBeenEmailed, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/App';
 import {useEditLinks} from '@src/hooks/useEditLinks';
 import {useEffect, useMemo, useRef, useState} from 'react';
@@ -83,7 +83,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
         if (!isPostLoading && !showNewsletterSection) {
-            navigate(`/analytics/beta/${postId}`);
+            navigate(POSTS_ANALYTICS_ROUTES.OVERVIEW(postId!));
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 

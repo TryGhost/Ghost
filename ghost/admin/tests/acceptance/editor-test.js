@@ -607,7 +607,7 @@ describe('Acceptance: Editor', function () {
             });
 
             // visit the analytics page for the post
-            await visit(`/posts/analytics/beta/${post.id}`);
+            await visit(`/posts/analytics/${post.id}`);
             // now visit the editor for the same post
             await visit(`/editor/post/${post.id}`);
 

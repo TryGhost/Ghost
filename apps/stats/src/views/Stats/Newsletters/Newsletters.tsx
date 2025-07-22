@@ -8,7 +8,7 @@ import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, LucideIcon, SkeletonTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatDisplayDate, formatNumber, formatPercentage, getRangeDates} from '@tryghost/shade';
-import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
+import {Navigate, POSTS_ANALYTICS_ROUTES, buildCrossAppPostsRoute, useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useGlobalData} from '@src/providers/GlobalDataProvider';
@@ -73,7 +73,7 @@ const NewsletterTableRows: React.FC<{
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
                                         <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                            navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
+                                            navigate(buildCrossAppPostsRoute(POSTS_ANALYTICS_ROUTES.OVERVIEW(post.post_id)), {crossApp: true});
                                         }}>
                                             {post.post_title}
                                         </Button>
