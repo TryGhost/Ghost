@@ -1504,13 +1504,12 @@ describe('Comments API', function () {
         });
     });
 
-    describe('When authenticated as post author', async function () {
+    describe('When authenticated as post author', function () {
 
         let getStub;
 
         before(async function () {
             await membersAgent.loginAs(postAuthorEmail);
-            const postAuthor = await models.Member.findOne({email: postAuthorEmail}, {require: true});
         });
 
         beforeEach(function () {
