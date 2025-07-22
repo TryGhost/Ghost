@@ -3,6 +3,8 @@ import {memo, useCallback, useEffect, useRef, useState} from 'react';
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
 import html2canvas from 'html2canvas-objectfit-fix';
+import ProfileCardShadow from '@assets/images/profile-card-shadow.png';
+import ProfileCardShadowSquare from '@assets/images/profile-card-shadow-square.png';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
 import {imageUrlToDataUrl} from '@src/utils/image';
@@ -77,8 +79,8 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
 
     const cardBackgroundColor = getBackgroundColor();
     const textColor = getTextColor();
-    const margin = isScreenshot ? 'm-4' : 'm-16';
-    const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
+    const margin = isScreenshot ? 'm-12' : 'm-16';
+    const borderClass = isScreenshot ? '' : 'shadow-xl';
 
     const cardWidth = format === 'square' ? 'w-[422px]' : 'w-[316px]';
     const cardHeight = 'h-[422px]';
@@ -416,13 +418,12 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                     }
                     <div
-                        className='absolute left-0 top-0'
+                        className='absolute left-0 top-0 size-full'
                         style={{
-                            height: '456px',
-                            width: '456px',
                             background: getGradient()
                         }}
                     />
+                    <img className='absolute left-1/2 top-12 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '542px' : '466px'}} />
                 </div>
             </div>
         </TooltipProvider>
