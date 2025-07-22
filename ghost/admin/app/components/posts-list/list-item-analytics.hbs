@@ -167,28 +167,36 @@
             {{!-- Visitor count column (only when web analytics is enabled) --}}
             {{#if this.settings.webAnalyticsEnabled}}
                 {{#if @post.isPublished}}
-                    {{#if this.hasVisitorData}}
-                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
-                            <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
-                                <h3>Web traffic</h3>
-                                <div class="metrics">
-                                    <div class="metric">
-                                        <div class="data">
-                                            {{svg-jar "analytics-visitors"}}
-                                            Unique visitors
-                                        </div>
-                                        <span>{{format-number this.visitorCount}}</span>
+                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
+                        <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
+                            <h3>Web traffic</h3>
+                            <div class="metrics">
+                                <div class="metric">
+                                    <div class="data">
+                                        {{svg-jar "analytics-visitors"}}
+                                        Unique visitors
                                     </div>
+                                    <span>
+                                        {{#if this.hasVisitorData}}
+                                            {{format-number this.visitorCount}}
+                                        {{else}}
+                                            0
+                                        {{/if}}
+                                    </span>
                                 </div>
                             </div>
-                            <div class="gh-post-list-analytics-metric" data-test-analytics-visitors>
-                                {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
-                                <span class="gh-content-email-stats-value">
+                        </div>
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-visitors>
+                            {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
+                            <span class="gh-content-email-stats-value">
+                                {{#if this.hasVisitorData}}
                                     {{abbreviate-number this.visitorCount}}
-                                </span>
-                            </div>
-                        </LinkTo>
-                    {{/if}}
+                                {{else}}
+                                    0
+                                {{/if}}
+                            </span>
+                        </div>
+                    </LinkTo>
                 {{/if}}
             {{/if}}
 
@@ -260,35 +268,49 @@
             {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
             {{#if this.settings.membersTrackSources}}
                 {{#if @post.isPublished}}
-                    {{#if this.hasMemberData}}
-                        <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
-                        <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
-                            <h3>New members</h3>
-                            <div class="metrics">
-                                <div class="metric">
-                                    <div class="data">
-                                        {{svg-jar "analytics-free-members"}}
-                                        Free
-                                    </div>
-                                    <span>{{format-number this.memberCounts.free}}</span>
+                    <LinkTo @route="posts-x" @model={{@post.id}} class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
+                    <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
+                        <h3>New members</h3>
+                        <div class="metrics">
+                            <div class="metric">
+                                <div class="data">
+                                    {{svg-jar "analytics-free-members"}}
+                                    Free
                                 </div>
-                                <div class="metric">
-                                    <div class="data">
-                                        {{svg-jar "analytics-paid-members"}}
-                                        Paid
-                                    </div>
-                                    <span>{{format-number this.memberCounts.paid}}</span>
-                                </div>
-                            </div>
-                        </div>
-                            <div class="gh-post-list-analytics-metric" data-test-analytics-member-conversions>
-                                {{svg-jar "analytics-members" class="gh-list-analytics-icon"}}
-                                <span class="gh-content-email-stats-value">
-                                    {{format-number this.totalMemberConversions}}
+                                <span>
+                                    {{#if this.hasMemberData}}
+                                        {{format-number this.memberCounts.free}}
+                                    {{else}}
+                                        0
+                                    {{/if}}
                                 </span>
                             </div>
-                        </LinkTo>
-                    {{/if}}
+                            <div class="metric">
+                                <div class="data">
+                                    {{svg-jar "analytics-paid-members"}}
+                                    Paid
+                                </div>
+                                <span>
+                                    {{#if this.hasMemberData}}
+                                        {{format-number this.memberCounts.paid}}
+                                    {{else}}
+                                        0
+                                    {{/if}}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-member-conversions>
+                            {{svg-jar "analytics-members" class="gh-list-analytics-icon"}}
+                            <span class="gh-content-email-stats-value">
+                                {{#if this.hasMemberData}}
+                                    {{format-number this.totalMemberConversions}}
+                                {{else}}
+                                    0
+                                {{/if}}
+                            </span>
+                        </div>
+                    </LinkTo>
                 {{/if}}
             {{/if}}
         </div>
