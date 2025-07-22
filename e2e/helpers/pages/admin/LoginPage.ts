@@ -1,4 +1,4 @@
-import {Locator, Page} from '@playwright/test';
+import {Locator, Page, expect} from '@playwright/test';
 import AdminPage from './AdminPage';
 
 export class LoginPage extends AdminPage {
@@ -39,5 +39,35 @@ export class LoginPage extends AdminPage {
     async isLoginSuccessful(): Promise<boolean> {
         const currentUrl = this.page.url();
         return !currentUrl.includes('/signin');
+    }
+    
+    // Composable assertion methods
+    async assertLoginSuccessful() {
+        await expect(this.page).not.toHaveURL(/\/signin/);
+        const isLoggedIn = await this.isLoginSuccessful();
+        expect(isLoggedIn).toBe(true);
+    }
+    
+    async assertLoginFailed() {
+        await expect(this.page).toHaveURL(/\/signin/);
+        const isLoggedIn = await this.isLoginSuccessful();
+        expect(isLoggedIn).toBe(false);
+    }
+    
+    async assertErrorMessage(expectedMessage?: string) {
+        await expect(this.errorMessage).toBeVisible();
+        if (expectedMessage) {
+            await expect(this.errorMessage).toContainText(expectedMessage);
+        }
+    }
+    
+    async assertNoErrorMessage() {
+        await expect(this.errorMessage).not.toBeVisible();
+    }
+    
+    // One-line login with assertion
+    async loginAndAssertSuccess(email: string, password: string) {
+        await this.login(email, password);
+        await this.assertLoginSuccessful();
     }
 }

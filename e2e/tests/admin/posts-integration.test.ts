@@ -1,6 +1,7 @@
 import {test} from '@playwright/test';
 import {createPublishedPost, clearCreatedPosts} from '../../data-factory';
-import {LoginPage, PostsPage} from '../../helpers/pages/admin';
+import {PostsPage} from '../../helpers/pages/admin';
+import {loginAsAdmin} from '../../helpers/auth';
 
 test.describe('Posts Integration', () => {
     test.afterEach(async () => {
@@ -18,8 +19,7 @@ test.describe('Posts Integration', () => {
         });
         
         // Login to Ghost admin
-        const loginPage = new LoginPage(page);
-        await loginPage.login('test+admin@test.com', 'P4ssw0rd123$');
+        await loginAsAdmin(page);
         
         // Navigate to posts page
         const postsPage = new PostsPage(page);
