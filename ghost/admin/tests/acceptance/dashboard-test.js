@@ -76,10 +76,5 @@ describe('Acceptance: Dashboard', function () {
             await visit('/dashboard');
             expect(currentURL()).to.equal('/dashboard');
         });
-
-        it('/ redirects to /dashboard', async function () {
-            await visit('/');
-            expect(currentURL()).to.equal('/dashboard');
-        });
     });
 });

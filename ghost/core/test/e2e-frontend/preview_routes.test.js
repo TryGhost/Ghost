@@ -124,7 +124,7 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect('Content-Type', /text\/plain/)
             .expect(302)
             .expect('Location', /ghost\/#\/editor\/post\/\w+/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.noCache)
             .expect(assertCorrectFrontendHeaders);
     });
 
@@ -133,7 +133,7 @@ describe('Frontend Routing: Preview Routes', function () {
             .expect('Content-Type', /text\/plain/)
             .expect(302)
             .expect('Location', /ghost\/#\/editor\/page\/\w+/)
-            .expect('Cache-Control', testUtils.cacheRules.public)
+            .expect('Cache-Control', testUtils.cacheRules.noCache)
             .expect(assertCorrectFrontendHeaders);
     });
 

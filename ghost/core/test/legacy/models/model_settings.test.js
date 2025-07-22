@@ -5,7 +5,7 @@ const db = require('../../../core/server/data/db');
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 98;
+const SETTINGS_LENGTH = 96;
 
 describe('Settings Model', function () {
     before(models.init);
@@ -33,9 +33,7 @@ describe('Settings Model', function () {
                     flags: 'PUBLIC',
                     type: 'string',
                     created_at: now,
-                    created_by: 1,
-                    updated_at: now,
-                    updated_by: 1
+                    updated_at: now
                 });
 
             const settings = await models.Settings.findAll();

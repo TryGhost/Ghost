@@ -33,6 +33,7 @@ jobs:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
+      IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -172,7 +173,7 @@ jobs:
       - name: Define Node test matrix
         id: node_matrix
         run: |
-          echo 'matrix=["20.11.1", "22.13.1"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.13.1"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -202,6 +203,7 @@ jobs:
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
+      is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -313,7 +315,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:
@@ -798,32 +800,6 @@ jobs:
     needs: [job_setup]
     if: needs.job_setup.outputs.changed_any_code == 'true'
     name: E2E tests
-    services:
-      tinybird:
-        image: tinybirdco/tinybird-local:latest
-        ports:
-          - 7181:7181
-        options: >-
-          --health-cmd "curl -f http://localhost:7181/"
-          --health-interval 2s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 30s
-      mysql:
-        image: mysql:8.0
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: ghost_testing
-          MYSQL_USER: ghost
-          MYSQL_PASSWORD: ghost
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd "mysqladmin ping -h localhost"
-          --health-interval 2s
-          --health-timeout 5s
-          --health-retries 5
-          --health-start-period 30s
     env:
       CI: true
       database__client: mysql
@@ -836,6 +812,15 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
+
+      - name: Configure Docker daemon for mirror.gcr.io
+        run: |
+          echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker logout || echo "No Docker Hub login found"
+
+      - name: Start E2E services
+        run: docker compose -f e2e/compose.e2e.yml up -d --wait
       - uses: actions/setup-node@v4
         env:
           FORCE_COLOR: 0
@@ -888,6 +873,10 @@ jobs:
           name: e2e-playwright-report
           path: e2e/test-results
           retention-days: 30
+
+      - name: Stop E2E services
+        if: always()
+        run: docker compose -f e2e/compose.e2e.yml down
 
   job_tinybird-tests:
     name: Tinybird Tests

@@ -13,10 +13,5 @@ export default class StatsXRoute extends AuthenticatedRoute {
         } else if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
         }
-
-        // This ensures that we don't load this page if the stats config is not set
-        if (!this.feature.trafficAnalytics) {
-            return this.transitionTo('home');
-        }
     }
 }
