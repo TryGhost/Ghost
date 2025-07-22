@@ -35,8 +35,10 @@ export class AnalyticsOverviewPage extends AdminPage {
     // Actions
     async waitForAnalyticsToLoad(): Promise<void> {
         await this.header.waitFor({state: 'visible'});
-        // Wait a bit for analytics to load
-        await this.page.waitForTimeout(5000);
+        // Wait for the page to be fully loaded by checking for a stable element
+        await this.page.waitForLoadState('networkidle');
+        // Additional wait to ensure data is rendered
+        await this.page.waitForTimeout(2000);
     }
 
     // Assertions
