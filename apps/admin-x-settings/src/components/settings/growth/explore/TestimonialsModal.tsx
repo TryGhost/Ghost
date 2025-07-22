@@ -19,7 +19,7 @@ const TestimonialsModal = NiceModal.create(() => {
 
     const exploreTestimonialsUrl = config.exploreTestimonialsUrl as string;
 
-    const siteUrl = siteData.url;
+    const siteUrl = siteData.url.replace(/\/$/, '');
     const [siteTitle] = getSettingValues<string>(settings, ['title']);
     const staffUserName = currentUser.name;
     const staffUserEmail = currentUser.email;

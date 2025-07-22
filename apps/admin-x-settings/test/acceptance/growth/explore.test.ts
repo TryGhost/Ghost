@@ -167,7 +167,7 @@ test.describe('Ghost Explore', () => {
 
         // Verify the API request was made with correct payload
         expect(testimonialRequestBody).toEqual({
-            site_url: 'http://test.com/',
+            site_url: 'http://test.com',
             staff_user_name: 'Owner User',
             staff_user_email: 'owner@test.com',
             staff_user_role: 'Owner',
