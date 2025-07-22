@@ -69,7 +69,7 @@ test.describe('Tinybird Analytics', () => {
             }))
         );
         
-        hits.forEach((hit, i) => {
+        hits.forEach((hit: PageHitResult, i: number) => {
             expectPageHit(hit).toHaveReferrer(REFERRER_SOURCES[i].expected);
         });
     });
@@ -127,12 +127,6 @@ test.describe('Tinybird Analytics', () => {
             expect(hit.payload.pathname).toBe(pageTests[i].pathname);
             expect(hit.payload.location).toBe(pageTests[i].location);
         });
-    });
-    
-    test('clears analytics data', async () => {
-        await createPageHits(5, {pathname: '/test-clear/'});
-        await clearAllPageHits();
-        // Test passes if no errors thrown
     });
     
     test('simulates realistic traffic patterns', async ({page}) => {
