@@ -27,31 +27,27 @@ const Error = ({statusCode}: {statusCode?: number}) => {
 
     if (statusCode === 429) {
         return (
-            <Layout>
-                <EmptyViewIndicator>
-                    <EmptyViewIcon><LucideIcon.TriangleAlert /></EmptyViewIcon>
-                    <H4 className='-mb-4'>Rate limit exceeded</H4>
-                    <div>You&apos;ve made too many requests. Please try again in a moment.</div>
-                    <Button asChild>
-                        <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
-                    </Button>
-                </EmptyViewIndicator>
-            </Layout>
+            <EmptyViewIndicator className='mt-[50vh] -translate-y-1/2'>
+                <EmptyViewIcon><LucideIcon.TriangleAlert /></EmptyViewIcon>
+                <H4 className='-mb-4'>Rate limit exceeded</H4>
+                <div>You&apos;ve made too many requests. Please try again in a moment.</div>
+                <Button asChild>
+                    <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
+                </Button>
+            </EmptyViewIndicator>
         );
     }
 
     if (statusCode === 403) {
         return (
-            <Layout>
-                <EmptyViewIndicator>
-                    <EmptyViewIcon><LucideIcon.Ban /></EmptyViewIcon>
-                    <H4 className='-mb-4'>Account suspended</H4>
-                    <div>Your account has been suspended due to policy violations.</div>
-                    <Button asChild>
-                        <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
-                    </Button>
-                </EmptyViewIndicator>
-            </Layout>
+            <EmptyViewIndicator className='mt-[50vh] -translate-y-1/2'>
+                <EmptyViewIcon><LucideIcon.Ban /></EmptyViewIcon>
+                <H4 className='-mb-4'>Account suspended</H4>
+                <div>Your account has been suspended due to policy violations.</div>
+                <Button asChild>
+                    <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
+                </Button>
+            </EmptyViewIndicator>
         );
     }
 
