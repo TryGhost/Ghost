@@ -41,6 +41,10 @@ const TestimonialsModal = NiceModal.create(() => {
                 prev_platform: formState.prev_platform
             };
 
+            if (!exploreTestimonialsUrl) {
+                throw new Error('Something went wrong, please try again later.');
+            }
+
             const response = await fetch(exploreTestimonialsUrl, {
                 method: 'POST',
                 headers: {
@@ -51,11 +55,7 @@ const TestimonialsModal = NiceModal.create(() => {
             });
 
             if (!response.ok) {
-                showToast({
-                    message: 'Something went wrong, please try again later.',
-                    type: 'error'
-                });
-                return;
+                throw new Error('Something went wrong, please try again later.');
             }
 
             showToast({
