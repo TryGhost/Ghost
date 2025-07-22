@@ -131,15 +131,7 @@ const Overview: React.FC = () => {
 
     return (
         <>
-            <PostAnalyticsHeader currentTab='Overview'>
-                <div className='order-1 flex w-full items-center justify-center gap-1 text-nowrap rounded-md bg-purple/10 px-2 py-px pr-3 text-xs text-purple-600 lg:order-none lg:w-auto'>
-                    <LucideIcon.FlaskConical size={16} strokeWidth={1.5} />
-                    Viewing Analytics (beta)
-                    <Button className='pl-1 pr-0 text-purple-600 !underline' size='sm' variant='link' onClick={() => {
-                        navigate(`/posts/analytics/${postId}`, {crossApp: true});
-                    }}>Switch back</Button>
-                </div>
-            </PostAnalyticsHeader>
+            <PostAnalyticsHeader currentTab='Overview' />
             <PostAnalyticsContent>
                 <div className='flex flex-col gap-8 lg:grid lg:grid-cols-2'>
                     {showWebSection && (
