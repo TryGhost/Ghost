@@ -5,6 +5,8 @@ export {setupTestFactory, type Factories} from './setup';
 export {
     createPost,
     createPublishedPost,
+    createDraftPost,
+    createScheduledPost,
     createPageHit,
     createPageHits,
     getFactories,

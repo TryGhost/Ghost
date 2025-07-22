@@ -34,6 +34,18 @@ export class GhostFactory {
         return this.postFactory.create(options);
     }
     
+    async createPublishedPost(options: PostOptions = {}): Promise<PostResult> {
+        return this.postFactory.createPublished(options);
+    }
+    
+    async createDraftPost(options: PostOptions = {}): Promise<PostResult> {
+        return this.postFactory.createDraft(options);
+    }
+    
+    async createScheduledPost(publishDate: Date, options: PostOptions = {}): Promise<PostResult> {
+        return this.postFactory.createScheduled(publishDate, options);
+    }
+    
     async clearCreatedPosts(): Promise<void> {
         return this.postFactory.clearCreated();
     }

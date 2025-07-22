@@ -83,6 +83,38 @@ export class PostFactory extends Factory {
     }
     
     /**
+     * Create a published post with sensible defaults
+     */
+    async createPublished(options: PostOptions = {}): Promise<PostResult> {
+        return this.create({
+            status: 'published',
+            published_at: options.published_at || new Date(),
+            ...options
+        });
+    }
+    
+    /**
+     * Create a draft post
+     */
+    async createDraft(options: PostOptions = {}): Promise<PostResult> {
+        return this.create({
+            status: 'draft',
+            ...options
+        });
+    }
+    
+    /**
+     * Create a scheduled post
+     */
+    async createScheduled(publishDate: Date, options: PostOptions = {}): Promise<PostResult> {
+        return this.create({
+            status: 'scheduled',
+            published_at: publishDate,
+            ...options
+        });
+    }
+    
+    /**
      * Clear all posts created by this factory instance
      */
     async clearCreated(): Promise<void> {

@@ -18,10 +18,24 @@ export async function createPost(options?: PostOptions): Promise<PostResult> {
  * Helper to create a published post with sensible defaults
  */
 export async function createPublishedPost(options?: PostOptions): Promise<PostResult> {
-    return createPost({
-        status: 'published',
-        ...options
-    });
+    const factories = await setupTestFactory();
+    return factories.ghost.createPublishedPost(options);
+}
+
+/**
+ * Helper to create a draft post
+ */
+export async function createDraftPost(options?: PostOptions): Promise<PostResult> {
+    const factories = await setupTestFactory();
+    return factories.ghost.createDraftPost(options);
+}
+
+/**
+ * Helper to create a scheduled post
+ */
+export async function createScheduledPost(publishDate: Date, options?: PostOptions): Promise<PostResult> {
+    const factories = await setupTestFactory();
+    return factories.ghost.createScheduledPost(publishDate, options);
 }
 
 // Helper function to get Tinybird factory with better error handling
