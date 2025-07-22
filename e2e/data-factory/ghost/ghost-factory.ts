@@ -1,102 +1,64 @@
-import {Factory} from '../base-factory';
 import type {Knex} from 'knex';
-import {faker} from '@faker-js/faker';
 import type {PostOptions, PostResult} from '../types';
+import {PostFactory} from './post-factory';
 
-export class GhostFactory extends Factory {
+/**
+ * GhostFactory is a coordinator that manages all Ghost-related subfactories.
+ * It does not extend Factory as it delegates to specialized factories.
+ */
+export class GhostFactory {
     name = 'ghost';
     private db: Knex;
-    private createdPostIds: Set<string> = new Set();
+    private postFactory: PostFactory;
     
     constructor(db: Knex) {
-        super();
         this.db = db;
+        this.postFactory = new PostFactory(db);
     }
     
     async setup(): Promise<void> {
-        // Any initialization logic can go here
+        // Setup all subfactories
+        await this.postFactory.setup();
+        // Future: await this.userFactory.setup();
+        // Future: await this.tagFactory.setup();
     }
     
     async destroy(): Promise<void> {
+        // Destroy all subfactories
+        await this.postFactory.destroy();
         // Don't destroy the db connection - it's managed by the singleton GhostDatabaseManager
-        // Could add cleanup of tracked records here if needed in the future
     }
     
+    // Post methods - delegate to PostFactory
     async createPost(options: PostOptions = {}): Promise<PostResult> {
-        const now = new Date();
-        const title = options.title || faker.lorem.sentence();
-        const content = faker.lorem.paragraphs(3);
-        
-        // Generate mobiledoc format
-        const mobiledoc = {
-            version: '0.3.1',
-            atoms: [],
-            cards: [],
-            markups: [],
-            sections: [[1, 'p', [[0, [], 0, content]]]],
-            ghostVersion: '5.0'
-        };
-        
-        // Create defaults object
-        const defaults: Required<PostOptions> = {
-            id: this.generateId(),
-            uuid: this.generateUuid(),
-            title: title,
-            slug: this.generateSlug(title),
-            mobiledoc: JSON.stringify(mobiledoc),
-            lexical: null,
-            html: `<p>${content}</p>`,
-            comment_id: this.generateId(),
-            plaintext: content,
-            feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
-            featured: faker.datatype.boolean(),
-            type: 'post',
-            status: 'draft',
-            locale: null,
-            visibility: 'public',
-            email_recipient_filter: 'none',
-            created_at: now,
-            updated_at: now,
-            published_at: null,
-            custom_excerpt: faker.lorem.paragraph(),
-            codeinjection_head: null,
-            codeinjection_foot: null,
-            custom_template: null,
-            canonical_url: null,
-            newsletter_id: null,
-            show_title_and_feature_image: true
-        };
-        
-        // Merge with user options, handling special cases
-        const post: PostResult = {
-            ...defaults,
-            ...options,
-            // Handle published_at logic - if status is published but no published_at is set, use current time
-            published_at: options.status === 'published' && !options.published_at ? now : (options.published_at || defaults.published_at)
-        };
-        
-        await this.db('posts').insert(post);
-        
-        // Track created post for cleanup
-        this.createdPostIds.add(post.id);
-        
-        return post;
+        return this.postFactory.create(options);
     }
     
-    /**
-     * Clear all posts created by this factory instance
-     */
     async clearCreatedPosts(): Promise<void> {
-        if (this.createdPostIds.size > 0) {
-            await this.db('posts').whereIn('id', Array.from(this.createdPostIds)).delete();
-            this.createdPostIds.clear();
-        }
+        return this.postFactory.clearCreated();
     }
     
-    /**
-     * Get the count of posts created by this factory
-     */
     getCreatedPostCount(): number {
-        return this.createdPostIds.size;
+        return this.postFactory.getCreatedCount();
     }
+    
+    // Future methods will follow the same pattern:
+    // async createUser(options: UserOptions = {}): Promise<UserResult> {
+    //     return this.userFactory.create(options);
+    // }
+    
+    // async createTag(options: TagOptions = {}): Promise<TagResult> {
+    //     return this.tagFactory.create(options);
+    // }
+    
+    // Cross-entity methods can be added here
+    // async createPostWithAuthor(authorOptions: UserOptions = {}, postOptions: PostOptions = {}): Promise<{user: UserResult, post: PostResult}> {
+    //     const user = await this.userFactory.create(authorOptions);
+    //     const post = await this.postFactory.create({
+    //         ...postOptions,
+    //         created_by: user.id,
+    //         published_by: user.id
+    //     });
+    //     return {user, post};
+    // }
 }
