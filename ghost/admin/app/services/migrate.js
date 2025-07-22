@@ -77,13 +77,13 @@ export default class MigrateService extends Service {
         return url;
     }
 
-    // Sends a route update to a child route in the BMA, because we can't control
+    // Sends a route update to a child route in the migrate app, because we can't control
     // navigating to it otherwise
     sendRouteUpdate(route) {
         this.getMigrateIframe().contentWindow.postMessage({
             query: 'routeUpdate',
             response: route
-        }, '*');
+        }, this.migrateUrl);
     }
 
     // Controls migrate window modal visibility and sync of the URL visible in browser
