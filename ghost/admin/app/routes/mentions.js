@@ -25,7 +25,7 @@ export default class MentionsRoute extends AuthenticatedRoute {
     beforeModel() {
         super.beforeModel(...arguments);
         if (!this.feature.webmentions) {
-            return this.transitionTo('analytics');
+            return this.transitionTo('posts-x');
         }
     }
 
