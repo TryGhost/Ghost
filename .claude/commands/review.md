@@ -1,1 +1,0 @@
-I want you to conduct a thorough code review of what we just implemented. Does this follow best practices? Is it robust and maintainable? Are there any areas that could be better? Don't make any changes. Just investigate, think about this, and give me a clear assessment.
