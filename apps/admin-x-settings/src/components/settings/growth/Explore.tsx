@@ -1,10 +1,12 @@
 import FakeLogo from '../../../assets/images/explore-default-logo.png';
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../TopLevelGroup';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {abbreviateNumber} from '@tryghost/shade';
+import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -14,6 +16,21 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: editSettings} = useEditSettings();
     const handleError = useHandleError();
     const {updateRoute} = useRouting();
+
+    // Get members count
+    const {refetch: fetchMembers} = useBrowseMembers({
+        searchParams: {limit: '1'}
+    });
+    const [membersCount, setMembersCount] = useState(0);
+    useEffect(() => {
+        const fetchMemberCount = async () => {
+            const {data: members} = await fetchMembers();
+            const count = members?.meta?.pagination?.total || 0;
+            setMembersCount(count);
+        };
+
+        fetchMemberCount();
+    }, [fetchMembers]);
 
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const {localSettings, siteData} = useSettingGroup();
@@ -89,8 +106,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         <a className='group mt-8 flex h-6 w-full items-center justify-between gap-5 hover:cursor-pointer' href={url} rel="noopener noreferrer" target="_blank">
                             <span className='text-sm font-semibold'>{siteDomain}</span>
                             {shareGrowthData ?
-                                <span className='rounded-sm bg-black px-2 py-0.5 text-xs font-semibold text-white'>
-                                    12k members
+                                <span className='rounded-sm bg-black px-2 py-0.5 text-xs font-semibold text-white' data-testid='explore-members-count'>
+                                    {abbreviateNumber(membersCount)}&nbsp;members
                                 </span>
                                 :
                                 <span className='flex size-5 items-center justify-center rounded-full border border-black text-black group-hover:bg-black group-hover:text-white'>
