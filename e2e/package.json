@@ -12,6 +12,9 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:debug": "playwright test --debug",
+    "test:single": "playwright test --grep",
+    "test:single:debug": "playwright test --debug --grep",
     "test:types": "tsc --noEmit",
     "lint": "eslint helpers data-factory --ext .ts --cache"
   },
