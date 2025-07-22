@@ -6,6 +6,7 @@ import type {PostOptions, PostResult} from '../types';
 export class GhostFactory extends Factory {
     name = 'ghost';
     private db: Knex;
+    private createdPostIds: Set<string> = new Set();
     
     constructor(db: Knex) {
         super();
@@ -81,6 +82,26 @@ export class GhostFactory extends Factory {
         
         await this.db('posts').insert(post);
         
+        // Track created post for cleanup
+        this.createdPostIds.add(post.id);
+        
         return post;
+    }
+    
+    /**
+     * Clear all posts created by this factory instance
+     */
+    async clearCreatedPosts(): Promise<void> {
+        if (this.createdPostIds.size > 0) {
+            await this.db('posts').whereIn('id', Array.from(this.createdPostIds)).delete();
+            this.createdPostIds.clear();
+        }
+    }
+    
+    /**
+     * Get the count of posts created by this factory
+     */
+    getCreatedPostCount(): number {
+        return this.createdPostIds.size;
     }
 }

@@ -1,8 +1,13 @@
 import {test} from '@playwright/test';
-import {createPublishedPost} from '../../data-factory';
+import {createPublishedPost, clearCreatedPosts} from '../../data-factory';
 import {LoginPage, PostsPage} from '../../helpers/pages/admin';
 
 test.describe('Posts Integration', () => {
+    test.afterEach(async () => {
+        // Simple cleanup - just one line!
+        await clearCreatedPosts();
+    });
+    
     test('should create a post via data factory and verify it appears in posts list', async ({page}) => {
         // Create a published post with a unique title
         const timestamp = Date.now();

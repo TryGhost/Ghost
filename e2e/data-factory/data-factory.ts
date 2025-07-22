@@ -9,7 +9,8 @@ export {
     createPublishedPost,
     createPageHit,
     createPageHits,
-    getFactories
+    getFactories,
+    clearCreatedPosts
 } from './exports';
 
 // Re-export types for convenience

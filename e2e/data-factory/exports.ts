@@ -56,3 +56,11 @@ export async function createPageHits(count: number, options?: PageHitOptions): P
 export async function getFactories(options?: {waitForGhostBoot?: boolean}): Promise<Factories> {
     return setupTestFactory(options);
 }
+
+/**
+ * Clear all posts created by the factory in this session
+ */
+export async function clearCreatedPosts(): Promise<void> {
+    const factories = await setupTestFactory();
+    await factories.ghost.clearCreatedPosts();
+}
