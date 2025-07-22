@@ -2,11 +2,8 @@ import {test} from '@playwright/test';
 import {gotoLogin} from '../../helpers';
 
 test.describe('Simple Login Test', () => {
-    test('should login to Ghost admin as owner', async ({page}) => {
-        // Navigate and get page object in one step
+    test('should successfully log in to Ghost admin as owner', async ({page}) => {
         const loginPage = await gotoLogin(page);
-        
-        // Perform login with role-based method
         await loginPage.loginAsOwner();
     });
     
