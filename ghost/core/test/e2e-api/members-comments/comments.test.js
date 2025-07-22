@@ -1505,7 +1505,6 @@ describe('Comments API', function () {
     });
 
     describe('When authenticated as post author', function () {
-
         let getStub;
 
         before(async function () {
@@ -1556,7 +1555,6 @@ describe('Comments API', function () {
                 to: fixtureManager.get('members', 1).email
             });
         });
-
     });
 
     describe('when commenting disabled', function () {
