@@ -41,6 +41,9 @@ test.describe('Stats App - Locations', () => {
         await expect(locationsPage.body).toContainText('United States');
         await expect(locationsPage.body).toContainText('United Kingdom');
         await expect(locationsPage.body).toContainText('Hungary');
+        await expect(locationsPage.body).toContainText('100');
+        await expect(locationsPage.body).toContainText('90');
+        await expect(locationsPage.body).toContainText('100');
     });
 
     test('loads locations tab with info that there are no stats', async ({page}) => {

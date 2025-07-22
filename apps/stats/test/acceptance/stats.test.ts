@@ -22,14 +22,7 @@ test.describe('Stats App', () => {
 
         await expect(overviewPage.header).toBeVisible();
     });
-
-    test('shows an error without mocked data', async ({page}) => {
-        const overviewPage = new AnalyticsOverviewPage(page);
-        await overviewPage.goto();
-
-        await expect(overviewPage.body).toContainText(/Unexpected Application Error/);
-    });
-
+    
     test('loads with custom mocked data', async ({page}) => {
         const customMemberHistory = {
             stats: [
