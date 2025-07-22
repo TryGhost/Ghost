@@ -7841,10 +7841,10 @@
   dependencies:
     long-timeout "^0.1.1"
 
-"@tryghost/color-utils@0.2.9":
-  version "0.2.9"
-  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.2.9.tgz#fc4865153384af932a1c558ef73e1fbdfcc0d175"
-  integrity sha512-y1XLPvTOwistoqgmVJul0fPZKM8jmP8vjn1YW6WkTBOE2403GiP2MFiROm3F9JjJlccqU7b5YM6J5m0ACokXTg==
+"@tryghost/color-utils@0.2.10":
+  version "0.2.10"
+  resolved "https://registry.yarnpkg.com/@tryghost/color-utils/-/color-utils-0.2.10.tgz#91e5185a04275b2462720080868bf69b7aa651c5"
+  integrity sha512-7m1ylcy+k5CMHG7oAAKVwxkhetzYPW0jFGmx3ryZZk1mJgaKVAg552EJ/kWQ5pBOX2Nkbdq1CVAgXmlFLLQ+oA==
   dependencies:
     "@types/color" "3.0.6"
     color "^3.2.1"
@@ -7862,10 +7862,10 @@
     "@tryghost/root-utils" "^0.3.24"
     nconf "^0.12.0"
 
-"@tryghost/content-api@1.11.28":
-  version "1.11.28"
-  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.11.28.tgz#1e10c2f21f69470565cf487df3f36da9af9a76f5"
-  integrity sha512-OKOnwpLOZEBi24Sbe5zPznNRWX9bmC9lbEfuhbB/2tnxAUAYxZvr9zLenJr7Wzz1CWZW93pqAdTo51m2lIIx3Q==
+"@tryghost/content-api@1.12.0":
+  version "1.12.0"
+  resolved "https://registry.yarnpkg.com/@tryghost/content-api/-/content-api-1.12.0.tgz#8242b32411eba4907c953c0c07f4761a3140a271"
+  integrity sha512-rU9yrBHlVIohOLSpC9PeH9evMeNCk4OKGvI0VEwNwuwWlsQIpBn3o79DzleEN0tbMynlObYAG0IJ/EGkIumtJA==
   dependencies:
     axios "^1.0.0"
 
@@ -8183,10 +8183,10 @@
   resolved "https://registry.yarnpkg.com/@tryghost/koenig-lexical/-/koenig-lexical-1.7.2.tgz#03de94b698b1071f17a1a8a053fe060ed9c4f785"
   integrity sha512-GqE03JX6277X9slx1WoXblw1Sd2mGW1zWhvKpifGbs/ePR4oaBtpaq3OpNmMvWqfAaE3hXnHxYPy8J9gs/HnvQ==
 
-"@tryghost/limit-service@1.4.0":
-  version "1.4.0"
-  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.4.0.tgz#31dc942c2f95dcdbf4020fc8202e026235d9ece6"
-  integrity sha512-hs0GMNJaHt6ab//8ivxCuFgbJzZylXOrUKEqbWiZz1BOPat9nPsHIlttOQusY2xKncCEXTShZFF5bbgMWW1tVw==
+"@tryghost/limit-service@1.4.1":
+  version "1.4.1"
+  resolved "https://registry.yarnpkg.com/@tryghost/limit-service/-/limit-service-1.4.1.tgz#9a010dbe19215017ade6e144769775537bfa7274"
+  integrity sha512-Oxs4+u/5TQW56uf9DOWnhN22lmY5xibtZm2F36IwKWxbkeQtdqplAZj0nyiEeDrqO4Tyz+8cIGof2ceOG2kqZQ==
   dependencies:
     "@tryghost/errors" "^1.2.26"
     lodash "^4.17.21"
@@ -8386,10 +8386,10 @@
     "@tryghost/debug" "^0.1.26"
     "@tryghost/logging" "^2.4.7"
 
-"@tryghost/social-urls@0.1.53":
-  version "0.1.53"
-  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.53.tgz#5e9e795795462521f39d52276dd6b7be67540c03"
-  integrity sha512-cax08uS4kNv0feOtr8X19DuGHdie/ernxGpRIS0r2Z0f1XQFHizIveqwVwRXGMeLi1YsPK/JBgWmZYGnEhAA7Q==
+"@tryghost/social-urls@0.1.54":
+  version "0.1.54"
+  resolved "https://registry.yarnpkg.com/@tryghost/social-urls/-/social-urls-0.1.54.tgz#4bb6d5a14b92fc8d3580871f323df2cabc2064df"
+  integrity sha512-+yR7omiFPmKDOiUrJgQ+uL8/RTVy26CztHlFeS9H6gfTVQ/Rk/U0o1zaDI1diOqgdIQIyHW4oG27ejLRXMiQNQ==
 
 "@tryghost/string@0.2.15":
   version "0.2.15"
@@ -8412,10 +8412,10 @@
   dependencies:
     unidecode "^0.1.8"
 
-"@tryghost/timezone-data@0.4.11":
-  version "0.4.11"
-  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.11.tgz#2b2796747f9e36cf2b90b27020a0d38171059f11"
-  integrity sha512-SQtWtASak5+ZwQBizh8CsXmA1qOfG+egg3tP/d51RyuTUgBZ1VIXIXCfCMZhEOU1M8mF7aOL2ofWG8bp53hGvA==
+"@tryghost/timezone-data@0.4.12":
+  version "0.4.12"
+  resolved "https://registry.yarnpkg.com/@tryghost/timezone-data/-/timezone-data-0.4.12.tgz#c8a63979a073fe7ca9a85af4fcf255ff73a13859"
+  integrity sha512-oUDQyYP3sxpC1/ndT15tfGHx50YqIC1ovktyEkS/1f04+H5+bPiCgCLu/Dvi63u4Jc1GTEcTvHoRqTngpA+mZw==
 
 "@tryghost/tpl@0.1.35", "@tryghost/tpl@^0.1.35":
   version "0.1.35"
@@ -8437,10 +8437,10 @@
     remark-footnotes "^1.0.0"
     unist-util-visit "^2.0.0"
 
-"@tryghost/url-utils@4.4.14":
-  version "4.4.14"
-  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.14.tgz#8f975b86ba892c3bb8f4008057fa1360bfdc3e08"
-  integrity sha512-lXpKm4XkbFuD5/enh030LAXmgGivykppQqbNKFBlUnVWCpe8m2XDsm8xkdw5R8VePYPFGx4P5d3mQbKOIpxNKA==
+"@tryghost/url-utils@4.4.15":
+  version "4.4.15"
+  resolved "https://registry.yarnpkg.com/@tryghost/url-utils/-/url-utils-4.4.15.tgz#2f2e82442d7c978f2bb06a3dd1c2626152fbe40d"
+  integrity sha512-6onW6XWDpqBmuFstDiUeq5783RXnBBkBQiqCvT9+WAMnYApYtw1oX0mWda9FGym+kT0gOW7DtwCvseXS/wtNzw==
   dependencies:
     cheerio "^0.22.0"
     lodash "^4.17.21"

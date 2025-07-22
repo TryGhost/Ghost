@@ -35,11 +35,11 @@
   },
   "dependencies": {
     "@codemirror/lang-html": "6.4.9",
-    "@tryghost/color-utils": "0.2.9",
+    "@tryghost/color-utils": "0.2.10",
     "@tryghost/kg-unsplash-selector": "0.3.6",
-    "@tryghost/limit-service": "1.4.0",
+    "@tryghost/limit-service": "1.4.1",
     "@tryghost/nql": "0.12.7",
-    "@tryghost/timezone-data": "0.4.11",
+    "@tryghost/timezone-data": "0.4.12",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "validator": "13.12.0"
