@@ -1,5 +1,5 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import {Avatar, Button, Form, Icon, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
+import {Avatar, Button, Form, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
 import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -110,7 +110,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 </svg>
             </div>
             <Form>
-                <div className='-mb-1 p-7 pt-3'>
+                <div className='-mb-1 px-7 pt-3'>
                     <div>
                         <div className='text-xl font-semibold tracking-tight'>Send a testimonial</div>
                         <div className='mt-1 text-pretty'>
