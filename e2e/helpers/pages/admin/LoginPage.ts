@@ -13,13 +13,10 @@ export class LoginPage extends AdminPage {
         this.identificationInput = page.locator('input[name="identification"]');
         this.passwordInput = page.locator('input[name="password"]');
         this.signInButton = page.locator('[data-test-button="sign-in"]');
-        this.errorMessage = page.locator('.error, .notification-error, [class*="error"]');
+        this.errorMessage = page.locator('[data-test-flow-notification], .main-error');
     }
 
-    async login(email: string, password: string) {
-        await this.goto();
-        await this.page.waitForLoadState('networkidle');
-        
+    async fillAndSubmitLoginForm(email: string, password: string) {
         await this.identificationInput.fill(email);
         await this.passwordInput.fill(password);
         await this.signInButton.click();
@@ -30,6 +27,13 @@ export class LoginPage extends AdminPage {
             this.errorMessage.waitFor({state: 'visible', timeout: 5000}).catch(() => {}),
             this.page.waitForTimeout(2000) // Fallback timeout
         ]);
+    }
+    
+    // Backwards compatibility - includes navigation
+    async login(email: string, password: string) {
+        await this.goto();
+        await this.page.waitForLoadState('networkidle');
+        await this.fillAndSubmitLoginForm(email, password);
     }
 
     async getErrorMessage(): Promise<string | null> {
@@ -69,13 +73,36 @@ export class LoginPage extends AdminPage {
         await expect(this.errorMessage).not.toBeVisible();
     }
     
-    // One-line login with assertion
+    // Role-based login (without navigation)
+    async loginAsOwner() {
+        await this.fillAndSubmitLoginForm('test+admin@test.com', 'P4ssw0rd123$');
+        await this.assertLoginSuccessful();
+    }
+    
+    async loginAsAdmin() {
+        await this.loginAsOwner(); // Same user, owner has admin privileges
+    }
+    
+    // Failure scenarios (without navigation)
+    async attemptLoginWithInvalidPassword() {
+        await this.fillAndSubmitLoginForm('test+admin@test.com', 'wrongpassword');
+        await this.assertLoginFailed();
+        await this.assertErrorMessage();
+    }
+    
+    async attemptLoginWithNonexistentUser() {
+        await this.fillAndSubmitLoginForm('nonexistent@example.com', 'password');
+        await this.assertLoginFailed();
+        await this.assertErrorMessage();
+    }
+    
+    // One-line login with assertion (includes navigation - for backwards compatibility)
     async loginAndAssertSuccess(email: string, password: string) {
         await this.login(email, password);
         await this.assertLoginSuccessful();
     }
     
-    // Login expecting failure
+    // Login expecting failure (includes navigation - for backwards compatibility)
     async loginAndAssertFailure(email: string, password: string, expectedError?: string) {
         await this.login(email, password);
         await this.assertLoginFailed();

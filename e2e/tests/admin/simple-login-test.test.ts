@@ -1,18 +1,26 @@
 import {test} from '@playwright/test';
-import {LoginPage} from '../../helpers/pages/admin';
+import {gotoLogin} from '../../helpers';
 
 test.describe('Simple Login Test', () => {
-    test('should login to Ghost admin', async ({page}) => {
-        const loginPage = new LoginPage(page);
+    test('should login to Ghost admin as owner', async ({page}) => {
+        // Navigate and get page object in one step
+        const loginPage = await gotoLogin(page);
         
-        // One-line login with assertion
-        await loginPage.loginAndAssertSuccess('test+admin@test.com', 'P4ssw0rd123$');
+        // Perform login with role-based method
+        await loginPage.loginAsOwner();
     });
     
-    test('should show error with invalid credentials', async ({page}) => {
-        const loginPage = new LoginPage(page);
+    test('should show error with invalid password', async ({page}) => {
+        const loginPage = await gotoLogin(page);
         
-        // One-line login with failure assertion
-        await loginPage.loginAndAssertFailure('invalid@test.com', 'wrongpassword');
+        // Explicit failure scenario
+        await loginPage.attemptLoginWithInvalidPassword();
+    });
+    
+    test('should show error for non-existent user', async ({page}) => {
+        const loginPage = await gotoLogin(page);
+        
+        // Another explicit failure scenario
+        await loginPage.attemptLoginWithNonexistentUser();
     });
 });
