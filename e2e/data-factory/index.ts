@@ -1,15 +1,16 @@
-// Export the main data factory and composable methods
+// Main factory setup and types
+export {setupTestFactory, type Factories} from './setup';
+
+// Convenience functions for direct usage
 export {
-    setupTestFactory,
     createPost,
     createPublishedPost,
     createPageHit,
     createPageHits,
     getFactories,
     clearCreatedPosts,
-    clearAllPageHits,
-    type Factories
-} from './data-factory';
+    clearAllPageHits
+} from './convenience';
 
 // Export types for convenience
 export type {PostOptions, PostResult, PageHitOptions, PageHitResult} from './types';
