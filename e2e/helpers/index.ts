@@ -13,6 +13,7 @@ export {
 export {
     gotoPosts,
     gotoLogin,
+    gotoAnalytics,
     gotoAdminPage,
     goto
 } from './navigation';

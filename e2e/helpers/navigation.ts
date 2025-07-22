@@ -1,5 +1,5 @@
 import {Page} from '@playwright/test';
-import {PostsPage, LoginPage} from './pages/admin';
+import {PostsPage, LoginPage, AnalyticsOverviewPage} from './pages/admin';
 
 /**
  * Navigation helpers that create page objects and navigate in one step
@@ -18,6 +18,13 @@ export async function gotoLogin(page: Page): Promise<LoginPage> {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     return loginPage;
+}
+
+// Analytics navigation
+export async function gotoAnalytics(page: Page): Promise<AnalyticsOverviewPage> {
+    const analyticsPage = new AnalyticsOverviewPage(page);
+    await analyticsPage.goto();
+    return analyticsPage;
 }
 
 
