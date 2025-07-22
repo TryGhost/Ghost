@@ -110,6 +110,7 @@ jobs:
               - 'apps/admin-x-settings/**'
               - 'apps/admin-x-design-system/**'
               - 'apps/admin-x-framework/**'
+              - 'apps/shade/**'
             admin-x-activitypub:
               - *shared
               - 'apps/shade/**'
