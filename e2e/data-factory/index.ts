@@ -1,8 +1,17 @@
-// Export the main data factory
-export {withDataFactory} from './data-factory';
+// Export the main data factory and composable methods
+export {
+    setupTestFactory,
+    createPost,
+    createPublishedPost,
+    createPageHit,
+    createPageHits,
+    getFactories,
+    type Factories
+} from './data-factory';
 
 // Export types for convenience
-export type {DataFactory, PostOptions, PostResult, PageHitOptions, PageHitResult} from './types';
+export type {PostOptions, PostResult} from './types';
+export type {PageHitOptions, PageHitResult} from './factories/tinybird-factory';
 
 // Export individual components for advanced use cases
 export {Factory, FactoryPlugin} from './base-factory';

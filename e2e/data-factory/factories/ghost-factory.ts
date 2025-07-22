@@ -17,7 +17,8 @@ export class GhostFactory extends Factory {
     }
     
     async destroy(): Promise<void> {
-        await this.db.destroy();
+        // Don't destroy the db connection - it's managed by the singleton GhostDatabaseManager
+        // Could add cleanup of tracked records here if needed in the future
     }
     
     async createPost(options: PostOptions = {}): Promise<PostResult> {

@@ -1,5 +1,34 @@
-import {Locator, Page} from '@playwright/test';
+import {Locator, Page, expect} from '@playwright/test';
 import AdminPage from './AdminPage';
+
+// Post item wrapper for better composability
+export class PostItem {
+    constructor(private locator: Locator, private page: Page) {}
+    
+    async exists(): Promise<boolean> {
+        return this.locator.isVisible();
+    }
+    
+    async assertVisible() {
+        await expect(this.locator).toBeVisible();
+    }
+    
+    async assertNotVisible() {
+        await expect(this.locator).not.toBeVisible();
+    }
+    
+    async getTitle(): Promise<string | null> {
+        return this.locator.textContent();
+    }
+    
+    async click() {
+        await this.locator.click();
+    }
+    
+    async hover() {
+        await this.locator.hover();
+    }
+}
 
 export class PostsPage extends AdminPage {
     readonly postsContainer: Locator;
@@ -101,5 +130,34 @@ export class PostsPage extends AdminPage {
     async refreshAndWait() {
         await this.page.reload();
         await this.waitForPostsToLoad();
+    }
+    
+    // Composable methods for better assertions
+    async getPost(index: number): Promise<PostItem> {
+        await this.waitForPostsToLoad();
+        const posts = await this.postItems.all();
+        if (index >= posts.length) {
+            throw new Error(`Post at index ${index} not found. Total posts: ${posts.length}`);
+        }
+        return new PostItem(posts[index], this.page);
+    }
+    
+    async getPostByTitle(title: string): Promise<PostItem> {
+        const postLocator = await this.findPostByTitle(title);
+        if (!postLocator) {
+            // Return a PostItem with a non-existent locator for consistent API
+            return new PostItem(this.page.locator(`text="${title}"`), this.page);
+        }
+        return new PostItem(postLocator, this.page);
+    }
+    
+    async assertPostExists(title: string) {
+        const post = await this.getPostByTitle(title);
+        await post.assertVisible();
+    }
+    
+    async assertPostNotExists(title: string) {
+        const post = await this.getPostByTitle(title);
+        await post.assertNotVisible();
     }
 }
