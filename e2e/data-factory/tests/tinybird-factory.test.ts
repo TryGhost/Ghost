@@ -39,9 +39,9 @@ test.describe('Tinybird Factory', () => {
     });
     
     test('can create page hits linked to posts', async () => {
-        // First create a post
+        // First create a post with unique title
         const post = await createPost({
-            title: 'Test Analytics Post',
+            title: `Analytics Post ${Date.now()}`,
             status: 'published'
         });
         
