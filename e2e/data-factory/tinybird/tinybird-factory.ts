@@ -1,66 +1,41 @@
-import {faker} from '@faker-js/faker';
-import {v4 as uuid} from 'uuid';
 import type {PageHitOptions, PageHitResult} from '../types';
+import {PageHitFactory} from './page-hit-factory';
 
 /**
- * Factory for creating Tinybird analytics events.
- * Sends page hit events directly to Tinybird local for e2e testing.
+ * TinybirdFactory is a coordinator that manages all Tinybird-related subfactories.
+ * It does not extend Factory as it delegates to specialized factories.
  */
 export class TinybirdFactory {
     private siteUuid: string;
+    private pageHitFactory: PageHitFactory;
     private tinybirdHost: string;
     private tinybirdToken: string;
     
     constructor(siteUuid: string) {
         this.siteUuid = siteUuid;
-        // Default to localhost for e2e testing
+        this.pageHitFactory = new PageHitFactory(siteUuid);
+        
+        // Store these for clearAllPageHits functionality
         this.tinybirdHost = process.env.TINYBIRD_HOST || 'http://localhost:7181/v0/events';
-        // Use provided token or fall back to the test token from .env
         this.tinybirdToken = process.env.TINYBIRD_TOKEN || 'p.eyJ1IjogIjY0NDNmYzRhLTQxZjItNDkyOC05MTMxLTAzNzVmNzRiODlmMyIsICJpZCI6ICJmZDRlZjdmYS01NzcyLTQxNTUtYmI4Zi03OWQ5OTBkYTUzNjYiLCAiaG9zdCI6ICJsb2NhbCJ9.-Y0JOEkCfuXylkeY6uyFls_NJGpshjjhY634JALkP6M';
     }
     
     async setup(): Promise<void> {
-        // No setup needed for Tinybird - it's a separate service
+        // Setup all subfactories
+        await this.pageHitFactory.setup();
+        // Future: await this.clickFactory.setup();
+        // Future: await this.sessionFactory.setup();
     }
     
-    /**
-     * Create and send a page hit event to Tinybird
-     */
+    async destroy(): Promise<void> {
+        // Destroy all subfactories
+        await this.pageHitFactory.destroy();
+        // No cleanup needed for Tinybird factory itself
+    }
+    
+    // Page hit methods - delegate to PageHitFactory
     async createPageHit(options?: PageHitOptions): Promise<PageHitResult> {
-        const timestamp = options?.timestamp || new Date();
-        const pathname = options?.pathname || '/';
-        
-        // Build the event
-        const event: PageHitResult = {
-            timestamp: timestamp.toISOString().replace('T', ' ').slice(0, -1),
-            action: 'page_hit',
-            version: '1',
-            session_id: uuid(),
-            payload: {
-                site_uuid: this.siteUuid,
-                member_uuid: options?.member_uuid || 'undefined',
-                member_status: options?.member_status || 'undefined',
-                post_uuid: options?.post_uuid || 'undefined',
-                pathname: pathname,
-                referrer: options?.referrer || '',
-                'user-agent': options?.user_agent || faker.internet.userAgent(),
-                locale: options?.locale || 'en-US',
-                location: options?.location || 'US',
-                href: `https://example.com${pathname}`,
-                event_id: uuid(),
-                meta: {}
-            }
-        };
-        
-        // Add referrer source if we have a referrer
-        if (options?.referrer) {
-            event.payload.meta.referrerSource = this.getReferrerSource(options.referrer);
-        }
-        
-        // Send to Tinybird
-        await this.sendToTinybird(event);
-        
-        return event;
+        return this.pageHitFactory.create(options);
     }
     
     /**
@@ -75,67 +50,6 @@ export class TinybirdFactory {
         }
         
         return results;
-    }
-    
-    /**
-     * Send event to Tinybird via HTTP POST
-     */
-    private async sendToTinybird(event: PageHitResult): Promise<void> {
-        // Default to analytics_events data source
-        const datasource = 'analytics_events';
-        const url = `${this.tinybirdHost}?name=${datasource}&token=${this.tinybirdToken}`;
-        
-        try {
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'x-site-uuid': this.siteUuid
-                },
-                body: JSON.stringify(event)
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
-            }
-        } catch (error) {
-            // Log the error for debugging
-            // eslint-disable-next-line no-console
-            console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
-            // eslint-disable-next-line no-console
-            console.warn('URL:', url);
-            
-            // For e2e tests, we might want to continue even if Tinybird is not available
-            if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
-                throw error;
-            }
-            // Continue if Tinybird is not available in test environment
-        }
-    }
-    
-    /**
-     * Parse referrer source from URL
-     */
-    private getReferrerSource(referrer: string): string {
-        const sourceMap: Record<string, string> = {
-            'google.com': 'Google',
-            'news.google.com': 'Google News',
-            'duckduckgo.com': 'DuckDuckGo',
-            'bing.com': 'Bing',
-            'reddit.com': 'Reddit',
-            'go.bsky.app': 'Bluesky',
-            't.co': 'Twitter',
-            'facebook.com': 'Facebook'
-        };
-        
-        for (const [domain, source] of Object.entries(sourceMap)) {
-            if (referrer.includes(domain)) {
-                return source;
-            }
-        }
-        
-        return new URL(referrer).hostname;
     }
     
     /**
@@ -170,7 +84,13 @@ export class TinybirdFactory {
         }
     }
     
-    async destroy(): Promise<void> {
-        // No cleanup needed for Tinybird factory
-    }
+    // Future methods will follow the same pattern:
+    // async createClick(options: ClickOptions = {}): Promise<ClickResult> {
+    //     return this.clickFactory.create(options);
+    // }
+    
+    // Cross-entity methods can be added here
+    // async simulateUserSession(options: SessionOptions = {}): Promise<SessionResult> {
+    //     // Create page hits, clicks, etc. to simulate a full user session
+    // }
 }
