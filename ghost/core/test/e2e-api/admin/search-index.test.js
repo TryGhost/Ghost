@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyString} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId, anyString} = matchers;
 const assert = require('node:assert');
 
 describe('Search Index API', function () {
@@ -12,15 +12,6 @@ describe('Search Index API', function () {
     });
 
     describe('fetchPosts', function () {
-        const searchIndexPostMatcher = {
-            id: anyString,
-            title: anyString,
-            url: anyString,
-            status: anyString,
-            published_at: anyISODateTime,
-            visibility: anyString
-        };
-
         it('should return a list of posts', async function () {
             const response = await agent.get('/search-index/posts')
                 .expectStatus(200)
@@ -29,7 +20,10 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(11).fill(searchIndexPostMatcher)
+                    posts: new Array(11).fill({
+                        id: anyObjectId,
+                        published_at: anyISODateTime
+                    })
                 });
 
             // Explicitly double-check that expensive fields are not included
@@ -43,15 +37,6 @@ describe('Search Index API', function () {
     });
 
     describe('fetchPages', function () {
-        const searchIndexPageMatcher = {
-            id: anyString,
-            title: anyString,
-            url: anyString,
-            status: anyString,
-            published_at: anyISODateTime,
-            visibility: anyString
-        };
-
         it('should return a list of pages', async function () {
             const response = await agent.get('/search-index/pages')
                 .expectStatus(200)
@@ -60,7 +45,10 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    pages: new Array(5).fill(searchIndexPageMatcher)
+                    pages: new Array(5).fill({
+                        id: anyObjectId,
+                        published_at: anyISODateTime
+                    })
                 });
 
             // Explicitly double-check that expensive fields are not included
@@ -74,13 +62,6 @@ describe('Search Index API', function () {
     });
 
     describe('fetchTags', function () {
-        const searchIndexTagMatcher = {
-            id: anyString,
-            slug: anyString,
-            name: anyString,
-            url: anyString
-        };
-
         it('should return a list of tags', async function () {
             await agent.get('/search-index/tags')
                 .expectStatus(200)
@@ -89,20 +70,14 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    tags: new Array(6).fill(searchIndexTagMatcher)
+                    tags: new Array(6).fill({
+                        id: anyObjectId
+                    })
                 });
         });
     });
 
     describe('fetchUsers', function () {
-        const searchIndexUserMatcher = {
-            id: anyString,
-            slug: anyString,
-            name: anyString,
-            url: anyString,
-            profile_image: anyString
-        };
-
         it('should return a list of users', async function () {
             await agent.get('/search-index/users')
                 .expectStatus(200)
@@ -111,7 +86,10 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    users: new Array(2).fill(searchIndexUserMatcher)
+                    users: new Array(2).fill({
+                        // TODO: change this to anyObjectId in 6.x
+                        id: anyString
+                    })
                 });
         });
     });
