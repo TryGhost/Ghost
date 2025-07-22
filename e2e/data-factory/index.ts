@@ -7,6 +7,7 @@ export {
     createPageHits,
     getFactories,
     clearCreatedPosts,
+    clearAllPageHits,
     type Factories
 } from './data-factory';
 

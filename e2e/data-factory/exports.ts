@@ -64,3 +64,13 @@ export async function clearCreatedPosts(): Promise<void> {
     const factories = await setupTestFactory();
     await factories.ghost.clearCreatedPosts();
 }
+
+/**
+ * Clear all page hits from Tinybird (WARNING: This truncates the entire datasource)
+ */
+export async function clearAllPageHits(): Promise<void> {
+    const factories = await setupTestFactory();
+    if (factories.tinybird) {
+        await factories.tinybird.clearAllPageHits();
+    }
+}

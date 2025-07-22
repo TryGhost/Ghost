@@ -49,8 +49,8 @@ export class TinybirdFactory {
         this.siteUuid = siteUuid;
         // Default to localhost for e2e testing
         this.tinybirdHost = process.env.TINYBIRD_HOST || 'http://localhost:7181/v0/events';
-        // Use provided token or fall back to a test token
-        this.tinybirdToken = process.env.TINYBIRD_TOKEN || 'p.eyJ1IjogIjkyZjliMTE1LTQ2MzktNDczZC1hMGVjLWVjYjVhNDY4ZjdmZSIsICJpZCI6ICJmODkyN2ZhYy0yODgyLTRmMTMtOGNjMi1jZDYxOTE5MzBkNzEiLCAiaG9zdCI6ICJsb2NhbCJ9.P4BM6n8VxxrWZc7IeuY9FIh1ftzoC0tP5LJdLT_ppyk';
+        // Use provided token or fall back to the test token from .env
+        this.tinybirdToken = process.env.TINYBIRD_TOKEN || 'p.eyJ1IjogIjY0NDNmYzRhLTQxZjItNDkyOC05MTMxLTAzNzVmNzRiODlmMyIsICJpZCI6ICJmZDRlZjdmYS01NzcyLTQxNTUtYmI4Zi03OWQ5OTBkYTUzNjYiLCAiaG9zdCI6ICJsb2NhbCJ9.-Y0JOEkCfuXylkeY6uyFls_NJGpshjjhY634JALkP6M';
     }
     
     async setup(): Promise<void> {
@@ -66,7 +66,7 @@ export class TinybirdFactory {
         
         // Build the event
         const event: PageHitResult = {
-            timestamp: timestamp.toISOString().replace('T', ' ').replace('Z', ''),
+            timestamp: timestamp.toISOString().replace('T', ' ').slice(0, -1),
             action: 'page_hit',
             version: '1',
             session_id: uuid(),
@@ -134,11 +134,15 @@ export class TinybirdFactory {
                 throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
             }
         } catch (error) {
+            // Log the error for debugging
+            console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
+            console.warn('URL:', url);
+            
             // For e2e tests, we might want to continue even if Tinybird is not available
             if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
                 throw error;
             }
-            // Silently continue if Tinybird is not available in test environment
+            // Continue if Tinybird is not available in test environment
         }
     }
     
@@ -164,6 +168,39 @@ export class TinybirdFactory {
         }
         
         return new URL(referrer).hostname;
+    }
+    
+    /**
+     * Clear all analytics data from Tinybird (for testing purposes)
+     * Note: This will TRUNCATE both the analytics_events datasource and _mv_hits materialized view
+     */
+    async clearAllPageHits(): Promise<void> {
+        const datasources = ['analytics_events', '_mv_hits'];
+        
+        for (const datasource of datasources) {
+            const url = `http://localhost:7181/v0/datasources/${datasource}/truncate?token=${this.tinybirdToken}`;
+            
+            try {
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    throw new Error(`Failed to clear ${datasource}: ${response.status} - ${text}`);
+                }
+                
+                console.log(`Cleared ${datasource} from Tinybird`);
+            } catch (error) {
+                console.warn(`Failed to clear ${datasource}:`, error instanceof Error ? error.message : String(error));
+                if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
+                    throw error;
+                }
+            }
+        }
     }
     
     async destroy(): Promise<void> {
