@@ -107,7 +107,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             <span className='text-sm font-semibold'>{siteDomain}</span>
                             {shareGrowthData ?
                                 <span className='rounded-sm bg-black px-2 py-0.5 text-xs font-semibold text-white' data-testid='explore-members-count'>
-                                    {abbreviateNumber(membersCount)}&nbsp;members
+                                    {abbreviateNumber(membersCount)}&nbsp;{membersCount === 1 ? 'member' : 'members'}
                                 </span>
                                 :
                                 <span className='flex size-5 items-center justify-center rounded-full border border-black text-black group-hover:bg-black group-hover:text-white'>
