@@ -26,7 +26,7 @@ describe('Unit: Service: migrate', function () {
     });
 
     it('can generate valid payload', async function () {
-        sinon.stub(migrateService, 'apiToken').resolves('test-token');
+        sinon.stub(migrateService, 'apiKey').resolves('abcd:1234');
 
         this.owner.register('service:billing', Service.extend({
             getOwnerUser: () => {
@@ -38,10 +38,10 @@ describe('Unit: Service: migrate', function () {
 
         let payload = await migrateService.postMessagePayload();
 
-        expect(payload).to.be.an('object').that.has.all.keys('apiUrl', 'apiToken', 'stripe', 'ghostVersion', 'ownerEmail');
+        expect(payload).to.be.an('object').that.has.all.keys('apiUrl', 'apiKey', 'stripe', 'ghostVersion', 'ownerEmail');
         expect(isValidUrl(payload.apiUrl)).to.be.true;
         expect(payload.apiUrl.endsWith('/ghost')).to.be.true;
-        expect(payload.apiToken).to.equal('test-token');
+        expect(payload.apiKey).to.equal('abcd:1234');
         expect(payload.stripe).to.be.false;
         expect(payload.ghostVersion).to.be.string;
         expect(payload.ownerEmail).to.equal('name@example.com');
