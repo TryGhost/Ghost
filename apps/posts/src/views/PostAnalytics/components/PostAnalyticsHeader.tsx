@@ -200,28 +200,28 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
                             <PageMenuItem value="Overview" onClick={() => {
-                                navigate(`/analytics/beta/${postId}`);
+                                navigate(`/analytics/${postId}`);
                             }}>
                                     Overview
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/web`);
+                                navigate(`/analytics/${postId}/web`);
                             }}>
                                     Web traffic
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/newsletter`);
+                                navigate(`/analytics/${postId}/newsletter`);
                             }}>
                                     Newsletter
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Growth') && (
                             <PageMenuItem value="Growth" onClick={() => {
-                                navigate(`/analytics/beta/${postId}/growth`);
+                                navigate(`/analytics/${postId}/growth`);
                             }}>
                                     Growth
                             </PageMenuItem>

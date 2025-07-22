@@ -125,7 +125,7 @@ const Overview: React.FC = () => {
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
     useEffect(() => {
         if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
-            navigate(`/analytics/beta/${postId}/growth`);
+            navigate(`/analytics/${postId}/growth`);
         }
     }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
 
@@ -160,7 +160,7 @@ const Overview: React.FC = () => {
                                 </CardTitle>
                             </CardHeader>
                             <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                                navigate(`/analytics/beta/${postId}/growth`);
+                                navigate(`/analytics/${postId}/growth`);
                             }}>View more</Button>
                         </div>
                         <CardContent className='flex flex-col gap-8 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
