@@ -3,19 +3,19 @@ import {globalDataRequests, responseFixtures} from '@tryghost/admin-x-framework/
 
 export const tinybirdConfig = {
     tinybird: {
-        token: process.env.STATS_LOCAL_TOKEN
+        token: 'token'
     }
 };
 
 export const statsConfig = {
-    endpoint: process.env.STATS_ENDPOINT,
-    token: process.env.STATS_TOKEN,
-    id: process.env.STATS_ID,
+    endpoint: 'https://api.tinybird.co',
+    token: 'token',
+    id: 'id',
     local: {
         enabled: true,
-        token: process.env.STATS_LOCAL_TOKEN,
-        endpoint: process.env.STATS_LOCAL_ENDPOINT,
-        datasource: process.env.STATS_LOCAL_DATASOURCE
+        token: 'token',
+        endpoint: 'http://localhost',
+        datasource: 'analytics'
     }
 };
 
