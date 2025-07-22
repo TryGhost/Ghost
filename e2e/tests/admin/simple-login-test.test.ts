@@ -12,12 +12,7 @@ test.describe('Simple Login Test', () => {
     test('should show error with invalid credentials', async ({page}) => {
         const loginPage = new LoginPage(page);
         
-        // Try to login with invalid credentials
-        await loginPage.goto();
-        await loginPage.login('invalid@test.com', 'wrongpassword');
-        
-        // Assert login failed and error is shown
-        await loginPage.assertLoginFailed();
-        await loginPage.assertErrorMessage();
+        // One-line login with failure assertion
+        await loginPage.loginAndAssertFailure('invalid@test.com', 'wrongpassword');
     });
 });
