@@ -132,20 +132,53 @@ const exportedBodyV4 = () => {
     });
 };
 
-// NOTE: clone the fixture before changing in and alias to v5, v6 or whatever the newest version is
-const exportedBodyLatest = () => {
+const exportedBodyV5 = () => {
     return _.clone({
         db: [{
             meta: {
-                exported_on: 1615520875631,
-                version: '4.1.2'
+                exported_on: 1753179197327,
+                version: '5.130.2'
             },
             data: {
                 benefits: [],
                 custom_theme_settings: [],
                 newsletters: [],
-                offers: [],
                 offer_redemptions: [],
+                offers: [],
+                posts: [],
+                posts_authors: [],
+                posts_meta: [],
+                posts_products: [],
+                posts_tags: [],
+                products: [],
+                products_benefits: [],
+                roles: [],
+                roles_users: [],
+                settings: [],
+                snippets: [],
+                stripe_prices: [],
+                stripe_products: [],
+                tags: [],
+                users: []
+            }
+        }]
+    });
+};
+
+// NOTE: clone the fixture before changing in and alias to v5, v6 or whatever the newest version is
+const exportedBodyLatest = () => {
+    return _.clone({
+        db: [{
+            meta: {
+                exported_on: 1753179197327,
+                version: '5.130.2'
+            },
+            data: {
+                benefits: [],
+                custom_theme_settings: [],
+                newsletters: [],
+                offer_redemptions: [],
+                offers: [],
                 posts: [],
                 posts_authors: [],
                 posts_meta: [],
@@ -167,6 +200,7 @@ const exportedBodyLatest = () => {
 };
 
 module.exports.exportedBodyLatest = exportedBodyLatest;
+module.exports.exportedBodyV5 = exportedBodyV5;
 module.exports.exportedBodyV4 = exportedBodyV4;
 module.exports.exportedBodyV2 = exportedBodyV2;
 module.exports.exportedBodyV1 = exportedBodyV1;
