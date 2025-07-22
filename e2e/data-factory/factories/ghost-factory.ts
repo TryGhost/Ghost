@@ -56,11 +56,8 @@ export class GhostFactory extends Factory {
             visibility: 'public',
             email_recipient_filter: 'none',
             created_at: now,
-            created_by: '1',
             updated_at: now,
-            updated_by: '1',
             published_at: null,
-            published_by: null,
             custom_excerpt: faker.lorem.paragraph(),
             codeinjection_head: null,
             codeinjection_foot: null,
@@ -75,9 +72,7 @@ export class GhostFactory extends Factory {
             ...defaults,
             ...options,
             // Handle published_at logic - if status is published but no published_at is set, use current time
-            published_at: options.status === 'published' && !options.published_at ? now : (options.published_at || defaults.published_at),
-            // Handle published_by logic
-            published_by: (options.status === 'published' || options.published_at) ? (options.published_by || '1') : null
+            published_at: options.status === 'published' && !options.published_at ? now : (options.published_at || defaults.published_at)
         };
         
         await this.db('posts').insert(post);

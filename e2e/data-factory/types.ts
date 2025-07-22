@@ -50,8 +50,8 @@ export type PostResult = PostOptions & {
     locale: string | null;
     visibility: string;
     email_recipient_filter: string;
-    created_by: string;
-    updated_by: string;
+    created_by?: string;
+    updated_by?: string;
     custom_excerpt: string | null;
     codeinjection_head: string | null;
     codeinjection_foot: string | null;
