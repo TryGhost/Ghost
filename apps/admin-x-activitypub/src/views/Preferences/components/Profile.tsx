@@ -2,10 +2,10 @@ import {memo, useCallback, useEffect, useRef, useState} from 'react';
 
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
+import html2canvas from 'html2canvas-objectfit-fix';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
 import {imageUrlToDataUrl} from '@src/utils/image';
-import {takeScreenshot} from '@src/utils/screenshot';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useFeatureFlags} from '@src/lib/feature-flags';
@@ -146,7 +146,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const profileCardRef = useRef<HTMLDivElement>(null);
     const [backgroundColor, setBackgroundColor] = useState<'light' | 'dark' | 'accent'>('light');
     const [cardFormat, setCardFormat] = useState<'vertical' | 'square'>('vertical');
-    const [isAltKeyHeld, setIsAltKeyHeld] = useState(false);
     const [isProcessing, setIsProcessing] = useState(false);
     const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
     const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
@@ -186,35 +185,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         };
     }, [convertImagesToDataUrls]);
 
-    // Listen for Alt key press/release
-    useEffect(() => {
-        const handleKeyDown = (event: KeyboardEvent) => {
-            if (event.altKey && !isAltKeyHeld) {
-                setIsAltKeyHeld(true);
-            }
-        };
-
-        const handleKeyUp = (event: KeyboardEvent) => {
-            if (!event.altKey && isAltKeyHeld) {
-                setIsAltKeyHeld(false);
-            }
-        };
-
-        const handleWindowBlur = () => {
-            setIsAltKeyHeld(false);
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        window.addEventListener('keyup', handleKeyUp);
-        window.addEventListener('blur', handleWindowBlur);
-
-        return () => {
-            window.removeEventListener('keydown', handleKeyDown);
-            window.removeEventListener('keyup', handleKeyUp);
-            window.removeEventListener('blur', handleWindowBlur);
-        };
-    }, [isAltKeyHeld]);
-
     const getGradient = () => {
         switch (backgroundColor) {
         case 'light':
@@ -241,38 +211,61 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
-    const handleDownload = async (event: React.MouseEvent) => {
+    const handleCopy = async () => {
         if (!profileCardRef.current || isProcessing) {
             return;
         }
 
         setIsProcessing(true);
 
-        await new Promise<void>((resolve) => {
-            setTimeout(() => resolve(), 100);
+        // Wait for the next frame to ensure the loading indicator is painted
+        await new Promise((resolve) => {
+            requestAnimationFrame(() => {
+                requestAnimationFrame(resolve);
+            });
         });
 
-        const shouldCopyToClipboard = event.altKey;
-
         try {
-            await takeScreenshot(profileCardRef.current, {
-                filename: `${account?.handle}.png`,
-                backgroundColor: 'transparent',
-                copyToClipboard: shouldCopyToClipboard
-            });
+            if (!navigator.clipboard || !('write' in navigator.clipboard) || typeof ClipboardItem === 'undefined') {
+                throw new Error('Clipboard API not supported in this browser');
+            }
 
-            if (shouldCopyToClipboard) {
+            try {
+                const blobPromise = new Promise<Blob>(async (resolve, reject) => {
+                    try {
+                        const canvas = await html2canvas(profileCardRef.current!, {
+                            backgroundColor: 'transparent',
+                            scale: 2,
+                            logging: false,
+                            useCORS: true,
+                            allowTaint: true,
+                            imageTimeout: 0
+                        });
+
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                resolve(blob);
+                            } else {
+                                reject(new Error('Failed to create blob'));
+                            }
+                        }, 'image/png');
+                    } catch (error) {
+                        reject(error);
+                    }
+                });
+
+                const clipboardItem = new ClipboardItem({
+                    'image/png': blobPromise
+                });
+
+                await navigator.clipboard.write([clipboardItem]);
                 toast.success('Image copied to clipboard');
-            } else {
-                toast.success('Image downloaded');
+            } catch (error) {
+                toast.error('Failed to copy image');
             }
+            setIsProcessing(false);
         } catch (error) {
-            if (shouldCopyToClipboard) {
-                toast.error(`Failed to copy image`);
-            } else {
-                toast.error(`Failed to download image`);
-            }
-        } finally {
+            toast.error('Failed to copy image');
             setIsProcessing(false);
         }
     };
@@ -386,15 +379,10 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                                 <svg fill="none" viewBox="0 0 16 16"><g clipPath="url(#social-linkedin_svg__clip0_537_833)"><path className="social-linkedin_svg__linkedin" clipRule="evenodd" d="M1.778 16h12.444c.982 0 1.778-.796 1.778-1.778V1.778C16 .796 15.204 0 14.222 0H1.778C.796 0 0 .796 0 1.778v12.444C0 15.204.796 16 1.778 16z" fill="#007ebb" fillRule="evenodd"></path><path clipRule="evenodd" d="M13.778 13.778h-2.374V9.734c0-1.109-.421-1.729-1.299-1.729-.955 0-1.453.645-1.453 1.729v4.044H6.363V6.074h2.289v1.038s.688-1.273 2.322-1.273c1.634 0 2.804.997 2.804 3.061v4.878zM3.634 5.065c-.78 0-1.411-.636-1.411-1.421s.631-1.422 1.41-1.422c.78 0 1.411.637 1.411 1.422 0 .785-.631 1.421-1.41 1.421zm-1.182 8.713h2.386V6.074H2.452v7.704z" fill="#fff" fillRule="evenodd"></path></g><defs><clipPath id="social-linkedin_svg__clip0_537_833"><path d="M0 0h16v16H0z" fill="#fff"></path></clipPath></defs></svg>
                             </a>
                         </div>
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <Button className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`} onClick={handleDownload}>
-                                    {isProcessing ? <LoadingIndicator color={`${backgroundColor === 'dark' ? 'dark' : 'light'}`} size='sm' /> : isAltKeyHeld ? <LucideIcon.Copy /> : <LucideIcon.Download />}
-                                    {!isProcessing && (isAltKeyHeld ? 'Copy image' : 'Download image')}
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Hold Alt/Option to copy to clipboard</TooltipContent>
-                        </Tooltip>
+                        <Button className={`min-w-[160px] dark:bg-black dark:text-white dark:hover:bg-black/90 ${backgroundColor === 'dark' && 'bg-white text-black hover:bg-gray-50 dark:bg-white dark:text-black dark:hover:bg-gray-50/90'}`} onClick={handleCopy}>
+                            {isProcessing ? <LoadingIndicator color={`${backgroundColor === 'dark' ? 'dark' : 'light'}`} size='sm' /> : <LucideIcon.Copy />}
+                            {!isProcessing && 'Copy image'}
+                        </Button>
                     </div>
                     {(account?.bannerImageUrl || coverImage) &&
                     <DotsPattern className={`absolute left-1/2 top-1/2 h-[600px] w-[598px] -translate-x-1/2 -translate-y-1/2 ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
