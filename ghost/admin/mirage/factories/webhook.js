@@ -12,7 +12,5 @@ export default Factory.extend({
     lastTriggeredAt: null,
 
     createdAt() { return moment.utc().format(); },
-    createdBy: 1,
-    updatedAt() { return moment.utc().format(); },
-    updatedBy: 1
+    updatedAt() { return moment.utc().format(); }
 });

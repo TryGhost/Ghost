@@ -5,6 +5,7 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
+const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
@@ -30,6 +31,7 @@ const getSettingsBREADServiceInstance = () => {
         SettingsModel: models.Settings,
         settingsCache: SettingsCache,
         labsService: labs,
+        limitsService: limits,
         mail,
         singleUseTokenProvider: new SingleUseTokenProvider({
             SingleUseTokenModel: models.SingleUseToken,
@@ -110,7 +112,7 @@ module.exports = {
         fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
 
         // Web analytics
-        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics', 'labs']}));
+        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));
         fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
 
         return fields;
