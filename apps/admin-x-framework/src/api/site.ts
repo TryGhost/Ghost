@@ -13,6 +13,7 @@ export type SiteData = {
     url: string;
     locale: string;
     version: string;
+    site_uuid: string;
 };
 
 export interface SiteResponseType {

@@ -1,9 +1,9 @@
 import React, {useEffect, useRef} from 'react';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-
 import APAvatar from '@components/global/APAvatar';
+import Error from '@components/layout/Error';
 import FeedItemStats from '@components/feed/FeedItemStats';
 import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
@@ -11,7 +11,7 @@ import Separator from '@components/global/Separator';
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {Notification} from '@src/api/activitypub';
+import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
@@ -192,7 +192,7 @@ const Notifications: React.FC = () => {
 
     const maxAvatars = 5;
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
+    const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
@@ -257,6 +257,10 @@ const Notifications: React.FC = () => {
             break;
         }
     };
+
+    if (error && isApiError(error)) {
+        return <Error statusCode={error.statusCode}/>;
+    }
 
     return (
         <Layout>

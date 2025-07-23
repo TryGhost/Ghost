@@ -159,8 +159,8 @@ test.describe('Feed', async () => {
     });
 
     test('I can repost a note in my feed', async ({page}) => {
-        // Use the last post which has repostedByMe: false and no repostedBy
-        const lastPostFixture = feedFixture.posts[9]; // index 9 is the 10th post
+        // Use the first post which has repostedByMe: false and repostCount > 0 for better button visibility
+        const firstPostFixture = feedFixture.posts[0];
 
         const {lastApiRequests} = await mockApi({page, requests: {
             getFeed: {
@@ -170,7 +170,7 @@ test.describe('Feed', async () => {
             },
             repostPost: {
                 method: 'POST',
-                path: `/v1/actions/repost/${encodeURIComponent(lastPostFixture.id)}`,
+                path: `/v1/actions/repost/${encodeURIComponent(firstPostFixture.id)}`,
                 response: {}
             }
         }, options: {useActivityPub: true}});
@@ -185,14 +185,14 @@ test.describe('Feed', async () => {
         const feedItems = page.getByTestId('feed-item');
         await expect(feedItems).toHaveCount(10);
 
-        // Get the last post (10th item, index 9)
-        const lastPost = feedItems.nth(9);
+        // Get the first post
+        const firstPost = feedItems.first();
 
-        // Hover over the last post to make the repost button appear
-        await lastPost.hover();
+        // Hover over the first post to make the repost button appear
+        await firstPost.hover();
 
         // Click the repost button
-        const repostButton = lastPost.getByTestId('repost-button');
+        const repostButton = firstPost.getByTestId('repost-button');
         await expect(repostButton).toBeVisible();
         await repostButton.click();
 
