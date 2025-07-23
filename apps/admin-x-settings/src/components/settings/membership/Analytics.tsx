@@ -60,7 +60,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
                         <span className='flex items-start gap-2'>
                             <span>
-                            Web analytics is available on the Publisher plan and above. <span className='text-green underline' onClick={() => updateRoute({route: '/pro', isExternal: true})}>Upgrade now &rarr;</span>
+                            Web analytics is available on the Publisher plan and above. <span className='cursor-pointer text-green' onClick={() => updateRoute({route: '/pro', isExternal: true})}>Upgrade now &rarr;</span>
                             </span>
                         </span>
                     </div>
@@ -68,7 +68,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
                         <span className='flex items-start gap-2'>
                             <span>
-                                Web analytics in Ghost is powered by <a className='text-green underline' href="https://tinybird.co" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='text-green underline' href="https://ghost.org/docs/" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
+                                Web analytics in Ghost is powered by <a className='text-green' href="https://tinybird.co" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='text-green' href="https://ghost.org/docs/" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
                             </span>
                         </span>
                     </div>
