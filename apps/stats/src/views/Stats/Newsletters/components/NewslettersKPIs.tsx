@@ -319,7 +319,7 @@ const NewsletterKPIs: React.FC<{
                                             }}
                                             onClick={(e) => {
                                                 if (e.activePayload && e.activePayload![0].payload.post_id) {
-                                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${e.activePayload![0].payload.post_id}`, {crossApp: true});
                                                 }
                                             }}
                                             onMouseLeave={() => setIsHoveringClickable(false)}
