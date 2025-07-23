@@ -149,7 +149,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [bannerDataUrl, setBannerDataUrl] = useState<string | null>(null);
     const [avatarDataUrl, setAvatarDataUrl] = useState<string | null>(null);
-    const shareText = `You can now follow ${account?.name} on the social web, on ${account?.handle}`;
+    const shareText = `${account?.name} is now available across the social web, on ${account?.handle}`;
 
     const convertImagesToDataUrls = useCallback(async () => {
         if (account?.bannerImageUrl || coverImage) {
