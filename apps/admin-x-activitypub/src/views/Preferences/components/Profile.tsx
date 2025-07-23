@@ -80,8 +80,8 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
     const margin = isScreenshot ? 'm-4' : 'm-16';
     const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
 
-    const cardWidth = format === 'square' ? 'w-[392px]' : 'w-[316px]';
-    const cardHeight = 'h-[392px]';
+    const cardWidth = format === 'square' ? 'w-[422px]' : 'w-[316px]';
+    const cardHeight = 'h-[422px]';
 
     const bannerImageSrc = isScreenshot && bannerDataUrl ? bannerDataUrl : (account?.bannerImageUrl || coverImage);
     const avatarImageSrc = isScreenshot && avatarDataUrl ? avatarDataUrl : (account?.avatarUrl || publicationIcon);
@@ -119,7 +119,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
             </div>
             <div className={`flex grow flex-col items-center p-6 ${(account?.avatarUrl || publicationIcon) ? 'pt-9' : 'pt-3'} text-center ${format === 'square' ? 'flex-1 justify-center' : ''}`}>
                 <H2 className={`${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
-                <span className={`mt-0.5 text-lg ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Now on the Social Web!' : <Skeleton className='w-28' />}</span>
+                <span className={`mt-1.5 leading-8 ${isScreenshot && 'tracking-normal'}`} style={{color: textColor}}>{!isLoading ? 'Available on Ghost, Flipboard, Threads, Bluesky, Mastodon, or wherever you get your social web feeds.' : <Skeleton className='w-28' />}</span>
                 <div
                     className={`mt-auto flex max-h-[60px] min-h-12 w-full items-center justify-center rounded-full border px-4 py-2 font-medium leading-7 ${isScreenshot && 'tracking-normal'}`}
                     style={{
@@ -395,7 +395,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     ref={profileCardRef}
                     className='fixed left-[-9999px] top-0 z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                     style={{
-                        width: cardFormat === 'square' ? '424px' : '348px',
+                        width: cardFormat === 'square' ? '454px' : '348px',
                         fontFamily: 'system-ui'
                     }}
                 >
