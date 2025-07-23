@@ -106,53 +106,53 @@ const TestimonialsModal = NiceModal.create(() => {
         >
             <Form className='!mb-0'>
                 <div className='flex items-stretch'>
-                    <div className='w-full min-w-[372px] bg-gradient-to-tl from-[rgba(142,66,255,0.03)] to-[rgba(142,66,255,0.07)] p-8'>
+                    <div className='hidden w-full flex-col justify-between bg-gradient-to-tl from-grey-100/50 to-grey-100/80 p-8 dark:from-grey-900/40 dark:to-grey-900/60 [@media(min-width:905px)]:!visible [@media(min-width:905px)]:!flex'>
                         <div className='pr-6'>
-                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 before:dark:bg-black'>
                                 Moving to Ghost has proven to be one of the best business decisions we’ve made as an independent media outlet.
                             </div>
                             <div className='ml-2 mt-[14px] flex items-center gap-2 text-sm'>
-                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90 grayscale' style={{
                                     backgroundImage: `url(${JoelWarner})`
                                 }}></div>
                                 <div>
-                                    <div className='font-medium text-black'>Joel Warner</div>
+                                    <div className='font-medium text-black dark:text-white'>Joel Warner</div>
                                     <div className='-mt-0.5 text-grey-700'>Lever News</div>
                                 </div>
                             </div>
                         </div>
 
                         <div className='ml-6 mt-8'>
-                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:right-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:right-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 before:dark:bg-black'>
                                 It has now been one year since I quit my full-time job to go all in on Tangle. Today, we have 50,000+ paying subscribers. That’s roughly $5M in gross yearly revenue ... it’s the best paying job I’ve ever had.
                             </div>
                             <div className='mr-2 mt-[14px] flex items-center justify-end gap-2 text-sm'>
                                 <div className='flex flex-col items-end'>
-                                    <div className='font-medium text-black'>Isaac Saul</div>
+                                    <div className='font-medium text-black dark:text-white'>Isaac Saul</div>
                                     <div className='-mt-0.5 text-grey-700'>Tangle</div>
                                 </div>
-                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90 grayscale' style={{
                                     backgroundImage: `url(${IsaacSaul})`
                                 }}></div>
                             </div>
                         </div>
 
-                        <div className='mt-8 pr-6'>
-                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                        <div className='mt-8 hidden pr-6 [@media(min-width:940px)]:!visible [@media(min-width:940px)]:!block'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white dark:bg-black dark:text-grey-300 before:dark:bg-black'>
                                 You should be using Ghost because it’s absolutely amazing and I love it. It’s what I’ve been using for all my sites since 2016.
                             </div>
                             <div className='ml-2 mt-[14px] flex items-center gap-2 text-sm'>
-                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90 grayscale' style={{
                                     backgroundImage: `url(${AliAbdaal})`
                                 }}></div>
                                 <div>
-                                    <div className='font-medium text-black'>Ali Abdaal</div>
+                                    <div className='font-medium text-black dark:text-white'>Ali Abdaal</div>
                                     <div className='-mt-0.5 text-grey-700'>YouTuber</div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <div className='flex grow flex-col justify-between gap-6 p-8'>
+                    <div className='flex grow flex-col justify-between gap-6 p-8 [@media(min-width:905px)]:min-w-[520px] [@media(min-width:940px)]:min-w-[460px]'>
                         <div>
                             <div className='flex size-[60px] items-center justify-center rounded-full bg-gradient-to-t from-[#CFB0FF] to-[#B27EFF]'>
                                 <svg fill="none" height="26" viewBox="0 0 32 26" width="32" xmlns="http://www.w3.org/2000/svg">
@@ -162,7 +162,7 @@ const TestimonialsModal = NiceModal.create(() => {
                             <div className='mt-6'>
                                 <div className='text-2xl font-semibold tracking-tight'>A quote about Ghost</div>
                                 <div className='mt-2 text-pretty'>
-                                We feature quotes from independent publishers across the <a className='text-purple' href="https://ghost.org" rel="noopener noreferrer" target="_blank">Ghost.org</a> website to showcase their work, including a logo and a link back to their site. If you&apos;d like to be included, share a quote we can use to highlight you!
+                                We feature quotes from publishers  to showcase their work, including a logo and a link! If you&apos;d like to be included, share a quote we can use to highlight you.
                                 </div>
                             </div>
                             <div className='mt-8'>
