@@ -2,9 +2,9 @@ import {memo, useCallback, useEffect, useRef, useState} from 'react';
 
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
-import html2canvas from 'html2canvas-objectfit-fix';
 import ProfileCardShadow from '@assets/images/profile-card-shadow.png';
 import ProfileCardShadowSquare from '@assets/images/profile-card-shadow-square.png';
+import html2canvas from 'html2canvas-objectfit-fix';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
 import {imageUrlToDataUrl} from '@src/utils/image';
@@ -397,7 +397,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     ref={profileCardRef}
                     className='fixed left-[-9999px] top-0 z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                     style={{
-                        width: cardFormat === 'square' ? '454px' : '348px',
+                        width: cardFormat === 'square' ? '518px' : '412px',
                         fontFamily: 'system-ui'
                     }}
                 >
@@ -423,7 +423,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                             background: getGradient()
                         }}
                     />
-                    <img className='absolute left-1/2 top-12 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '542px' : '466px'}} />
+                    <img className='absolute left-1/2 top-12 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '572px' : '466px'}} />
                 </div>
             </div>
         </TooltipProvider>
