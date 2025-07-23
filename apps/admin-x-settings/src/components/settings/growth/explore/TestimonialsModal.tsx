@@ -1,3 +1,6 @@
+import AliAbdaal from '../../../../assets/images/ali-abdaal.png';
+import IsaacSaul from '../../../../assets/images/isaac-saul.png';
+import JoelWarner from '../../../../assets/images/joel-warner.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import {Avatar, Button, Form, Modal, Select, TextArea, showToast} from '@tryghost/admin-x-design-system';
 import {generateAvatarColor, getInitials} from '../../../../utils/helpers';
@@ -76,13 +79,13 @@ const TestimonialsModal = NiceModal.create(() => {
     });
 
     const migratedFromOptions: Array<{value: string; label: string;}> = [
-        {value: 'wordpress', label: 'Wordpress'},
+        {value: 'none', label: 'None - This is a new site'},
         {value: 'substack', label: 'Substack'},
-        {value: 'medium', label: 'Medium'},
         {value: 'beehiiv', label: 'Beehiiv'},
+        {value: 'wordpress', label: 'Wordpress'},
         {value: 'newspack', label: 'Newspack'},
+        {value: 'medium', label: 'Medium'},
         {value: 'squarespace', label: 'Squarespace'},
-        {value: 'patreon', label: 'Patreon'},
         {value: 'memberful', label: 'Memberful'},
         {value: 'other', label: 'Other'}
     ];
@@ -99,68 +102,119 @@ const TestimonialsModal = NiceModal.create(() => {
             testId='explore-testimonials-modal'
             title=''
             topRightContent='close'
-            width={520}
+            width={920}
         >
-            <div className='h-[72px] bg-gradient-to-t from-[rgba(142,66,255,0.0)] to-[rgba(142,66,255,0.1)]'></div>
-            <div className='mx-6 mt-[-30px] flex size-[60px] items-center justify-center rounded-full bg-gradient-to-t from-[#CFB0FF] to-[#B27EFF]'>
-                <svg fill="none" height="26" viewBox="0 0 32 26" width="32" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19.9967 26L18.1562 21.4542C23.4268 19.1176 25.7693 16.5261 26.2712 11.7255C25.5183 12.3627 24.5562 12.7026 23.3431 12.7026C20.1641 12.7026 17.4869 10.1536 17.4869 6.41503C17.4869 2.80392 20.3732 9.72736e-07 24.2634 6.32644e-07C28.2791 2.81581e-07 31.5 3.10131 31.5 8.96405C31.5 17.5458 27.4425 23.0261 19.9967 26ZM3.0098 26L1.12745 21.4543C6.43987 19.1176 8.78235 16.5261 9.24248 11.7255C8.53137 12.3627 7.56928 12.7026 6.35621 12.7026C3.17712 12.7026 0.499999 10.1536 0.499998 6.41504C0.499998 2.80393 3.38627 2.45778e-06 7.23464 2.12135e-06C11.2503 1.77028e-06 14.5131 3.10131 14.5131 8.96405C14.5131 17.5458 10.4556 23.0261 3.0098 26Z" fill="white"/>
-                </svg>
-            </div>
-            <Form>
-                <div className='-mb-1 px-7 pt-3'>
-                    <div>
-                        <div className='text-xl font-semibold tracking-tight'>Send a testimonial</div>
-                        <div className='mt-1 text-pretty'>
-                        We&apos;re featuring sites that share a testimonial more prominently on Ghost Explore.
+            <Form className='!mb-0'>
+                <div className='flex items-stretch'>
+                    <div className='w-full min-w-[372px] bg-gradient-to-tl from-[rgba(142,66,255,0.03)] to-[rgba(142,66,255,0.07)] p-8'>
+                        <div className='pr-6'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                                Moving to Ghost has proven to be one of the best business decisions we’ve made as an independent media outlet.
+                            </div>
+                            <div className='ml-2 mt-[14px] flex items-center gap-2 text-sm'>
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                    backgroundImage: `url(${JoelWarner})`
+                                }}></div>
+                                <div>
+                                    <div className='font-medium text-black'>Joel Warner</div>
+                                    <div className='-mt-0.5 text-grey-700'>Lever News</div>
+                                </div>
+                            </div>
                         </div>
-                    </div>
-                    <div className='mt-5'>
-                        <TextArea
-                            error={Boolean(errors.content)}
-                            hint={errors.content}
-                            placeholder='Share your love for Ghost'
-                            rows={5}
-                            value={formState.content}
-                            autoFocus
-                            onChange={e => updateForm(state => ({...state, content: e.target.value}))}
-                            onKeyDown={() => clearError('content')}
-                        />
-                    </div>
-                    <div className='ml-0.5 mt-4'>
-                        <div className='flex items-center gap-2'>
-                            <Avatar bgColor={generateAvatarColor((staffUserName ? staffUserName : staffUserEmail))} image={staffUserProfileImage ?? undefined} label={getInitials(staffUserName)} labelColor='white' size='md' />
-                            <div className='flex flex-col'>
-                                <span className='text-sm font-medium'>By {staffUserName ? staffUserName : staffUserEmail}</span>
-                                <span className='text-xs text-grey-700'>{staffUserRole} — {siteTitle}</span>
+
+                        <div className='ml-6 mt-8'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:right-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                                It has now been one year since I quit my full-time job to go all in on Tangle. Today, we have 50,000+ paying subscribers. That’s roughly $5M in gross yearly revenue ... it’s the best paying job I’ve ever had.
+                            </div>
+                            <div className='mr-2 mt-[14px] flex items-center justify-end gap-2 text-sm'>
+                                <div className='flex flex-col items-end'>
+                                    <div className='font-medium text-black'>Isaac Saul</div>
+                                    <div className='-mt-0.5 text-grey-700'>Tangle</div>
+                                </div>
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                    backgroundImage: `url(${IsaacSaul})`
+                                }}></div>
+                            </div>
+                        </div>
+
+                        <div className='mt-8 pr-6'>
+                            <div className='relative rounded-xl bg-white px-3 py-2.5 italic text-grey-700 shadow-lg before:absolute before:-bottom-1.5 before:left-5 before:block before:size-3 before:rotate-45 before:bg-white'>
+                                You should be using Ghost because it’s absolutely amazing and I love it. It’s what I’ve been using for all my sites since 2016.
+                            </div>
+                            <div className='ml-2 mt-[14px] flex items-center gap-2 text-sm'>
+                                <div className='size-9 rounded-full bg-white bg-cover bg-center opacity-90' style={{
+                                    backgroundImage: `url(${AliAbdaal})`
+                                }}></div>
+                                <div>
+                                    <div className='font-medium text-black'>Ali Abdaal</div>
+                                    <div className='-mt-0.5 text-grey-700'>YouTuber</div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div className='mt-10 flex items-center gap-4'>
-                        <div className='grow'>
-                            <Select
-                                error={Boolean(errors.prev_platform)}
-                                hint={errors.prev_platform}
-                                options={migratedFromOptions}
-                                placeholder='Which platform did you switch from?'
-                                selectedOption={migratedFromOptions.find(option => option.value === formState.prev_platform)}
-                                testId='migrated-from'
-                                onSelect={(option) => {
-                                    updateForm(state => ({...state, prev_platform: option?.value || ''}));
-                                    clearError('prev_platform');
-                                }}
-                            />
+                    <div className='flex grow flex-col justify-between gap-6 p-8'>
+                        <div>
+                            <div className='flex size-[60px] items-center justify-center rounded-full bg-gradient-to-t from-[#CFB0FF] to-[#B27EFF]'>
+                                <svg fill="none" height="26" viewBox="0 0 32 26" width="32" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M19.9967 26L18.1562 21.4542C23.4268 19.1176 25.7693 16.5261 26.2712 11.7255C25.5183 12.3627 24.5562 12.7026 23.3431 12.7026C20.1641 12.7026 17.4869 10.1536 17.4869 6.41503C17.4869 2.80392 20.3732 9.72736e-07 24.2634 6.32644e-07C28.2791 2.81581e-07 31.5 3.10131 31.5 8.96405C31.5 17.5458 27.4425 23.0261 19.9967 26ZM3.0098 26L1.12745 21.4543C6.43987 19.1176 8.78235 16.5261 9.24248 11.7255C8.53137 12.3627 7.56928 12.7026 6.35621 12.7026C3.17712 12.7026 0.499999 10.1536 0.499998 6.41504C0.499998 2.80393 3.38627 2.45778e-06 7.23464 2.12135e-06C11.2503 1.77028e-06 14.5131 3.10131 14.5131 8.96405C14.5131 17.5458 10.4556 23.0261 3.0098 26Z" fill="white"/>
+                                </svg>
+                            </div>
+                            <div className='mt-6'>
+                                <div className='text-2xl font-semibold tracking-tight'>A quote about Ghost</div>
+                                <div className='mt-2 text-pretty'>
+                                We feature quotes from independent publishers across the <a className='text-purple' href="https://ghost.org" rel="noopener noreferrer" target="_blank">Ghost.org</a> website to showcase their work, including a logo and a link back to their site. If you&apos;d like to be included, share a quote we can use to highlight you!
+                                </div>
+                            </div>
+                            <div className='mt-8'>
+                                <TextArea
+                                    error={Boolean(errors.content)}
+                                    hint={errors.content}
+                                    placeholder='What changed for the better since you switched to Ghost?'
+                                    rows={7}
+                                    value={formState.content}
+                                    autoFocus
+                                    onChange={e => updateForm(state => ({...state, content: e.target.value}))}
+                                    onKeyDown={() => clearError('content')}
+                                />
+                            </div>
+                            <div className='ml-0.5 mt-4'>
+                                <div className='flex items-center gap-2'>
+                                    <Avatar bgColor={generateAvatarColor((staffUserName ? staffUserName : staffUserEmail))} image={staffUserProfileImage ?? undefined} label={getInitials(staffUserName)} labelColor='white' size='md' />
+                                    <div className='flex flex-col'>
+                                        <span className='text-sm font-medium'>By {staffUserName ? staffUserName : staffUserEmail}</span>
+                                        <span className='text-xs text-grey-700'>{staffUserRole} — {siteTitle}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <Button
-                            className='!h-[38px] rounded-lg'
-                            color="black"
-                            disabled={saveState === 'saving'}
-                            label="Send testimonial"
-                            loading={saveState === 'saving'}
-                            onClick={async () => {
-                                await handleSave();
-                            }}
-                        />
+                        <div>
+                            <div className='mt-2 flex items-center gap-4'>
+                                <div className='grow'>
+                                    <Select
+                                        error={Boolean(errors.prev_platform)}
+                                        hint={errors.prev_platform}
+                                        options={migratedFromOptions}
+                                        placeholder='Previous platform'
+                                        selectedOption={migratedFromOptions.find(option => option.value === formState.prev_platform)}
+                                        testId='migrated-from'
+                                        onSelect={(option) => {
+                                            updateForm(state => ({...state, prev_platform: option?.value || ''}));
+                                            clearError('prev_platform');
+                                        }}
+                                    />
+                                </div>
+                                <Button
+                                    className='!h-[38px] rounded-lg'
+                                    color="black"
+                                    disabled={saveState === 'saving'}
+                                    label="Send testimonial"
+                                    loading={saveState === 'saving'}
+                                    onClick={async () => {
+                                        await handleSave();
+                                    }}
+                                />
+                            </div>
+                        </div>
                     </div>
                 </div>
             </Form>
