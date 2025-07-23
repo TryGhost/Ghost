@@ -57,25 +57,25 @@ export class GhostPlugin extends BasePlugin {
     
     async createPublishedPost(options?: PostOptions): Promise<PostResult> {
         return this.postFactory.create({
+            ...options,
             status: 'published',
-            published_at: options?.published_at || new Date(),
-            ...options
+            published_at: options?.published_at || new Date()
         });
     }
     
     async createDraftPost(options?: PostOptions): Promise<PostResult> {
         return this.postFactory.create({
+            ...options,
             status: 'draft',
-            published_at: null,
-            ...options
+            published_at: null
         });
     }
     
     async createScheduledPost(publishDate: Date, options?: PostOptions): Promise<PostResult> {
         return this.postFactory.create({
+            ...options,
             status: 'scheduled',
-            published_at: publishDate,
-            ...options
+            published_at: publishDate
         });
     }
     
