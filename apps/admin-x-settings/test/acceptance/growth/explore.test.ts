@@ -216,7 +216,7 @@ test.describe('Ghost Explore', () => {
         await expect(modal.getByText('This field is required')).toBeVisible();
 
         // Fill in the testimonial content
-        const contentTextarea = modal.getByPlaceholder('Share your love for Ghost');
+        const contentTextarea = modal.getByPlaceholder('What changed for the better since you switched to Ghost?');
         await contentTextarea.fill('I love Ghost!');
 
         // Select a platform from the dropdown
