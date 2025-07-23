@@ -88,13 +88,14 @@ export class PageHitFactory extends Factory {
     private async sendToTinybird(event: PageHitResult): Promise<void> {
         // Default to analytics_events data source
         const datasource = 'analytics_events';
-        const url = `${this.config.host}?name=${datasource}&token=${this.config.token}`;
+        const url = `${this.config.host}?name=${datasource}`;
         
         try {
             const response = await this.httpClient.fetch(url, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    Authorization: `Bearer ${this.config.token}`,
                     'x-site-uuid': this.siteUuid
                 },
                 body: JSON.stringify(event)
@@ -105,7 +106,7 @@ export class PageHitFactory extends Factory {
                 throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
             }
         } catch (error) {
-            // Log the error for debugging
+            // Log the error for debugging (without exposing the token)
             // eslint-disable-next-line no-console
             console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
             // eslint-disable-next-line no-console
