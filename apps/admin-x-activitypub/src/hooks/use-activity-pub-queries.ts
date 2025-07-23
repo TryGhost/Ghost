@@ -47,6 +47,20 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
     );
 }
 
+function renderRateLimitError(
+    title = 'Rate limit exceeded',
+    description = 'You\'ve made too many requests. Please try again later.'
+) {
+    toast.error(title, {description});
+}
+
+function renderBlockedError(
+    title = 'Action failed',
+    description = 'This user has restricted who can interact with their account.'
+) {
+    toast.error(title, {description});
+}
+
 const QUERY_KEYS = {
     outbox: (handle: string) => ['outbox', handle],
     liked: (handle: string) => ['liked', handle],
@@ -559,9 +573,11 @@ export function useLikeMutationForUser(handle: string) {
             updateNotificationsLikedCache(queryClient, handle, id, false);
 
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
+            }
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
             }
         }
     });
@@ -581,6 +597,11 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikeCache(queryClient, handle, id, false);
             updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -613,6 +634,11 @@ export function useBlockDomainMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -643,6 +669,11 @@ export function useUnblockDomainMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -674,6 +705,11 @@ export function useBlockMutationForUser(handle: string) {
             );
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -701,6 +737,11 @@ export function useUnblockMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -806,9 +847,10 @@ export function useRepostMutationForUser(handle: string) {
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
+            }
+            if (error.statusCode === 429) {
+                renderRateLimitError();
             }
         }
     });
@@ -828,6 +870,11 @@ export function useDerepostMutationForUser(handle: string) {
             updateRepostCache(queryClient, handle, id, false);
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -1010,7 +1057,12 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
 
             onSuccess();
         },
-        onError
+        onError: (error: {message: string, statusCode: number}) => {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+            onError();
+        }
     });
 }
 
@@ -1176,10 +1228,12 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
         onError(error: {message: string, statusCode: number}) {
             onError();
 
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
             }
         }
     });
@@ -1368,10 +1422,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // in the thread as this is handled locally in the ArticleModal component
 
             if (error.statusCode === 403) {
-                return toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
             }
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+
             toast.error('An error occurred while sending your reply.');
         }
     });
@@ -1419,13 +1476,17 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
             updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
-        onError(error, _variables, context) {
+        onError(error: {message: string, statusCode: number}, _variables, context) {
             // eslint-disable-next-line no-console
             console.error(error);
 
             removeActivityFromPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
 
             toast.error('An error occurred while posting your note.');
         }
@@ -2280,7 +2341,7 @@ function useFilteredAccountsFromJSON(options: {
     }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
     const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
-    
+
     // Track if we have finished loading all following data
     const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
