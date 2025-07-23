@@ -34,12 +34,11 @@ Router.map(function () {
     });
 
     this.route('posts');
-    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
-    this.route('posts-x', {path: '/posts/analytics/beta/:post_id'}, function () {
-        this.route('posts-x', {path: '/*sub'});
-    });
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
+    this.route('posts-x', {path: '/posts/analytics/:post_id'}, function () {
+        this.route('posts-x', {path: '/*sub'});
+    });
 
     this.route('restore-posts', {path: '/restore'});
 

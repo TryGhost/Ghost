@@ -50,7 +50,7 @@ describe('Acceptance: Analytics Navigation', function () {
     }
     
     async function expectPostAnalyticsRoute(postId) {
-        expect(currentURL()).to.equal(`/posts/analytics/beta/${postId}`);
+        expect(currentURL()).to.equal(`/posts/analytics/${postId}`);
     }
     
     async function expectStatsAnalyticsRoute() {
@@ -90,10 +90,10 @@ describe('Acceptance: Analytics Navigation', function () {
         });
     });
 
-    describe('Posts-X route (/posts/analytics/beta/:post_id)', function () {
+    describe('Posts-X route (/posts/analytics/:post_id)', function () {
         it('allows access', async function () {
             let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
+            await visit(`/posts/analytics/${post.id}`);
             await expectPostAnalyticsRoute(post.id);
         });
 
@@ -101,7 +101,7 @@ describe('Acceptance: Analytics Navigation', function () {
             updateUserRole(this.server, 'Contributor');
 
             let post = this.server.create('post', {status: 'published'});
-            await visit(`/posts/analytics/beta/${post.id}`);
+            await visit(`/posts/analytics/${post.id}`);
             expect(currentURL()).to.equal('/posts');
         });
     });
