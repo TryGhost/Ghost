@@ -197,12 +197,12 @@ test.describe('Ghost Explore', () => {
         await expect(section).toBeVisible();
 
         // Click on the testimonials link/button to open the modal
-        await section.getByText('Send a testimonial').click();
+        await section.getByText('Send testimonial').click();
 
         // Wait for modal to open
         const modal = page.getByTestId('explore-testimonials-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.getByText('Send a testimonial')).toBeVisible();
+        await expect(modal.getByText('Send testimonial')).toBeVisible();
 
         // Check that the staff user name, staff user role and site title are rendered
         await expect(modal.getByText('By Owner User')).toBeVisible();
@@ -216,7 +216,7 @@ test.describe('Ghost Explore', () => {
         await expect(modal.getByText('This field is required')).toBeVisible();
 
         // Fill in the testimonial content
-        const contentTextarea = modal.getByPlaceholder('Share your love for Ghost');
+        const contentTextarea = modal.getByPlaceholder('What changed for the better since you switched to Ghost?');
         await contentTextarea.fill('I love Ghost!');
 
         // Select a platform from the dropdown
