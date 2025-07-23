@@ -197,12 +197,12 @@ test.describe('Ghost Explore', () => {
         await expect(section).toBeVisible();
 
         // Click on the testimonials link/button to open the modal
-        await section.getByText('Send a testimonial').click();
+        await section.getByText('Send testimonial').click();
 
         // Wait for modal to open
         const modal = page.getByTestId('explore-testimonials-modal');
         await expect(modal).toBeVisible();
-        await expect(modal.getByText('Send a testimonial')).toBeVisible();
+        await expect(modal.getByText('Send testimonial')).toBeVisible();
 
         // Check that the staff user name, staff user role and site title are rendered
         await expect(modal.getByText('By Owner User')).toBeVisible();
