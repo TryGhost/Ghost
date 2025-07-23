@@ -10,7 +10,6 @@ import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleG
 import {imageUrlToDataUrl} from '@src/utils/image';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 type ProfileProps = {
     account?: Account
@@ -140,7 +139,6 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
 ProfileCard.displayName = 'ProfileCard';
 
 const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
-    const {isEnabled} = useFeatureFlags();
     const {data: siteData} = useBrowseSite();
     const accentColor = siteData?.site?.accent_color;
     const coverImage = siteData?.site?.cover_image;
