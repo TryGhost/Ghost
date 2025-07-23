@@ -100,7 +100,7 @@ export function getClickHandler(
     return () => {
         // For posts with analytics, go to analytics page
         if (postId && attributionUrl && attributionType === 'post') {
-            navigate(`/posts/analytics/beta/${postId}`, {crossApp: true});
+            navigate(`/posts/analytics/${postId}`, {crossApp: true});
             return;
         }
         

@@ -84,7 +84,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
                                     <div className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:!border-border hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent' onClick={() => {
-                                        navigate(`/posts/analytics/beta/${post.post_id}`, {crossApp: true});
+                                        navigate(`/posts/analytics/${post.post_id}`, {crossApp: true});
                                     }}>
                                         <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]'>
                                             {post.feature_image ?

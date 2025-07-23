@@ -42,7 +42,7 @@ export default class MembersRoute extends MembersManagementRoute {
         }
 
         controller.directlyFromAnalytics = false;
-        if (transition.from?.name === 'posts.analytics') {
+        if (transition.from?.name === 'posts-x') {
             controller.directlyFromAnalytics = true;
         }
     }

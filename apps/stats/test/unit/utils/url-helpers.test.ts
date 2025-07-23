@@ -233,7 +233,7 @@ describe('url-helpers', () => {
             const handler = getClickHandler('/my-post/', 'post-123', 'https://example.com', mockNavigate, 'post');
             handler();
 
-            expect(mockNavigate).toHaveBeenCalledWith('/posts/analytics/beta/post-123', {crossApp: true});
+            expect(mockNavigate).toHaveBeenCalledWith('/posts/analytics/post-123', {crossApp: true});
             expect(mockWindowOpen).not.toHaveBeenCalled();
         });
 

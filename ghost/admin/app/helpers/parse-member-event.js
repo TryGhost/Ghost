@@ -366,7 +366,7 @@ export default class ParseMemberEventHelper extends Helper {
         if (['click_event', 'feedback_event'].includes(event.type)) {
             if (event.data.post) {
                 return {
-                    name: 'posts.analytics',
+                    name: 'posts-x',
                     model: event.data.post.id
                 };
             }
@@ -375,7 +375,7 @@ export default class ParseMemberEventHelper extends Helper {
         if (['signup_event', 'subscription_event'].includes(event.type)) {
             if (event.data.attribution_type === 'post') {
                 return {
-                    name: 'posts.analytics',
+                    name: 'posts-x',
                     model: event.data.attribution_id
                 };
             }
