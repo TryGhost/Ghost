@@ -2,13 +2,14 @@ import {memo, useCallback, useEffect, useRef, useState} from 'react';
 
 import APAvatar from '@src/components/global/APAvatar';
 import DotsPattern from './DotsPattern';
+import ProfileCardShadow from '@assets/images/profile-card-shadow.png';
+import ProfileCardShadowSquare from '@assets/images/profile-card-shadow-square.png';
 import html2canvas from 'html2canvas-objectfit-fix';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LoadingIndicator, LucideIcon, Skeleton, ToggleGroup, ToggleGroupItem, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade';
 import {imageUrlToDataUrl} from '@src/utils/image';
 import {toast} from 'sonner';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 
 type ProfileProps = {
     account?: Account
@@ -77,8 +78,8 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
 
     const cardBackgroundColor = getBackgroundColor();
     const textColor = getTextColor();
-    const margin = isScreenshot ? 'm-4' : 'm-16';
-    const borderClass = isScreenshot ? backgroundColor === 'light' ? 'border border-gray-200' : '' : 'shadow-xl';
+    const margin = isScreenshot ? 'm-12' : 'm-16';
+    const borderClass = isScreenshot ? '' : 'shadow-xl';
 
     const cardWidth = format === 'square' ? 'w-[422px]' : 'w-[316px]';
     const cardHeight = 'h-[422px]';
@@ -138,7 +139,6 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
 ProfileCard.displayName = 'ProfileCard';
 
 const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
-    const {isEnabled} = useFeatureFlags();
     const {data: siteData} = useBrowseSite();
     const accentColor = siteData?.site?.accent_color;
     const coverImage = siteData?.site?.cover_image;
@@ -270,27 +270,6 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
         }
     };
 
-    if (!isEnabled('share')) {
-        return (
-            <div className='flex flex-col items-center'>
-                <APAvatar
-                    author={
-                        {
-                            icon: {
-                                url: account?.avatarUrl || ''
-                            },
-                            name: account?.name || '',
-                            handle: account?.handle
-                        }
-                    }
-                    size='lg'
-                />
-                <H2 className='mb-0.5 mt-4'>{!isLoading ? account?.name : <Skeleton className='w-32' />}</H2>
-                <span className='text-[1.5rem] text-gray-700'>{!isLoading ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
-            </div>
-        );
-    }
-
     return (
         <TooltipProvider delayDuration={0}>
             <div className='flex flex-col gap-5'>
@@ -395,7 +374,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     ref={profileCardRef}
                     className='fixed left-[-9999px] top-0 z-[-1] flex w-fit justify-center overflow-hidden rounded-2xl bg-gray-50'
                     style={{
-                        width: cardFormat === 'square' ? '454px' : '348px',
+                        width: cardFormat === 'square' ? '518px' : '412px',
                         fontFamily: 'system-ui'
                     }}
                 >
@@ -416,13 +395,12 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                     <DotsPattern className={`absolute left-[-62.5px] top-[-44px] h-[600px] w-[598px] ${backgroundColor === 'dark' && 'z-10'}`} style={{color: getDotsPatternColor()}} />
                     }
                     <div
-                        className='absolute left-0 top-0'
+                        className='absolute left-0 top-0 size-full'
                         style={{
-                            height: '456px',
-                            width: '456px',
                             background: getGradient()
                         }}
                     />
+                    <img className='absolute left-1/2 top-12 mt-0.5 max-w-none -translate-x-1/2' src={cardFormat === 'square' ? ProfileCardShadowSquare : ProfileCardShadow} style={{width: cardFormat === 'square' ? '572px' : '466px'}} />
                 </div>
             </div>
         </TooltipProvider>
