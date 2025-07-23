@@ -24,7 +24,7 @@ Plugin-based test data factory for Ghost and Tinybird with a clean, extensible a
 ### Basic Example
 
 ```typescript
-import {test, expect} from '@e2e/data-factory';
+import {test, expect} from './data-factory';
 
 test('create content', async ({factory}) => {
     // Access plugins through factory
@@ -65,7 +65,7 @@ test('both plugins', async ({ghost, tinybird}) => {
 ### Custom Plugin Configuration
 
 ```typescript
-import {DataFactory, GhostPlugin, TinybirdPlugin} from '@e2e/data-factory';
+import {DataFactory, GhostPlugin, TinybirdPlugin} from './data-factory';
 
 // Ghost only
 const ghostFactory = new DataFactory({
@@ -127,18 +127,22 @@ The data factory uses a plugin architecture where each data source (Ghost, Tinyb
 
 ```
 data-factory/
-├── ghost/
-│   ├── posts/            # Post factory
-│   ├── ghost-plugin.ts   # Ghost plugin coordinator
-│   ├── config.ts         # Ghost configuration
-│   └── database.ts       # Database utilities
-├── tinybird/
-│   ├── page-hits/        # Page hit factory
-│   ├── tinybird-plugin.ts # Tinybird plugin coordinator
-│   └── config.ts         # Tinybird configuration
-├── plugin.ts             # Plugin interfaces
+├── plugins/
+│   ├── base-plugin.ts    # Base plugin class
+│   ├── ghost/
+│   │   ├── posts/        # Post factory
+│   │   ├── ghost-plugin.ts # Ghost plugin coordinator
+│   │   ├── config.ts     # Ghost configuration
+│   │   └── database.ts   # Database utilities
+│   └── tinybird/
+│       ├── page-hits/    # Page hit factory
+│       ├── tinybird-plugin.ts # Tinybird plugin coordinator
+│       ├── config.ts     # Tinybird configuration
+│       └── interfaces.ts # HTTP client interfaces
+├── base-factory.ts       # Base factory class
 ├── data-factory.ts       # Main coordinator
 ├── test-fixtures.ts      # Playwright integration
+├── tests/                # Test suite
 └── index.ts             # Public exports
 ```
 
@@ -152,15 +156,29 @@ data-factory/
 ## Key Features
 
 - **Automatic cleanup**: Each test gets its own factory instance with automatic cleanup
+- **Session-based tracking**: Tinybird tracks sessions for bulk cleanup instead of aggressive truncation
 - **Simple configuration**: Just use `.env` file
 - **Type safe**: Full TypeScript support
 - **Test isolation**: Each test's data is isolated
+
+## Running Tests
+
+```bash
+# Run all data factory tests
+yarn test:factory
+
+# Run linter (includes data-factory directory)
+yarn lint
+
+# Type checking
+yarn test:types
+```
 
 ## Example Tests
 
 ### Basic Usage
 ```typescript
-import {test, expect} from '@e2e/data-factory';
+import {test, expect} from './data-factory';
 
 test('blog with analytics', async ({factory}) => {
     // Create content
