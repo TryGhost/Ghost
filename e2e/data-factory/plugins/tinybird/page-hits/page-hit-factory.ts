@@ -1,11 +1,11 @@
 import {Factory} from '../../../base-factory';
 import {faker} from '@faker-js/faker';
-import {v4 as uuid} from 'uuid';
+import {generateUuid} from '../../../utils';
 import type {PageHitOptions, PageHitResult} from './types';
 import type {TinybirdConfig, HttpClient} from '../interfaces';
 import {FetchHttpClient} from '../interfaces';
 
-export class PageHitFactory extends Factory {
+export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     name = 'pageHit';
     private httpClient: HttpClient;
     private createdSessionIds = new Set<string>();
@@ -34,17 +34,14 @@ export class PageHitFactory extends Factory {
     }
     
     /**
-     * Create and send a page hit event to Tinybird
+     * Build a page hit event without sending it
      */
-    async create(options?: PageHitOptions): Promise<PageHitResult> {
+    build(options?: PageHitOptions): PageHitResult {
         const timestamp = options?.timestamp || new Date();
         const pathname = options?.pathname || '/';
         
         // Generate new session_id if not provided
-        const sessionId = options?.session_id || uuid();
-        
-        // Track the session
-        this.createdSessionIds.add(sessionId);
+        const sessionId = options?.session_id || generateUuid();
         
         // Build the event
         const event: PageHitResult = {
@@ -63,7 +60,7 @@ export class PageHitFactory extends Factory {
                 locale: options?.locale || 'en-US',
                 location: options?.location || 'US',
                 href: `https://example.com${pathname}`,
-                event_id: uuid(),
+                event_id: generateUuid(),
                 meta: {}
             }
         };
@@ -72,6 +69,18 @@ export class PageHitFactory extends Factory {
         if (options?.referrer) {
             event.payload.meta.referrerSource = this.getReferrerSource(options.referrer);
         }
+        
+        return event;
+    }
+    
+    /**
+     * Build and send a page hit event to Tinybird
+     */
+    async create(options?: PageHitOptions): Promise<PageHitResult> {
+        const event = this.build(options);
+        
+        // Track the session
+        this.createdSessionIds.add(event.session_id);
         
         // Track event ID
         this.createdEventIds.add(event.payload.event_id);
@@ -164,7 +173,7 @@ export class PageHitFactory extends Factory {
      * Create a new session and return its ID for reuse
      */
     createNewSession(): string {
-        const sessionId = uuid();
+        const sessionId = generateUuid();
         this.createdSessionIds.add(sessionId);
         return sessionId;
     }

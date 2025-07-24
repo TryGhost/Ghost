@@ -83,12 +83,19 @@ const customFactory = new DataFactory({
 
 ## Available Methods
 
+### Factory Pattern
+All factories implement a build/create pattern:
+- `build()` - Build an object without persisting it
+- `create()` - Build and persist an object
+
 ### Ghost Plugin (`factory.ghost`)
 - `createPost()` - Create a draft post
 - `createPublishedPost()` - Create a published post
 - `createDraftPost()` - Create a draft post explicitly
 - `createScheduledPost()` - Create a scheduled post
 - `posts` - Direct access to post factory
+  - `posts.build()` - Build a post without saving
+  - `posts.create()` - Build and save a post
 - `getStats()` - Get creation statistics
 - `getDatabase()` - Access the shared database connection
 
@@ -99,6 +106,8 @@ const customFactory = new DataFactory({
 - `createNewSession()` - Create a new session ID
 - `createSessionHits()` - Create multiple hits for a session
 - `pageHits` - Direct access to page hit factory
+  - `pageHits.build()` - Build a page hit without sending
+  - `pageHits.create()` - Build and send a page hit
 - `getStats()` - Get analytics statistics
 - `isInitialized()` - Check if Tinybird is ready
 
@@ -175,6 +184,23 @@ yarn test:types
 ```
 
 ## Example Tests
+
+### Build vs Create Pattern
+```typescript
+test('build vs create', async ({factory}) => {
+    // Build: creates object without persisting
+    const draftPost = factory.ghost.posts.build({
+        title: 'Draft Version'
+    });
+    // Post has all fields but isn't saved to database
+    
+    // Create: builds and persists object
+    const savedPost = await factory.ghost.posts.create({
+        title: 'Saved Version'
+    });
+    // Post is saved to database and tracked for cleanup
+});
+```
 
 ### Basic Usage
 ```typescript

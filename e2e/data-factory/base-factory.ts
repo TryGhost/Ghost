@@ -1,25 +1,23 @@
-import {v4 as uuid} from 'uuid';
-
-export abstract class Factory {
+export abstract class Factory<TOptions = unknown, TResult = unknown> {
     abstract name: string;
     
+    /**
+     * Set up any necessary resources (database connections, etc.)
+     */
     abstract setup(): Promise<void>;
+    
+    /**
+     * Clean up resources and created data
+     */
     abstract destroy(): Promise<void>;
     
-    protected generateId(): string {
-        return Date.now().toString(16) + Math.random().toString(16).substring(2, 10);
-    }
+    /**
+     * Build an object without persisting it
+     */
+    abstract build(options?: TOptions): TResult | Promise<TResult>;
     
-    protected generateUuid(): string {
-        return uuid();
-    }
-    
-    protected generateSlug(text: string): string {
-        return text.toLowerCase()
-            .trim()
-            .replace(/[^a-z0-9\s-]/g, '')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-+|-+$/g, '');
-    }
+    /**
+     * Build and persist an object
+     */
+    abstract create(options?: TOptions): Promise<TResult>;
 }

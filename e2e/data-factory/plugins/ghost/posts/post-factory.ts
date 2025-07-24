@@ -1,12 +1,13 @@
 import {Factory} from '../../../base-factory';
 import {faker} from '@faker-js/faker';
+import {generateId, generateUuid, generateSlug} from '../../../utils';
 import type {PostOptions, PostResult} from './types';
 import type {Knex} from 'knex';
 
 /**
  * Simple factory for creating Ghost posts.
  */
-export class PostFactory extends Factory {
+export class PostFactory extends Factory<PostOptions, PostResult> {
     name = 'post';
     private createdPostIds: Set<string> = new Set();
     
@@ -22,7 +23,7 @@ export class PostFactory extends Factory {
         await this.clearCreated();
     }
     
-    async create(options: PostOptions = {}): Promise<PostResult> {
+    build(options: PostOptions = {}): PostResult {
         const now = new Date();
         const title = options.title || faker.lorem.sentence();
         const content = faker.lorem.paragraphs(3);
@@ -39,14 +40,14 @@ export class PostFactory extends Factory {
         
         // Create defaults object
         const defaults = {
-            id: this.generateId(),
-            uuid: this.generateUuid(),
+            id: generateId(),
+            uuid: generateUuid(),
             title: title,
-            slug: options.slug || this.generateSlug(title) + '-' + Date.now().toString(16),
+            slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
             mobiledoc: JSON.stringify(mobiledoc),
             lexical: null,
             html: `<p>${content}</p>`,
-            comment_id: this.generateId(),
+            comment_id: generateId(),
             plaintext: content,
             feature_image: `https://picsum.photos/800/600?random=${Math.random()}`,
             featured: faker.datatype.boolean(),
@@ -74,6 +75,12 @@ export class PostFactory extends Factory {
             // Handle published_at logic - if status is published but no published_at is set, use current time
             published_at: options.status === 'published' && !options.published_at ? now : (options.published_at || defaults.published_at)
         } as PostResult;
+        
+        return post;
+    }
+    
+    async create(options: PostOptions = {}): Promise<PostResult> {
+        const post = this.build(options);
         
         await this.db('posts').insert(post);
         
