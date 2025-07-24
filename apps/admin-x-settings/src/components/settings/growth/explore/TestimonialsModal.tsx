@@ -65,6 +65,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 type: 'success'
             });
 
+            updateRoute('explore');
             modal.remove();
         },
         onSaveError: handleError,
