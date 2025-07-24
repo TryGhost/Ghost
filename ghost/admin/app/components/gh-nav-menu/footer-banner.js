@@ -73,16 +73,8 @@ export default class FooterBanner extends Component {
     }
 
     @action
-    dismissWhatsNewToast(event) {
-        event.preventDefault();
+    markSeen(event) {
         event.stopPropagation();
-
-        // Dismiss
-        this.whatsNew.seen();
-    }
-
-    @action
-    openFeaturedWhatsNew() {
         this.whatsNew.seen();
     }
 }
