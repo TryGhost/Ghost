@@ -35,11 +35,12 @@ const TestimonialsModal = NiceModal.create(() => {
             prev_platform: ''
         },
         onSave: async (): Promise<void> => {
+            const prevPlatform = ['none', 'other', ''].includes(formState.prev_platform) ? undefined : formState.prev_platform;
             const payload = {
                 ghost_uuid: siteUuid,
                 staff_user_email: staffUserEmail,
                 content: formState.content,
-                prev_platform: formState.prev_platform
+                prev_platform: prevPlatform
             };
 
             if (!exploreTestimonialsUrl) {
