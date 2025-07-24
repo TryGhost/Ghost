@@ -1,6 +1,8 @@
 import {test, expect} from '@playwright/test';
 import {GhostPlugin} from '../../plugins/ghost/ghost-plugin';
 import {PostFactory} from '../../plugins/ghost/posts/post-factory';
+import {TinybirdPlugin} from '../../plugins/tinybird/tinybird-plugin';
+import {PageHitFactory} from '../../plugins/tinybird/page-hits/page-hit-factory';
 import type {PersistenceAdapter} from '../../persistence/types';
 
 // Mock persistence adapter for testing
@@ -34,7 +36,12 @@ class MockPersistenceAdapter implements PersistenceAdapter {
     
     async deleteMany(entityType: string, ids: string[]): Promise<void> {
         const entities = this.storage.get(entityType) || [];
-        this.storage.set(entityType, entities.filter(e => !ids.includes((e as Record<string, unknown>).id as string)));
+        this.storage.set(entityType, entities.filter((e) => {
+            const entity = e as Record<string, unknown>;
+            // Check 'id' or 'session_id' for Tinybird events
+            const entityId = entity.id || entity.session_id;
+            return !ids.includes(entityId as string);
+        }));
     }
     
     async findById<T>(entityType: string, id: string): Promise<T | null> {
@@ -140,5 +147,63 @@ test.describe('Persistence Architecture', () => {
         // Create should throw
         await expect(factory.create({title: 'Test'}))
             .rejects.toThrow('No persistence adapter configured');
+    });
+});
+
+test.describe('Tinybird Persistence Architecture', () => {
+    test('PageHitFactory should work with injected persistence', async () => {
+        const mockAdapter = new MockPersistenceAdapter();
+        const factory = new PageHitFactory('test-site-uuid');
+        factory.setPersistence(mockAdapter);
+        
+        // Build doesn't use persistence
+        const built = factory.build({pathname: '/test'});
+        expect(built.payload.pathname).toBe('/test');
+        expect(mockAdapter.getLastInserted()).toBeNull();
+        
+        // Create uses persistence
+        const created = await factory.create({pathname: '/created'});
+        expect(created.payload.pathname).toBe('/created');
+        expect(mockAdapter.getLastInserted()).toEqual(created);
+        
+        // Should be tracked for cleanup
+        expect(factory.getCreatedEntities()).toHaveLength(1);
+    });
+    
+    test('TinybirdPlugin should configure persistence for factories', async () => {
+        const mockAdapter = new MockPersistenceAdapter();
+        const plugin = new TinybirdPlugin({persistence: mockAdapter});
+        
+        // Initialize with site UUID
+        await plugin.initializeWithSiteUuid('test-site-uuid');
+        
+        // Create a page hit through the plugin
+        await plugin.createPageHit({pathname: '/test-page'});
+        
+        // Should be in mock storage
+        const stored = mockAdapter.getAll('analytics_events');
+        expect(stored).toHaveLength(1);
+        expect((stored[0] as Record<string, unknown> & {payload: {pathname: string}}).payload.pathname).toBe('/test-page');
+    });
+    
+    test('cleanup should use persistence adapter for Tinybird', async () => {
+        const mockAdapter = new MockPersistenceAdapter();
+        const plugin = new TinybirdPlugin({persistence: mockAdapter});
+        
+        await plugin.initializeWithSiteUuid('test-site-uuid');
+        
+        // Create multiple page hits
+        await plugin.createPageHit({pathname: '/page1'});
+        await plugin.createPageHit({pathname: '/page2'});
+        await plugin.createPageHit({pathname: '/page3'});
+        
+        // Should have 3 events
+        expect(mockAdapter.getAll('analytics_events')).toHaveLength(3);
+        
+        // Clean up
+        await plugin.destroy();
+        
+        // Should be empty
+        expect(mockAdapter.getAll('analytics_events')).toHaveLength(0);
     });
 });
