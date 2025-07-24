@@ -106,3 +106,4 @@ export default class FooterBanner extends Component {
         this.whatsNew.seen();
     }
 }
+
