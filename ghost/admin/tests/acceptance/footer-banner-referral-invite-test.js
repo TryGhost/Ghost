@@ -17,15 +17,16 @@ describe('Acceptance: Referral Invite Banner', function () {
             stats: [
                 {
                     date: '2025-01-01',
-                    mrr: mrr,
+                    mrr,
                     currency: 'usd'
                 }
             ],
             meta: {
                 totals: [
                     {
-                        currency: 'usd',
-                        mrr: mrr
+                        mrr,
+                        currency: 'usd'
+                        
                     }
                 ]
             }
