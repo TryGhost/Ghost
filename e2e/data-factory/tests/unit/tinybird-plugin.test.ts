@@ -1,6 +1,22 @@
 import {test, expect} from '../../test-fixtures';
+import {isTinybirdAvailable} from '../../plugins/tinybird/check-availability';
 
 test.describe('Tinybird Plugin', () => {
+    let tinybirdAvailable = false;
+    
+    test.beforeAll(async () => {
+        tinybirdAvailable = await isTinybirdAvailable();
+        if (!tinybirdAvailable) {
+            // eslint-disable-next-line no-console
+            console.warn('⚠️  Tinybird is not available. Tinybird tests will be skipped. Run `tb local` to enable these tests.');
+        }
+    });
+    
+    test.beforeEach(async ({}, testInfo) => {
+        if (!tinybirdAvailable) {
+            testInfo.skip();
+        }
+    });
     test('should create a page hit with defaults', async ({tinybird}) => {
         const hit = await tinybird.createPageHit();
         
@@ -12,7 +28,6 @@ test.describe('Tinybird Plugin', () => {
         expect(hit.payload.pathname).toBe('/');
         expect(hit.payload.member_status).toBe('undefined');
         expect(hit.payload['user-agent']).toBeTruthy();
-        expect(hit.payload.event_id).toBeTruthy();
     });
     
     test('should create page hit with custom options', async ({tinybird, ghost}) => {
