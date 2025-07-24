@@ -29,7 +29,6 @@ export interface PageHitResult {
         locale: string;
         location: string;
         href: string;
-        event_id: string;
         meta: {
             referrerSource?: string;
         };

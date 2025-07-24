@@ -2,31 +2,23 @@ import {Factory} from '../../../base-factory';
 import {faker} from '@faker-js/faker';
 import {generateUuid} from '../../../utils';
 import type {PageHitOptions, PageHitResult} from './types';
-import type {TinybirdConfig, HttpClient} from '../interfaces';
-import {FetchHttpClient} from '../interfaces';
 
 export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     name = 'pageHit';
-    private httpClient: HttpClient;
+    entityType = 'analytics_events'; // Maps to Tinybird datasource
     private createdSessionIds = new Set<string>();
-    private createdEventIds = new Set<string>();
+    private eventCount = 0;
     
     constructor(
-        private siteUuid: string,
-        private config: TinybirdConfig,
-        httpClient?: HttpClient
+        private siteUuid: string
     ) {
         super();
-        this.httpClient = httpClient ?? new FetchHttpClient();
     }
     
     async destroy(): Promise<void> {
-        // Clean up all tracked sessions
-        if (this.createdSessionIds.size > 0) {
-            await this.deleteBySessionIds(Array.from(this.createdSessionIds));
-            this.createdSessionIds.clear();
-            this.createdEventIds.clear();
-        }
+        // Clear tracked sessions
+        this.createdSessionIds.clear();
+        this.eventCount = 0;
     }
     
     /**
@@ -56,7 +48,6 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
                 locale: options?.locale || 'en-US',
                 location: options?.location || 'US',
                 href: `https://example.com${pathname}`,
-                event_id: generateUuid(),
                 meta: {}
             }
         };
@@ -70,59 +61,25 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     }
     
     /**
-     * Build and send a page hit event to Tinybird
+     * Override extractId to use session_id as the identifier
      */
-    async create(options?: PageHitOptions): Promise<PageHitResult> {
-        const event = this.build(options);
-        
-        // Track the session
-        this.createdSessionIds.add(event.session_id);
-        
-        // Track event ID
-        this.createdEventIds.add(event.payload.event_id);
-        
-        // Send to Tinybird
-        await this.sendToTinybird(event);
-        
-        return event;
+    protected extractId(entity: PageHitResult): string | undefined {
+        return entity.session_id;
     }
     
     /**
-     * Send event to Tinybird via HTTP POST
+     * Build and send a page hit event to Tinybird
+     * Override to track sessions for custom cleanup
      */
-    private async sendToTinybird(event: PageHitResult): Promise<void> {
-        // Default to analytics_events data source
-        const datasource = 'analytics_events';
-        const url = `${this.config.host}?name=${datasource}`;
+    async create(options?: PageHitOptions): Promise<PageHitResult> {
+        // Use base class create which will call our build() and use persistence
+        const event = await super.create(options);
         
-        try {
-            const response = await this.httpClient.fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.config.token}`,
-                    'x-site-uuid': this.siteUuid
-                },
-                body: JSON.stringify(event)
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
-            }
-        } catch (error) {
-            // Log the error for debugging (without exposing the token)
-            // eslint-disable-next-line no-console
-            console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
-            // eslint-disable-next-line no-console
-            console.warn('URL:', url);
-            
-            // For e2e tests, we might want to continue even if Tinybird is not available
-            if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
-                throw error;
-            }
-            // Continue if Tinybird is not available in test environment
-        }
+        // Track the session for our custom session-based cleanup
+        this.createdSessionIds.add(event.session_id);
+        this.eventCount += 1;
+        
+        return event;
     }
     
     /**
@@ -180,48 +137,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     getStats(): { sessions: number; events: number } {
         return {
             sessions: this.createdSessionIds.size,
-            events: this.createdEventIds.size
+            events: this.eventCount
         };
-    }
-    
-    private async deleteBySessionIds(sessionIds: string[]): Promise<void> {
-        // Delete in batches if there are many sessions
-        const batchSize = 100;
-        for (let i = 0; i < sessionIds.length; i += batchSize) {
-            const batch = sessionIds.slice(i, i + batchSize);
-            await this.deleteBatch(batch);
-        }
-    }
-    
-    private async deleteBatch(sessionIds: string[]): Promise<void> {
-        const url = `${this.config.host}/v0/datasources/analytics_events/delete`;
-        
-        // Create SQL IN clause for multiple session IDs
-        const sessionIdList = sessionIds.map(id => `'${id}'`).join(',');
-        
-        try {
-            const response = await this.httpClient.fetch(url, {
-                method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${this.config.token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    condition: `session_id IN (${sessionIdList})`
-                })
-            });
-            
-            if (!response.ok) {
-                const text = await response.text();
-                throw new Error(`Failed to delete events: ${response.status} - ${text}`);
-            }
-        } catch (error) {
-            if (process.env.FAIL_ON_TINYBIRD_ERROR === 'true') {
-                throw error;
-            }
-            // Log but continue if cleanup fails
-            // eslint-disable-next-line no-console
-            console.warn('Failed to clean up Tinybird events:', error);
-        }
     }
 }

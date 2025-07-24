@@ -1,31 +1,34 @@
 import {BasePlugin} from '../base-plugin';
 import {PageHitFactory} from './page-hits/page-hit-factory';
 import {getTinybirdConfig} from './config';
-import type {TinybirdConfig, HttpClient} from './interfaces';
-import {FetchHttpClient} from './interfaces';
+import type {TinybirdConfig} from './interfaces';
 import type {PageHitOptions, PageHitResult} from './page-hits/types';
+import type {PersistenceAdapter} from '../../persistence/types';
+import {TinybirdPersistenceAdapter} from '../../persistence/tinybird-adapter';
+import {DefaultEntityRegistry} from '../../persistence/entity-registry';
 
 export interface TinybirdPluginOptions {
-    httpClient?: HttpClient;
     config?: TinybirdConfig;
+    persistence?: PersistenceAdapter;
 }
 
 /**
  * Tinybird plugin that coordinates all analytics-related factories
- * and shares the HTTP client between them
  */
 export class TinybirdPlugin extends BasePlugin {
     readonly name = 'tinybird';
     
-    private httpClient: HttpClient;
     private config: TinybirdConfig;
     private pageHitFactory?: PageHitFactory;
     
     constructor(options: TinybirdPluginOptions = {}) {
         super();
-        // All Tinybird factories share these dependencies
-        this.httpClient = options.httpClient ?? new FetchHttpClient();
         this.config = options.config ?? getTinybirdConfig();
+        
+        // Set persistence adapter if provided
+        if (options.persistence) {
+            this.setPersistenceAdapter(options.persistence);
+        }
     }
     
     async setup(): Promise<void> {
@@ -33,16 +36,33 @@ export class TinybirdPlugin extends BasePlugin {
     }
     
     async destroy(): Promise<void> {
-        if (this.pageHitFactory) {
-            await this.pageHitFactory.destroy();
-        }
+        // Use base class destroy which handles all factories
+        await super.destroy();
+    }
+    
+    /**
+     * Creates the default persistence adapter for Tinybird
+     */
+    private createDefaultPersistence(): PersistenceAdapter {
+        const registry = new DefaultEntityRegistry();
+        registry.register('analytics_events', {
+            endpoint: '?name=analytics_events',
+            primaryKey: 'session_id'
+        });
+        return new TinybirdPersistenceAdapter(this.config, registry);
     }
     
     /**
      * Must be called before using any Tinybird functionality
      */
     async initializeWithSiteUuid(siteUuid: string): Promise<void> {
-        this.pageHitFactory = new PageHitFactory(siteUuid, this.config, this.httpClient);
+        // Create persistence adapter if not provided
+        if (!this.persistence) {
+            this.setPersistenceAdapter(this.createDefaultPersistence());
+        }
+        
+        // Create and register the factory
+        this.pageHitFactory = this.registerFactory(new PageHitFactory(siteUuid));
         await this.pageHitFactory.setup();
     }
     
