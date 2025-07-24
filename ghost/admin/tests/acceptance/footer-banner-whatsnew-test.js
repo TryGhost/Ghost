@@ -14,7 +14,7 @@ describe('Acceptance: FooterBanner WhatsNew', function () {
     });
 
     it('shows the What\'s New banner, opens link in new tab, and marks as seen on click', async function () {
-        await visit('/dashboard'); // or the main admin route where the banner appears
+        await visit('/dashboard'); 
 
         // Banner should be visible
         expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.exist;
@@ -30,7 +30,7 @@ describe('Acceptance: FooterBanner WhatsNew', function () {
         expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
             
         const whatsNewService = this.owner.lookup('service:whatsNew');
-        // No changelog entries eligibile for the what's new banner
+        // No changelog entries are eligible for the what's new banner
         expect(whatsNewService.hasNew).to.equal(false);
     });
 
@@ -46,7 +46,31 @@ describe('Acceptance: FooterBanner WhatsNew', function () {
         expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
 
         const whatsNewService = this.owner.lookup('service:whatsNew');
-        // No changelog entries eligibile for the what's new banner
+        // No changelog entries are eligible for the what's new banner
         expect(whatsNewService.hasNew).to.equal(false);
+    });
+
+    it('keeps the What\'s New banner dismissed after page navigation', async function () {
+        await visit('/dashboard');
+    
+        // Dismiss the banner
+        await click('.gh-sidebar-banner-close');
+        expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
+    
+        // Navigate away and back
+        await visit('/posts');
+        await visit('/dashboard');
+    
+        // Banner should still be hidden
+        expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
+    });
+
+    it('shows the What\'s new banner when loading a non-dashboard route', async function () {
+        await visit('tags');
+
+        let bannerLink = find('.gh-sidebar-banner-container');
+        expect(bannerLink).to.exist;
+        expect(bannerLink.getAttribute('target')).to.equal('_blank');
+        expect(bannerLink.getAttribute('href')).to.equal('https://ghost.org/changelog/test-featured-changelog-entry/');
     });
 });
