@@ -35,11 +35,12 @@ const TestimonialsModal = NiceModal.create(() => {
             prev_platform: ''
         },
         onSave: async (): Promise<void> => {
+            const prevPlatform = ['none', 'other', ''].includes(formState.prev_platform) ? undefined : formState.prev_platform;
             const payload = {
                 ghost_uuid: siteUuid,
                 staff_user_email: staffUserEmail,
                 content: formState.content,
-                prev_platform: formState.prev_platform
+                prev_platform: prevPlatform
             };
 
             if (!exploreTestimonialsUrl) {
@@ -64,6 +65,7 @@ const TestimonialsModal = NiceModal.create(() => {
                 type: 'success'
             });
 
+            updateRoute('explore');
             modal.remove();
         },
         onSaveError: handleError,
@@ -79,7 +81,7 @@ const TestimonialsModal = NiceModal.create(() => {
     });
 
     const migratedFromOptions: Array<{value: string; label: string;}> = [
-        {value: '', label: 'None - This is a new site'},
+        {value: 'none', label: 'None - This is a new site'},
         {value: 'substack', label: 'Substack'},
         {value: 'beehiiv', label: 'Beehiiv'},
         {value: 'wordpress', label: 'Wordpress'},
