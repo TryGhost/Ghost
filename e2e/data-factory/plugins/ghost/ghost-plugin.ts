@@ -32,20 +32,23 @@ export class GhostPlugin extends BasePlugin {
         if (options.persistence) {
             this.setPersistenceAdapter(options.persistence);
         } else {
-            // Create default Knex persistence adapter
-            const registry = new DefaultEntityRegistry();
-            registry.registerMany({
-                posts: {tableName: 'posts'},
-                users: {tableName: 'users'},
-                tags: {tableName: 'tags'}
-            });
-            
-            const adapter = new KnexPersistenceAdapter(this.db, registry);
-            this.setPersistenceAdapter(adapter);
+            this.setPersistenceAdapter(this.createDefaultPersistence());
         }
         
         // Create and register factories
         this.postFactory = this.registerFactory(new PostFactory());
+    }
+    
+    /**
+     * Creates the default persistence adapter for Ghost
+     */
+    private createDefaultPersistence(): PersistenceAdapter {
+        const registry = new DefaultEntityRegistry();
+        registry.register('posts', {
+            tableName: 'posts'
+        });
+        
+        return new KnexPersistenceAdapter(this.db, registry);
     }
     
     async setup(): Promise<void> {
