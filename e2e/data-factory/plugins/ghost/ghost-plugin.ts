@@ -3,41 +3,60 @@ import {BasePlugin} from '../base-plugin';
 import {createDatabase} from './database';
 import {PostFactory} from './posts/post-factory';
 import type {PostOptions, PostResult} from './posts/types';
+import {KnexPersistenceAdapter} from '../../persistence/knex-adapter';
+import {DefaultEntityRegistry} from '../../persistence/entity-registry';
+import type {PersistenceAdapter} from '../../persistence/types';
 
 export interface GhostPluginOptions {
     database?: Knex;
+    persistence?: PersistenceAdapter;
 }
 
 /**
  * Ghost plugin that coordinates all Ghost-related factories
- * and shares the database connection between them
+ * with persistence abstraction
  */
 export class GhostPlugin extends BasePlugin {
     readonly name = 'ghost';
     
     private db: Knex;
-    private postFactory: PostFactory;
+    postFactory: PostFactory;
     
     constructor(options: GhostPluginOptions = {}) {
         super();
-        // All Ghost factories share this database connection
+        
+        // Set up database connection
         this.db = options.database ?? createDatabase();
         
-        // Initialize factories with shared database
-        this.postFactory = new PostFactory(this.db);
+        // Set up persistence (use provided or create default)
+        if (options.persistence) {
+            this.setPersistenceAdapter(options.persistence);
+        } else {
+            // Create default Knex persistence adapter
+            const registry = new DefaultEntityRegistry();
+            registry.registerMany({
+                posts: {tableName: 'posts'},
+                users: {tableName: 'users'},
+                tags: {tableName: 'tags'}
+            });
+            
+            const adapter = new KnexPersistenceAdapter(this.db, registry);
+            this.setPersistenceAdapter(adapter);
+        }
+        
+        // Create and register factories
+        this.postFactory = this.registerFactory(new PostFactory());
     }
     
     async setup(): Promise<void> {
-        await this.postFactory.setup();
-    }
-    
-    async destroy(): Promise<void> {
-        await this.postFactory.destroy();        
-        await this.db.destroy();
+        // Setup all factories
+        for (const factory of this.factories.values()) {
+            await factory.setup();
+        }
     }
     
     /**
-     * Get the shared database connection for cross-plugin operations or custom queries
+     * Get the shared database connection for custom queries
      */
     getDatabase(): Knex {
         return this.db;
@@ -120,9 +139,24 @@ export class GhostPlugin extends BasePlugin {
     //     return {author, posts};
     // }
     
+    /**
+     * Get statistics about created entities
+     */
     getStats(): {posts: number} {
+        const baseStats = super.getStats();
         return {
-            posts: this.postFactory.getCreatedCount()
+            posts: baseStats.post || 0
         };
+    }
+    
+    /**
+     * Clean up and close database connection
+     */
+    async destroy(): Promise<void> {
+        // Clean up all factories
+        await super.destroy();
+        
+        // Close database connection
+        await this.db.destroy();
     }
 }

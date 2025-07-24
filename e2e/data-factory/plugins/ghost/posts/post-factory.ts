@@ -2,25 +2,16 @@ import {Factory} from '../../../base-factory';
 import {faker} from '@faker-js/faker';
 import {generateId, generateUuid, generateSlug} from '../../../utils';
 import type {PostOptions, PostResult} from './types';
-import type {Knex} from 'knex';
 
 /**
  * Simple factory for creating Ghost posts.
  */
 export class PostFactory extends Factory<PostOptions, PostResult> {
     name = 'post';
-    private createdPostIds: Set<string> = new Set();
+    entityType = 'posts'; // Maps to 'posts' table
     
-    constructor(private db: Knex) {
+    constructor() {
         super();
-    }
-    
-    async setup(): Promise<void> {
-        // Any post-specific initialization
-    }
-    
-    async destroy(): Promise<void> {
-        await this.clearCreated();
     }
     
     build(options: PostOptions = {}): PostResult {
@@ -77,33 +68,5 @@ export class PostFactory extends Factory<PostOptions, PostResult> {
         } as PostResult;
         
         return post;
-    }
-    
-    async create(options: PostOptions = {}): Promise<PostResult> {
-        const post = this.build(options);
-        
-        await this.db('posts').insert(post);
-        
-        // Track created post for cleanup
-        this.createdPostIds.add(post.id);
-        
-        return post;
-    }
-    
-    /**
-     * Clear all posts created by this factory instance
-     */
-    async clearCreated(): Promise<void> {
-        if (this.createdPostIds.size > 0) {
-            await this.db('posts').whereIn('id', Array.from(this.createdPostIds)).delete();
-            this.createdPostIds.clear();
-        }
-    }
-    
-    /**
-     * Get the count of posts created by this factory
-     */
-    getCreatedCount(): number {
-        return this.createdPostIds.size;
     }
 }
