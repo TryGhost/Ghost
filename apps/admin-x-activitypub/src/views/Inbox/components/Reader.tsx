@@ -371,7 +371,7 @@ const ArticleBody: React.FC<{
         <div className='w-full pb-6'>
             <div className='relative -mx-6'>
                 {isLoading && (
-                    <div className='mx-auto mt-6 w-full max-w-[640px]'>
+                    <div className='mx-auto mt-6 w-full max-w-[640px] max-lg:px-4'>
                         <div className='mb-6 flex flex-col gap-2'>
                             <Skeleton className='h-8' />
                             <Skeleton className='h-8 w-full max-w-md' />
@@ -801,7 +801,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
                                         </div>
                                         <div className='flex w-full'>
-                                            {!isLoadingContent && <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                            {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
                                             <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
                                         </div>
                                     </div>

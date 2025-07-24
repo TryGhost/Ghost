@@ -201,7 +201,7 @@ const Note = () => {
                     <div className='grow overflow-y-auto'>
                         <div className={`mx-auto px-8 pb-10 pt-5 max-lg:px-0`}>
                             {!threadParents.length &&
-                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
+                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10 max-md:pt-5' : 'pt-5'}`}>
                                 <div className='relative z-10'>
                                     <APAvatar author={currentPost.actor} showFollowButton={!currentPost.object.authored && !currentPost.actor.followedByMe}/>
                                 </div>
@@ -212,7 +212,7 @@ const Note = () => {
                                         <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
                                     </div>
                                     <div className='flex w-full'>
-                                        <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
+                                        <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
                                         <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                     </div>
                                 </div>

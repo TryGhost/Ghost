@@ -122,7 +122,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 />
                             </div>
                             :
-                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
+                            <div className='h-[max(8vw,132px)] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
                         }
                         <div className={`mx-auto max-w-[620px] px-6 ${(!account?.bannerImageUrl && !canGoBack) ? '-mt-8' : '-mt-12'}`}>
                             <div className='flex items-end justify-between'>
