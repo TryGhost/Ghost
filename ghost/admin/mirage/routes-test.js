@@ -129,7 +129,16 @@ export default function () {
 
     this.get('https://ghost.org/changelog.json', function () {
         return {
-            changelog: [
+            posts: [
+                {
+                    title: 'Test Changelog Entry',
+                    custom_excerpt: 'This is a test custom excerpt for the changelog entry.',
+                    html: '<p>Test Changelog Entry</p>',
+                    slug: 'test-changelog-entry',
+                    published_at: '2099-08-05T07:46:16.000+00:00', // date far in the future
+                    url: 'https://ghost.org/changelog/test-featured-changelog-entry/',
+                    featured: true
+                },
                 {
                     title: 'Custom image alt tags',
                     custom_excerpt: null,
@@ -139,7 +148,6 @@ export default function () {
                     url: 'https://ghost.org/changelog/image-alt-text-support/'
                 }
             ],
-            changelogMajor: [],
             changelogUrl: 'https://ghost.org/changelog/'
         };
     });
