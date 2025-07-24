@@ -20,10 +20,6 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
         this.httpClient = httpClient ?? new FetchHttpClient();
     }
     
-    async setup(): Promise<void> {
-        // No setup needed for page hits - Tinybird is a separate service
-    }
-    
     async destroy(): Promise<void> {
         // Clean up all tracked sessions
         if (this.createdSessionIds.size > 0) {
