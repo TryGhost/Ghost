@@ -1,46 +1,10 @@
 import {test, expect} from '@playwright/test';
-import {Factory} from '../../base-factory';
+import {generateId, generateUuid, generateSlug} from '../../utils';
 
-// Concrete implementation of Factory for testing
-class TestFactory extends Factory {
-    name = 'test';
-    
-    async setup(): Promise<void> {
-        // Mock setup
-    }
-    
-    async destroy(): Promise<void> {
-        // Mock destroy
-    }
-    
-    // Expose protected methods for testing
-    public testGenerateId(): string {
-        return this.generateId();
-    }
-    
-    public testGenerateUuid(): string {
-        return this.generateUuid();
-    }
-    
-    public testGenerateSlug(text: string): string {
-        return this.generateSlug(text);
-    }
-}
-
-test.describe('Base Factory', () => {
-    let factory: TestFactory;
-    
-    test.beforeEach(() => {
-        factory = new TestFactory();
-    });
-    
-    test('should have a name property', () => {
-        expect(factory.name).toBe('test');
-    });
-    
+test.describe('Utils', () => {
     test('should generate unique IDs', () => {
-        const id1 = factory.testGenerateId();
-        const id2 = factory.testGenerateId();
+        const id1 = generateId();
+        const id2 = generateId();
         
         expect(id1).toBeTruthy();
         expect(id2).toBeTruthy();
@@ -50,8 +14,8 @@ test.describe('Base Factory', () => {
     });
     
     test('should generate valid UUIDs', () => {
-        const uuid1 = factory.testGenerateUuid();
-        const uuid2 = factory.testGenerateUuid();
+        const uuid1 = generateUuid();
+        const uuid2 = generateUuid();
         
         // UUID format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -73,28 +37,18 @@ test.describe('Base Factory', () => {
         ];
         
         testCases.forEach(({input, expected}) => {
-            const result = factory.testGenerateSlug(input);
+            const result = generateSlug(input);
             expect(result).toBe(expected);
         });
     });
     
     test('should handle empty string in slug generation', () => {
-        const result = factory.testGenerateSlug('');
+        const result = generateSlug('');
         expect(result).toBe('');
     });
     
     test('should handle special characters in slug generation', () => {
-        const result = factory.testGenerateSlug('Café & Restaurant');
+        const result = generateSlug('Café & Restaurant');
         expect(result).toBe('caf-restaurant');
-    });
-    
-    test('should implement setup method', async () => {
-        // Should not throw
-        await expect(factory.setup()).resolves.toBeUndefined();
-    });
-    
-    test('should implement destroy method', async () => {
-        // Should not throw
-        await expect(factory.destroy()).resolves.toBeUndefined();
     });
 });
