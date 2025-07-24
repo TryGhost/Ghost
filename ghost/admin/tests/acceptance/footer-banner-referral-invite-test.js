@@ -1,5 +1,4 @@
 import loginAsRole from '../helpers/login-as-role';
-import moment from 'moment-timezone';
 import {beforeEach, describe, it} from 'mocha';
 import {click, find} from '@ember/test-helpers';
 import {disableStripe, enableStripe} from '../helpers/stripe';
