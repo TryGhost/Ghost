@@ -156,7 +156,9 @@ const controller = {
         options: [
             'include',
             'formats',
-            'source'
+            'source',
+            'email_segment',
+            'newsletter'
         ],
         validation: {
             options: {

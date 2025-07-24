@@ -384,6 +384,48 @@ describe('Posts API', function () {
                 });
         });
 
+        it('Errors when email_segment is set without newsletter parameter', async function () {
+            const post = {
+                title: 'Email segment without newsletter test',
+                status: 'draft'
+            };
+
+            await agent
+                .post('/posts/?email_segment=status:free')
+                .body({posts: [post]})
+                .expectStatus(422)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId
+                    }]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('Can create a post with email_segment when newsletter is also provided', async function () {
+            const post = {
+                title: 'Email segment with newsletter test',
+                status: 'draft'
+            };
+
+            // Note: Using a valid newsletter slug from test fixtures
+            await agent
+                .post('/posts/?email_segment=status:free&newsletter=daily-newsletter')
+                .body({posts: [post]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('posts')
+                });
+        });
+
         // update when updating a scheduled post
     });
 

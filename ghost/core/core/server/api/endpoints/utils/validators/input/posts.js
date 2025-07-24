@@ -52,15 +52,26 @@ const validateSingleContentSource = async function (frame) {
     }
 };
 
+const validateEmailSegmentWithNewsletter = async function (frame) {
+    if (frame.options.email_segment && !frame.options.newsletter) {
+        return Promise.reject(new ValidationError({
+            message: 'The email_segment parameter requires the newsletter parameter to be set',
+            property: 'email_segment'
+        }));
+    }
+};
+
 module.exports = {
     async add(apiConfig, frame) {
         await jsonSchema.validate(...arguments);
         await validateVisibility(frame);
         await validateSingleContentSource(frame);
+        await validateEmailSegmentWithNewsletter(frame);
     },
     async edit(apiConfig, frame) {
         await jsonSchema.validate(...arguments);
         await validateVisibility(frame);
         await validateSingleContentSource(frame);
+        await validateEmailSegmentWithNewsletter(frame);
     }
 };
