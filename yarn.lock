@@ -3525,10 +3525,10 @@
     "@tanstack/react-virtual" "^3.0.0-beta.60"
     client-only "^0.0.1"
 
-"@hookform/resolvers@5.1.1":
-  version "5.1.1"
-  resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-5.1.1.tgz#91074ba4fb749cc74e6465e75d38256146b0c4ab"
-  integrity sha512-J/NVING3LMAEvexJkyTLjruSm7aOFx7QX21pzkiJfMoNG0wl5aFEjLTl7ay7IQb9EWY6AkrBy7tHL2Alijpdcg==
+"@hookform/resolvers@5.2.0":
+  version "5.2.0"
+  resolved "https://registry.yarnpkg.com/@hookform/resolvers/-/resolvers-5.2.0.tgz#4b34934a1d9dd790af20fb3fa7c8e415046918e4"
+  integrity sha512-3YI+VqxJQH6ryRWG+j3k+M19Wf37LeSKJDg6Vdjq6makLOqZGYn77iTaYLMLpVi/uHc1N6OTCmcxJwhOQV979g==
   dependencies:
     "@standard-schema/utils" "^0.3.0"
 
