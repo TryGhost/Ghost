@@ -1,5 +1,6 @@
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
+    globalSetup: './global-setup.ts',
     timeout: 30 * 1000,
     expect: {
         timeout: 10000
@@ -12,7 +13,18 @@ const config = {
         trace: 'retain-on-failure',
         browserName: 'chromium'
     },
-    testDir: './tests'
+    projects: [
+        {
+            name: 'e2e-tests',
+            testDir: './tests',
+            testMatch: '**/*.test.ts'
+        },
+        {
+            name: 'data-factory-tests',
+            testDir: './data-factory/tests',
+            testMatch: '**/*.test.ts'
+        }
+    ]
 };
 
 export default config;
