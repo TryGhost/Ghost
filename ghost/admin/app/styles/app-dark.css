@@ -518,6 +518,10 @@ input:focus,
     background: color-mod(var(--white) l(+2%));
 }
 
+.gh-whatsnew-modal-footer {
+    background: color-mod(var(--white) l(-1%));
+}
+
 .seo-preview-title {
     color: color-mod(#1e0fbe l(+25%));
 }
