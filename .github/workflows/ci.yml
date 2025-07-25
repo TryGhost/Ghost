@@ -32,7 +32,7 @@ jobs:
     env:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
-      IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
+      IS_FIVE: ${{ github.ref == 'refs/heads/5.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -201,7 +201,7 @@ jobs:
       base_commit: ${{ env.BASE_COMMIT }}
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
-      is_six: ${{ env.IS_SIX }}
+      is_five: ${{ env.IS_FIVE }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -1083,7 +1083,7 @@ jobs:
       && needs.job_required_tests.result == 'success'
       && (
         needs.job_setup.outputs.is_main == 'true'
-        || needs.job_setup.outputs.is_six == 'true'
+        || needs.job_setup.outputs.is_five == 'true'
         || (
           github.event_name == 'pull_request'
           && (
@@ -1110,7 +1110,7 @@ jobs:
           if [[ "${{ needs.job_setup.outputs.is_main }}" == "true" ]]; then
             echo "deploy_version=canary" >> $GITHUB_ENV
           else
-            echo "deploy_version=six" >> $GITHUB_ENV
+            echo "deploy_version=five" >> $GITHUB_ENV
           fi
 
       - name: Invoke build
