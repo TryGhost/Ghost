@@ -27,7 +27,6 @@ module.exports = function buildCallRenderer(dom) {
 
         // default options
         options = {
-            ...options,
             siteUrl: 'https://test.com/',
             postUrl: 'https://test.com/post/',
             imageOptimization: {
@@ -38,7 +37,8 @@ module.exports = function buildCallRenderer(dom) {
                     w2400: {width: 2400}
                 }
             },
-            canTransformImage: () => true
+            canTransformImage: () => true,
+            ...options
         };
 
         let result;
