@@ -1,4 +1,5 @@
 import GlobalDataProvider from './providers/GlobalDataProvider';
+import StatsErrorBoundary from './components/errors/StatsErrorBoundary';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade';
@@ -17,11 +18,13 @@ const App: React.FC<BaseAppProps> = ({framework, designSystem, appSettings}) => 
         >
             <AppProvider appSettings={appSettings}>
                 <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                    <GlobalDataProvider>
-                        <ShadeApp className="shade-stats" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                            <Outlet />
-                        </ShadeApp>
-                    </GlobalDataProvider>
+                    <StatsErrorBoundary>
+                        <GlobalDataProvider>
+                            <ShadeApp className="shade-stats" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                                <Outlet />
+                            </ShadeApp>
+                        </GlobalDataProvider>
+                    </StatsErrorBoundary>
                 </RouterProvider>
             </AppProvider>
         </FrameworkProvider>

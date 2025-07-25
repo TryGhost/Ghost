@@ -66,6 +66,13 @@ describe('frontendCaching', function () {
         assert.ok(res.set.calledWith({'X-Member-Cache-Tier': 'freeTierId'}));
     });
 
+    it('should set cache control to no-cache if the path starts with /p/', function () {
+        req.path = '/p/test';
+        middleware(req, res, next);
+        assert.equal(res.set.callCount, 1);
+        assert.ok(res.set.calledWith({'Cache-Control': testUtils.cacheRules.noCache}));
+    });
+
     describe('calculateMemberTier', function () {
         it('should return null if the member has more than one active subscription', function () {
             const member = {

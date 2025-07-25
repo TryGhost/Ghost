@@ -25,7 +25,10 @@ module.exports = function getConfigProperties() {
         security: config.get('security')
     };
 
-    // WIP tinybird stats feature - it's entirely config driven instead of using an alpha flag for now
+    if (config.get('explore') && config.get('explore:testimonials_url')) {
+        configProperties.exploreTestimonialsUrl = config.get('explore:testimonials_url');
+    }
+
     if (config.get('tinybird') && config.get('tinybird:stats')) {
         const statsConfig = config.get('tinybird:stats');
         const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
