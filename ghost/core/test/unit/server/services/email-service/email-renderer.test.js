@@ -3165,8 +3165,8 @@ describe('Email renderer', function () {
             response.html.should.not.containEql('members only section');
             response.html.should.containEql('some text for both');
             response.html.should.not.containEql('finishing part only for members');
-            response.html.should.containEql('Devenez un abonn&#xE9; payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif');
-            response.plaintext.should.containEql('Devenez un abonné payant de Cathy\'s Blog pour accéder à du contenu exclusif');
+            response.html.should.containEql('Devenez un(e) abonn&#xE9;(e) payant de Cathy&#39;s Blog pour acc&#xE9;der &#xE0; du contenu exclusif');
+            response.plaintext.should.containEql('Devenez un(e) abonné(e) payant de Cathy\'s Blog pour accéder à du contenu exclusif');
         });
     });
 });
