@@ -11,7 +11,12 @@ import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useLocation} from '@tryghost/admin-x-framework';
 import {useNotificationsCountForUser, useResetNotificationsCountForUser} from '@src/hooks/use-activity-pub-queries';
 
-const Sidebar: React.FC = () => {
+interface SidebarProps {
+    isMobileSidebarOpen: boolean;
+    onCloseMobileSidebar: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
     const {allFlags, flags} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
@@ -34,7 +39,9 @@ const Sidebar: React.FC = () => {
     }, [notificationsCount, resetNotificationsCount]);
 
     return (
-        <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 dark:border-gray-950'>
+        <div className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
+            isMobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:translate-x-full'
+        }`}>
             <div className='flex grow flex-col justify-between'>
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>

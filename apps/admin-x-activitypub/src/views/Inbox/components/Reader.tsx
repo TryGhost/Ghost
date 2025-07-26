@@ -369,9 +369,9 @@ const ArticleBody: React.FC<{
 
     return (
         <div className='w-full pb-6'>
-            <div className='relative'>
+            <div className='relative -mx-6'>
                 {isLoading && (
-                    <div className='mx-auto mt-6 w-full max-w-[640px]'>
+                    <div className='mx-auto mt-6 w-full max-w-[640px] max-lg:px-4'>
                         <div className='mb-6 flex flex-col gap-2'>
                             <Skeleton className='h-8' />
                             <Skeleton className='h-8 w-full max-w-md' />
@@ -699,9 +699,9 @@ export const Reader: React.FC<ReaderProps> = ({
             <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
                 <div className='flex h-full flex-col'>
                     <div className='relative flex-1'>
-                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
                             <div
-                                className='grid w-full px-8'
+                                className='grid w-full px-8 max-lg:px-4'
                                 style={{
                                     gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                                 }}
@@ -709,7 +709,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 <div className='flex items-center'>
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
-                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
                                     <Skeleton className='size-10 rounded-full' />
                                     <div className='grow pt-1'>
                                         <Skeleton className='w-full' />
@@ -731,7 +731,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className='relative flex-1'>
+                        <div className='relative flex-1 max-lg:px-4'>
                             <div className='mx-auto mt-11 w-full max-w-[640px]'>
                                 <div className='mb-6 flex flex-col gap-2'>
                                     <Skeleton className='h-8' />
@@ -753,9 +753,9 @@ export const Reader: React.FC<ReaderProps> = ({
             <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
                 <div className='flex h-full flex-col'>
                     <div className='relative flex-1'>
-                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
                             <div
-                                className='grid w-full px-8'
+                                className='grid w-full px-8 max-lg:px-4'
                                 style={{
                                     gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                                 }}
@@ -763,7 +763,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 <div className='flex items-center'>
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
-                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
                                     <div className='grow text-center'>
                                         <span>Error loading article.</span>
                                     </div>
@@ -782,9 +782,9 @@ export const Reader: React.FC<ReaderProps> = ({
             <>
                 <div className='flex h-full flex-col'>
                     <div className='relative flex-1'>
-                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
                             <div
-                                className='grid w-full px-8'
+                                className='grid w-full px-8 max-lg:px-4'
                                 style={{
                                     gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
                                 }}
@@ -792,7 +792,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 <div className='flex items-center'>
                                     <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
                                 </div>
-                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
                                     <div className='relative z-10 pt-0.5'>
                                         <APAvatar author={actor}/>
                                     </div>
@@ -801,7 +801,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                             <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
                                         </div>
                                         <div className='flex w-full'>
-                                            {!isLoadingContent && <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                            {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
                                             <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
                                         </div>
                                     </div>
@@ -829,7 +829,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                 onOpenChange={setIsTOCOpen}
                             />
                             {!isLoadingContent && <div className='grow overflow-y-auto'>
-                                <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                <div className={`mx-auto px-6 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
                                         <ArticleBody
                                             authors={authors}
