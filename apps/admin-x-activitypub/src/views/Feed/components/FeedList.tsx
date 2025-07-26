@@ -72,7 +72,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
                                         <FeedInput user={user} />
-                                        <ul className='mx-auto flex w-full flex-col px-4' data-testid="feed-list">
+                                        <ul className='mx-auto flex w-full flex-col px-4 max-lg:px-0' data-testid="feed-list">
                                             {activities.map((activity, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key

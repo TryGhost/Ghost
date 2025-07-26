@@ -1,7 +1,7 @@
 {
     "{date}": "{date}",
-    "All the best!": "Bien à vous.",
-    "Become a paid member of {site} to get access to all premium content.": "Devenez un abonné payant de {site} pour accéder à du contenu exclusif.",
+    "All the best!": "Bien à vous !",
+    "Become a paid member of {site} to get access to all premium content.": "Devenez un(e) abonné(e) payant de {site} pour accéder à du contenu exclusif.",
     "By {authors}": "Par {authors}",
     "Comment": "Commentaire",
     "Complete signup for {siteTitle}!": "Finalisez votre inscription à {siteTitle} !",
@@ -42,11 +42,11 @@
     "Someone just replied to your comment": "Quelqu'un vient de répondre à votre commentaire",
     "Someone just replied to your comment on {postTitle}.": "Quelqu'un vient de répondre à votre commentaire sur {postTitle}.",
     "Subscription details": "Détails de l'abonnement",
-    "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "Cliquez sur le lien ci-dessous pour compléter votre inscription à {siteTitle} et être connecté automatiquement :",
+    "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "Cliquez sur le lien ci-dessous pour compléter votre inscription à {siteTitle} et vous connecter automatiquement :",
     "Thank you for signing up to {siteTitle}!": "Merci pour votre inscription à {siteTitle} !",
     "Thank you for subscribing to {siteTitle}!": "Merci pour votre abonnement à {siteTitle} !",
     "Thank you for subscribing to {siteTitle}.": "Merci pour votre abonnement à {siteTitle}.",
-    "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Merci pour votre abonnement à {siteTitle}. Cliquez le lien ci-dessous pour être connecté automatiquement :",
+    "Thank you for subscribing to {siteTitle}. Tap the link below to be automatically signed in:": "Merci pour votre abonnement à {siteTitle}. Cliquez le lien ci-dessous pour vous connecter automatiquement :",
     "This email address will not be used.": "Cette adresse e-mail ne sera pas utilisée.",
     "This message was sent from {siteDomain} to {email}.": "Ce message a été envoyé de {siteDomain} à {email}.",
     "trialing": "en période d'essai",
@@ -56,8 +56,9 @@
     "Upgrade to continue reading.": "Modifiez votre abonnement pour lire la suite.",
     "View comments": "Voir les commentaires",
     "View in browser": "Voir dans le navigateur",
-    "Welcome back to {siteTitle}!": "Heureux de vous revoir sur {siteTitle} !",
+    "Welcome back to {siteTitle}!": "Quel plaisir de vous revoir sur {siteTitle} !",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Quel plaisir de vous revoir ! Utilisez ce lien pour vous connecter en toute sécurité à votre compte {siteTitle} :",
+
     "When:": "Quand :",
     "Where:": "Où :",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Vous recevez ceci parce que vous êtes un·e <strong>abonné·e %%{status}%%</strong> de {site}.",
@@ -75,3 +76,4 @@
     "Your subscription will renew on {date}.": "Votre abonnement sera renouvelé le {date}.",
     "Your verification code for {siteTitle}": "Votre code de vérification pour {siteTitle}"
 }
+
