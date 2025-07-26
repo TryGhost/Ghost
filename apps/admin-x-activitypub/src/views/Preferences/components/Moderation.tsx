@@ -78,7 +78,7 @@ const Moderation: React.FC = () => {
 
     return (
         <Layout>
-            <div className='mx-auto max-w-[620px] px-6 py-12'>
+            <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Moderation</H2>
                 </div>

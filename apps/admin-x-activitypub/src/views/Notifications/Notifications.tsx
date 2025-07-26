@@ -276,7 +276,7 @@ const Notifications: React.FC = () => {
                 {
                     (notificationGroups.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col max-md:mt-5'>
                                 {notificationGroups.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem

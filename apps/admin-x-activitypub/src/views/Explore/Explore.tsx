@@ -163,7 +163,7 @@ const Explore: React.FC = () => {
                     <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
-            <div className='mt-12 flex flex-col gap-12 pb-20'>
+            <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
                 {
                     isLoadingExploreProfiles ? (
                         <div>

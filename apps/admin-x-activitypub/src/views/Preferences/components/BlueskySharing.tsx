@@ -49,7 +49,7 @@ const BlueskySharing: React.FC = () => {
     if (isLoadingAccount) {
         return (
             <Layout>
-                <div className='mx-auto max-w-[620px] px-6 py-12'>
+                <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                     <div className='flex items-center justify-between gap-8'>
                         <H2>Bluesky sharing</H2>
                     </div>
@@ -63,7 +63,7 @@ const BlueskySharing: React.FC = () => {
 
     return (
         <Layout>
-            <div className='mx-auto max-w-[620px] px-6 py-12'>
+            <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
                     {enabled && <span className='flex items-center gap-1 font-medium text-green'><LucideIcon.Check size={20} /> Enabled</span>}
