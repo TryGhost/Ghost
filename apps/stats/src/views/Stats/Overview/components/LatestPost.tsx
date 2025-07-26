@@ -96,7 +96,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='flex grow flex-col items-start justify-center self-stretch'>
                                 <div className='text-lg font-semibold leading-tighter tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
-                                        navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
+                                        navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
@@ -134,7 +134,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         className={latestPostStats.email_only ? 'w-full' : ''}
                                         variant='outline'
                                         onClick={() => {
-                                            navigate(`/posts/analytics/beta/${latestPostStats.id}`, {crossApp: true});
+                                            navigate(`/posts/analytics/${latestPostStats.id}`, {crossApp: true});
                                         }}
                                     >
                                         <LucideIcon.ChartNoAxesColumn />
@@ -151,7 +151,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
                                     <div className={metricClassName} onClick={() => {
-                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/web`, {crossApp: true});
+                                        navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
@@ -173,7 +173,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics) && 'row-[2/3] col-[1/2]'
                                         )
                                     } onClick={() => {
-                                        navigate(`/posts/analytics/beta/${latestPostStats.id}/growth`, {crossApp: true});
+                                        navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
@@ -195,7 +195,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     <>
                                         {emailTrackOpensEnabled && (
                                             <div className={metricClassName} onClick={() => {
-                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`, {crossApp: true});
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MailOpen size={16} strokeWidth={1.25} />
@@ -211,7 +211,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         )}
                                         {emailTrackClicksEnabled && (
                                             <div className={metricClassName} onClick={() => {
-                                                navigate(`/posts/analytics/beta/${latestPostStats.id}/newsletter`, {crossApp: true});
+                                                navigate(`/posts/analytics/${latestPostStats.id}/newsletter`, {crossApp: true});
                                             }}>
                                                 <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                                     <LucideIcon.MousePointerClick size={16} strokeWidth={1.25} />

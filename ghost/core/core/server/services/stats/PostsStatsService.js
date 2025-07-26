@@ -1199,6 +1199,7 @@ class PostsStatsService {
                 )
                 .leftJoin('emails', 'emails.post_id', 'p.id')
                 .where('p.status', 'published')
+                .where('p.type', 'post')
                 .whereNotNull('p.published_at')
                 .orderByRaw('CASE WHEN p.uuid IN (?) THEN 0 ELSE 1 END', [postUuids.length > 0 ? postUuids : ['none']])
                 .orderBy('p.published_at', 'desc')
@@ -1291,6 +1292,7 @@ class PostsStatsService {
                     .whereNotIn('p.uuid', postUuids)
                     .whereNotIn('p.id', existingPostIds)
                     .where('p.status', 'published')
+                    .where('p.type', 'post')
                     .whereNotNull('p.published_at')
                     .orderBy('p.published_at', 'desc')
                     .limit(remainingCount);

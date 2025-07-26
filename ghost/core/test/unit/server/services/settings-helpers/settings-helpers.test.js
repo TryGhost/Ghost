@@ -257,7 +257,8 @@ describe('Settings Helpers', function () {
         const config = configUtils.config;
         let settingsCache;
         let urlUtils;
-        let labs;
+        let labs = {};
+
         beforeEach(function () {
             settingsCache = {
                 get: sinon.stub().withArgs('social_web').returns(true)
@@ -265,9 +266,6 @@ describe('Settings Helpers', function () {
             urlUtils = {
                 getSiteUrl: sinon.stub().returns('http://example.com/'),
                 getSubdir: sinon.stub().returns('')
-            };
-            labs = {
-                isSet: sinon.stub().withArgs('ActivityPub').returns(true)
             };
             limitService = {
                 isDisabled: sinon.stub().withArgs('limitSocialWeb').returns(undefined)
@@ -280,15 +278,6 @@ describe('Settings Helpers', function () {
 
         it('returns false when the UI setting is set to false', function () {
             settingsCache.get.withArgs('social_web').returns(false);
-
-            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
-            const isEnabled = settingsHelpers.isSocialWebEnabled();
-
-            assert.equal(isEnabled, false);
-        });
-
-        it('returns false when the Labs setting is set to false', function () {
-            labs.isSet.withArgs('ActivityPub').returns(false);
 
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isSocialWebEnabled();
@@ -345,9 +334,6 @@ describe('Settings Helpers', function () {
                 getSiteUrl: sinon.stub().returns('http://example.com/'),
                 getSubdir: sinon.stub().returns('')
             };
-            labs = {
-                isSet: sinon.stub().withArgs('trafficAnalytics').returns(true)
-            };
             limitService = {
                 isDisabled: sinon.stub().withArgs('limitAnalytics').returns(undefined)
             };
@@ -368,15 +354,6 @@ describe('Settings Helpers', function () {
 
         it('returns false when the UI setting is set to false', function () {
             settingsCache.get.withArgs('web_analytics').returns(false);
-
-            const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
-            const isEnabled = settingsHelpers.isWebAnalyticsEnabled();
-
-            assert.equal(isEnabled, false);
-        });
-
-        it('returns false when the Labs setting is set to false', function () {
-            labs.isSet.withArgs('trafficAnalytics').returns(false);
 
             const settingsHelpers = new SettingsHelpers({settingsCache, config, urlUtils, labs, limitService});
             const isEnabled = settingsHelpers.isWebAnalyticsEnabled();

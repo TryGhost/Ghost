@@ -7,6 +7,7 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
+const {fixtureManager} = require('../../utils/e2e-framework');
 
 describe('Authors Content API', function () {
     let request;
@@ -100,7 +101,7 @@ describe('Authors Content API', function () {
     });
 
     it('Can request author by id including post count', async function () {
-        const res = await request.get(localUtils.API.getApiQuery(`authors/1/?key=${validKey}&include=count.posts`))
+        const res = await request.get(localUtils.API.getApiQuery(`authors/${fixtureManager.get('users', 0).id}/?key=${validKey}&include=count.posts`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)

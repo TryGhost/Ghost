@@ -26,14 +26,10 @@ describe('Unit: Service: post-analytics', function () {
             webAnalyticsEnabled: true,
             membersTrackSources: true
         };
-        const featureStub = {
-            trafficAnalytics: true
-        };
 
         service.ajax = {request: ajaxStub};
         service.ghostPaths = ghostPathsStub;
         service.settings = settingsStub;
-        service.feature = featureStub;
     });
 
     afterEach(function () {
