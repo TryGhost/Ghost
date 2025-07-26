@@ -33,7 +33,9 @@ module.exports = class ExplorePingService {
             ghost: this.ghostVersion.full,
             site_uuid: this.settingsCache.get('site_uuid'),
             url: this.config.get('url'),
-            theme: this.settingsCache.get('active_theme')
+            theme: this.settingsCache.get('active_theme'),
+            facebook: this.settingsCache.get('facebook'),
+            twitter: this.settingsCache.get('twitter')
         };
 
         try {

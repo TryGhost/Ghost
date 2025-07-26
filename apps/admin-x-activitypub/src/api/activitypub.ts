@@ -192,6 +192,22 @@ export interface PaginatedPostsResponse {
     next: string | null;
 }
 
+export type ApiError = {
+    message: string;
+    statusCode: number;
+};
+
+export const isApiError = (error: unknown): error is ApiError => {
+    return (
+        typeof error === 'object' &&
+        error !== null &&
+        'statusCode' in error &&
+        'message' in error &&
+        typeof error.statusCode === 'number' &&
+        typeof error.message === 'string'
+    );
+};
+
 export class ActivityPubAPI {
     constructor(
         private readonly apiUrl: URL,
@@ -230,17 +246,27 @@ export class ActivityPubAPI {
             return null;
         }
 
-        const json = await response.json();
-
         if (!response.ok) {
-            const error = {
-                message: json?.message || json?.error || 'Unexpected Error',
+            const error: ApiError = {
+                message: 'Something went wrong, please try again.',
                 statusCode: response.status
             };
+
+            try {
+                const json = await response.json();
+                const errorMessage = json.message || json.error;
+
+                if (errorMessage) {
+                    error.message = errorMessage;
+                }
+            } catch {
+                // Leave the default message
+            }
+
             throw error;
         }
 
-        return json;
+        return await response.json();
     }
 
     async blockDomain(domain: URL): Promise<boolean> {

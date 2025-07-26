@@ -33,6 +33,7 @@ jobs:
       IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
       IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
+      IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
       pull-requests: read
     steps:
@@ -109,6 +110,7 @@ jobs:
               - 'apps/admin-x-settings/**'
               - 'apps/admin-x-design-system/**'
               - 'apps/admin-x-framework/**'
+              - 'apps/shade/**'
             admin-x-activitypub:
               - *shared
               - 'apps/shade/**'
@@ -172,7 +174,7 @@ jobs:
       - name: Define Node test matrix
         id: node_matrix
         run: |
-          echo 'matrix=["20.11.1", "22.13.1"]' >> $GITHUB_OUTPUT
+          echo 'matrix=["22.13.1"]' >> $GITHUB_OUTPUT
 
       - name: Set up Node
         uses: actions/setup-node@v4
@@ -202,6 +204,7 @@ jobs:
       is_main: ${{ env.IS_MAIN }}
       is_development: ${{ env.IS_DEVELOPMENT }}
       is_six: ${{ env.IS_SIX }}
+      is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       has_browser_tests_label: ${{ github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'browser-tests') }}
       dependency_cache_key: ${{ env.cachekey }}
@@ -313,7 +316,7 @@ jobs:
     runs-on:
       labels: ubuntu-latest
     needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
+    if: needs.job_setup.outputs.changed_any_code == 'true' && (needs.job_setup.outputs.is_six_pr == 'true' || needs.job_setup.outputs.is_development == 'true' || needs.job_setup.outputs.has_browser_tests_label == 'true')
     concurrency:
       group: ${{ github.workflow }}
     steps:

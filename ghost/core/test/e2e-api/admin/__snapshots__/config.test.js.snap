@@ -9,7 +9,6 @@ Object {
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
     "labs": Object {
-      "ActivityPub": true,
       "additionalPaymentMethods": true,
       "announcementBar": true,
       "audienceFeedback": true,
@@ -22,7 +21,6 @@ Object {
       "i18n": true,
       "importMemberTier": true,
       "lexicalIndicators": true,
-      "mailEvents": true,
       "members": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
