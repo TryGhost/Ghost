@@ -78,7 +78,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
 
     const cardBackgroundColor = getBackgroundColor();
     const textColor = getTextColor();
-    const margin = isScreenshot ? 'm-12' : 'm-16';
+    const margin = isScreenshot ? 'm-12' : 'm-16 max-sm:m-8';
     const borderClass = isScreenshot ? '' : 'shadow-xl';
 
     const cardWidth = format === 'square' ? 'w-[422px]' : 'w-[316px]';
@@ -273,7 +273,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
     return (
         <TooltipProvider delayDuration={0}>
             <div className='flex flex-col gap-5'>
-                <div className='flex items-center justify-between'>
+                <div className='flex items-center justify-between max-sm:flex-col max-sm:items-start max-sm:gap-3'>
                     <H2>Share your profile</H2>
                     <div className='flex gap-4'>
                         <ToggleGroup defaultValue='light' type='single' value={backgroundColor} onValueChange={(value) => {
@@ -343,7 +343,7 @@ const Profile: React.FC<ProfileProps> = ({account, isLoading}) => {
                         publicationIcon={publicationIcon}
                         siteTitle={siteData?.site?.title}
                     />
-                    <div className='relative z-20 flex w-full items-center justify-between px-6 pb-6'>
+                    <div className='relative z-20 flex w-full items-center justify-between gap-4 px-6 pb-6 max-sm:mt-4 max-sm:flex-col'>
                         <div className='flex items-center gap-2'>
                             <a className='flex h-[34px] w-10 items-center justify-center rounded-sm bg-white px-3 shadow-xs hover:bg-gray-50 [&_svg]:size-4' href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}`} rel="noopener noreferrer" target='_blank'>
                                 <svg aria-hidden="true" viewBox="0 0 24 24"><path className="social-x_svg__x" d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path></svg>

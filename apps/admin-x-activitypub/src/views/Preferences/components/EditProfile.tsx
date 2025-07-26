@@ -341,7 +341,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                 <div className='relative flex items-center justify-stretch gap-1 rounded-md border border-transparent bg-gray-150 px-3 transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-none dark:bg-gray-900'>
                                     <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
                                     <Input className='w-auto grow !border-none bg-transparent px-0 !shadow-none !outline-none' placeholder="index" {...field} />
-                                    <span className='max-w-[200px] truncate whitespace-nowrap text-right text-gray-700' title={`@${handleDomain}`}>@{handleDomain}</span>
+                                    <span className='max-w-[200px] truncate whitespace-nowrap text-right text-gray-700 max-sm:hidden' title={`@${handleDomain}`}>@{handleDomain}</span>
                                 </div>
                             </FormControl>
                             {!hasHandleError && (
@@ -366,7 +366,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         </FormItem>
                     )}
                 />
-                <DialogFooter>
+                <DialogFooter className='max-sm:gap-2'>
                     <DialogClose asChild>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
