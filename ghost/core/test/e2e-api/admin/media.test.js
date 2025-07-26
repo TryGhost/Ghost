@@ -80,7 +80,7 @@ describe('Media API', function () {
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)
-                .field('ref', 'https://ghost.org/sample_640x360.ogv')
+                .field('ref', 'https://ghost.org/sample.ogg')
                 .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.ogg'), {filename: 'sample.ogg', contentType: 'application/ogg'})
                 .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
                 .expect(201);
