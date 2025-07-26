@@ -5,10 +5,6 @@
     --member-import-table-border: var(--whitegrey-d1);
 }
 
-.view-container  {
-    overflow-x: hidden;
-}
-
 /* Members avatar
 /* ----------------------------------------- */
 .gh-member-gravatar {
@@ -79,6 +75,10 @@
 @media (max-width: 1100px) {
     .members-list {
         border-bottom: none
+    }
+
+    .view-container.members-list-container  {
+        overflow-x: hidden;
     }
 }
 
