@@ -4,7 +4,6 @@ const typeGroupMapping = {
     ],
     blog: [
         'site',
-        'amp',
         'labs',
         'slack',
         'unsplash',

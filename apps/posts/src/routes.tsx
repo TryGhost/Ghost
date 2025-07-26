@@ -23,7 +23,7 @@ export const routes: RouteObject[] = [
             {
 
                 // Post Analytics
-                path: 'analytics/beta/:postId',
+                path: 'analytics/:postId',
                 element: (
                     <PostAnalyticsProvider>
                         <PostAnalytics />

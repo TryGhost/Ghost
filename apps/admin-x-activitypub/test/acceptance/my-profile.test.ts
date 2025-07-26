@@ -18,6 +18,20 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 }
             }, options: {useActivityPub: true}});
 
@@ -58,6 +72,20 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 deletePost: {
                     method: 'DELETE',
@@ -116,6 +144,20 @@ test.describe('My Profile', async () => {
                     path: '/v1/posts/me',
                     response: myPosts
                 },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
+                },
                 getMyProfileLiked: {
                     method: 'GET',
                     path: '/v1/posts/me/liked',
@@ -163,6 +205,20 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 getMyProfileFollowers: {
                     method: 'GET',
@@ -223,6 +279,20 @@ test.describe('My Profile', async () => {
                     method: 'GET',
                     path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 getMyProfileFollowing: {
                     method: 'GET',

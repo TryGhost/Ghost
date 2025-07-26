@@ -39,7 +39,7 @@ module.exports = {
                 'core/server/data/migrations/versions/3.*/*'
             ],
             rules: {
-                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z]+){2,}$', true]
+                'ghost/filenames/match-regex': ['error', '^(?:\\d{4}(?:-\\d{2}){4,5}|\\d{2})(?:-[a-zA-Z0-9]+){2,}$', true]
             }
         },
         {
@@ -83,6 +83,21 @@ module.exports = {
                         message: 'Invalid require of core/frontend from core/shared.'
                     }
                 ]]
+            }
+        },
+        {
+            files: 'core/server/data/schema/schema.js',
+            rules: {
+                'no-restricted-syntax': ['error',
+                    {
+                        selector: 'Property[key.name="created_by"]',
+                        message: '`created_by` is not allowed - The action log should be used to record user actions.'
+                    },
+                    {
+                        selector: 'Property[key.name="updated_by"]',
+                        message: '`updated_by` is not allowed - The action log should be used to record user actions.'
+                    }
+                ]
             }
         },
         {

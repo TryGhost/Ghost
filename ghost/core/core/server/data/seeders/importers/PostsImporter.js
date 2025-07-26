@@ -53,7 +53,6 @@ class PostsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             created_at: dateToDatabaseString(timestamp),
-            created_by: '1',
             updated_at: dateToDatabaseString(timestamp),
             published_at: status === 'published' ? dateToDatabaseString(timestamp) : status === 'scheduled' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
             uuid: faker.datatype.uuid(),
