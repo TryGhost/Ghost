@@ -107,7 +107,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             topRightContent='close'
             width={1120}
         >
-            <div className='grid grid-cols-[5.2fr_2.8fr]'>
+            <div className='grid grid-cols-1 gap-4 lg:grid-cols-[5.2fr_2.8fr] lg:gap-0'>
                 <EmbedSignupPreview
                     html={previewScript}
                     style={selectedLayout}
