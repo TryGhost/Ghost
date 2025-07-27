@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
@@ -15,6 +15,23 @@ interface NewsletterOverviewProps {
 const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const isSmallViewport = () => Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 600;
+    const [isMobile, setIsMobile] = useState(() => isSmallViewport());
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isSmallViewport());
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Call once to make sure state is in sync on mount
+        handleResize();
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     // Calculate stats from post data
     const stats = useMemo(() => {
@@ -60,7 +77,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
-    const isMobile = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480;
+    
     const fullWidth = !isMobile && (post.email_only || !isWebShown);
 
     return (
@@ -113,7 +130,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 </div>
 
                             </KpiCardHeader>
-                            {!fullWidth && <Separator />}
+                            {!fullWidth && <Separator className="col-span-2" />}
                             <div className='mx-auto my-6 h-[240px]'>
                                 <NewsletterRadialChart
                                     className='pointer-events-none aspect-square h-[240px]'
@@ -122,6 +139,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     tooltip={false}
                                 />
                             </div>
+                            
                         </div>
 
                     </div>
