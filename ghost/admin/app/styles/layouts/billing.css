@@ -55,6 +55,6 @@
 
 @media (max-width: 500px) {
     .gh-billing {
-        z-index: 801;
+        z-index: var(--z-index-iframe-mobile);
     }
 }

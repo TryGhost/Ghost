@@ -241,6 +241,6 @@
     }
 
     .gh-explore {
-        z-index: 801;
+        z-index: var(--z-index-iframe-mobile);
     }
 }
