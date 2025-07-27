@@ -323,7 +323,7 @@ p.gh-members-list-email {
     padding-right: 20px !important;
 }
 
-@media (max-width: 440px) {
+@media (max-width: 480px) {
     .gh-members-list-row .gh-list-data:first-child {
         width: 160px;
         min-width: 160px;
