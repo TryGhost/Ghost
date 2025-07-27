@@ -404,7 +404,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const [selectedTab, setSelectedTab] = useState<string>('profile');
 
-    const topRightContent = <span></span>; // render an empty header section for the modal.
+    // Override the default "×" icon.
+    const topRightContent: React.ReactNode = <></>;
 
     return (
         <Modal
