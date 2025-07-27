@@ -199,6 +199,10 @@
     .settings-menu-content {
         padding-top: 72px;
     }
+
+    .gh-post-settings {
+        padding: 10px 24px 0 24px;
+    }
 }
 
 .settings-menu-content label code {
