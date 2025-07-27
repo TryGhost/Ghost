@@ -60,7 +60,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
-    const fullWidth = post.email_only || !isWebShown;
+    const isMobile = Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 480;
+    const fullWidth = !isMobile && (post.email_only || !isWebShown);
 
     return (
         <Card className={`group/datalist overflow-hidden ${fullWidth && 'col-span-2'}`}>
@@ -112,23 +113,24 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 </div>
 
                             </KpiCardHeader>
+                            {!fullWidth && <Separator />}
+                            <div className='mx-auto my-6 h-[240px]'>
+                                <NewsletterRadialChart
+                                    className='pointer-events-none aspect-square h-[240px]'
+                                    config={commonChartConfig}
+                                    data={commonChartData}
+                                    tooltip={false}
+                                />
+                            </div>
                         </div>
-                        {!fullWidth && <Separator />}
-                        <div className='mx-auto my-6 h-[240px]'>
-                            <NewsletterRadialChart
-                                className='pointer-events-none aspect-square h-[240px]'
-                                config={commonChartConfig}
-                                data={commonChartData}
-                                tooltip={false}
-                            />
-                        </div>
+
                     </div>
 
                     <div className={`${fullWidth && 'pl-6'}`}>
                         {!fullWidth && <Separator />}
                         <div className={fullWidth ? '' : 'pt-3'}>
                             <div className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}>
-                                <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
+                                <span className='text-muted-foreground font-medium'>Top clicked links in this email</span>
                                 <HTable>Members</HTable>
                             </div>
 
