@@ -329,7 +329,8 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         setSelectedTab(newTabId);
     };
 
-    const topRightContent = <span></span>; // render an empty header section for the modal.
+    // Override the default "×" icon.
+    const topRightContent: React.ReactNode = <></>;
 
     return (
         <Modal
