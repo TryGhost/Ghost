@@ -626,7 +626,7 @@ function generateNewsletterClickStats() {
 async function fetchRealPosts(limit = 10): Promise<Record<string, unknown>[]> {
     try {
         // Try to fetch real posts from the Ghost API
-        const response = await fetch(`/ghost/api/admin/posts/?limit=${limit}&fields=id,uuid,slug,title,published_at,feature_image,status,authors&formats=`, {
+        const response = await fetch(`/ghost/api/admin/posts/?limit=${limit}&fields=id,uuid,slug,title,published_at,feature_image,status&include=authors`, {
             headers: {
                 Accept: 'application/json',
                 'Content-Type': 'application/json'
