@@ -50,7 +50,7 @@ interface MasterAnalyticsModel {
     totalMrr: number;
     postViews: Array<{postIndex: number; views: number; members: number}>;
     dailyVisits: Array<{date: string; visits: number; pageviews: number}>;
-    locationBreakdown: Array<{location: string; visits: number}>;
+    locationBreakdown: Array<{location: string; country: string; country_code: string; visits: number}>;
     sourceBreakdown: Array<{source: string; visits: number; members: number}>;
     initialized: boolean;
 }
@@ -125,20 +125,47 @@ function initializeMasterAnalytics(): void {
     }
 
     // Generate location breakdown that adds up to total
-    const locations = ['United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'France', 'Netherlands', 'India'];
+    const locations = [
+        {country: 'United States', country_code: 'US'},
+        {country: 'United Kingdom', country_code: 'GB'},
+        {country: 'Switzerland', country_code: 'CH'},
+        {country: 'China', country_code: 'CN'},
+        {country: 'Australia', country_code: 'AU'},
+        {country: 'Netherlands', country_code: 'NL'},
+        {country: 'South Korea', country_code: 'KR'},
+        {country: 'Serbia', country_code: 'RS'},
+        {country: 'Germany', country_code: 'DE'},
+        {country: 'Hungary', country_code: 'HU'},
+        {country: 'United Arab Emirates', country_code: 'AE'},
+        {country: 'France', country_code: 'FR'},
+        {country: 'Mongolia', country_code: 'MN'},
+        {country: 'Portugal', country_code: 'PT'},
+        {country: 'Canada', country_code: 'CA'}
+    ];
     const locationBreakdown = [];
     let remainingLocationVisits = totalVisits;
     
     for (let i = 0; i < locations.length - 1; i++) {
         const share = Math.pow(0.6, i) * (0.5 + Math.random() * 0.3);
         const visits = Math.min(Math.floor(remainingLocationVisits * share), remainingLocationVisits);
-        locationBreakdown.push({location: locations[i], visits});
+        locationBreakdown.push({
+            location: locations[i].country,
+            country: locations[i].country,
+            country_code: locations[i].country_code,
+            visits
+        });
         remainingLocationVisits -= visits;
     }
     
     // Last location gets remaining visits
     if (remainingLocationVisits > 0) {
-        locationBreakdown.push({location: locations[locations.length - 1], visits: remainingLocationVisits});
+        const lastLocation = locations[locations.length - 1];
+        locationBreakdown.push({
+            location: lastLocation.country,
+            country: lastLocation.country,
+            country_code: lastLocation.country_code,
+            visits: remainingLocationVisits
+        });
     }
 
     // Generate source breakdown that adds up to total
@@ -241,6 +268,7 @@ export function clearFakeDataCache(): void {
  * Get cache stats for debugging
  */
 export function getFakeDataCacheStats(): {size: number; keys: string[]} {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cache = (fakeDataCache as any).cache;
     return {
         size: cache.size,
@@ -478,12 +506,40 @@ function generateTopLocations() {
     initializeMasterAnalytics();
     
     // Use the pre-calculated location breakdown from master analytics
+    // The location field should contain the country code, not the full name
     const data = masterAnalytics.locationBreakdown
         .sort((a, b) => b.visits - a.visits)
-        .slice(0, 8); // Take top 8 locations
+        .slice(0, 15) // Take top 15 locations to match real API
+        .map(location => ({
+            location: location.country_code, // Use country code as location field
+            visits: location.visits
+        }));
+    
+    // Add some empty location entries like in real API
+    if (data.length > 2) {
+        // Insert an empty location with some visits (represents unknown/private locations)
+        data.splice(1, 0, {
+            location: "",
+            visits: Math.floor(data[0].visits * 0.3) // About 30% of top location's visits
+        });
+    }
+    
+    // eslint-disable-next-line no-console
+    console.log('Generated top locations data:', data);
     
     return {
-        data
+        meta: [
+            {name: 'location', type: 'String'},
+            {name: 'visits', type: 'UInt64'}
+        ],
+        data,
+        rows: data.length,
+        rows_before_limit_at_least: data.length,
+        statistics: {
+            elapsed: 0.01 + Math.random() * 0.02,
+            rows_read: Math.floor(Math.random() * 50000) + 10000,
+            bytes_read: Math.floor(Math.random() * 3000000) + 1000000
+        }
     };
 }
 
