@@ -41,6 +41,157 @@ class FakeDataCache {
 const fakeDataCache = new FakeDataCache();
 
 /**
+ * Master analytics data model to ensure all metrics are consistent
+ */
+interface MasterAnalyticsModel {
+    totalVisits: number;
+    totalPageviews: number;
+    totalMembers: number;
+    totalMrr: number;
+    postViews: Array<{postIndex: number; views: number; members: number}>;
+    dailyVisits: Array<{date: string; visits: number; pageviews: number}>;
+    locationBreakdown: Array<{location: string; visits: number}>;
+    sourceBreakdown: Array<{source: string; visits: number; members: number}>;
+    initialized: boolean;
+}
+
+// Global analytics model
+let masterAnalytics: MasterAnalyticsModel = {
+    totalVisits: 0,
+    totalPageviews: 0,
+    totalMembers: 0,
+    totalMrr: 0,
+    postViews: [],
+    dailyVisits: [],
+    locationBreakdown: [],
+    sourceBreakdown: [],
+    initialized: false
+};
+
+/**
+ * Initialize the master analytics model with consistent data
+ */
+function initializeMasterAnalytics(): void {
+    if (masterAnalytics.initialized) {
+        return;
+    }
+
+    // Generate realistic total metrics
+    const totalVisits = 800 + Math.floor(Math.random() * 400); // 800-1200 total visits
+    const totalPageviews = Math.floor(totalVisits * (1.8 + Math.random() * 0.7)); // 1.8-2.5 pages per visit
+    const totalMembers = Math.floor(totalVisits * (0.08 + Math.random() * 0.12)); // 8-20% conversion rate
+    const totalMrr = Math.floor(totalMembers * 0.3 * (15 + Math.random() * 20)); // 30% paid, $15-35/month
+
+    // Distribute visits across 10 top posts (following Pareto principle)
+    const postViews = [];
+    let remainingViews = Math.floor(totalVisits * 0.7); // 70% of traffic goes to top posts
+    
+    for (let i = 0; i < 10; i++) {
+        // Use power law distribution - first post gets more, then decreasing
+        const share = Math.pow(0.7, i) * (0.8 + Math.random() * 0.4);
+        const views = Math.floor(remainingViews * share / (i + 1));
+        const members = Math.floor(views * (0.05 + Math.random() * 0.15));
+        
+        postViews.push({postIndex: i, views, members});
+        remainingViews = Math.max(0, remainingViews - views);
+    }
+
+    // Generate daily breakdown (31 days)
+    const dailyVisits = [];
+    let distributedVisits = 0;
+    
+    for (let i = 30; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        
+        // Distribute total visits across days with some variation
+        const dailyShare = (1 / 31) + (Math.random() - 0.5) * 0.02; // ±1% variation
+        const visits = Math.floor(totalVisits * dailyShare);
+        const pageviews = Math.floor(visits * (1.8 + Math.random() * 0.7));
+        
+        dailyVisits.push({
+            date: date.toISOString().split('T')[0],
+            visits,
+            pageviews
+        });
+        
+        distributedVisits += visits;
+    }
+
+    // Adjust last day to match total exactly
+    if (dailyVisits.length > 0) {
+        const difference = totalVisits - distributedVisits;
+        dailyVisits[dailyVisits.length - 1].visits += difference;
+    }
+
+    // Generate location breakdown that adds up to total
+    const locations = ['United States', 'United Kingdom', 'Canada', 'Germany', 'Australia', 'France', 'Netherlands', 'India'];
+    const locationBreakdown = [];
+    let remainingLocationVisits = totalVisits;
+    
+    for (let i = 0; i < locations.length - 1; i++) {
+        const share = Math.pow(0.6, i) * (0.5 + Math.random() * 0.3);
+        const visits = Math.min(Math.floor(remainingLocationVisits * share), remainingLocationVisits);
+        locationBreakdown.push({location: locations[i], visits});
+        remainingLocationVisits -= visits;
+    }
+    
+    // Last location gets remaining visits
+    if (remainingLocationVisits > 0) {
+        locationBreakdown.push({location: locations[locations.length - 1], visits: remainingLocationVisits});
+    }
+
+    // Generate source breakdown that adds up to total
+    const sources = [
+        {source: 'Direct', baseShare: 0.35},
+        {source: 'Google', baseShare: 0.25},
+        {source: 'Twitter', baseShare: 0.15},
+        {source: 'LinkedIn', baseShare: 0.12},
+        {source: 'Facebook', baseShare: 0.08},
+        {source: 'Reddit', baseShare: 0.05}
+    ];
+    
+    const sourceBreakdown = [];
+    let remainingSourceVisits = totalVisits;
+    
+    for (let i = 0; i < sources.length - 1; i++) {
+        const share = sources[i].baseShare * (0.8 + Math.random() * 0.4);
+        const visits = Math.min(Math.floor(totalVisits * share), remainingSourceVisits);
+        const members = Math.floor(visits * (0.05 + Math.random() * 0.15));
+        
+        sourceBreakdown.push({
+            source: sources[i].source,
+            visits,
+            members
+        });
+        remainingSourceVisits -= visits;
+    }
+    
+    // Last source gets remaining visits
+    if (remainingSourceVisits > 0) {
+        const members = Math.floor(remainingSourceVisits * (0.05 + Math.random() * 0.15));
+        sourceBreakdown.push({
+            source: sources[sources.length - 1].source,
+            visits: remainingSourceVisits,
+            members
+        });
+    }
+
+    // Update master analytics
+    masterAnalytics = {
+        totalVisits,
+        totalPageviews,
+        totalMembers,
+        totalMrr,
+        postViews,
+        dailyVisits,
+        locationBreakdown,
+        sourceBreakdown,
+        initialized: true
+    };
+}
+
+/**
  * Wrapper function to add caching to fake data generators
  */
 function withCache<T>(key: string, generator: () => T): T {
@@ -82,6 +233,8 @@ function withDynamicCache<T>(baseKey: string, params: string, generator: () => T
  */
 export function clearFakeDataCache(): void {
     fakeDataCache.clear();
+    // Reset master analytics so it gets regenerated with new random values
+    masterAnalytics.initialized = false;
 }
 
 /**
@@ -100,13 +253,17 @@ export function getFakeDataCacheStats(): {size: number; keys: string[]} {
  * Usage in browser console: window.testRealPostFetching()
  */
 export async function testRealPostFetching(): Promise<void> {
+    // eslint-disable-next-line no-console
     console.log('Testing real post fetching...');
     try {
         const posts = await fetchRealPosts(5);
+        // eslint-disable-next-line no-console
         console.log('Fetched posts:', posts);
+        // eslint-disable-next-line no-console
         console.log(`Successfully fetched ${posts.length} posts`);
         
         if (posts.length > 0) {
+            // eslint-disable-next-line no-console
             console.log('Sample post:', {
                 id: posts[0].id,
                 title: posts[0].title,
@@ -115,8 +272,27 @@ export async function testRealPostFetching(): Promise<void> {
             });
         }
     } catch (error) {
+        // eslint-disable-next-line no-console
         console.error('Failed to test real post fetching:', error);
     }
+}
+
+/**
+ * Show master analytics data for debugging
+ * Usage in browser console: window.showMasterAnalytics()
+ */
+export function showMasterAnalytics(): void {
+    initializeMasterAnalytics();
+    // eslint-disable-next-line no-console
+    console.log('Master Analytics Data:', {
+        totalVisits: masterAnalytics.totalVisits,
+        totalPageviews: masterAnalytics.totalPageviews,
+        totalMembers: masterAnalytics.totalMembers,
+        topPostViews: masterAnalytics.postViews.slice(0, 5),
+        topSources: masterAnalytics.sourceBreakdown.slice(0, 3),
+        topLocations: masterAnalytics.locationBreakdown.slice(0, 3),
+        dailyVisitsSum: masterAnalytics.dailyVisits.reduce((sum, day) => sum + day.visits, 0)
+    });
 }
 
 /**
@@ -235,86 +411,45 @@ function generateTopPages() {
 
 /**
  * Generates fake top sources data for Tinybird matching BaseSourceData interface
+ * Uses master analytics model to ensure consistency
  */
 function generateTopSources() {
-    const sources = [
-        {
-            source: 'Direct', 
-            visits: 320 + Math.floor(Math.random() * 180),
-            free_members: Math.floor(Math.random() * 10),
-            paid_members: Math.floor(Math.random() * 5),
-            mrr: Math.floor(Math.random() * 100)
-        },
-        {
-            source: 'Google', 
-            visits: 280 + Math.floor(Math.random() * 120),
-            free_members: Math.floor(Math.random() * 8),
-            paid_members: Math.floor(Math.random() * 4),
-            mrr: Math.floor(Math.random() * 80)
-        },
-        {
-            source: 'Twitter', 
-            visits: 150 + Math.floor(Math.random() * 100),
-            free_members: Math.floor(Math.random() * 6),
-            paid_members: Math.floor(Math.random() * 3),
-            mrr: Math.floor(Math.random() * 60)
-        },
-        {
-            source: 'LinkedIn', 
-            visits: 90 + Math.floor(Math.random() * 60),
-            free_members: Math.floor(Math.random() * 4),
-            paid_members: Math.floor(Math.random() * 2),
-            mrr: Math.floor(Math.random() * 40)
-        },
-        {
-            source: 'Facebook', 
-            visits: 70 + Math.floor(Math.random() * 50),
-            free_members: Math.floor(Math.random() * 3),
-            paid_members: Math.floor(Math.random() * 1),
-            mrr: Math.floor(Math.random() * 30)
-        },
-        {
-            source: 'Reddit', 
-            visits: 45 + Math.floor(Math.random() * 40),
-            free_members: Math.floor(Math.random() * 2),
-            paid_members: 0,
-            mrr: 0
-        }
-    ];
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
+    
+    // Use the pre-calculated source breakdown from master analytics
+    const data = masterAnalytics.sourceBreakdown.map(source => ({
+        source: source.source,
+        visits: source.visits,
+        free_members: Math.floor(source.members * 0.7), // 70% free
+        paid_members: Math.floor(source.members * 0.3), // 30% paid
+        mrr: Math.floor(source.members * 0.3 * (15 + Math.random() * 20)) // Paid members * $15-35
+    }));
     
     // Sort by visits
-    sources.sort((a, b) => b.visits - a.visits);
+    data.sort((a, b) => b.visits - a.visits);
     
     return {
-        data: sources
+        data
     };
 }
 
 /**
  * Generates fake KPIs data for Tinybird with proper field names and multiple dates
+ * Uses master analytics model to ensure consistency
  */
 function generateKpis() {
-    const data = [];
-    const now = new Date();
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
     
-    // Generate 31 days of data (matching the real API response)
-    for (let i = 30; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(date.getDate() - i);
-        
-        const visits = Math.floor(Math.random() * 10) + 10; // 10-20 visits
-        const pageviews = visits + Math.floor(Math.random() * visits * 10); // More pageviews than visits
-        const bounceRate = Math.random(); // 0-1 (0-100%)
-        const avgSessionSec = Math.random() * 3000; // 0-3000 seconds
-        
-        data.push({
-            date: date.toISOString().split('T')[0],
-            visits,
-            pageviews,
-            bounce_rate: Number(bounceRate.toFixed(2)),
-            avg_session_sec: Number(avgSessionSec.toFixed(2))
-        });
-    }
+    // Use the pre-calculated daily visits from master analytics
+    const data = masterAnalytics.dailyVisits.map(day => ({
+        date: day.date,
+        visits: day.visits,
+        pageviews: day.pageviews,
+        bounce_rate: Number((0.35 + Math.random() * 0.3).toFixed(2)), // 35-65% bounce rate
+        avg_session_sec: Number((120 + Math.random() * 240).toFixed(2)) // 2-6 minutes average session
+    }));
     
     return {
         meta: [
@@ -336,26 +471,19 @@ function generateKpis() {
 
 /**
  * Generates fake top locations data for Tinybird
+ * Uses master analytics model to ensure consistency
  */
 function generateTopLocations() {
-    const locations = [
-        {location: 'United States', visits: 450 + Math.floor(Math.random() * 200)},
-        {location: 'United Kingdom', visits: 180 + Math.floor(Math.random() * 100)},
-        {location: 'Canada', visits: 120 + Math.floor(Math.random() * 80)},
-        {location: 'Germany', visits: 100 + Math.floor(Math.random() * 60)},
-        {location: 'Australia', visits: 85 + Math.floor(Math.random() * 50)},
-        {location: 'France', visits: 75 + Math.floor(Math.random() * 40)},
-        {location: 'Netherlands', visits: 65 + Math.floor(Math.random() * 35)},
-        {location: 'India', visits: 60 + Math.floor(Math.random() * 30)},
-        {location: 'Brazil', visits: 55 + Math.floor(Math.random() * 25)},
-        {location: 'Japan', visits: 50 + Math.floor(Math.random() * 20)}
-    ];
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
     
-    // Sort by visits and take top 8
-    locations.sort((a, b) => b.visits - a.visits);
+    // Use the pre-calculated location breakdown from master analytics
+    const data = masterAnalytics.locationBreakdown
+        .sort((a, b) => b.visits - a.visits)
+        .slice(0, 8); // Take top 8 locations
     
     return {
-        data: locations.slice(0, 8)
+        data
     };
 }
 
@@ -495,12 +623,12 @@ function generateNewsletterClickStats() {
 /**
  * Fetches real posts from Ghost API for more authentic fake data
  */
-async function fetchRealPosts(limit = 10): Promise<any[]> {
+async function fetchRealPosts(limit = 10): Promise<Record<string, unknown>[]> {
     try {
         // Try to fetch real posts from the Ghost API
         const response = await fetch(`/ghost/api/admin/posts/?limit=${limit}&fields=id,uuid,slug,title,published_at,feature_image,status,authors&formats=`, {
             headers: {
-                'Accept': 'application/json',
+                Accept: 'application/json',
                 'Content-Type': 'application/json'
             }
         });
@@ -510,12 +638,14 @@ async function fetchRealPosts(limit = 10): Promise<any[]> {
             const posts = data.posts || [];
             
             // Filter out any posts without titles (just in case)
-            return posts.filter((post: any) => post.title && post.title.trim().length > 0);
+            return posts.filter((post: Record<string, unknown>) => post.title && String(post.title).trim().length > 0);
         } else {
+            // eslint-disable-next-line no-console
             console.warn('Ghost API returned non-OK status:', response.status, response.statusText);
         }
     } catch (error) {
         // Fall back to fake posts if API fails
+        // eslint-disable-next-line no-console
         console.warn('Failed to fetch real posts, using fake data:', error);
     }
     
@@ -534,21 +664,29 @@ async function fetchRealPosts(limit = 10): Promise<any[]> {
 
 /**
  * Generates fake top posts views data using real post data with fake analytics
+ * Uses master analytics model to ensure consistency
  */
 async function generateTopPostsViews() {
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
+    
     // Fetch real posts from the API
     const realPosts = await fetchRealPosts(10);
     
     const stats = realPosts.map((post, i) => {
-        const views = 500 - (i * 30) + Math.floor(Math.random() * 100); // Decreasing views with some randomness
-        const members = Math.floor(views * (0.05 + Math.random() * 0.15)); // 5-20% conversion to members
-        const sentCount = Math.random() > 0.3 ? 800 + Math.floor(Math.random() * 400) : null; // 70% were sent as newsletters
+        // Use pre-calculated post views from master analytics
+        const postAnalytics = masterAnalytics.postViews[i] || {views: 10, members: 1}; // Fallback for extra posts
+        const views = postAnalytics.views;
+        const members = postAnalytics.members;
+        
+        // Newsletter stats (realistic but not tied to overall totals)
+        const sentCount = Math.random() > 0.3 ? 600 + Math.floor(Math.random() * 300) : null; // 70% were sent as newsletters
         const openedCount = sentCount ? Math.floor(sentCount * (0.25 + Math.random() * 0.35)) : null;
         
         // Format authors - handle both array and string formats
         let authorsString = 'John Doe';
         if (post.authors && Array.isArray(post.authors)) {
-            authorsString = post.authors.map((author: any) => author.name).join(', ');
+            authorsString = post.authors.map((author: Record<string, unknown>) => author.name).join(', ');
         } else if (typeof post.authors === 'string') {
             authorsString = post.authors;
         }
@@ -579,20 +717,26 @@ async function generateTopPostsViews() {
 
 /**
  * Generates fake top content data using real post data with fake analytics
+ * Uses master analytics model to ensure consistency
  */
 async function generateTopContent() {
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
+    
     // Fetch real posts for more authentic content
     const realPosts = await fetchRealPosts(15);
     
     const stats = realPosts.map((post, i) => {
-        const visits = 400 - (i * 20) + Math.floor(Math.random() * 50); // Decreasing visits with randomness
+        // Use consistent analytics - distribute remaining visits (30% of total not in top posts)
+        const remainingVisits = Math.floor(masterAnalytics.totalVisits * 0.3);
+        const visits = Math.floor(remainingVisits / 15) + Math.floor(Math.random() * 10); // Even distribution with some variation
         
         // Create a realistic pathname from the post slug or title
         let pathname = '/';
         if (post.slug) {
-            pathname = `/${post.slug}/`;
+            pathname = `/${String(post.slug)}/`;
         } else if (post.title) {
-            pathname = `/${post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`;
+            pathname = `/${String(post.title).toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}/`;
         } else {
             pathname = `/post-${i + 1}/`;
         }

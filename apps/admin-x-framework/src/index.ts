@@ -24,7 +24,7 @@ export {getSymbol} from './utils/currency';
 export {getStatEndpointUrl, getToken} from './utils/stats-config';
 
 // Fake data utilities (for demo/development)
-export {clearFakeDataCache, getFakeDataCacheStats, testRealPostFetching} from './utils/fake-data';
+export {clearFakeDataCache, getFakeDataCacheStats, testRealPostFetching, showMasterAnalytics} from './utils/fake-data';
 
 // Post utilities
 export type {Post} from './api/posts';
