@@ -553,6 +553,36 @@ function generatePostGrowth() {
 }
 
 /**
+ * Generates fake post stats data for individual post analytics
+ */
+function generatePostStats(postId = '687ff029d5bb294d5cca2116') {
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
+    
+    // Use the first post's analytics from master data
+    const postAnalytics = masterAnalytics.postViews[0] || {views: 50 + Math.floor(Math.random() * 100), members: 5 + Math.floor(Math.random() * 10)};
+    
+    // Match the expected Ghost API response structure
+    const result = {
+        stats: [{
+            id: postId,
+            recipient_count: Math.random() > 0.3 ? 600 + Math.floor(Math.random() * 300) : null, // 70% were sent as newsletters
+            opened_count: Math.random() > 0.3 ? Math.floor((600 + Math.floor(Math.random() * 300)) * (0.25 + Math.random() * 0.35)) : null,
+            open_rate: Math.random() > 0.3 ? Number((0.25 + Math.random() * 0.35).toFixed(3)) : null,
+            member_delta: postAnalytics.members,
+            free_members: Math.floor(postAnalytics.members * 0.7),
+            paid_members: Math.floor(postAnalytics.members * 0.3),
+            visitors: postAnalytics.views
+        }]
+    };
+    
+    // eslint-disable-next-line no-console
+    console.log('Generated post stats data:', result);
+    
+    return result;
+}
+
+/**
  * Generates fake newsletter basic stats for Ghost Admin API
  */
 function generateNewsletterBasicStats() {
@@ -774,11 +804,72 @@ export const fakeDataFixtures = {
     // Ghost Admin API endpoints
     postReferrers: () => withCache('postReferrers', generatePostReferrers),
     postGrowth: () => withCache('postGrowth', generatePostGrowth),
+    postStats: () => withCache('postStats', generatePostStats),
     newsletterBasicStats: () => withCache('newsletterBasicStats', generateNewsletterBasicStats),
     newsletterClickStats: () => withCache('newsletterClickStats', generateNewsletterClickStats),
     topPostsViews: () => withAsyncCache('topPostsViews', generateTopPostsViews),
-    topContent: () => withAsyncCache('topContent', generateTopContent)
+    topContent: () => withAsyncCache('topContent', generateTopContent),
+    postsWithAnalytics: () => withAsyncCache('postsWithAnalytics', () => generatePostsWithFakeAnalytics())
 };
+
+/**
+ * Generates fake posts data with enhanced analytics (clicks, members, etc.)
+ */
+async function generatePostsWithFakeAnalytics(limit = 10): Promise<unknown> {
+    // Fetch real posts from the API
+    const realPosts = await fetchRealPosts(limit);
+    
+    // Enhance each post with fake analytics data
+    const enhancedPosts = realPosts.map((post, i) => {
+        // Use master analytics for consistent data
+        initializeMasterAnalytics();
+        const postAnalytics = masterAnalytics.postViews[i] || {views: 10 + Math.floor(Math.random() * 50), members: 1 + Math.floor(Math.random() * 5)};
+        
+        // eslint-disable-next-line no-console
+        console.log(`Generating fake analytics for post ${i}:`, {
+            postTitle: post.title,
+            views: postAnalytics.views,
+            members: postAnalytics.members
+        });
+        
+        return {
+            ...post,
+            // Add fake click analytics
+            count: {
+                clicks: Math.floor(postAnalytics.views * (0.05 + Math.random() * 0.15)), // 5-20% of views result in clicks
+                members: postAnalytics.members,
+                paid_conversions: Math.floor(postAnalytics.members * 0.3), // 30% paid conversion
+                signups: postAnalytics.members,
+                visitors: postAnalytics.views, // Add visitors field for UI
+                views: postAnalytics.views // Add views field as alternative
+            },
+            // Add newsletter analytics if it was sent
+            email: Math.random() > 0.3 ? {
+                sent_count: 600 + Math.floor(Math.random() * 300),
+                delivered_count: Math.floor((600 + Math.floor(Math.random() * 300)) * 0.98), // 98% delivery rate
+                opened_count: Math.floor((600 + Math.floor(Math.random() * 300)) * (0.25 + Math.random() * 0.35)),
+                clicked_count: Math.floor((600 + Math.floor(Math.random() * 300)) * (0.02 + Math.random() * 0.08)),
+                failed_count: Math.floor((600 + Math.floor(Math.random() * 300)) * 0.02), // 2% failure rate
+                unsubscribed_count: Math.floor(Math.random() * 5), // 0-5 unsubscribes
+                complained_count: Math.floor(Math.random() * 2) // 0-1 complaints
+            } : null
+        };
+    });
+    
+    return {
+        posts: enhancedPosts,
+        meta: {
+            pagination: {
+                page: 1,
+                limit: limit,
+                pages: 1,
+                total: enhancedPosts.length,
+                next: null,
+                prev: null
+            }
+        }
+    };
+}
 
 /**
  * Creates a fake data provider function that can be used with FrameworkProvider
@@ -816,6 +907,17 @@ export function createFakeDataProvider() {
             return result;
         }
         
+        // Check for posts endpoint with analytics includes
+        if (pathname === '/ghost/api/admin/posts/' && url.searchParams.has('include')) {
+            const includes = url.searchParams.get('include') || '';
+            if (includes.includes('count.clicks') || includes.includes('email')) {
+                // eslint-disable-next-line no-console
+                console.log('Intercepting posts request with analytics:', {pathname, includes, endpoint});
+                const limit = parseInt(url.searchParams.get('limit') || '10', 10);
+                return withAsyncCache(`postsWithAnalytics:${limit}`, () => generatePostsWithFakeAnalytics(limit));
+            }
+        }
+        
         // Check for dynamic post-specific endpoints
         const referrersMatch = pathname.match(/^\/ghost\/api\/admin\/stats\/posts\/([^/]+)\/top-referrers$/);
         if (referrersMatch) {
@@ -827,6 +929,17 @@ export function createFakeDataProvider() {
         if (growthMatch) {
             const postId = growthMatch[1];
             return withDynamicCache(`postGrowth`, postId, generatePostGrowth);
+        }
+        
+        const statsMatch = pathname.match(/^\/ghost\/api\/admin\/stats\/posts\/([^/]+)\/stats\/?$/);
+        if (statsMatch) {
+            const postId = statsMatch[1];
+            // eslint-disable-next-line no-console
+            console.log('Intercepting post stats request:', {pathname, postId, endpoint});
+            const result = withDynamicCache(`postStats`, postId, () => generatePostStats(postId));
+            // eslint-disable-next-line no-console
+            console.log('Generated post stats result:', result);
+            return result;
         }
         
         // Return undefined to fall back to real API
