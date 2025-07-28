@@ -65,6 +65,22 @@ describe('Acceptance: FooterBanner WhatsNew', function () {
         expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
     });
 
+    it('dismisses the What\'s New banner when user profile dropdown option is clicked', async function() {
+        await visit('/posts');
+
+        await click('.gh-nav .gh-nav-bottom .ember-basic-dropdown-trigger');
+        await click('.ember-basic-dropdown-content .dropdown-item[data-test-nav="whatsnew"]');
+
+        expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
+    
+        // Navigate away and back
+        await visit('/pages');
+        await visit('/posts');
+    
+        // Banner should still be hidden
+        expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
+    });
+
     it('shows the What\'s new banner when loading a non-dashboard route', async function () {
         await visit('tags');
 
