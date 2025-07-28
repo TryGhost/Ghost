@@ -426,19 +426,50 @@ export const getRangeForStartDate = (startDate: string) => {
 
 //Return today and startdate for charts
 export const getRangeDates = (range: number) => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const endDate = moment().tz(timezone).endOf('day');
-    let startDate;
+    try {
+        const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        const endDate = moment().tz(timezone).endOf('day');
+        let startDate;
+        
+        // Validate range input
+        if (typeof range !== 'number' || isNaN(range)) {
+            // eslint-disable-next-line no-console
+            console.error('[getRangeDates] Invalid range provided:', range, 'defaulting to 30 days');
+            range = 30;
+        }
 
-    if (range === -1) {
-        // Year to date - use January 1st of current year
-        startDate = moment().tz(timezone).startOf('year');
-    } else {
-        // Regular range calculation
-        startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+        if (range === -1) {
+            // Year to date - use January 1st of current year
+            startDate = moment().tz(timezone).startOf('year');
+        } else if (range <= 0) {
+            // Handle other invalid ranges
+            // eslint-disable-next-line no-console
+            console.error('[getRangeDates] Invalid range <= 0:', range, 'defaulting to 30 days');
+            startDate = moment().tz(timezone).subtract(29, 'days').startOf('day');
+        } else {
+            // Regular range calculation
+            startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+        }
+        
+        // Validate the dates are valid
+        if (!startDate.isValid() || !endDate.isValid()) {
+            // eslint-disable-next-line no-console
+            console.error('[getRangeDates] Invalid date calculation, using defaults');
+            const fallbackEnd = moment().tz(timezone).endOf('day');
+            const fallbackStart = moment().tz(timezone).subtract(29, 'days').startOf('day');
+            return {startDate: fallbackStart, endDate: fallbackEnd, timezone};
+        }
+
+        return {startDate, endDate, timezone};
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error('[getRangeDates] Error calculating date range:', error);
+        // Return safe defaults
+        const timezone = 'UTC';
+        const endDate = moment().endOf('day');
+        const startDate = moment().subtract(29, 'days').startOf('day');
+        return {startDate, endDate, timezone};
     }
-
-    return {startDate, endDate, timezone};
 };
 
 // Converts a country code to corresponding flag emoji
