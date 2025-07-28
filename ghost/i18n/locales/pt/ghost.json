@@ -63,7 +63,7 @@
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Está a receber este e-mail porque é subscritor/a de {site}, com uma <strong>subscrição %%{status}%%</strong>.",
     "You can also copy & paste this URL into your browser:": "Pode também copiar e colar este URL no seu navegador:",
     "You can unsubscribe from these notifications at {profileUrl}.": "",
-    "You just tried to access your account from a new device.": "Acabou de aceder a sua conta de um novo dispositivo.",
+    "You just tried to access your account from a new device.": "Acabou de aceder à sua conta de um novo dispositivo.",
     "You will not be signed up, and no account will be created for you.": "O seu registo não será criado, e não será criada uma conta para si.",
     "You will not be subscribed.": "Não irá ficar subscrito.",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Está a um passo de subscrever o {siteTitle} - Por favor, confirme o seu endereço de email com este link:",
