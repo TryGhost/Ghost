@@ -57,7 +57,7 @@
                 <h4>{{capitalize this.post.displayName}} history</h4>
             </div>
             <div class="settings-menu-content">
-                {{#if this.revisionList}}
+                {{#if this.revisionList.length}}
                     <ul class="nav-list">
                         {{#each this.revisionList as |revision index|}}
                         <li class="nav-list-item {{if revision.selected "selected" ""}}" data-test-revision-item={{index}}>
