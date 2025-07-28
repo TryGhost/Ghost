@@ -1,6 +1,6 @@
 import EmbedSignupPreview from './EmbedSignupPreview';
 import EmbedSignupSidebar, {SelectedLabelTypes} from './EmbedSignupSidebar';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
 import {Modal, MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {MultiValue} from 'react-select';
@@ -12,6 +12,7 @@ import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EmbedSignupFormModal = NiceModal.create(() => {
     let i18nEnabled = false;
+    const modal = useModal();
 
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
@@ -29,6 +30,11 @@ const EmbedSignupFormModal = NiceModal.create(() => {
     if (labs) {
         i18nEnabled = JSON.parse(labs).i18n;
     }
+
+    const handleClose = () => {
+        modal.remove();
+        updateRoute('embed-signup-form');
+    };
 
     useEffect(() => {
         if (!siteData) {
@@ -116,6 +122,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     accentColor={accentColor}
                     customColor={customColor}
                     embedScript={generatedScript}
+                    handleClose={handleClose}
                     handleColorToggle={handleColorToggle}
                     handleCopyClick={handleCopyClick}
                     handleLabelClick={addSelectedLabel}
