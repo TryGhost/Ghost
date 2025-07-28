@@ -18,7 +18,6 @@ const Overview: React.FC = () => {
     const navigate = useNavigate();
     const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
-    const {startDate, endDate, timezone} = getRangeDates(STATS_RANGES.ALL_TIME.value);
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
@@ -33,13 +32,13 @@ const Overview: React.FC = () => {
 
     const {startDate: chartStartDate, endDate: chartEndDate, timezone: chartTimezone} = getRangeDates(chartRange);
 
-    // KPI params for overview data
+    // KPI params for overview data - use the same date range as chart
     const params = useMemo(() => {
         const baseParams = {
             site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(startDate),
-            date_to: formatQueryDate(endDate),
-            timezone: timezone,
+            date_from: formatQueryDate(chartStartDate),
+            date_to: formatQueryDate(chartEndDate),
+            timezone: chartTimezone,
             post_uuid: ''
         };
 
@@ -51,7 +50,7 @@ const Overview: React.FC = () => {
         }
 
         return baseParams;
-    }, [isPostLoading, post, statsConfig?.id, startDate, endDate, timezone]);
+    }, [isPostLoading, post, statsConfig?.id, chartStartDate, chartEndDate, chartTimezone]);
 
     // Chart params for chart data
     const chartParams = useMemo(() => {

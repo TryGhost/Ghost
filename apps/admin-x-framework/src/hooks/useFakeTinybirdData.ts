@@ -41,7 +41,11 @@ export function useFakeTinybirdData({fakeDataConfig, enabled, endpoint, params}:
             setFakeLoading(true);
             setFakeError(null);
             
-            fakeDataProvider(endpoint)
+            // Build endpoint with query params for proper filtering
+            const endpointWithParams = new URLSearchParams(params).toString();
+            const fullEndpoint = endpointWithParams ? `${endpoint}?${endpointWithParams}` : endpoint;
+            
+            fakeDataProvider(fullEndpoint)
                 .then((result) => {
                     if (result && typeof result === 'object' && 'data' in result) {
                         setFakeData({

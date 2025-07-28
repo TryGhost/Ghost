@@ -76,37 +76,56 @@ function initializeMasterAnalytics(): void {
         return;
     }
 
-    // Generate realistic total metrics
-    const totalVisits = 800 + Math.floor(Math.random() * 400); // 800-1200 total visits
+    // Generate realistic total metrics - increased 10x
+    const totalVisits = 8000 + Math.floor(Math.random() * 4000); // 8000-12000 total visits
     const totalPageviews = Math.floor(totalVisits * (1.8 + Math.random() * 0.7)); // 1.8-2.5 pages per visit
     const totalMembers = Math.floor(totalVisits * (0.08 + Math.random() * 0.12)); // 8-20% conversion rate
     const totalMrr = Math.floor(totalMembers * 0.3 * (15 + Math.random() * 20)); // 30% paid, $15-35/month
 
     // Distribute visits across 10 top posts (following Pareto principle)
     const postViews = [];
-    let remainingViews = Math.floor(totalVisits * 0.7); // 70% of traffic goes to top posts
+    const remainingViews = Math.floor(totalVisits * 0.7); // 70% of traffic goes to top posts
+    
+    // More realistic distribution - top post gets ~15-20% of post traffic, not 56%!
+    const postShares = [0.20, 0.15, 0.12, 0.10, 0.08, 0.07, 0.06, 0.05, 0.04, 0.03];
     
     for (let i = 0; i < 10; i++) {
-        // Use power law distribution - first post gets more, then decreasing
-        const share = Math.pow(0.7, i) * (0.8 + Math.random() * 0.4);
-        const views = Math.floor(remainingViews * share / (i + 1));
+        // Use predefined shares with some randomization
+        const baseShare = postShares[i] || 0.02;
+        const randomFactor = 0.8 + Math.random() * 0.4; // ±20% variation
+        const views = Math.floor(remainingViews * baseShare * randomFactor);
         const members = Math.floor(views * (0.05 + Math.random() * 0.15));
         
         postViews.push({postIndex: i, views, members});
-        remainingViews = Math.max(0, remainingViews - views);
     }
 
-    // Generate daily breakdown (31 days)
+    // Generate daily breakdown (31 days) with realistic variation
     const dailyVisits = [];
     let distributedVisits = 0;
     
+    // Create a more realistic traffic pattern with weekly cycles
     for (let i = 30; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
+        const dayOfWeek = date.getDay();
         
-        // Distribute total visits across days with some variation
-        const dailyShare = (1 / 31) + (Math.random() - 0.5) * 0.02; // ±1% variation
-        const visits = Math.floor(totalVisits * dailyShare);
+        // Base traffic with weekly pattern (lower on weekends)
+        let baseDailyShare = 1 / 31;
+        if (dayOfWeek === 0 || dayOfWeek === 6) {
+            baseDailyShare *= 0.7; // 30% less traffic on weekends
+        } else if (dayOfWeek === 2 || dayOfWeek === 3) {
+            baseDailyShare *= 1.2; // Peak on Tuesday/Wednesday
+        }
+        
+        // Add some daily variation and occasional spikes
+        const randomFactor = 0.8 + Math.random() * 0.4; // ±20% variation
+        const spikeChance = Math.random();
+        let spikeFactor = 1;
+        if (spikeChance > 0.95) {
+            spikeFactor = 1.5 + Math.random(); // Occasional traffic spike (2-2.5x)
+        }
+        
+        const visits = Math.floor(totalVisits * baseDailyShare * randomFactor * spikeFactor);
         const pageviews = Math.floor(visits * (1.8 + Math.random() * 0.7));
         
         dailyVisits.push({
@@ -118,10 +137,20 @@ function initializeMasterAnalytics(): void {
         distributedVisits += visits;
     }
 
-    // Adjust last day to match total exactly
+    // Adjust to match total exactly by distributing the difference across all days
     if (dailyVisits.length > 0) {
         const difference = totalVisits - distributedVisits;
-        dailyVisits[dailyVisits.length - 1].visits += difference;
+        const perDayAdjustment = Math.floor(difference / dailyVisits.length);
+        const remainder = difference % dailyVisits.length;
+        
+        dailyVisits.forEach((day, index) => {
+            day.visits += perDayAdjustment;
+            if (index < remainder) {
+                day.visits += 1;
+            }
+            // Recalculate pageviews based on adjusted visits
+            day.pageviews = Math.floor(day.visits * (1.8 + Math.random() * 0.7));
+        });
     }
 
     // Generate location breakdown that adds up to total
@@ -215,6 +244,106 @@ function initializeMasterAnalytics(): void {
         locationBreakdown,
         sourceBreakdown,
         initialized: true
+    };
+}
+
+/**
+ * Generates fake link tracking data for posts
+ */
+function generateLinks(postId?: string) {
+    const domains = [
+        'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        'https://github.com/TryGhost/Ghost',
+        'https://www.amazon.com/dp/B08N5WRWNW',
+        'https://twitter.com/ghost/status/1234567890',
+        'https://www.nytimes.com/2024/01/15/technology/ai-chatbots.html',
+        'https://medium.com/@user/how-to-build-audience-2024',
+        'https://www.producthunt.com/posts/ghost-5-0',
+        'https://news.ycombinator.com/item?id=38932165',
+        'https://www.theverge.com/2024/1/15/tech-news-update',
+        'https://techcrunch.com/2024/01/15/startup-funding-news/',
+        'https://www.wired.com/story/future-of-newsletters/',
+        'https://substack.com/@writer/p/newsletter-monetization-guide',
+        'https://www.notion.so/product/ai',
+        'https://spotify.com/episode/tech-podcast-episode-42',
+        'https://www.linkedin.com/pulse/content-strategy-2024',
+        'https://dribbble.com/shots/20456789-Newsletter-Design',
+        'https://www.figma.com/community/file/1234567890',
+        'https://codepen.io/pen/awesome-animation',
+        'https://stackoverflow.com/questions/12345/nodejs-best-practices',
+        'https://dev.to/username/building-modern-apps-4hk2'
+    ];
+    
+    const linkTypes = [
+        {prefix: 'https://main.ghost.org/r/', isInternal: false},
+        {prefix: 'https://main.ghost.org/', isInternal: true}
+    ];
+    
+    // Generate 5-15 links for a post
+    const linkCount = 5 + Math.floor(Math.random() * 10);
+    const links = [];
+    
+    for (let i = 0; i < linkCount; i++) {
+        const linkType = linkTypes[Math.floor(Math.random() * linkTypes.length)];
+        const linkId = Math.random().toString(36).substring(2, 10);
+        const shortId = Math.random().toString(36).substring(2, 10);
+        
+        let to = '';
+        if (linkType.isInternal) {
+            // Internal links to other posts with realistic slugs
+            const postSlugs = [
+                'how-to-grow-your-newsletter-audience',
+                'email-marketing-best-practices-2024',
+                'building-sustainable-creator-business',
+                'newsletter-design-tips-and-tricks',
+                'monetization-strategies-for-writers',
+                'content-calendar-planning-guide',
+                'engaging-your-email-subscribers',
+                'newsletter-analytics-deep-dive',
+                'writing-compelling-subject-lines',
+                'subscriber-retention-strategies'
+            ];
+            const slug = postSlugs[i % postSlugs.length];
+            to = `${linkType.prefix}${slug}/?ref=newsletter&attribution_id=${postId}&attribution_type=post`;
+        } else {
+            // External links
+            const domain = domains[Math.floor(Math.random() * domains.length)];
+            to = domain.includes('?') ? `${domain}&ref=main.ghost.org` : `${domain}?ref=main.ghost.org`;
+        }
+        
+        // Generate click count - most links have low clicks
+        let clicks = 0;
+        const rand = Math.random();
+        if (rand > 0.7) {
+            clicks = Math.floor(Math.random() * 50); // 30% of links get some clicks
+        }
+        if (rand > 0.95) {
+            clicks = 50 + Math.floor(Math.random() * 100); // 5% get many clicks
+        }
+        
+        links.push({
+            post_id: postId || '6859b8b77abd2f0001d816fa',
+            link: {
+                link_id: linkId,
+                from: `${linkType.prefix}${shortId}`,
+                to: to,
+                edited: false
+            },
+            count: {
+                clicks: clicks
+            }
+        });
+    }
+    
+    return {
+        links,
+        meta: {
+            pagination: {
+                total: links.length,
+                page: 1,
+                pages: 1
+            }
+        }
     };
 }
 
@@ -421,14 +550,19 @@ function generateActiveVisitors() {
  * Generates fake top pages data for Tinybird
  */
 function generateTopPages() {
+    // Initialize master analytics to get total visits
+    initializeMasterAnalytics();
+    const totalVisits = masterAnalytics.totalVisits;
+    
+    // Scale page hits based on total site traffic
     const pages = [
-        {pathname: '/', hits: 450 + Math.floor(Math.random() * 200)},
-        {pathname: '/about', hits: 180 + Math.floor(Math.random() * 100)},
-        {pathname: '/pricing', hits: 120 + Math.floor(Math.random() * 80)},
-        {pathname: '/blog', hits: 200 + Math.floor(Math.random() * 150)},
-        {pathname: '/contact', hits: 90 + Math.floor(Math.random() * 60)},
-        {pathname: '/features', hits: 160 + Math.floor(Math.random() * 90)},
-        {pathname: '/docs', hits: 110 + Math.floor(Math.random() * 70)}
+        {pathname: '/', hits: Math.floor(totalVisits * 0.15) + Math.floor(Math.random() * totalVisits * 0.05)}, // 15-20% of total
+        {pathname: '/about', hits: Math.floor(totalVisits * 0.06) + Math.floor(Math.random() * totalVisits * 0.02)}, // 6-8% of total
+        {pathname: '/pricing', hits: Math.floor(totalVisits * 0.04) + Math.floor(Math.random() * totalVisits * 0.02)}, // 4-6% of total
+        {pathname: '/blog', hits: Math.floor(totalVisits * 0.08) + Math.floor(Math.random() * totalVisits * 0.03)}, // 8-11% of total
+        {pathname: '/contact', hits: Math.floor(totalVisits * 0.03) + Math.floor(Math.random() * totalVisits * 0.01)}, // 3-4% of total
+        {pathname: '/features', hits: Math.floor(totalVisits * 0.05) + Math.floor(Math.random() * totalVisits * 0.02)}, // 5-7% of total
+        {pathname: '/docs', hits: Math.floor(totalVisits * 0.04) + Math.floor(Math.random() * totalVisits * 0.02)} // 4-6% of total
     ];
     
     // Sort by hits and take top 5
@@ -1074,6 +1208,7 @@ export const fakeDataFixtures = {
     postReferrers: () => withCache('postReferrers', generatePostReferrers),
     postGrowth: () => withCache('postGrowth', generatePostGrowth),
     postStats: () => withCache('postStats', generatePostStats),
+    links: () => withCache('links', generateLinks),
     newsletterBasicStats: () => withAsyncCache('newsletterBasicStats', generateNewsletterBasicStats),
     newsletterClickStats: () => withAsyncCache('newsletterClickStats', generateNewsletterClickStats),
     newsletterStats: () => withAsyncCache('newsletterStats', generateNewsletterStats),
@@ -1177,7 +1312,8 @@ export function createFakeDataProvider() {
         '/ghost/api/admin/stats/subscriber-count/': fakeDataFixtures.subscriberCount,
         '/ghost/api/admin/stats/top-posts-views/': fakeDataFixtures.topPostsViews,
         '/ghost/api/admin/stats/top-content/': fakeDataFixtures.topContent,
-        '/ghost/api/admin/stats/top-posts/': fakeDataFixtures.topPosts
+        '/ghost/api/admin/stats/top-posts/': fakeDataFixtures.topPosts,
+        '/ghost/api/admin/links/': fakeDataFixtures.links
     };
 
     return async (endpoint: string): Promise<unknown> => {
@@ -1213,6 +1349,60 @@ export function createFakeDataProvider() {
             }
         }
         
+        // Check for individual post fetching
+        const postMatch = pathname.match(/^\/ghost\/api\/admin\/posts\/([^/]+)\/?$/);
+        if (postMatch) {
+            const postId = postMatch[1];
+            // eslint-disable-next-line no-console
+            console.log('Intercepting individual post request:', {pathname, postId});
+            return withAsyncCache(`post:${postId}`, async () => {
+                // Fetch the real post first
+                const realPosts = await fetchRealPosts(10);
+                const post = realPosts.find(p => p.id === postId) || realPosts[0];
+                
+                if (!post) {
+                    return {posts: []};
+                }
+                
+                // Use seeded random based on post ID for consistency
+                const postIdSeed = String(postId).split('').reduce((a, b) => {
+                    a = ((a << 5) - a) + b.charCodeAt(0);
+                    return a & a;
+                }, 0);
+                const seededRandom = (seed: number) => {
+                    const x = Math.sin(seed) * 10000;
+                    return x - Math.floor(x);
+                };
+                
+                const emailCount = 600 + Math.floor(seededRandom(postIdSeed) * 300);
+                const openedCount = Math.floor(emailCount * (0.25 + seededRandom(postIdSeed + 1) * 0.35));
+                const clickCount = Math.floor(emailCount * (0.02 + seededRandom(postIdSeed + 2) * 0.08));
+                
+                // Add email and newsletter data for the Newsletter tab
+                const enhancedPost = {
+                    ...post,
+                    email: {
+                        email_count: emailCount,
+                        opened_count: openedCount,
+                        status: 'sent'
+                    },
+                    newsletter: {
+                        id: 'default-newsletter',
+                        name: 'Default Newsletter'
+                    },
+                    count: {
+                        clicks: clickCount,
+                        positive_feedback: 10 + Math.floor(seededRandom(postIdSeed + 3) * 20),
+                        negative_feedback: 1 + Math.floor(seededRandom(postIdSeed + 4) * 5)
+                    }
+                };
+                
+                return {
+                    posts: [enhancedPost]
+                };
+            });
+        }
+        
         // Check for dynamic post-specific endpoints
         const referrersMatch = pathname.match(/^\/ghost\/api\/admin\/stats\/posts\/([^/]+)\/top-referrers$/);
         if (referrersMatch) {
@@ -1235,6 +1425,16 @@ export function createFakeDataProvider() {
             // eslint-disable-next-line no-console
             console.log('Generated post stats result:', result);
             return result;
+        }
+        
+        // Check for links endpoint with post filter
+        if (pathname === '/ghost/api/admin/links/' && url.searchParams.has('filter')) {
+            const filter = url.searchParams.get('filter') || '';
+            const postIdMatch = filter.match(/post_id:'([^']+)'/);
+            if (postIdMatch) {
+                const postId = postIdMatch[1];
+                return withDynamicCache(`links`, postId, () => generateLinks(postId));
+            }
         }
         
         // Return undefined to fall back to real API
@@ -1261,9 +1461,290 @@ export function createTinybirdFakeDataProvider() {
             setTimeout(() => resolve(), 100 + Math.random() * 200);
         });
         
+        // The endpoint might be just the name or a full URL with query params
+        let endpointName = endpoint;
+        let postUuid: string | null = null;
+        let dateFrom: string | null = null;
+        let dateTo: string | null = null;
+        
+        // Check if endpoint has query params
+        if (endpoint.includes('?')) {
+            const [baseName, queryString] = endpoint.split('?');
+            endpointName = baseName;
+            const searchParams = new URLSearchParams(queryString);
+            postUuid = searchParams.get('post_uuid');
+            dateFrom = searchParams.get('date_from');
+            dateTo = searchParams.get('date_to');
+        } else {
+            // No query params, just the endpoint name
+            endpointName = endpoint;
+        }
+        
         // Check if we have fake data for this Tinybird endpoint  
-        if (endpoint in tinybirdEndpointMap) {
-            return tinybirdEndpointMap[endpoint]();
+        if (endpointName in tinybirdEndpointMap || endpoint in tinybirdEndpointMap) {
+            const data = tinybirdEndpointMap[endpointName] ? tinybirdEndpointMap[endpointName]() : tinybirdEndpointMap[endpoint]();
+            
+            // Apply date filtering for KPIs even without post_uuid
+            if (endpointName === 'api_kpis' && (dateFrom || dateTo) && !postUuid) {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const kpiData = data as any;
+                if (kpiData.data && Array.isArray(kpiData.data)) {
+                    const fromDate = dateFrom ? new Date(dateFrom) : new Date('2000-01-01');
+                    const toDate = dateTo ? new Date(dateTo) : new Date();
+                    
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const filteredData = kpiData.data.filter((item: any) => {
+                        const itemDate = new Date(item.date);
+                        return itemDate >= fromDate && itemDate <= toDate;
+                    });
+                    
+                    // eslint-disable-next-line no-console
+                    console.log('📅 Site-wide KPI date filtering:', {
+                        dateFrom,
+                        dateTo,
+                        originalDays: kpiData.data.length,
+                        filteredDays: filteredData.length
+                    });
+                    
+                    return {
+                        ...kpiData,
+                        data: filteredData,
+                        rows: filteredData.length
+                    };
+                }
+            }
+            
+            // If post_uuid is provided, filter the data for that specific post
+            if (postUuid && data) {
+                // For KPIs, filter to only show data for the specific post
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (endpointName === 'api_kpis' && (data as any).data && Array.isArray((data as any).data)) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const kpiData = data as any;
+                    
+                    // First, filter by date range if provided
+                    let filteredByDate = kpiData.data;
+                    if (dateFrom || dateTo) {
+                        const fromDate = dateFrom ? new Date(dateFrom) : new Date('2000-01-01');
+                        const toDate = dateTo ? new Date(dateTo) : new Date();
+                        
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        filteredByDate = kpiData.data.filter((item: any) => {
+                            const itemDate = new Date(item.date);
+                            return itemDate >= fromDate && itemDate <= toDate;
+                        });
+                        
+                        // eslint-disable-next-line no-console
+                        console.log('📅 Date filtering applied:', {
+                            dateFrom,
+                            dateTo,
+                            originalDays: kpiData.data.length,
+                            filteredDays: filteredByDate.length
+                        });
+                    } else {
+                        // If no date range is specified but we have a post_uuid,
+                        // simulate a post that was published within the data range
+                        // This ensures the total matches the chart when both use different date ranges
+                        
+                        // Use post UUID to generate a consistent publication date
+                        const hashCode = postUuid.split('').reduce((acc, char) => {
+                            return ((acc << 5) - acc) + char.charCodeAt(0);
+                        }, 0);
+                        const daysAgo = 5 + (Math.abs(hashCode) % 20); // 5-25 days ago
+                        const publicationDate = new Date();
+                        publicationDate.setDate(publicationDate.getDate() - daysAgo);
+                        
+                        // Filter to only show data from publication date onwards
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                        filteredByDate = kpiData.data.filter((item: any) => {
+                            return new Date(item.date) >= publicationDate;
+                        });
+                        
+                        // eslint-disable-next-line no-console
+                        console.log('📅 Implicit date filtering for post:', {
+                            postUuid,
+                            daysAgo,
+                            publicationDate: publicationDate.toISOString().split('T')[0],
+                            filteredDays: filteredByDate.length
+                        });
+                    }
+                    
+                    // Debug logging
+                    // eslint-disable-next-line no-console
+                    console.log('🎯 Post-specific KPI filtering activated:', {
+                        endpoint: endpointName,
+                        postUuid,
+                        dateRange: {dateFrom, dateTo},
+                        daysOfData: filteredByDate.length
+                    });
+                    
+                    // Generate completely independent data for this post
+                    // Use the post UUID to seed the random number generator for consistency
+                    const postSeed = postUuid.split('').reduce((acc, char) => {
+                        return ((acc << 5) - acc) + char.charCodeAt(0);
+                    }, 0);
+                    
+                    const seededRandom = (seed: number) => {
+                        const x = Math.sin(seed) * 10000;
+                        return x - Math.floor(x);
+                    };
+                    
+                    // Generate a base traffic level for this post (50-500 visits per day average)
+                    const baseTrafficLevel = 50 + Math.floor(seededRandom(postSeed) * 450);
+                    
+                    // Generate daily data with realistic variation
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const scaledData = filteredByDate.map((item: any, index: number) => {
+                        const dayOfWeek = new Date(item.date).getDay();
+                        let dayMultiplier = 1;
+                        
+                        // Create variation pattern
+                        // Weekend reduction
+                        if (dayOfWeek === 0 || dayOfWeek === 6) {
+                            dayMultiplier *= 0.7;
+                        }
+                        
+                        // Day-to-day variation (±40%)
+                        dayMultiplier *= 0.6 + seededRandom(postSeed + index * 100) * 0.8;
+                        
+                        // Occasional spikes (10% chance of 2x traffic)
+                        if (seededRandom(postSeed + index * 200) > 0.9) {
+                            dayMultiplier *= 2;
+                        }
+                        
+                        // For very short ranges, add a more dramatic pattern
+                        if (filteredByDate.length <= 7) {
+                            if (index === 0) {
+                                dayMultiplier *= 0.5; // Start low
+                            } else if (index === Math.floor(filteredByDate.length / 2)) {
+                                dayMultiplier *= 1.5; // Peak in middle
+                            }
+                        }
+                        
+                        const postVisits = Math.max(10, Math.round(baseTrafficLevel * dayMultiplier));
+                        const postPageviews = Math.round(postVisits * (1.5 + seededRandom(postSeed + index * 300) * 1.0)); // 1.5-2.5 pageviews per visit
+                        
+                        return {
+                            ...item,
+                            visits: postVisits,
+                            pageviews: postPageviews,
+                            bounce_rate: Number((0.35 + seededRandom(postSeed + index * 400) * 0.3).toFixed(2)),
+                            avg_session_sec: Number((120 + seededRandom(postSeed + index * 500) * 240).toFixed(2))
+                        };
+                    });
+                    
+                    // Return the data in the same format as the original
+                    return {
+                        ...kpiData,
+                        data: scaledData,
+                        rows: scaledData.length
+                    };
+                }
+                
+                // For top pages, filter to only the specific post
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (endpointName === 'api_top_pages' && (data as any).stats) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const dataWithStats = data as any;
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const filteredStats = dataWithStats.stats.filter((item: any) => item.post_uuid === postUuid || item.post_id === postUuid);
+                    
+                    // If we found the post in the stats, return it
+                    if (filteredStats.length > 0) {
+                        return {...dataWithStats, stats: filteredStats};
+                    }
+                    
+                    // Otherwise create a minimal entry with some visits
+                    return {...dataWithStats, stats: [{
+                        pathname: `/p/${postUuid}/`,
+                        visits: 100 + Math.floor(Math.random() * 400), // Random visits between 100-500
+                        title: 'Current Post',
+                        post_uuid: postUuid,
+                        post_id: postUuid,
+                        post_type: 'post',
+                        url_exists: true
+                    }]};
+                }
+                
+                // For top sources, filter to sources for this specific post
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (endpointName === 'api_top_sources' && (data as any).data) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const dataWithData = data as any;
+                    // Generate a random but deterministic total visits for this post
+                    const postSeed = postUuid.split('').reduce((acc, char) => {
+                        return ((acc << 5) - acc) + char.charCodeAt(0);
+                    }, 0);
+                    
+                    // Create a seeded random function for this scope
+                    const seededRandom = (seed: number) => {
+                        const x = Math.sin(seed) * 10000;
+                        return x - Math.floor(x);
+                    };
+                    
+                    const postTotalVisits = 100 + Math.floor(seededRandom(postSeed) * 400); // 100-500 visits
+                    
+                    // Return a subset of sources to simulate post-specific traffic
+                    const topSources = dataWithData.data.slice(0, 5);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const totalSourceVisits = topSources.reduce((sum: number, s: any) => sum + s.visits, 0);
+                    
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const filteredSources = topSources.map((source: any, index: number) => {
+                        const sourceRatio = source.visits / totalSourceVisits;
+                        const postSourceVisits = Math.floor(postTotalVisits * sourceRatio * (0.8 + seededRandom(postSeed + index) * 0.4));
+                        
+                        return {
+                            ...source,
+                            visits: postSourceVisits,
+                            free_members: Math.floor(source.free_members * 0.1),
+                            paid_members: Math.floor(source.paid_members * 0.1),
+                            mrr: Math.floor(source.mrr * 0.1)
+                        };
+                    });
+                    
+                    return {...dataWithData, data: filteredSources};
+                }
+                
+                // For top locations, filter for post-specific data
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                if (endpointName === 'api_top_locations' && (data as any).data) {
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const dataWithData = data as any;
+                    // Generate a random but deterministic total visits for this post
+                    const postSeed = postUuid.split('').reduce((acc, char) => {
+                        return ((acc << 5) - acc) + char.charCodeAt(0);
+                    }, 0);
+                    
+                    // Create a seeded random function for this scope
+                    const seededRandom = (seed: number) => {
+                        const x = Math.sin(seed) * 10000;
+                        return x - Math.floor(x);
+                    };
+                    
+                    const postTotalVisits = 100 + Math.floor(seededRandom(postSeed) * 400); // 100-500 visits
+                    
+                    // Return a subset of locations to simulate post-specific traffic
+                    const topLocations = dataWithData.data.slice(0, 10);
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const totalLocationVisits = topLocations.reduce((sum: number, l: any) => sum + l.visits, 0);
+                    
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    const filteredLocations = topLocations.map((location: any, index: number) => {
+                        const locationRatio = location.visits / totalLocationVisits;
+                        const postLocationVisits = Math.floor(postTotalVisits * locationRatio * (0.8 + seededRandom(postSeed + index + 1000) * 0.4));
+                        
+                        return {
+                            ...location,
+                            visits: postLocationVisits
+                        };
+                    });
+                    
+                    return {...dataWithData, data: filteredLocations};
+                }
+            }
+            
+            return data;
         }
         
         // Return undefined to fall back to real API
