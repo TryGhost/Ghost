@@ -30,6 +30,7 @@ const Overview: React.FC = () => {
             const calculatedRange = getRangeForStartDate(post.published_at);
             return calculatedRange || STATS_RANGES.ALL_TIME.value;
         } catch (error) {
+            // eslint-disable-next-line no-console
             console.error('Error calculating range for post:', error);
             return STATS_RANGES.ALL_TIME.value;
         }
