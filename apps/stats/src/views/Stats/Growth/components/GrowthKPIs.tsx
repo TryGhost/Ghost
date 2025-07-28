@@ -84,7 +84,7 @@ const GrowthKPIs: React.FC<{
             }];
         }
 
-        const {startDate, endDate} = getRangeDates(dateRange);
+        const {startDate, endDate} = getRangeDates(dateRange || 30);
         const dateSpan = moment(endDate).diff(moment(startDate), 'days');
         const strategy = determineAggregationStrategy(dateRange, dateSpan, 'sum');
 

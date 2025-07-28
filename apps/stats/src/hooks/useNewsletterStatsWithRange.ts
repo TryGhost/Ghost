@@ -23,7 +23,7 @@ export const useNewsletterStatsWithRange = (range?: number, order?: TopNewslette
     const currentOrder = order ?? 'date desc'; // Default to date descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange || 30), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {
@@ -69,7 +69,7 @@ export const useSubscriberCountWithRange = (range?: number, newsletterId?: strin
     const currentRange = range ?? 30;
 
     // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange || 30), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {
@@ -124,7 +124,7 @@ export const useNewsletterBasicStatsWithRange = (range?: number, order?: TopNews
     const currentOrder = order ?? 'date desc'; // Default to date descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange || 30), [currentRange]);
 
     // Build search params
     const searchParams = useMemo(() => {

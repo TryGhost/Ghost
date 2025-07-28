@@ -24,7 +24,7 @@ export const useTopPostsStatsWithRange = (range?: number, order?: TopPostsOrder,
     const currentOrder = order ?? 'mrr desc'; // Default to MRR descending
 
     // Calculate date strings using the helper, memoize for stability
-    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange), [currentRange]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(currentRange || 30), [currentRange]);
 
     // Construct searchParams including the order and post_type parameters
     const searchParams = useMemo(() => {

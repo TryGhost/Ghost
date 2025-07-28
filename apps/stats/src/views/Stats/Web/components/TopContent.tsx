@@ -90,7 +90,7 @@ interface TopContentProps {
 
 const TopContent: React.FC<TopContentProps> = ({range}) => {
     const {audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range || 30);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
 
     // Prepare query parameters based on selected content type

@@ -5,7 +5,7 @@ import {useTopSourcesGrowth as useTopSourcesGrowthAPI} from '@tryghost/admin-x-f
 
 export const useTopSourcesGrowth = (range: number, orderBy: string = 'signups desc', limit: number = 50) => {
     const {audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range || 30);
 
     const searchParams: Record<string, string> = {
         date_from: formatQueryDate(startDate),

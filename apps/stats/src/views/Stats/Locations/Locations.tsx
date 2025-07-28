@@ -56,7 +56,7 @@ interface ProcessedLocationData {
 
 const Locations:React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range || 30);
     const [tooltipData, setTooltipData] = useState<TooltipData | null>(null);
     const ITEMS_PER_PAGE = 10;
     const {appSettings} = useAppContext();

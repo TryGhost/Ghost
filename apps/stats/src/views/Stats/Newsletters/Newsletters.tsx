@@ -294,7 +294,7 @@ const Newsletters: React.FC = () => {
     const subscribersData = useMemo(() => {
         if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
             // When there's no data, create zero points for each day spanning the range
-            const {startDate, endDate} = getRangeDates(range);
+            const {startDate, endDate} = getRangeDates(range || 30);
 
             const dailyData = [];
             const currentDate = new Date(startDate);

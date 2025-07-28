@@ -49,7 +49,7 @@ export const KPI_METRICS: Record<string, KpiMetric> = {
 
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
+    const {startDate, endDate, timezone} = getRangeDates(range || 30);
     const {appSettings} = useAppContext();
 
     // Get site URL and icon for domain comparison and Direct traffic favicon

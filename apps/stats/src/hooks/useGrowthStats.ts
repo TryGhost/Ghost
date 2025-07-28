@@ -187,7 +187,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
 
 export const useGrowthStats = (range: number) => {
     // Calculate date range using Shade's timezone-aware getRangeDates
-    const {startDate, endDate} = useMemo(() => getRangeDates(range), [range]);
+    const {startDate, endDate} = useMemo(() => getRangeDates(range || 30), [range]);
     const dateFrom = formatQueryDate(startDate);
 
     // Fetch member count history from API

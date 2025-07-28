@@ -65,8 +65,8 @@ type GrowthChartDataItem = {
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
-    const {startDate, endDate, timezone} = getRangeDates(range);
-    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
+    const {startDate, endDate, timezone} = getRangeDates(range || 30); // Default to 30 days if range is undefined
+    const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range || 30);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
     const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
