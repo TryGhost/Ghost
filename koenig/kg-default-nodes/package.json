@@ -40,7 +40,7 @@
     "html-minifier": "^4.0.0",
     "mocha": "11.7.1",
     "prettier": "3.6.2",
-    "rollup": "4.46.0",
+    "rollup": "4.46.1",
     "rollup-plugin-svg": "2.0.0",
     "should": "13.2.3",
     "sinon": "21.0.0"
