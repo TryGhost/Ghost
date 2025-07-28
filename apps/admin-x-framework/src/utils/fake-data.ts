@@ -107,6 +107,11 @@ function initializeMasterAnalytics(): void {
     for (let i = 30; i >= 0; i--) {
         const date = new Date();
         date.setDate(date.getDate() - i);
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            // Skip invalid dates
+            continue;
+        }
         const dayOfWeek = date.getDay();
         
         // Base traffic with weekly pattern (lower on weekends)
@@ -468,6 +473,10 @@ function generateMemberCountHistory() {
     for (let i = 29; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            continue;
+        }
         
         // Simulate realistic growth with some randomness
         const paidGrowth = Math.floor(Math.random() * 4); // 0-3 new paid members per day
@@ -512,6 +521,10 @@ function generateMrrHistory() {
     for (let i = 29; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            continue;
+        }
         
         // Simulate MRR growth with some volatility
         const growth = Math.floor(Math.random() * 100) - 10; // -10 to +90 change
@@ -794,6 +807,10 @@ async function generateNewsletterBasicStats() {
         const post = realPosts[i];
         const sendDate = new Date(now);
         sendDate.setDate(sendDate.getDate() - (i * 7 + Math.floor(Math.random() * 3))); // Weekly-ish sends
+        // Validate the date is valid
+        if (isNaN(sendDate.getTime())) {
+            continue;
+        }
         
         const sentTo = 800 + Math.floor(Math.random() * 400);
         const openRate = 0.25 + Math.random() * 0.35; // 25-60% open rate
@@ -941,6 +958,10 @@ function generateSubscriberCount() {
     for (let i = 29; i >= 0; i--) {
         const date = new Date(now);
         date.setDate(date.getDate() - i);
+        // Validate the date is valid
+        if (isNaN(date.getTime())) {
+            continue;
+        }
         
         // Simulate realistic growth with some churn
         const newSubs = Math.floor(Math.random() * 20) + 5; // 5-25 new subscribers per day
@@ -1011,7 +1032,12 @@ async function fetchRealPosts(limit = 10): Promise<Record<string, unknown>[]> {
         uuid: `fallback-uuid-${i + 1}`,
         slug: `amazing-blog-post-title-${i + 1}`,
         title: `Amazing Blog Post Title ${i + 1}`,
-        published_at: new Date(Date.now() - Math.floor(Math.random() * 90) * 24 * 60 * 60 * 1000).toISOString(),
+        published_at: (() => {
+            const daysAgo = Math.floor(Math.random() * 90);
+            const pubDate = new Date();
+            pubDate.setDate(pubDate.getDate() - daysAgo);
+            return isNaN(pubDate.getTime()) ? new Date().toISOString() : pubDate.toISOString();
+        })(),
         feature_image: `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
         status: 'published',
         authors: i % 3 === 0 ? [{name: 'John Doe'}, {name: 'Jane Smith'}] : [{name: 'John Doe'}]
@@ -1554,6 +1580,12 @@ export function createTinybirdFakeDataProvider() {
                         const publicationDate = new Date();
                         publicationDate.setDate(publicationDate.getDate() - daysAgo);
                         
+                        // Validate the publication date
+                        if (isNaN(publicationDate.getTime())) {
+                            // Fall back to 7 days ago if date is invalid
+                            publicationDate.setTime(Date.now() - (7 * 24 * 60 * 60 * 1000));
+                        }
+                        
                         // Filter to only show data from publication date onwards
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         filteredByDate = kpiData.data.filter((item: any) => {
@@ -1564,7 +1596,7 @@ export function createTinybirdFakeDataProvider() {
                         console.log('📅 Implicit date filtering for post:', {
                             postUuid,
                             daysAgo,
-                            publicationDate: publicationDate.toISOString().split('T')[0],
+                            publicationDate: isNaN(publicationDate.getTime()) ? 'Invalid Date' : publicationDate.toISOString().split('T')[0],
                             filteredDays: filteredByDate.length
                         });
                     }
