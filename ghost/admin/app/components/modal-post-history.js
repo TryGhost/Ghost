@@ -153,7 +153,7 @@ export default class ModalPostHistory extends Component {
 
     updateSelectedHTML() {
         return new Promise((resolve) => {
-            if (this.selectedEditor) {
+            if (this.selectedEditor && this.selectedRevision) {
                 let selectedState = this.selectedEditor.editorInstance.parseEditorState(this.selectedRevision.lexical);
 
                 this.selectedEditor.editorInstance.setEditorState(selectedState);
