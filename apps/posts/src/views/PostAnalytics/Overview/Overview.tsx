@@ -26,8 +26,13 @@ const Overview: React.FC = () => {
         if (!post?.published_at) {
             return STATS_RANGES.ALL_TIME.value; // Fallback if no publication date
         }
-        const calculatedRange = getRangeForStartDate(post.published_at);
-        return calculatedRange;
+        try {
+            const calculatedRange = getRangeForStartDate(post.published_at);
+            return calculatedRange || STATS_RANGES.ALL_TIME.value;
+        } catch (error) {
+            console.error('Error calculating range for post:', error);
+            return STATS_RANGES.ALL_TIME.value;
+        }
     }, [post?.published_at]);
 
     const {startDate: chartStartDate, endDate: chartEndDate, timezone: chartTimezone} = getRangeDates(chartRange);
@@ -36,9 +41,9 @@ const Overview: React.FC = () => {
     const params = useMemo(() => {
         const baseParams = {
             site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(chartStartDate),
-            date_to: formatQueryDate(chartEndDate),
-            timezone: chartTimezone,
+            date_from: chartStartDate ? formatQueryDate(chartStartDate) : '',
+            date_to: chartEndDate ? formatQueryDate(chartEndDate) : '',
+            timezone: chartTimezone || 'UTC',
             post_uuid: ''
         };
 
@@ -56,9 +61,9 @@ const Overview: React.FC = () => {
     const chartParams = useMemo(() => {
         const baseParams = {
             site_uuid: statsConfig?.id || '',
-            date_from: formatQueryDate(chartStartDate),
-            date_to: formatQueryDate(chartEndDate),
-            timezone: chartTimezone,
+            date_from: chartStartDate ? formatQueryDate(chartStartDate) : '',
+            date_to: chartEndDate ? formatQueryDate(chartEndDate) : '',
+            timezone: chartTimezone || 'UTC',
             post_uuid: ''
         };
 
