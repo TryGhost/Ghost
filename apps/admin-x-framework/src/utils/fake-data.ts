@@ -583,14 +583,18 @@ function generatePostStats(postId = '687ff029d5bb294d5cca2116') {
 }
 
 /**
- * Generates fake newsletter basic stats for Ghost Admin API
+ * Generates fake newsletter basic stats for Ghost Admin API using real posts
  */
-function generateNewsletterBasicStats() {
+async function generateNewsletterBasicStats() {
+    // Fetch real posts that were sent as newsletters
+    const realPosts = await fetchRealPosts(5);
+    
     const stats = [];
     const now = new Date();
     
-    // Generate 5 recent newsletter sends
-    for (let i = 0; i < 5; i++) {
+    // Generate newsletter stats for real posts
+    for (let i = 0; i < realPosts.length; i++) {
+        const post = realPosts[i];
         const sendDate = new Date(now);
         sendDate.setDate(sendDate.getDate() - (i * 7 + Math.floor(Math.random() * 3))); // Weekly-ish sends
         
@@ -599,8 +603,8 @@ function generateNewsletterBasicStats() {
         const totalOpens = Math.floor(sentTo * openRate);
         
         stats.push({
-            post_id: `newsletter-post-${i + 1}`,
-            post_title: `Newsletter ${i + 1}: Weekly Update`,
+            post_id: post.id,
+            post_title: post.title,
             send_date: sendDate.toISOString(),
             sent_to: sentTo,
             total_opens: totalOpens,
@@ -617,14 +621,18 @@ function generateNewsletterBasicStats() {
 }
 
 /**
- * Generates fake newsletter click stats for Ghost Admin API
+ * Generates fake newsletter click stats for Ghost Admin API using real posts
  */
-function generateNewsletterClickStats() {
+async function generateNewsletterClickStats() {
+    // Fetch real posts that were sent as newsletters
+    const realPosts = await fetchRealPosts(5);
+    
     const stats = [];
     const now = new Date();
     
-    // Generate 5 recent newsletter sends with click data
-    for (let i = 0; i < 5; i++) {
+    // Generate newsletter click stats for real posts
+    for (let i = 0; i < realPosts.length; i++) {
+        const post = realPosts[i];
         const sendDate = new Date(now);
         sendDate.setDate(sendDate.getDate() - (i * 7 + Math.floor(Math.random() * 3)));
         
@@ -633,8 +641,8 @@ function generateNewsletterClickStats() {
         const totalClicks = Math.floor(sentTo * clickRate);
         
         stats.push({
-            post_id: `newsletter-post-${i + 1}`,
-            post_title: `Newsletter ${i + 1}: Weekly Update`,
+            post_id: post.id,
+            post_title: post.title,
             send_date: sendDate.toISOString(),
             sent_to: sentTo,
             total_opens: Math.floor(sentTo * (0.25 + Math.random() * 0.35)),
@@ -647,6 +655,104 @@ function generateNewsletterClickStats() {
     return {
         stats,
         meta: {}
+    };
+}
+
+/**
+ * Generates fake newsletter stats (main endpoint) using real posts with fake analytics
+ */
+async function generateNewsletterStats() {
+    // Fetch real posts that were sent as newsletters
+    const realPosts = await fetchRealPosts(10);
+    
+    const stats = [];
+    const now = new Date();
+    
+    // Generate newsletter stats for real posts
+    for (let i = 0; i < Math.min(5, realPosts.length); i++) {
+        const post = realPosts[i];
+        const sendDate = new Date(now);
+        sendDate.setDate(sendDate.getDate() - (i * 7 + Math.floor(Math.random() * 3)));
+        
+        const sentTo = 800 + Math.floor(Math.random() * 400);
+        const openRate = 0.25 + Math.random() * 0.35; // 25-60% open rate
+        const clickRate = 0.02 + Math.random() * 0.08; // 2-10% click rate
+        const totalOpens = Math.floor(sentTo * openRate);
+        const totalClicks = Math.floor(sentTo * clickRate);
+        
+        stats.push({
+            post_id: post.id,
+            post_title: post.title,
+            send_date: sendDate.toISOString(),
+            sent_to: sentTo,
+            delivered_count: Math.floor(sentTo * 0.98), // 98% delivery rate
+            failed_count: Math.floor(sentTo * 0.02), // 2% failure rate
+            total_opens: totalOpens,
+            unique_opens: Math.floor(totalOpens * 0.8), // 80% unique opens
+            open_rate: Number(openRate.toFixed(3)),
+            total_clicks: totalClicks,
+            unique_clicks: Math.floor(totalClicks * 0.9), // 90% unique clicks
+            click_rate: Number(clickRate.toFixed(3)),
+            unsubscribed_count: Math.floor(Math.random() * 5), // 0-5 unsubscribes
+            complained_count: Math.floor(Math.random() * 2), // 0-1 complaints
+            feature_image: post.feature_image || `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
+            slug: post.slug,
+            status: 'published'
+        });
+    }
+    
+    return {
+        stats,
+        meta: {}
+    };
+}
+
+/**
+ * Generates fake subscriber count history data
+ */
+function generateSubscriberCount() {
+    const stats = [];
+    const now = new Date();
+    let totalSubscribers = 800 + Math.floor(Math.random() * 400); // Start between 800-1200
+    let paidSubscribers = Math.floor(totalSubscribers * 0.15); // 15% paid
+    let freeSubscribers = totalSubscribers - paidSubscribers;
+    
+    // Generate 30 days of subscriber data
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        
+        // Simulate realistic growth with some churn
+        const newSubs = Math.floor(Math.random() * 20) + 5; // 5-25 new subscribers per day
+        const churn = Math.floor(Math.random() * 8); // 0-8 unsubscribes per day
+        const netGrowth = newSubs - churn;
+        
+        totalSubscribers = Math.max(100, totalSubscribers + netGrowth); // Don't go below 100
+        
+        // Some free subscribers convert to paid
+        const conversions = Math.random() < 0.3 ? Math.floor(Math.random() * 3) : 0;
+        paidSubscribers = Math.min(Math.floor(totalSubscribers * 0.2), paidSubscribers + conversions);
+        freeSubscribers = totalSubscribers - paidSubscribers;
+        
+        stats.push({
+            date: date.toISOString().split('T')[0],
+            total: totalSubscribers,
+            paid: paidSubscribers,
+            free: freeSubscribers,
+            subscribed: newSubs,
+            unsubscribed: churn
+        });
+    }
+    
+    return {
+        stats,
+        meta: {
+            totals: {
+                total: totalSubscribers,
+                paid: paidSubscribers,
+                free: freeSubscribers
+            }
+        }
     };
 }
 
@@ -789,6 +895,47 @@ async function generateTopContent() {
 }
 
 /**
+ * Generates fake top posts data for Growth tab using real posts with fake analytics
+ * Uses master analytics model to ensure consistency
+ */
+async function generateTopPosts() {
+    // Initialize master analytics if not already done
+    initializeMasterAnalytics();
+    
+    // Fetch real posts for more authentic content
+    const realPosts = await fetchRealPosts(10);
+    
+    const stats = realPosts.map((post, i) => {
+        // Use pre-calculated post views from master analytics
+        const postAnalytics = masterAnalytics.postViews[i] || {views: 10 + Math.floor(Math.random() * 50), members: 1 + Math.floor(Math.random() * 5)};
+        
+        return {
+            post_id: post.id,
+            post_uuid: post.uuid || post.id,
+            title: post.title,
+            slug: post.slug,
+            published_at: post.published_at,
+            feature_image: post.feature_image || `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
+            status: post.status || 'published',
+            conversions: postAnalytics.members, // Members gained from this post
+            free_members: Math.floor(postAnalytics.members * 0.7),
+            paid_members: Math.floor(postAnalytics.members * 0.3),
+            visits: postAnalytics.views,
+            views: postAnalytics.views,
+            conversion_rate: postAnalytics.views > 0 ? Number((postAnalytics.members / postAnalytics.views * 100).toFixed(1)) : 0
+        };
+    });
+    
+    // Sort by conversions (members gained) descending
+    stats.sort((a, b) => b.conversions - a.conversions);
+    
+    return {
+        stats,
+        meta: {}
+    };
+}
+
+/**
  * Fake data fixture generators for development and demo purposes
  * All generators are wrapped with caching to ensure consistent data during a session
  */
@@ -805,10 +952,13 @@ export const fakeDataFixtures = {
     postReferrers: () => withCache('postReferrers', generatePostReferrers),
     postGrowth: () => withCache('postGrowth', generatePostGrowth),
     postStats: () => withCache('postStats', generatePostStats),
-    newsletterBasicStats: () => withCache('newsletterBasicStats', generateNewsletterBasicStats),
-    newsletterClickStats: () => withCache('newsletterClickStats', generateNewsletterClickStats),
+    newsletterBasicStats: () => withAsyncCache('newsletterBasicStats', generateNewsletterBasicStats),
+    newsletterClickStats: () => withAsyncCache('newsletterClickStats', generateNewsletterClickStats),
+    newsletterStats: () => withAsyncCache('newsletterStats', generateNewsletterStats),
+    subscriberCount: () => withCache('subscriberCount', generateSubscriberCount),
     topPostsViews: () => withAsyncCache('topPostsViews', generateTopPostsViews),
     topContent: () => withAsyncCache('topContent', generateTopContent),
+    topPosts: () => withAsyncCache('topPosts', generateTopPosts),
     postsWithAnalytics: () => withAsyncCache('postsWithAnalytics', () => generatePostsWithFakeAnalytics())
 };
 
@@ -881,8 +1031,11 @@ export function createFakeDataProvider() {
         '/ghost/api/admin/stats/mrr/': fakeDataFixtures.mrrHistory,
         '/ghost/api/admin/stats/newsletter-basic-stats/': fakeDataFixtures.newsletterBasicStats,
         '/ghost/api/admin/stats/newsletter-click-stats/': fakeDataFixtures.newsletterClickStats,
+        '/ghost/api/admin/stats/newsletter-stats/': fakeDataFixtures.newsletterStats,
+        '/ghost/api/admin/stats/subscriber-count/': fakeDataFixtures.subscriberCount,
         '/ghost/api/admin/stats/top-posts-views/': fakeDataFixtures.topPostsViews,
-        '/ghost/api/admin/stats/top-content/': fakeDataFixtures.topContent
+        '/ghost/api/admin/stats/top-content/': fakeDataFixtures.topContent,
+        '/ghost/api/admin/stats/top-posts/': fakeDataFixtures.topPosts
     };
 
     return async (endpoint: string): Promise<unknown> => {
