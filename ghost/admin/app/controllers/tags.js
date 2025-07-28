@@ -16,9 +16,18 @@ export default class TagsController extends Controller {
     }
 
     get filteredTags() {
-        return this.tags.filter((tag) => {
-            return (!tag.isNew && !tag.isDestroyed && !tag.isDestroying && !tag.isDeleted && (!this.type || tag.visibility === this.type));
+        // new tags are preemptively added to tagsScreenInfinityModel,
+        // but if the user hasn't fetched them on /tags yet they'll show up twice
+        // this makes sure each tag only shows up once
+        const tagMap = new Map();
+        
+        this.tags.forEach((tag) => {
+            if (!tag.isNew && !tag.isDestroyed && !tag.isDestroying && !tag.isDeleted && (!this.type || tag.visibility === this.type)) {
+                tagMap.set(tag.id, tag);
+            }
         });
+        
+        return [...tagMap.values()];
     }
 
     get sortedTags() {

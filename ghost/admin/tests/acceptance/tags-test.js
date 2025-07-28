@@ -115,6 +115,24 @@ describe('Acceptance: Tags', function () {
             expect(tagListItem.querySelector('[data-test-tag-slug]')).to.have.trimmed.text('new-tag-slug');
         });
 
+        it('does not create duplicates when editing a tag', async function () {
+            const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
+
+            await visit('tags');
+            
+            // Verify we start with one tag
+            expect(findAll('[data-test-tag]')).to.have.length(1);
+
+            await click(`[data-test-tag="${tag.id}"] [data-test-tag-name]`);
+            await fillIn('[data-test-input="tag-name"]', 'Edited Tag Name');
+            await click('[data-test-button="save"]');
+            await click('[data-test-link="tags-back"]');
+
+            // Verify we still have only one tag after editing (no duplicates)
+            expect(findAll('[data-test-tag]')).to.have.length(1);
+            expect(find('[data-test-tag] [data-test-tag-name]')).to.have.trimmed.text('Edited Tag Name');
+        });
+
         it('can delete tags', async function () {
             const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
             this.server.create('post', {tags: [tag]});
