@@ -1559,13 +1559,13 @@ export function createTinybirdFakeDataProvider() {
                 const kpiData = data as any;
                 if (kpiData.data && Array.isArray(kpiData.data)) {
                     // eslint-disable-next-line no-console
-                    console.log('[FakeData] Site-wide KPI date range inputs:', { dateFrom, dateTo });
+                    console.log('[FakeData] Site-wide KPI date range inputs:', {dateFrom, dateTo});
                     const fromDate = dateFrom ? new Date(dateFrom) : new Date('2000-01-01');
                     const toDate = dateTo ? new Date(dateTo) : new Date();
                     
                     if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
                         // eslint-disable-next-line no-console
-                        console.error('[FakeData] Invalid date range:', { dateFrom, dateTo, fromDate, toDate });
+                        console.error('[FakeData] Invalid date range:', {dateFrom, dateTo, fromDate, toDate});
                     }
                     
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
