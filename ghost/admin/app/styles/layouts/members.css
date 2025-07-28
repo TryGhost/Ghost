@@ -319,56 +319,46 @@ p.gh-members-list-email {
     padding-right: 20px !important;
 }
 
-.gh-list-data[data-test-table-data="status"] {
+.gh-members-list-row .gh-list-data[data-test-table-data="status"],
+ .gh-members-list-row .gh-list-data[data-test-table-data="open-rate"] {
     width: 90px;
     max-width: 90px;
     min-width: 90px;
 }
 
-.gh-list-data[data-test-table-data="open-rate"] {
-    width: 90px;
-    max-width: 90px;
-    min-width: 90px;
-}
-
-.gh-list-data[data-test-table-data="location"] {
+.gh-members-list-row .gh-list-data[data-test-table-data="location"] {
     width: 150px;
     max-width: 150px;
     min-width: 150px;
 }
 
-.gh-list-data[data-test-table-data="created-at"] {
+.gh-members-list-row .gh-list-data[data-test-table-data="created-at"] {
     width: 120px;
     max-width: 120px;
     min-width: 120px;
 }
 
-.gh-list-data.member-filter-column {
+.gh-members-list-row .gh-list-data.member-filter-column {
     width: 250px;
     max-width: 250px;
     min-width: 250px;
 }
 
 /* Ensure table headers have consistent widths with data cells */
-.members-list .gh-list-header[data-test-table-column="status"] {
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="status"],
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="email_open_rate"] {
     width: 90px;
     max-width: 90px;
     min-width: 90px;
 }
 
-.members-list .gh-list-header[data-test-table-column="location"] {
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="location"] {
     width: 150px;
     max-width: 150px;
     min-width: 150px;
 }
 
-.members-list .gh-list-header[data-test-table-column="email_open_rate"] {
-    width: 90px;
-    max-width: 90px;
-    min-width: 90px;
-}
-
-.members-list .gh-list-header[data-test-table-column="created"] {
+.gh-list-scrolling[data-test-table="members"] thead th[data-test-table-column="created"] {
     width: 120px;
     max-width: 120px;
     min-width: 120px;
