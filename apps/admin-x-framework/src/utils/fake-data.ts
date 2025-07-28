@@ -1,4 +1,29 @@
 /**
+ * Safe date formatting helper that logs errors with context
+ */
+function safeToISOString(date: Date, context: string): string {
+    try {
+        if (!date || !(date instanceof Date)) {
+            // eslint-disable-next-line no-console
+            console.error(`[FakeData] Invalid date object in ${context}:`, date);
+            return new Date().toISOString();
+        }
+        
+        if (isNaN(date.getTime())) {
+            // eslint-disable-next-line no-console
+            console.error(`[FakeData] Invalid date value in ${context}:`, date);
+            return new Date().toISOString();
+        }
+        
+        return date.toISOString();
+    } catch (error) {
+        // eslint-disable-next-line no-console
+        console.error(`[FakeData] Error in toISOString for ${context}:`, error, date);
+        return new Date().toISOString();
+    }
+}
+
+/**
  * Simple in-memory cache for fake data to ensure consistency during a session
  */
 interface CacheEntry {
@@ -134,7 +159,7 @@ function initializeMasterAnalytics(): void {
         const pageviews = Math.floor(visits * (1.8 + Math.random() * 0.7));
         
         dailyVisits.push({
-            date: date.toISOString().split('T')[0],
+            date: safeToISOString(date, 'dailyVisits').split('T')[0],
             visits,
             pageviews
         });
@@ -488,7 +513,7 @@ function generateMemberCountHistory() {
         comped += compedGrowth;
         
         stats.push({
-            date: date.toISOString().split('T')[0],
+            date: safeToISOString(date, 'memberCountHistory').split('T')[0],
             paid,
             free,
             comped,
@@ -531,7 +556,7 @@ function generateMrrHistory() {
         mrr = Math.max(1000, mrr + growth); // Don't go below $1000
         
         stats.push({
-            date: date.toISOString().split('T')[0],
+            date: safeToISOString(date, 'mrrHistory').split('T')[0],
             mrr,
             currency: 'USD'
         });
@@ -616,6 +641,9 @@ function generateTopSources() {
  * Uses master analytics model to ensure consistency
  */
 function generateKpis() {
+    // eslint-disable-next-line no-console
+    console.log('[FakeData] generateKpis called');
+    
     // Initialize master analytics if not already done
     initializeMasterAnalytics();
     
@@ -822,7 +850,7 @@ async function generateNewsletterBasicStats() {
         stats.push({
             post_id: post.id,
             post_title: post.title,
-            send_date: sendDate.toISOString(),
+            send_date: safeToISOString(sendDate, 'newsletterStats'),
             sent_to: sentTo,
             // Core newsletter metrics
             total_opens: totalOpens,
@@ -872,7 +900,7 @@ async function generateNewsletterClickStats() {
         stats.push({
             post_id: post.id,
             post_title: post.title,
-            send_date: sendDate.toISOString(),
+            send_date: safeToISOString(sendDate, 'newsletterStats'),
             sent_to: sentTo,
             // Core newsletter metrics
             total_opens: totalOpens,
@@ -920,7 +948,7 @@ async function generateNewsletterStats() {
         stats.push({
             post_id: post.id,
             post_title: post.title,
-            send_date: sendDate.toISOString(),
+            send_date: safeToISOString(sendDate, 'newsletterStats'),
             sent_to: sentTo,
             delivered_count: Math.floor(sentTo * 0.98), // 98% delivery rate
             failed_count: Math.floor(sentTo * 0.02), // 2% failure rate
@@ -976,7 +1004,7 @@ function generateSubscriberCount() {
         freeSubscribers = totalSubscribers - paidSubscribers;
         
         stats.push({
-            date: date.toISOString().split('T')[0],
+            date: safeToISOString(date, 'subscriberStats').split('T')[0],
             total: totalSubscribers,
             paid: paidSubscribers,
             free: freeSubscribers,
@@ -1036,7 +1064,7 @@ async function fetchRealPosts(limit = 10): Promise<Record<string, unknown>[]> {
             const daysAgo = Math.floor(Math.random() * 90);
             const pubDate = new Date();
             pubDate.setDate(pubDate.getDate() - daysAgo);
-            return isNaN(pubDate.getTime()) ? new Date().toISOString() : pubDate.toISOString();
+            return safeToISOString(pubDate, 'fallbackPost.published_at');
         })(),
         feature_image: `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
         status: 'published',
@@ -1343,6 +1371,9 @@ export function createFakeDataProvider() {
     };
 
     return async (endpoint: string): Promise<unknown> => {
+        // eslint-disable-next-line no-console
+        console.log('[FakeData] Admin API provider called with endpoint:', endpoint);
+        
         // Extract the pathname from the endpoint URL
         const url = new URL(endpoint, 'http://localhost');
         const pathname = url.pathname;
@@ -1482,6 +1513,9 @@ export function createTinybirdFakeDataProvider() {
     };
 
     return async (endpoint: string): Promise<unknown> => {
+        // eslint-disable-next-line no-console
+        console.log('[FakeData] Tinybird provider called with endpoint:', endpoint);
+        
         // Add a small delay to simulate network request
         await new Promise<void>((resolve) => {
             setTimeout(() => resolve(), 100 + Math.random() * 200);
@@ -1508,20 +1542,47 @@ export function createTinybirdFakeDataProvider() {
         
         // Check if we have fake data for this Tinybird endpoint  
         if (endpointName in tinybirdEndpointMap || endpoint in tinybirdEndpointMap) {
-            const data = tinybirdEndpointMap[endpointName] ? tinybirdEndpointMap[endpointName]() : tinybirdEndpointMap[endpoint]();
+            let data;
+            try {
+                // eslint-disable-next-line no-console
+                console.log('[FakeData] Generating data for Tinybird endpoint:', endpointName);
+                data = tinybirdEndpointMap[endpointName] ? tinybirdEndpointMap[endpointName]() : tinybirdEndpointMap[endpoint]();
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error('[FakeData] Error generating data for endpoint:', endpointName, error);
+                throw error;
+            }
             
             // Apply date filtering for KPIs even without post_uuid
             if (endpointName === 'api_kpis' && (dateFrom || dateTo) && !postUuid) {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any
                 const kpiData = data as any;
                 if (kpiData.data && Array.isArray(kpiData.data)) {
+                    // eslint-disable-next-line no-console
+                    console.log('[FakeData] Site-wide KPI date range inputs:', { dateFrom, dateTo });
                     const fromDate = dateFrom ? new Date(dateFrom) : new Date('2000-01-01');
                     const toDate = dateTo ? new Date(dateTo) : new Date();
                     
+                    if (isNaN(fromDate.getTime()) || isNaN(toDate.getTime())) {
+                        // eslint-disable-next-line no-console
+                        console.error('[FakeData] Invalid date range:', { dateFrom, dateTo, fromDate, toDate });
+                    }
+                    
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const filteredData = kpiData.data.filter((item: any) => {
-                        const itemDate = new Date(item.date);
-                        return itemDate >= fromDate && itemDate <= toDate;
+                        try {
+                            const itemDate = new Date(item.date);
+                            if (isNaN(itemDate.getTime())) {
+                                // eslint-disable-next-line no-console
+                                console.error('[FakeData] Invalid date in site-wide KPI filtering:', item.date);
+                                return false;
+                            }
+                            return itemDate >= fromDate && itemDate <= toDate;
+                        } catch (e) {
+                            // eslint-disable-next-line no-console
+                            console.error('[FakeData] Error in site-wide KPI date filtering:', item.date, e);
+                            return false;
+                        }
                     });
                     
                     // eslint-disable-next-line no-console
@@ -1556,8 +1617,24 @@ export function createTinybirdFakeDataProvider() {
                         
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         filteredByDate = kpiData.data.filter((item: any) => {
-                            const itemDate = new Date(item.date);
-                            return itemDate >= fromDate && itemDate <= toDate;
+                            try {
+                                if (!item || !item.date) {
+                                    // eslint-disable-next-line no-console
+                                    console.error('[FakeData] Missing date in KPI item:', item);
+                                    return false;
+                                }
+                                const itemDate = new Date(item.date);
+                                if (isNaN(itemDate.getTime())) {
+                                    // eslint-disable-next-line no-console
+                                    console.error('[FakeData] Invalid date in post KPI filtering:', item.date, 'from item:', item);
+                                    return false;
+                                }
+                                return itemDate >= fromDate && itemDate <= toDate;
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.error('[FakeData] Error parsing date in post KPI filtering:', item?.date, e);
+                                return false;
+                            }
                         });
                         
                         // eslint-disable-next-line no-console
@@ -1589,14 +1666,31 @@ export function createTinybirdFakeDataProvider() {
                         // Filter to only show data from publication date onwards
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         filteredByDate = kpiData.data.filter((item: any) => {
-                            return new Date(item.date) >= publicationDate;
+                            try {
+                                if (!item || !item.date) {
+                                    // eslint-disable-next-line no-console
+                                    console.error('[FakeData] Missing date in publication filtering:', item);
+                                    return false;
+                                }
+                                const itemDate = new Date(item.date);
+                                if (isNaN(itemDate.getTime())) {
+                                    // eslint-disable-next-line no-console
+                                    console.error('[FakeData] Invalid date in publication filtering:', item.date);
+                                    return false;
+                                }
+                                return itemDate >= publicationDate;
+                            } catch (e) {
+                                // eslint-disable-next-line no-console
+                                console.error('[FakeData] Error in publication date filtering:', item?.date, e);
+                                return false;
+                            }
                         });
                         
                         // eslint-disable-next-line no-console
                         console.log('📅 Implicit date filtering for post:', {
                             postUuid,
                             daysAgo,
-                            publicationDate: isNaN(publicationDate.getTime()) ? 'Invalid Date' : publicationDate.toISOString().split('T')[0],
+                            publicationDate: safeToISOString(publicationDate, 'postKpiFiltering').split('T')[0],
                             filteredDays: filteredByDate.length
                         });
                     }
@@ -1627,7 +1721,27 @@ export function createTinybirdFakeDataProvider() {
                     // Generate daily data with realistic variation
                     // eslint-disable-next-line @typescript-eslint/no-explicit-any
                     const scaledData = filteredByDate.map((item: any, index: number) => {
-                        const dayOfWeek = new Date(item.date).getDay();
+                        if (!item || !item.date) {
+                            // eslint-disable-next-line no-console
+                            console.error('[FakeData] Missing date in scaledData mapping:', item);
+                            return item; // Return as-is to preserve structure
+                        }
+                        
+                        let dayOfWeek = 0;
+                        try {
+                            const itemDate = new Date(item.date);
+                            if (isNaN(itemDate.getTime())) {
+                                // eslint-disable-next-line no-console
+                                console.error('[FakeData] Invalid date in scaledData mapping:', item.date);
+                                dayOfWeek = 1; // Default to Monday
+                            } else {
+                                dayOfWeek = itemDate.getDay();
+                            }
+                        } catch (e) {
+                            // eslint-disable-next-line no-console
+                            console.error('[FakeData] Error getting day of week:', item.date, e);
+                            dayOfWeek = 1; // Default to Monday
+                        }
                         let dayMultiplier = 1;
                         
                         // Create variation pattern
