@@ -262,6 +262,8 @@ export function clearFakeDataCache(): void {
     fakeDataCache.clear();
     // Reset master analytics so it gets regenerated with new random values
     masterAnalytics.initialized = false;
+    // eslint-disable-next-line no-console
+    console.log('✅ Fake data cache cleared! Refresh the page to see new data.');
 }
 
 /**
@@ -519,7 +521,7 @@ function generateTopLocations() {
     if (data.length > 2) {
         // Insert an empty location with some visits (represents unknown/private locations)
         data.splice(1, 0, {
-            location: "",
+            location: '',
             visits: Math.floor(data[0].visits * 0.3) // About 30% of top location's visits
         });
     }
@@ -618,13 +620,18 @@ function generatePostStats(postId = '687ff029d5bb294d5cca2116') {
     // Use the first post's analytics from master data
     const postAnalytics = masterAnalytics.postViews[0] || {views: 50 + Math.floor(Math.random() * 100), members: 5 + Math.floor(Math.random() * 10)};
     
-    // Match the expected Ghost API response structure
+    // Always generate newsletter analytics - match real API format exactly
+    const recipientCount = 600 + Math.floor(Math.random() * 300);
+    const openedCount = Math.floor(recipientCount * (0.25 + Math.random() * 0.35));
+    const openRate = Math.round((openedCount / recipientCount) * 100); // Whole number percentage like real API
+    
+    // Match the exact Ghost API response structure from real example
     const result = {
         stats: [{
             id: postId,
-            recipient_count: Math.random() > 0.3 ? 600 + Math.floor(Math.random() * 300) : null, // 70% were sent as newsletters
-            opened_count: Math.random() > 0.3 ? Math.floor((600 + Math.floor(Math.random() * 300)) * (0.25 + Math.random() * 0.35)) : null,
-            open_rate: Math.random() > 0.3 ? Number((0.25 + Math.random() * 0.35).toFixed(3)) : null,
+            recipient_count: recipientCount,
+            opened_count: openedCount,
+            open_rate: openRate, // Whole number percentage (0-100)
             member_delta: postAnalytics.members,
             free_members: Math.floor(postAnalytics.members * 0.7),
             paid_members: Math.floor(postAnalytics.members * 0.3),
@@ -658,15 +665,26 @@ async function generateNewsletterBasicStats() {
         const openRate = 0.25 + Math.random() * 0.35; // 25-60% open rate
         const totalOpens = Math.floor(sentTo * openRate);
         
+        const totalClicks = Math.floor(totalOpens * (0.1 + Math.random() * 0.2)); // 10-30% of opens click
+        const members = Math.floor(sentTo * (0.08 + Math.random() * 0.12)); // 8-20% conversion to members
+        
         stats.push({
             post_id: post.id,
             post_title: post.title,
             send_date: sendDate.toISOString(),
             sent_to: sentTo,
+            // Core newsletter metrics
             total_opens: totalOpens,
             open_rate: Number(openRate.toFixed(3)),
-            total_clicks: Math.floor(totalOpens * (0.1 + Math.random() * 0.2)), // 10-30% of opens click
-            click_rate: Number((0.02 + Math.random() * 0.08).toFixed(3)) // 2-10% overall click rate
+            total_clicks: totalClicks,
+            click_rate: Number((totalClicks / sentTo).toFixed(3)),
+            // Member analytics
+            members,
+            free_members: Math.floor(members * 0.7),
+            paid_members: Math.floor(members * 0.3),
+            // Visitor analytics (estimate based on engagement)
+            visitors: Math.floor(sentTo * 0.6), // Assume 60% of recipients visit
+            views: Math.floor(sentTo * 0.8) // Assume 80% view the email
         });
     }
     
@@ -696,15 +714,27 @@ async function generateNewsletterClickStats() {
         const clickRate = 0.02 + Math.random() * 0.08; // 2-10% click rate
         const totalClicks = Math.floor(sentTo * clickRate);
         
+        const openRate = 0.25 + Math.random() * 0.35;
+        const totalOpens = Math.floor(sentTo * openRate);
+        const members = Math.floor(sentTo * (0.08 + Math.random() * 0.12)); // 8-20% conversion to members
+        
         stats.push({
             post_id: post.id,
             post_title: post.title,
             send_date: sendDate.toISOString(),
             sent_to: sentTo,
-            total_opens: Math.floor(sentTo * (0.25 + Math.random() * 0.35)),
-            open_rate: Number((0.25 + Math.random() * 0.35).toFixed(3)),
+            // Core newsletter metrics
+            total_opens: totalOpens,
+            open_rate: Number(openRate.toFixed(3)),
             total_clicks: totalClicks,
-            click_rate: Number(clickRate.toFixed(3))
+            click_rate: Number(clickRate.toFixed(3)),
+            // Member analytics
+            members,
+            free_members: Math.floor(members * 0.7),
+            paid_members: Math.floor(members * 0.3),
+            // Visitor analytics (estimate based on engagement)
+            visitors: Math.floor(sentTo * 0.6), // Assume 60% of recipients visit
+            views: Math.floor(sentTo * 0.8) // Assume 80% view the email
         });
     }
     
@@ -871,9 +901,22 @@ async function generateTopPostsViews() {
         const views = postAnalytics.views;
         const members = postAnalytics.members;
         
-        // Newsletter stats (realistic but not tied to overall totals)
-        const sentCount = Math.random() > 0.3 ? 600 + Math.floor(Math.random() * 300) : null; // 70% were sent as newsletters
-        const openedCount = sentCount ? Math.floor(sentCount * (0.25 + Math.random() * 0.35)) : null;
+        // Generate consistent email analytics based on post ID for cross-endpoint consistency
+        const postIdSeed = String(post.id).split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
+        const seededRandom = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+        
+        // Newsletter stats - use seeded random for consistency
+        const sentCount = 600 + Math.floor(seededRandom(postIdSeed) * 300); // Always generate sent count
+        const openRate = 0.25 + seededRandom(postIdSeed + 1) * 0.35;
+        const openedCount = Math.floor(sentCount * openRate);
+        const clickRate = 0.1 + seededRandom(postIdSeed + 2) * 0.15;
+        const clickedCount = Math.floor(sentCount * clickRate);
         
         // Format authors - handle both array and string formats
         let authorsString = 'John Doe';
@@ -890,15 +933,21 @@ async function generateTopPostsViews() {
             feature_image: post.feature_image || `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
             status: post.status || 'published',
             authors: authorsString,
+            // Core analytics - ensure all posts have these
+            visitors: views, // Add visitors field
             views,
-            sent_count: sentCount,
-            opened_count: openedCount,
-            open_rate: openedCount && sentCount ? Number((openedCount / sentCount).toFixed(3)) : null,
-            clicked_count: openedCount ? Math.floor(openedCount * (0.1 + Math.random() * 0.2)) : 0,
-            click_rate: openedCount && sentCount ? Number((Math.floor(openedCount * (0.1 + Math.random() * 0.2)) / sentCount).toFixed(3)) : null,
             members,
             free_members: Math.floor(members * 0.7),
-            paid_members: Math.floor(members * 0.3)
+            paid_members: Math.floor(members * 0.3),
+            // Newsletter analytics - always present for consistency
+            sent_count: sentCount,
+            opened_count: openedCount,
+            open_rate: Number((openRate * 100).toFixed(1)), // Convert to percentage (0-100)
+            clicked_count: clickedCount,
+            click_rate: Number((clickRate * 100).toFixed(1)), // Convert to percentage (0-100)
+            // Additional metrics
+            signups: members, // Alias for members
+            conversions: members // Alias for members (for Growth tab compatibility)
         };
     });
     
@@ -965,6 +1014,12 @@ async function generateTopPosts() {
         // Use pre-calculated post views from master analytics
         const postAnalytics = masterAnalytics.postViews[i] || {views: 10 + Math.floor(Math.random() * 50), members: 1 + Math.floor(Math.random() * 5)};
         
+        // Generate newsletter analytics (70% chance post was sent as newsletter)
+        const wasSentAsNewsletter = Math.random() > 0.3;
+        const sentCount = wasSentAsNewsletter ? 600 + Math.floor(Math.random() * 300) : null;
+        const openedCount = sentCount ? Math.floor(sentCount * (0.25 + Math.random() * 0.35)) : null;
+        const clickedCount = openedCount ? Math.floor(openedCount * (0.1 + Math.random() * 0.2)) : Math.floor(postAnalytics.views * (0.02 + Math.random() * 0.08));
+        
         return {
             post_id: post.id,
             post_uuid: post.uuid || post.id,
@@ -973,12 +1028,23 @@ async function generateTopPosts() {
             published_at: post.published_at,
             feature_image: post.feature_image || `https://images.unsplash.com/photo-${1500000000 + i}?w=800&h=600`,
             status: post.status || 'published',
+            // Core analytics - ensure all posts have these
+            visitors: postAnalytics.views,
+            views: postAnalytics.views,
+            members: postAnalytics.members,
             conversions: postAnalytics.members, // Members gained from this post
             free_members: Math.floor(postAnalytics.members * 0.7),
             paid_members: Math.floor(postAnalytics.members * 0.3),
-            visits: postAnalytics.views,
-            views: postAnalytics.views,
-            conversion_rate: postAnalytics.views > 0 ? Number((postAnalytics.members / postAnalytics.views * 100).toFixed(1)) : 0
+            conversion_rate: postAnalytics.views > 0 ? Number((postAnalytics.members / postAnalytics.views * 100).toFixed(1)) : 0,
+            // Newsletter analytics
+            sent_count: sentCount,
+            opened_count: openedCount,
+            open_rate: openedCount && sentCount ? Number((openedCount / sentCount).toFixed(3)) : null,
+            clicked_count: clickedCount,
+            click_rate: sentCount ? Number((clickedCount / sentCount).toFixed(3)) : null,
+            // Additional aliases
+            signups: postAnalytics.members,
+            clicks: clickedCount
         };
     });
     
@@ -1031,34 +1097,54 @@ async function generatePostsWithFakeAnalytics(limit = 10): Promise<unknown> {
         initializeMasterAnalytics();
         const postAnalytics = masterAnalytics.postViews[i] || {views: 10 + Math.floor(Math.random() * 50), members: 1 + Math.floor(Math.random() * 5)};
         
+        // Generate consistent email analytics based on post ID for cross-endpoint consistency
+        const postIdSeed = String(post.id).split('').reduce((a, b) => {
+            a = ((a << 5) - a) + b.charCodeAt(0);
+            return a & a;
+        }, 0);
+        const seededRandom = (seed: number) => {
+            const x = Math.sin(seed) * 10000;
+            return x - Math.floor(x);
+        };
+        
+        const emailCount = 600 + Math.floor(seededRandom(postIdSeed) * 300);
+        const openRate = 0.25 + seededRandom(postIdSeed + 1) * 0.35;
+        const openedCount = Math.floor(emailCount * openRate);
+        const clickRate = 0.02 + seededRandom(postIdSeed + 2) * 0.08;
+        const clickedCount = Math.floor(emailCount * clickRate);
+        
         // eslint-disable-next-line no-console
         console.log(`Generating fake analytics for post ${i}:`, {
             postTitle: post.title,
+            postId: post.id,
             views: postAnalytics.views,
-            members: postAnalytics.members
+            members: postAnalytics.members,
+            emailCount,
+            openRate: Math.round(openRate * 100) + '%'
         });
         
         return {
             ...post,
             // Add fake click analytics
             count: {
-                clicks: Math.floor(postAnalytics.views * (0.05 + Math.random() * 0.15)), // 5-20% of views result in clicks
+                clicks: Math.floor(postAnalytics.views * (0.05 + seededRandom(postIdSeed + 3) * 0.15)), // 5-20% of views result in clicks
                 members: postAnalytics.members,
                 paid_conversions: Math.floor(postAnalytics.members * 0.3), // 30% paid conversion
                 signups: postAnalytics.members,
                 visitors: postAnalytics.views, // Add visitors field for UI
                 views: postAnalytics.views // Add views field as alternative
             },
-            // Add newsletter analytics if it was sent
-            email: Math.random() > 0.3 ? {
-                sent_count: 600 + Math.floor(Math.random() * 300),
-                delivered_count: Math.floor((600 + Math.floor(Math.random() * 300)) * 0.98), // 98% delivery rate
-                opened_count: Math.floor((600 + Math.floor(Math.random() * 300)) * (0.25 + Math.random() * 0.35)),
-                clicked_count: Math.floor((600 + Math.floor(Math.random() * 300)) * (0.02 + Math.random() * 0.08)),
-                failed_count: Math.floor((600 + Math.floor(Math.random() * 300)) * 0.02), // 2% failure rate
-                unsubscribed_count: Math.floor(Math.random() * 5), // 0-5 unsubscribes
-                complained_count: Math.floor(Math.random() * 2) // 0-1 complaints
-            } : null
+            // Always add newsletter analytics for all posts - use seeded random for consistency
+            email: {
+                email_count: emailCount, // UI expects this field name
+                sent_count: emailCount,
+                delivered_count: Math.floor(emailCount * 0.98), // 98% delivery rate
+                opened_count: openedCount,
+                clicked_count: clickedCount,
+                failed_count: Math.floor(emailCount * 0.02), // 2% failure rate
+                unsubscribed_count: Math.floor(seededRandom(postIdSeed + 4) * 5), // 0-5 unsubscribes
+                complained_count: Math.floor(seededRandom(postIdSeed + 5) * 2) // 0-1 complaints
+            }
         };
     });
     
@@ -1185,6 +1271,9 @@ export function createTinybirdFakeDataProvider() {
     };
 }
 
+// Track the last fake data enabled state to detect changes
+let lastFakeDataEnabled: boolean | null = null;
+
 /**
  * Attempts to intercept a request and return fake data if available
  * Returns undefined if fake data is not enabled or not available for this endpoint
@@ -1194,6 +1283,15 @@ export async function tryInterceptWithFakeData<T = unknown>(
     requestEndpoint: string,
     requestOptions: RequestInit
 ): Promise<T | undefined> {
+    // Check if fake data setting has changed and clear cache if so
+    const currentFakeDataEnabled = fakeDataConfig?.enabled || false;
+    if (lastFakeDataEnabled !== null && lastFakeDataEnabled !== currentFakeDataEnabled) {
+        clearFakeDataCache();
+        // eslint-disable-next-line no-console
+        console.log(`🔄 Fake data ${currentFakeDataEnabled ? 'enabled' : 'disabled'} - cache cleared`);
+    }
+    lastFakeDataEnabled = currentFakeDataEnabled;
+    
     // Check if fake data is enabled and should intercept this request
     if (fakeDataConfig?.enabled && fakeDataConfig.dataProvider) {
         try {
