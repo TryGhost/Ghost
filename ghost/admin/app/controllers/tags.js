@@ -16,8 +16,8 @@ export default class TagsController extends Controller {
     }
 
     get filteredTags() {
-        // new tags are preemptively added to tagsScreenInfinityModel,
-        // but if the user hasn't fetched them on /tags yet they'll show up twice
+        // new tags are preemptively added to the client-side tagsScreenInfinityModel,
+        // but if the new tag is included in a later pagination request it will end up duplicated
         // this makes sure each tag only shows up once
         const tagMap = new Map();
         
