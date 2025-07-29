@@ -35,12 +35,12 @@ module.exports = class ActivityPubServiceWrapper {
         async function configureActivityPub() {
             if (settingsCache.get('social_web_enabled')) {
                 if (!ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
+                    await ActivityPubServiceWrapper.instance.enable();
                     ActivityPubServiceWrapper.initialised = true;
                 }
             } else {
                 if (ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.removeWebhooks();
+                    await ActivityPubServiceWrapper.instance.disable();
                     ActivityPubServiceWrapper.initialised = false;
                 }
             }

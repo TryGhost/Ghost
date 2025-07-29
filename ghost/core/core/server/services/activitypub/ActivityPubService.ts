@@ -104,6 +104,14 @@ export class ActivityPubService {
         }
     }
 
+    async disable() {
+        await this.removeWebhooks();
+    }
+
+    async enable() {
+        await this.initialiseWebhooks();
+    }
+
     async removeWebhooks() {
         const integration = await this.knex
             .select('*')
