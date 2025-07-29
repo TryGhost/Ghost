@@ -26,6 +26,7 @@ export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTiny
     
     // Log a warning ONCE if we got a response but no valid token (likely misconfiguration)
     if (!tinybirdQuery.isLoading && enabled && tinybirdQuery.data && !apiToken && !hasLoggedConfigWarning) {
+        // eslint-disable-next-line no-console
         console.warn('Tinybird analytics: No valid token received. Check your Tinybird configuration (workspaceId and adminToken must be non-empty strings).');
         hasLoggedConfigWarning = true;
     }
