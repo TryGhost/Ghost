@@ -8,7 +8,8 @@ import {
     type Notification,
     type Post,
     type ReplyChainResponse,
-    type SearchResults
+    type SearchResults,
+    isApiError
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {
@@ -2026,7 +2027,18 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
             }
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getReplies(postApId);
+            try {
+                return await api.getReplies(postApId);
+            } catch (error: unknown) {
+                // If it's a post from a remote profile and we don't have it in our database,
+                // getReplies will return a 404. Calling the post API will populate the post
+                // in our database from the network, then we can recall getReplies to load the post.
+                if (isApiError(error) && error.statusCode === 404) {
+                    await api.getPost(postApId);
+                    return await api.getReplies(postApId);
+                }
+                throw error;
+            }
         }
     });
 
