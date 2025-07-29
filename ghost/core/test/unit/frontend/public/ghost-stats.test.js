@@ -490,7 +490,7 @@ describe('ghost-stats.js', function () {
             const originalSelf = mockWindow.self;
             const originalTop = mockWindow.top;
             mockWindow.self = mockWindow;
-            mockWindow.top = { different: 'window' }; // Different from self
+            mockWindow.top = {different: 'window'}; // Different from self
             
             expect(ghostStats.init()).to.be.false;
             expect(mockWindow.Tinybird).to.not.exist;
