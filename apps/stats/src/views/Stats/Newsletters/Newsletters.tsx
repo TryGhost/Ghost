@@ -250,7 +250,7 @@ const Newsletters: React.FC = () => {
     // and to calculate averages - using the same data source as the table for consistency
     const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
-        'date desc',
+        'date asc',
         selectedNewsletterId || undefined,
         shouldFetchStats || false
     );
