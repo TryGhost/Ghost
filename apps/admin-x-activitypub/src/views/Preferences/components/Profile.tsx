@@ -129,8 +129,7 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
                         background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.12 : 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.48 : 0.16)})` : undefined
                     }}
                 >
-                    {/* {account?.handle} */}
-                    @verylonghandlelolwhydidyoudothis@main.ghost.org
+                    {account?.handle}
                 </div>
             </div>
         </div>
