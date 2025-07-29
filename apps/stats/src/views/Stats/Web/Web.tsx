@@ -120,6 +120,7 @@ const Web: React.FC = () => {
                 <div className='flex min-h-[460px] grid-cols-2 flex-col gap-8 lg:grid'>
                     <TopContent
                         range={range}
+                        totalVisitors={totalVisitors}
                     />
                     <SourcesCard
                         data={sourcesData as SourcesData[] | null}
