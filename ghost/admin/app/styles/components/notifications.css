@@ -345,7 +345,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 12px;
+    padding: 14px;
     background: var(--black);
     color: #fff;
     font-size: 1.45rem;
@@ -353,6 +353,52 @@
 }
 
 .gh-update-banner a {
-    font-weight: 700;
+    font-weight: 500;
     color: var(--green-l2);
+}
+
+.gh-update-banner.gh-60 a.whatsnew {
+    position: relative;
+    color: #fff;
+    text-decoration: underline;
+}
+
+.gh-update-banner.gh-60 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.gh-update-banner.gh-60 a.button {
+    display: inline-block;
+    margin-left: 8px;
+    height: 32px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.gh-update-banner.gh-60 {
+    background: linear-gradient(45deg, #122220 0%, #172E2C 100%);
+}
+
+.gh-update-banner.gh-60 a.button {
+    background: linear-gradient(45deg, #317B9B 0%, #319B99 100%);
+    color: #fff;
+}
+
+.gh-update-banner.gh-60 a.button:hover {
+    opacity: 0.9;
+}
+
+.gh-update-banner.gh-60 .gh-alert-content {
+    font-size: 1.45rem;
 }
