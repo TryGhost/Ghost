@@ -212,7 +212,6 @@ export class GhostStats {
 
         // Skip if page is loaded in an iframe (admin preview, embeds, etc.)
         if (this.browser.window && this.browser.window.self !== this.browser.window.top) {
-            console.log('Ghost Stats: Skipping initialization in iframe');
             return false;
         }
 
