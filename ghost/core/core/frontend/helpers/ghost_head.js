@@ -151,6 +151,11 @@ function getWebmentionDiscoveryLink() {
 }
 
 function getTinybirdTrackerScript(dataRoot) {
+    const preview = dataRoot?.context?.includes('preview');
+    if (preview) {
+        return '';
+    }
+
     const src = getAssetUrl('public/ghost-stats.min.js', false);
 
     const env = config.get('env');

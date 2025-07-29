@@ -1476,6 +1476,16 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.match(/data-datasource="analytics_events"/);
         });
 
+        it('does not include tracker script when preview is set', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    context: ['preview', 'post']
+                }
+            }));
+
+            rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js"/);
+        });
+
         it('uses the provided host/endpoint from config', async function () {
             const rendered = await testGhostHead(testUtils.createHbsResponse({
                 locals: {
@@ -1529,6 +1539,18 @@ describe('{{ghost_head}} helper', function () {
             rendered.should.not.match(/data-token=/);
         });
     });
+
+    it('does not include tracker script in preview context', async function () {
+        const rendered = await testGhostHead(testUtils.createHbsResponse({
+            locals: {
+                relativeUrl: '/',
+                context: ['preview', 'home', 'index'],
+                safeVersion: '4.3'
+            }
+        }));
+        rendered.should.not.match(/script defer src="\/public\/ghost-stats\.min\.js/);
+    });
+
     describe('respects values from excludes: ', function () {
         it('when excludes is empty', async function () {
             getStub.withArgs('members_enabled').returns(true);
