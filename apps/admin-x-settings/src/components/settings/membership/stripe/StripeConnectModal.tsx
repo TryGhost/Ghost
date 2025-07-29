@@ -2,10 +2,11 @@ import BookmarkThumb from '../../../../assets/images/stripe-thumb.jpg';
 import GhostLogo from '../../../../assets/images/orb-squircle.png';
 import GhostLogoPink from '../../../../assets/images/orb-pink.png';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import StripeLogo from '../../../../assets/images/stripe-emblem.svg';
 import useSettingGroup from '../../../../hooks/useSettingGroup';
-import {Button, ConfirmationModal, Form, Heading, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, Heading, LimitModal, Modal, StripeButton, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {ReactComponent as StripeVerified} from '../../../../assets/images/stripe-verified.svg';
 import {checkStripeEnabled, getSettingValue, getSettingValues, useDeleteStripeSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
@@ -184,8 +185,8 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
             </div>
             <div className='my-20 flex flex-col items-center'>
                 <div className='relative h-20 w-[200px]'>
-                    <img alt='Ghost Logo' className='absolute left-10 h-16 w-16' src={GhostLogo} />
-                    <img alt='Stripe Logo' className='absolute right-10 h-16 w-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
+                    <img alt='Ghost Logo' className='absolute left-10 size-16' src={GhostLogo} />
+                    <img alt='Stripe Logo' className='absolute right-10 size-16 rounded-2xl shadow-[-1.5px_0_0_1.5px_#fff] dark:shadow-[-1.5px_0_0_1.5px_black]' src={StripeLogo} />
                 </div>
                 <Heading className='text-center' level={3}>You are connected with Stripe!{stripeConnectLivemode ? null : ' (Test mode)'}</Heading>
                 <div className='mt-1'>Connected to <strong>{stripeConnectAccountName ? stripeConnectAccountName : 'Test mode'}</strong></div>
@@ -197,7 +198,7 @@ const Connected: React.FC<{onClose?: () => void}> = ({onClose}) => {
                         <div className='font-bold'>How to setup and manage your Stripe account</div>
                         <div className='mt-1 text-sm text-grey-800 dark:text-grey-500'>Learn how to configure your Stripe account to work with Ghost, from custom branding to payment receipt emails.</div>
                         <div className='mt-3 flex items-center gap-1 text-sm text-grey-800 dark:text-grey-500'>
-                            <img alt='Ghost Logo' className='h-4 w-4' src={GhostLogoPink} />
+                            <img alt='Ghost Logo' className='size-4' src={GhostLogoPink} />
                             <strong>Ghost Resources</strong>
                             <span>&middot;</span>
                             <span>by Kym Ellis</span>
@@ -253,6 +254,34 @@ const StripeConnectModal: React.FC = () => {
     const {updateRoute} = useRouting();
     const [step, setStep] = useState<'start' | 'connect'>('start');
     const mainModal = useModal();
+    const limiter = useLimiter();
+
+    // Extract specific values needed for checkStripeEnabled, so not to
+    // cause unnecessary re-renders by passing the whole settings object
+    const stripeEnabled = checkStripeEnabled(settings, config);
+    const hasStripeConnectLimit = limiter?.isDisabled('limitStripeConnect');
+
+    useEffect(() => {
+        const checkLimit = async () => {
+            // Allow Stripe despite the limit when it's already connected, so it's
+            // possible to disconnect or update the settings.
+            if (hasStripeConnectLimit && !stripeEnabled) {
+                try {
+                    await limiter?.errorIfWouldGoOverLimit('limitStripeConnect');
+                } catch (error) {
+                    if (error instanceof HostLimitError) {
+                        mainModal.remove();
+                        NiceModal.show(LimitModal, {
+                            prompt: error.message || `Your current plan doesn't support Stripe Connect.`,
+                            onOk: () => updateRoute({route: '/pro', isExternal: true})
+                        });
+                    }
+                }
+            }
+        };
+
+        checkLimit();
+    }, [limiter, mainModal, updateRoute, stripeEnabled, hasStripeConnectLimit]);
 
     const startFlow = () => {
         setStep('connect');

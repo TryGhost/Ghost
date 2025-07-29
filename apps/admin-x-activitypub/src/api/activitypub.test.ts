@@ -45,7 +45,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                'https://activitypub.api/.ghost/activitypub/actions/follow/@user@domain.com': {
+                'https://activitypub.api/.ghost/activitypub/v1/actions/follow/@user@domain.com': {
                     async assert(_resource, init) {
                         const headers = new Headers(init?.headers);
                         expect(headers.get('Authorization')).toContain('fake-token');
@@ -67,13 +67,16 @@ describe('ActivityPubAPI', function () {
     describe('note', function () {
         test('It creates a note and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
                     },
                     response: JSONResponse({
-                        id: 'https://example.com/note/abc123'
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!'
+                        }
                     })
                 }
             });
@@ -88,7 +91,103 @@ describe('ActivityPubAPI', function () {
             const result = await api.note('Hello, world!');
 
             expect(result).toEqual({
-                id: 'https://example.com/note/abc123'
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!'
+            });
+        });
+
+        test('It creates a note with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Test alt text"}}');
+                    },
+                    response: JSONResponse({
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!',
+                            image: 'https://example.com/image.jpg'
+                        }
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.note('Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Test alt text'});
+
+            expect(result).toEqual({
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!',
+                image: 'https://example.com/image.jpg'
+            });
+        });
+    });
+
+    describe('reply', function () {
+        test('It creates a reply and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!"}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!');
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123'
+            });
+        });
+
+        test('It creates a reply with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Reply image alt text"}}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123',
+                        content: 'Hello, world!',
+                        inReplyTo: '123',
+                        image: 'https://example.com/image.jpg'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Reply image alt text'});
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123',
+                content: 'Hello, world!',
+                inReplyTo: '123',
+                image: 'https://example.com/image.jpg'
             });
         });
     });
@@ -105,7 +204,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
                         accounts: [
                             {
@@ -148,7 +247,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({})
                 }
             });
@@ -181,7 +280,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/thread/${encodeURIComponent(activityId)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/thread/${encodeURIComponent(activityId)}`]: {
                     response: JSONResponse({
                         id: activityId,
                         name: 'Foo Bar'
@@ -216,7 +315,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -259,7 +358,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -289,7 +388,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -330,7 +429,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -360,7 +459,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({})
                 }
             });
@@ -390,7 +489,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/feed`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -419,7 +518,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -462,7 +561,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -493,7 +592,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -534,7 +633,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -564,7 +663,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({})
                 }
             });
@@ -594,7 +693,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/inbox`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -624,7 +723,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -667,7 +766,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -698,7 +797,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -739,7 +838,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -769,7 +868,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({})
                 }
             });
@@ -799,7 +898,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -829,7 +928,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/${handle}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -893,7 +992,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/${handle}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -925,7 +1024,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -968,7 +1067,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: [],
                         next: 'abc123'
@@ -999,7 +1098,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked?next=${next}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1040,7 +1139,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1070,7 +1169,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1100,7 +1199,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/posts/me/liked`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1130,7 +1229,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: [
                             {
@@ -1177,7 +1276,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: [],
                         next: 'abc123'
@@ -1208,7 +1307,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications?next=${next}`]: {
                     response: JSONResponse({
                         notifications: [
                             {
@@ -1251,7 +1350,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1281,7 +1380,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1311,7 +1410,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/notifications`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
                         notifications: []
                     })
@@ -1343,7 +1442,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/post/${encodeURIComponent(postId)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/post/${encodeURIComponent(postId)}`]: {
                     response: JSONResponse({
                         id: postId,
                         title: 'Foo Bar Baz'
@@ -1386,7 +1485,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/account`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/account`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('PUT');
                         expect(init?.body).toEqual(JSON.stringify(data));
@@ -1403,6 +1502,98 @@ describe('ActivityPubAPI', function () {
             );
 
             await api.updateAccount(data);
+        });
+    });
+
+    describe('getNotificationsCount', function () {
+        test('It returns the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
+                    response: JSONResponse({
+                        count: 5
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 5
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns zero count when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 0
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('resetNotificationsCount', function () {
+        test('It resets the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/reset`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.resetNotificationsCount();
+            expect(result).toBe(true);
         });
     });
 });

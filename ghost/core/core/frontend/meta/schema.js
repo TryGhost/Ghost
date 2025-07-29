@@ -48,32 +48,52 @@ function trimSchema(schema) {
     return schemaObject;
 }
 
-function trimSameAs(data, context) {
+// note that website isn't included here
+const SOCIAL_PLATFORMS = ['facebook', 'twitter', 'threads', 'bluesky', 'mastodon', 'tiktok', 'youtube', 'instagram', 'linkedin'];
+
+/**
+ * Build the `sameAs` array for schema.org Person objects.
+ *
+ * @param {Object} author   either `data.author` or `data.<post|page>.primary_author`.
+ *                          Expected to contain `website` plus any supported social usernames.
+ * @returns {string[]}      URLs for the author website and each populated social profile.
+ */
+function trimSameAs(author) {
+    if (!author || Object.keys(author).length === 0) {
+        return [];
+    }
+    
     const sameAs = [];
 
-    if (context === 'post' || context === 'page') {
-        if (data[context].primary_author.website) {
-            sameAs.push(escapeExpression(data[context].primary_author.website));
-        }
-        if (data[context].primary_author.facebook) {
-            sameAs.push(socialUrls.facebook(data[context].primary_author.facebook));
-        }
-        if (data[context].primary_author.twitter) {
-            sameAs.push(socialUrls.twitter(data[context].primary_author.twitter));
-        }
-    } else if (context === 'author') {
-        if (data.author.website) {
-            sameAs.push(escapeExpression(data.author.website));
-        }
-        if (data.author.facebook) {
-            sameAs.push(socialUrls.facebook(data.author.facebook));
-        }
-        if (data.author.twitter) {
-            sameAs.push(socialUrls.twitter(data.author.twitter));
-        }
+    if (author.website) {
+        sameAs.push(escapeExpression(author.website));
     }
 
+    SOCIAL_PLATFORMS.forEach((platform) => {
+        if (author[platform] && typeof socialUrls[platform] === 'function') {
+            sameAs.push(escapeExpression(socialUrls[platform](author[platform])));
+        }
+    });
+
     return sameAs;
+}
+
+/**
+ * Build contributor objects for schema.org Article schema.
+ *
+ * @param {Object[]} authors - Array of author objects (excluding primary author)
+ */
+function buildContributorObjects(authors) {
+    return authors.map(author => trimSchema({
+        '@type': 'Person',
+        name: escapeExpression(author.name),
+        image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
+        url: author.url || null,
+        sameAs: trimSameAs(author),
+        description: author.meta_description ?
+            escapeExpression(author.meta_description) :
+            null
+    }));
 }
 
 function getPostSchema(metaData, data) {
@@ -94,11 +114,12 @@ function getPostSchema(metaData, data) {
             name: escapeExpression(data[context].primary_author.name),
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
-            sameAs: trimSameAs(data, context),
+            sameAs: trimSameAs(data[context].primary_author),
             description: data[context].primary_author.metaDescription ?
                 escapeExpression(data[context].primary_author.metaDescription) :
                 null
         },
+        contributor: data[context].authors && data[context].authors.length > 1 ? buildContributorObjects(data[context].authors.slice(1)) : null,
         headline: escapeExpression(metaData.metaTitle),
         url: metaData.url,
         datePublished: metaData.publishedDate,
@@ -150,7 +171,7 @@ function getAuthorSchema(metaData, data) {
     const schema = {
         '@context': 'https://schema.org',
         '@type': 'Person',
-        sameAs: trimSameAs(data, 'author'),
+        sameAs: trimSameAs(data.author),
         name: escapeExpression(data.author.name),
         url: metaData.authorUrl,
         image: schemaImageObject(metaData.authorImage) || schemaImageObject(metaData.coverImage),
@@ -166,7 +187,7 @@ function getAuthorSchema(metaData, data) {
 function getSchema(metaData, data) {
     if (!config.isPrivacyDisabled('useStructuredData')) {
         const context = data.context ? data.context : null;
-        if (_.includes(context, 'post') || _.includes(context, 'page') || _.includes(context, 'amp')) {
+        if (_.includes(context, 'post') || _.includes(context, 'page')) {
             return getPostSchema(metaData, data);
         } else if (_.includes(context, 'home')) {
             return getHomeSchema(metaData);
@@ -179,4 +200,4 @@ function getSchema(metaData, data) {
     return null;
 }
 
-module.exports = getSchema;
+module.exports = {getSchema, SOCIAL_PLATFORMS};

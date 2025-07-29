@@ -3,8 +3,8 @@ const tpl = require('@tryghost/tpl');
 const {NotFoundError, NoPermissionError, BadRequestError, IncorrectUsageError, ValidationError} = require('@tryghost/errors');
 const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./settings-utils');
 const logging = require('@tryghost/logging');
-const MagicLink = require('@tryghost/magic-link');
 const verifyEmailTemplate = require('./emails/verify-email');
+const MagicLink = require('../lib/magic-link/MagicLink');
 const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];
@@ -24,12 +24,14 @@ class SettingsBREADService {
      * @param {Object} options.singleUseTokenProvider
      * @param {Object} options.urlUtils
      * @param {Object} options.labsService - labs service instance
+     * @param {Object} options.limitsService - limits service instance
      * @param {{service: Object}} options.emailAddressService
      */
-    constructor({SettingsModel, settingsCache, labsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
+    constructor({SettingsModel, settingsCache, labsService, limitsService, mail, singleUseTokenProvider, urlUtils, emailAddressService}) {
         this.SettingsModel = SettingsModel;
         this.settingsCache = settingsCache;
         this.labs = labsService;
+        this.limitsService = limitsService;
         this.emailAddressService = emailAddressService;
 
         /* email verification setup */
@@ -194,6 +196,8 @@ class SettingsBREADService {
         }
 
         if (stripeConnectData) {
+            await this.limitsService.errorIfWouldGoOverLimit('limitStripeConnect');
+
             filteredSettings.push({
                 key: 'stripe_connect_publishable_key',
                 value: stripeConnectData.public_key

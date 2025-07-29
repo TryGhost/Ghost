@@ -59,6 +59,11 @@
         "members_stripe_webhook_secret": {
             "defaultValue": null,
             "type": "string"
+        },
+        "site_uuid": {
+            "defaultValue": null,
+            "type": "string",
+            "flags": "PUBLIC,RO"
         }
     },
     "site": {
@@ -319,14 +324,6 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
-        },
-        "captcha_enabled": {
-            "defaultValue": "false",
-            "validations": {
-                "isEmpty": false,
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
         }
     },
     "portal": {
@@ -428,19 +425,6 @@
             },
             "type": "boolean",
             "flags": "RO"
-        }
-    },
-    "amp": {
-        "amp": {
-            "defaultValue": "false",
-            "validations": {
-                "isIn": [["true", "false"]]
-            },
-            "type": "boolean"
-        },
-        "amp_gtag_id": {
-            "defaultValue": null,
-            "type": "string"
         }
     },
     "firstpromoter": {
@@ -554,6 +538,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "web_analytics": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "pintura": {
@@ -607,6 +599,38 @@
     "security": {
         "require_email_mfa": {
             "defaultValue": false,
+            "type": "boolean"
+        }
+    },
+    "social_web": {
+        "social_web": {
+            "defaultValue": "true",
+            "validations": {
+                "isIn": [
+                    [
+                        "true",
+                        "false"
+                    ]
+                ]
+            },
+            "type": "boolean"
+        }
+    },
+    "explore": {
+        "explore_ping": {
+            "defaultValue": "true",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
+        },
+        "explore_ping_growth": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
             "type": "boolean"
         }
     }

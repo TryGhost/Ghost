@@ -66,7 +66,7 @@ typings/
 .env
 
 # IDE
-.idea/*
+.idea/
 *.iml
 *.sublime-*
 .vscode/*
@@ -115,13 +115,17 @@ test/functional/*.png
 
 # ignore all custom json files for config
 /ghost/core/config.*.json
+/ghost/core/config.*.jsonc
 
 # Built asset files
 /ghost/core/core/built
 /ghost/core/core/frontend/public/ghost.min.css
-
+/ghost/core/core/frontend/public/comment-counts.min.js
+/ghost/core/core/frontend/public/member-attribution.min.js
+/ghost/core/core/frontend/public/ghost-stats.min.js
 # Caddyfile - for local development with ssl + caddy
 Caddyfile
+!.docker/caddy/Caddyfile
 
 # Playwright state with cookies it keeps across tests
 /ghost/core/playwright-state.json
@@ -157,6 +161,7 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
+/e2e/build
 
 # Typescript build artifacts
 tsconfig.tsbuildinfo
@@ -177,3 +182,15 @@ temp*.sql
 # Docker Yarn Cache
 .yarncache
 .yarncachecopy
+.yarnhash
+
+# yalc — for linking local packages in a docker compatible way
+yalc.lock
+.yalc
+
+# A folder for AI generated files
+# useful for keeping local plans etc
+/ai
+
+# e2e test suite
+/e2e/test-results

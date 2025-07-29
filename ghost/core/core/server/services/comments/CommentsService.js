@@ -1,6 +1,6 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {MemberCommentEvent} = require('@tryghost/member-events');
+const {MemberCommentEvent} = require('../../../shared/events');
 const DomainEvents = require('@tryghost/domain-events');
 
 const messages = {
@@ -163,7 +163,7 @@ class CommentsService {
             member_id: reporter.id
         });
 
-        await this.emails.notifiyReport(comment, reporter);
+        await this.emails.notifyReport(comment, reporter);
     }
 
     /**
@@ -204,7 +204,7 @@ class CommentsService {
 
         if (!model) {
             throw new errors.NotFoundError({
-                messages: tpl(messages.commentNotFound)
+                message: tpl(messages.commentNotFound)
             });
         }
 
@@ -216,8 +216,9 @@ class CommentsService {
      * @param {string} member - The ID of the Member to comment as
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
+     * @param {Date} [createdAt] - Optional custom created_at timestamp
      */
-    async commentOnPost(post, member, comment, options) {
+    async commentOnPost(post, member, comment, options, createdAt) {
         this.checkEnabled();
         const memberModel = await this.models.Member.findOne({
             id: member
@@ -239,13 +240,19 @@ class CommentsService {
 
         this.checkPostAccess(postModel, memberModel);
 
-        const model = await this.models.Comment.add({
+        const commentData = {
             post_id: post,
             member_id: member,
             parent_id: null,
             html: comment,
             status: 'published'
-        }, options);
+        };
+
+        if (createdAt) {
+            commentData.created_at = createdAt;
+        }
+
+        const model = await this.models.Comment.add(commentData, options);
 
         if (!options.context.internal) {
             await this.sendNewCommentNotifications(model);
@@ -267,8 +274,9 @@ class CommentsService {
      * @param {string} member - The ID of the Member to comment as
      * @param {string} comment - The HTML content of the Comment
      * @param {any} options
+     * @param {Date} [createdAt] - Optional custom created_at timestamp
      */
-    async replyToComment(parent, inReplyTo, member, comment, options) {
+    async replyToComment(parent, inReplyTo, member, comment, options, createdAt) {
         this.checkEnabled();
         const memberModel = await this.models.Member.findOne({
             id: member
@@ -319,14 +327,20 @@ class CommentsService {
             }
         }
 
-        const model = await this.models.Comment.add({
+        const commentData = {
             post_id: parentComment.get('post_id'),
             member_id: member,
             parent_id: parentComment.id,
             in_reply_to_id: inReplyToComment && inReplyToComment.get('id'),
             html: comment,
             status: 'published'
-        }, options);
+        };
+
+        if (createdAt) {
+            commentData.created_at = createdAt;
+        }
+
+        const model = await this.models.Comment.add(commentData, options);
 
         if (!options.context.internal) {
             await this.sendNewCommentNotifications(model);

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory, hasCaptchaEnabled, getCaptchaSitekey} from './utils/helpers';
+import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import i18nLib from '@tryghost/i18n';
 
@@ -16,7 +16,7 @@ function handleError(error, form, errorEl, t) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, captchaId, submitHandler},
+    {event, form, errorEl, siteUrl, submitHandler},
     t = str => str
 ) {
     form.removeEventListener('submit', submitHandler);
@@ -75,11 +75,6 @@ export async function formSubmitHandler(
     try {
         const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {method: 'GET'});
         const integrityToken = await integrityTokenRes.text();
-
-        if (captchaId) {
-            const {response} = await window.hcaptcha.execute(captchaId, {async: true});
-            reqBody.token = response;
-        }
 
         const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
             method: 'POST',
@@ -194,20 +189,9 @@ export function handleDataAttributes({siteUrl, site, member}) {
     }
     siteUrl = siteUrl.replace(/\/$/, '');
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
-        let captchaId;
-        if (hasCaptchaEnabled({site})) {
-            const captchaSitekey = getCaptchaSitekey({site});
-            const captchaEl = document.createElement('div');
-            form.appendChild(captchaEl);
-            captchaId = window.hcaptcha.render(captchaEl, {
-                size: 'invisible',
-                sitekey: captchaSitekey
-            });
-        }
-
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, captchaId, submitHandler}, t);
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler}, t);
         }
         form.addEventListener('submit', submitHandler);
     });

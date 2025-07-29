@@ -3,10 +3,9 @@ import FollowButton from '@src/components/global/FollowButton';
 import Layout from '@components/layout';
 import React, {useEffect} from 'react';
 import {type Account} from '@src/api/activitypub';
-import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, H4, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {formatFollowNumber} from '@src/utils/content-formatters';
-import {useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
+import {useAccountForUser, useExploreProfilesForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useOnboardingStatus} from '@src/components/layout/Onboarding';
 
@@ -19,6 +18,10 @@ interface ExploreProfileProps {
 export const ExploreProfile: React.FC<ExploreProfileProps & {
     onOpenChange?: (open: boolean) => void;
 }> = ({profile, update, isLoading, onOpenChange}) => {
+    const currentAccountQuery = useAccountForUser('index', 'me');
+    const {data: currentUser} = currentAccountQuery;
+    const isCurrentUser = profile.handle === currentUser?.handle;
+
     const onFollow = () => {
         update(profile.id, {
             followedByMe: true,
@@ -53,35 +56,43 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
             } onClick={() => onOpenChange?.(false)} />
             <div className='flex w-full flex-col gap-1 border-b border-gray-200 pb-4 dark:border-gray-950'>
                 <div className='flex items-center justify-between gap-3'>
-                    <div className='flex grow flex-col'>
-                        <span className='font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-64' />}</span>
-                        <span className='text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-24' />}</span>
+                    <div className='flex grow flex-col break-anywhere'>
+                        <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
+                        <span className='line-clamp-1 text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
                     </div>
-                    {!isLoading ?
-                        <FollowButton
-                            className='ml-auto'
-                            following={profile.followedByMe}
-                            handle={profile.handle}
-                            type='primary'
-                            onFollow={onFollow}
-                            onUnfollow={onUnfollow}
-                        /> :
+                    {!isLoading ? (
+                        !isCurrentUser ? (
+                            <FollowButton
+                                className='ml-auto'
+                                following={profile.followedByMe}
+                                handle={profile.handle}
+                                type='primary'
+                                onFollow={onFollow}
+                                onUnfollow={onUnfollow}
+                            />
+                        ) : null
+                    ) : (
                         <div className='inline-flex items-center'>
-                            <Skeleton className='w-12' />
+                            <Skeleton className='w-24' />
                         </div>
-                    }
+                    )}
                 </div>
-                {profile.bio &&
+                {isLoading ?
+                    <Skeleton className='w-full max-w-96' />
+                    :
+                    profile.bio &&
                     <div
                         dangerouslySetInnerHTML={{__html: profile.bio}}
-                        className='ap-profile-content pointer-events-none mt-0 max-w-[500px]'
+                        className='ap-profile-content pointer-events-none mt-0 line-clamp-2 max-w-[500px] break-anywhere'
                     />
                 }
-                {!isLoading &&
-                <div className='mt-2 flex items-center gap-1 text-sm text-gray-700'>
-                    <LucideIcon.UserRound size={14} strokeWidth={1.5} />
-                    {formatFollowNumber(profile.followerCount)} followers
-                </div>
+                {!isLoading ?
+                    <div className='mt-2 flex items-center gap-1 text-sm text-gray-700'>
+                        <LucideIcon.UserRound size={14} strokeWidth={1.5} />
+                        {formatFollowNumber(profile.followerCount)} followers
+                    </div>
+                    :
+                    <Skeleton className='w-24' />
                 }
             </div>
         </div>
@@ -93,7 +104,7 @@ const Explore: React.FC = () => {
     const {exploreProfilesQuery, updateExploreProfile} = useExploreProfilesForUser('index');
     const {data: exploreProfilesData, isLoading: isLoadingExploreProfiles, fetchNextPage, hasNextPage, isFetchingNextPage} = exploreProfilesQuery;
 
-    const emptyProfiles = Array(5).fill({
+    const emptyProfiles = Array(10).fill({
         id: '',
         name: '',
         handle: '',
@@ -152,7 +163,7 @@ const Explore: React.FC = () => {
                     <Button className='absolute right-4 top-[17px] size-6 opacity-40' variant='link' onClick={() => setExplainerClosed(true)}><LucideIcon.X size={20} /></Button>
                 </div>
             }
-            <div className='mt-12 flex flex-col gap-12 pb-20'>
+            <div className='mt-12 flex flex-col gap-12 pb-20 max-md:mt-5'>
                 {
                     isLoadingExploreProfiles ? (
                         <div>

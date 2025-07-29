@@ -27,12 +27,14 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     @service settings;
     @service explore;
     @service notifications;
+    @service notificationsCount;
 
     @inject config;
 
     iconStyle = '';
     iconClass = '';
     shortcuts = null;
+    previousRoute = null;
 
     @match('router.currentRouteName', /^settings\.integration/)
         isIntegrationRoute;
@@ -59,6 +61,28 @@ export default class Main extends Component.extend(ShortcutsMixin) {
         shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
         shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
         this.shortcuts = shortcuts;
+
+        // Set initial previous route
+        this.previousRoute = this.router.currentRouteName;
+
+        const currentRoute = this.router.currentRouteName || '';
+        // Fetch notifications count if not on activitypub-x route
+        if (this.settings.socialWebEnabled && !currentRoute.startsWith('activitypub-x')) {
+            this.notificationsCount.fetchCount();
+        }
+
+        this._routeChangeHandler = () => {
+            const current = this.router.currentRouteName || '';
+            const prev = this.previousRoute || '';
+
+            if (this.settings.socialWebEnabled && prev.startsWith('activitypub-x') && !current.startsWith('activitypub-x')) {
+                this.notificationsCount.fetchCount();
+            }
+
+            this.previousRoute = current;
+        };
+
+        this.router.on('routeDidChange', this._routeChangeHandler);
     }
 
     // the menu has a rendering issue (#8307) when the the world is reloaded
@@ -78,6 +102,9 @@ export default class Main extends Component.extend(ShortcutsMixin) {
     willDestroyElement() {
         this.removeShortcuts();
         super.willDestroyElement(...arguments);
+        if (this._routeChangeHandler) {
+            this.router.off('routeDidChange', this._routeChangeHandler);
+        }
     }
 
     @action

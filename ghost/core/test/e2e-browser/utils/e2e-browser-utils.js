@@ -40,10 +40,10 @@ const setupGhost = async (page) => {
     ]);
 
     // Add owner user data from usual fixture
-    const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+    const ownerUser = DataGenerator.Content.users[0];
 
     if (action === actions.signin) {
-        await signInAsUserById(page, '1');
+        await signInAsUserById(page, ownerUser.id);
     } else if (action === actions.setup) {
         // Complete setup process
         await page.getByPlaceholder('The Daily Awesome').click();
@@ -123,22 +123,6 @@ const setupMailgun = async (page) => {
     await section.getByLabel('Mailgun private API key').fill('Not an API key');
     await section.getByRole('button', {name: 'Save'}).click();
     await section.getByText('Mailgun is set up').waitFor();
-
-    await page.getByTestId('exit-settings').click();
-};
-
-/**
- * Enable experimental labs features
- * @param {import('@playwright/test').Page} page
- */
-const enableLabs = async (page) => {
-    await page.locator('.gh-nav a[href="#/settings/"]').click();
-
-    const section = page.getByTestId('labs');
-    await section.getByRole('button', {name: 'Open'}).click();
-
-    await section.getByRole('tab', {name: 'Alpha features'}).click();
-    await section.getByLabel('Webmentions').click();
 
     await page.getByTestId('exit-settings').click();
 };
@@ -539,7 +523,6 @@ module.exports = {
     setupGhost,
     setupStripe,
     disconnectStripe,
-    enableLabs,
     getStripeAccountId,
     generateStripeIntegrationToken,
     setupMailgun,

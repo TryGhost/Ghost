@@ -65,17 +65,11 @@ export default class FeatureService extends Service {
     @feature('emailCustomization') emailCustomization;
     @feature('i18n') i18n;
     @feature('announcementBar') announcementBar;
-    @feature('signupCard') signupCard;
-    @feature('mailEvents') mailEvents;
-    @feature('collectionsCard') collectionsCard;
     @feature('importMemberTier') importMemberTier;
     @feature('lexicalIndicators') lexicalIndicators;
-    @feature('ActivityPub') ActivityPub;
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
-    @feature('postsX') postsX;
-    @feature('statsX') statsX;
 
     _user = null;
 

@@ -5,7 +5,6 @@ const debug = _debug('ghost:config');
 const localUtils = require('./utils');
 const helpers = require('./helpers');
 const urlHelpers = require('@tryghost/config-url-helpers');
-const env = process.env.NODE_ENV || 'development';
 
 /**
  * @param {object} options
@@ -13,6 +12,7 @@ const env = process.env.NODE_ENV || 'development';
  */
 function loadNconf(options) {
     debug('config start');
+    const env = localUtils.getNodeEnv();
     options = options || {};
 
     const baseConfigPath = options.baseConfigPath || __dirname;
@@ -35,6 +35,10 @@ function loadNconf(options) {
             nconf.file('docker-env', path.join(baseConfigPath, 'env', 'config.development.docker.json'));
         }
         nconf.file('local-env', path.join(customConfigPath, 'config.local.json'));
+        nconf.file('local-env-jsonc', {
+            file: path.join(customConfigPath, 'config.local.jsonc'),
+            format: localUtils.jsoncFormat
+        });
     }
     nconf.file('default-env', path.join(baseConfigPath, 'env', 'config.' + env + '.json'));
 
@@ -73,7 +77,8 @@ function loadNconf(options) {
     }
 
     debug('config end');
-    return nconf;
+    // Assert the type to include the dynamically bound helpers
+    return /** @type {Nconf.Provider & urlHelpers.BoundHelpers & helpers.ConfigHelpers} */ (nconf);
 }
 
 module.exports.loadNconf = loadNconf;

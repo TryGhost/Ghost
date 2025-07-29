@@ -1,3 +1,4 @@
+import React from 'react';
 import type {NiceModalHocProps} from '@ebay/nice-modal-react';
 import type {RoutingModalProps} from '@tryghost/admin-x-framework/routing';
 
@@ -24,6 +25,7 @@ import PinturaModal from '../../settings/advanced/integrations/PinturaModal';
 import PortalModal from '../../settings/membership/portal/PortalModal';
 import SlackModal from '../../settings/advanced/integrations/SlackModal';
 import StripeConnectModal from '../../settings/membership/stripe/StripeConnectModal';
+import TestimonialsModal from '../../settings/growth/explore/TestimonialsModal';
 import TierDetailModal from '../../settings/membership/tiers/TierDetailModal';
 import UnsplashModal from '../../settings/advanced/integrations/UnsplashModal';
 import UserDetailModal from '../../settings/general/UserDetailModal';
@@ -45,6 +47,7 @@ const modals = {
     PortalModal,
     SlackModal,
     StripeConnectModal,
+    TestimonialsModal,
     TierDetailModal,
     UnsplashModal,
     UserDetailModal,

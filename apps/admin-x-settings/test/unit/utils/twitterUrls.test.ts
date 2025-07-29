@@ -11,12 +11,15 @@ describe('Twitter URLs', () => {
             assert.equal(validateTwitterUrl('x.com/username'), 'https://x.com/username');
             assert.equal(validateTwitterUrl('https://x.com/username'), 'https://x.com/username');
             assert.equal(validateTwitterUrl('@username'), 'https://x.com/username');
+            assert.equal(validateTwitterUrl('wwwUsername'), 'https://x.com/wwwUsername');
+            assert.equal(validateTwitterUrl('httpUsername'), 'https://x.com/httpUsername');
         });
 
         it('should reject invalid Twitter usernames', () => {
             assert.throws(() => validateTwitterUrl('x.com/username@'), /Your Username is not a valid Twitter Username/);
             assert.throws(() => validateTwitterUrl('x.com/username!'), /Your Username is not a valid Twitter Username/);
             assert.throws(() => validateTwitterUrl('x.com/thisusernameistoolong'), /Your Username is not a valid Twitter Username/);
+            assert.throws(() => validateTwitterUrl('x.com/with\nnewline'), /Your Username is not a valid Twitter Username/);
         });
     });
 

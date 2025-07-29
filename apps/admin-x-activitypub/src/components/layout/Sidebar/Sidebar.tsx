@@ -6,15 +6,42 @@ import Search from '@src/components/modals/Search';
 import SearchInput from '../Header/SearchInput';
 import SidebarMenuLink from './SidebarMenuLink';
 import {Button, Dialog, DialogContent, DialogTrigger, LucideIcon} from '@tryghost/shade';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/currentUser';
 import {useFeatureFlags} from '@src/lib/feature-flags';
+import {useLocation} from '@tryghost/admin-x-framework';
+import {useNotificationsCountForUser, useResetNotificationsCountForUser} from '@src/hooks/use-activity-pub-queries';
 
-const Sidebar: React.FC = () => {
-    const {allFlags, flags, isEnabled} = useFeatureFlags();
+interface SidebarProps {
+    isMobileSidebarOpen: boolean;
+    onCloseMobileSidebar: () => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({isMobileSidebarOpen}) => {
+    const {allFlags, flags} = useFeatureFlags();
     const [isSearchOpen, setIsSearchOpen] = React.useState(false);
     const [searchQuery, setSearchQuery] = React.useState('');
+    const {data: currentUser} = useCurrentUser();
+    const location = useLocation();
+    const {data: notificationsCount} = useNotificationsCountForUser(currentUser?.slug || '');
+    const resetNotificationsCount = useResetNotificationsCountForUser(currentUser?.slug || '');
+
+    // Reset count when on notifications page
+    React.useEffect(() => {
+        if (location.pathname === '/notifications' && notificationsCount && notificationsCount > 0) {
+            resetNotificationsCount.mutate();
+        }
+    }, [location.pathname, notificationsCount, resetNotificationsCount]);
+
+    const handleNotificationsClick = React.useCallback(() => {
+        if (notificationsCount && notificationsCount > 0) {
+            resetNotificationsCount.mutate();
+        }
+    }, [notificationsCount, resetNotificationsCount]);
 
     return (
-        <div className='sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 dark:border-gray-950'>
+        <div className={`sticky top-0 flex min-h-screen w-[320px] flex-col border-l border-gray-200 pr-8 transition-transform duration-300 ease-in-out max-lg:fixed max-lg:inset-y-0 max-lg:right-0 max-lg:z-50 max-lg:border-0 max-lg:bg-white max-lg:shadow-xl max-md:bottom-[72px] max-md:min-h-[auto] max-md:overflow-y-scroll dark:border-gray-950 max-lg:dark:bg-black ${
+            isMobileSidebarOpen ? 'max-lg:translate-x-0' : 'max-lg:translate-x-full'
+        }`}>
             <div className='flex grow flex-col justify-between'>
                 <div className='isolate flex w-full flex-col items-start gap-6 pl-6 pt-6'>
                     <div className='flex h-[52px] w-full items-center'>
@@ -28,15 +55,19 @@ const Sidebar: React.FC = () => {
                         </Dialog>
                     </div>
                     <div className='flex w-full flex-col gap-px'>
-                        <SidebarMenuLink to='/inbox'>
-                            <LucideIcon.Inbox size={18} strokeWidth={1.5} />
-                            Inbox
+                        <SidebarMenuLink to='/reader'>
+                            <LucideIcon.BookOpen size={18} strokeWidth={1.5} />
+                            Reader
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/feed'>
-                            <LucideIcon.Hash size={18} strokeWidth={1.5} />
-                            Feed
+                        <SidebarMenuLink to='/notes'>
+                            <LucideIcon.MessageCircle size={18} strokeWidth={1.5} />
+                            Notes
                         </SidebarMenuLink>
-                        <SidebarMenuLink to='/notifications'>
+                        <SidebarMenuLink
+                            count={location.pathname !== '/notifications' ? notificationsCount : undefined}
+                            to='/notifications'
+                            onClick={handleNotificationsClick}
+                        >
                             <LucideIcon.Bell size={18} strokeWidth={1.5} />
                             Notifications
                         </SidebarMenuLink>
@@ -48,15 +79,13 @@ const Sidebar: React.FC = () => {
                             <LucideIcon.User size={18} strokeWidth={1.5} />
                             Profile
                         </SidebarMenuLink>
-                        {isEnabled('settings-full') &&
-                            <SidebarMenuLink to='/preferences'>
-                                <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
-                                Preferences
-                            </SidebarMenuLink>
-                        }
+                        <SidebarMenuLink to='/preferences'>
+                            <LucideIcon.Settings2 size={18} strokeWidth={1.5} />
+                            Preferences
+                        </SidebarMenuLink>
                     </div>
                     <NewNoteModal>
-                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white dark:hover:bg-purple-500'>
+                        <Button className='h-9 rounded-full bg-purple-500 px-3 text-md text-white hover:bg-purple-600 dark:hover:bg-purple-600'>
                             <LucideIcon.FilePen />
                             New note
                         </Button>

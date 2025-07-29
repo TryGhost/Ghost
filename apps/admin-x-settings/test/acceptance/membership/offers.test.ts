@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Offers Modal', () => {
     test('Offers Modal is available', async ({page}) => {
@@ -178,7 +177,7 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
@@ -199,7 +198,7 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers}
         }});
 
@@ -217,7 +216,7 @@ test.describe('Offers Modal', () => {
             browseOffers: {method: 'GET', path: '/offers/', response: responseFixtures.offers},
             ...globalDataRequests,
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
-            browseAllOffers: {method: 'GET', path: '/offers/?limit=all', response: responseFixtures.offers},
+            browseAllOffers: {method: 'GET', path: '/offers/?', response: responseFixtures.offers},
             browseOffersById: {method: 'GET', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: responseFixtures.offers},
             browseTiers: {method: 'GET', path: '/tiers/', response: responseFixtures.tiers},
             editOffer: {method: 'PUT', path: `/offers/${responseFixtures.offers.offers![0].id}/`, response: {

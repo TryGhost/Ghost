@@ -722,7 +722,7 @@
             "name": "User",
             "entries": [
                 {
-                    "id": 1,
+                    "id": "__OWNER_USER_ID__",
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "status": "inactive",
@@ -746,8 +746,7 @@
                     "type": "post",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
-                    "published_by": "1"
+                    "published_by": "__OWNER_USER_ID__"
                 },
                 {
                     "title": "About this site",
@@ -757,8 +756,7 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
-                    "published_by": "1"
+                    "published_by": "__OWNER_USER_ID__"
                 }
             ]
         },
@@ -879,7 +877,8 @@
                     "identity": "read"
                 },
                 "DB Backup Integration": {
-                    "db": "all"
+                    "db": "all",
+                    "member": "browse"
                 },
                 "Scheduler Integration": {
                     "post": "publish"
@@ -1022,7 +1021,7 @@
                 "match": "name"
             },
             "entries": {
-                "1": ["Owner"]
+                "__OWNER_USER_ID__": ["Owner"]
             }
         }
     ]

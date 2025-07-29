@@ -1,11 +1,11 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './Customizer';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
+import ShowRepliesButton from '@src/components/global/ShowRepliesButton';
 import getUsername from '../../../utils/get-username';
-import {Skeleton} from '@tryghost/shade';
+import {LoadingIndicator, Skeleton} from '@tryghost/shade';
 
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {renderTimestamp} from '../../../utils/render-timestamp';
-import {usePostForUser, useThreadForUser} from '@hooks/use-activity-pub-queries';
+import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 import APAvatar from '@src/components/global/APAvatar';
 import APReplyBox from '@src/components/global/APReplyBox';
@@ -16,11 +16,12 @@ import FeedItemStats from '@src/components/feed/FeedItemStats';
 import TableOfContents, {TOCItem} from '@src/components/feed/TableOfContents';
 import articleBodyStyles from '@src/components/articleBodyStyles';
 import getReadingTime from '../../../utils/get-reading-time';
-import {handleProfileClickRR} from '@src/utils/handle-profile-click';
+import {Activity} from '@src/api/activitypub';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
 import {useDebounce} from 'use-debounce';
-import {useLocation, useNavigate} from '@tryghost/admin-x-framework';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface IframeWindow extends Window {
     resizeIframe?: () => void;
@@ -152,6 +153,11 @@ const ArticleBody: React.FC<{
                     const script = document.createElement('script');
                     script.src = '/public/cards.min.js';
                     document.head.appendChild(script);
+
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = '/public/cards.min.css';
+                    document.head.appendChild(link);
                 });
             </script>
 
@@ -232,8 +238,45 @@ const ArticleBody: React.FC<{
             }
         };
 
+        // Add event listener for Escape key in iframe
+        const handleIframeKeyDown = (event: KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                // Prevent default and stop propagation of the original event
+                event.preventDefault();
+                event.stopPropagation();
+
+                // Create and dispatch a new keyboard event to the parent window
+                const newEvent = new KeyboardEvent('keydown', {
+                    key: 'Escape',
+                    code: 'Escape',
+                    keyCode: 27,
+                    which: 27,
+                    bubbles: true,
+                    cancelable: true
+                });
+                document.dispatchEvent(newEvent);
+            }
+        };
+
+        // Wait for iframe to load before adding event listener
+        const handleIframeLoad = () => {
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow) {
+                iframeWindow.addEventListener('keydown', handleIframeKeyDown);
+            }
+        };
+
+        iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
-        return () => window.removeEventListener('message', handleMessage);
+
+        return () => {
+            window.removeEventListener('message', handleMessage);
+            iframe.removeEventListener('load', handleIframeLoad);
+            const iframeWindow = iframe.contentWindow;
+            if (iframeWindow) {
+                iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
+            }
+        };
     }, [htmlContent]);
 
     // Separate effect for style updates
@@ -282,7 +325,7 @@ const ArticleBody: React.FC<{
 
             // Get all headings except the article title
             const headingElements = Array.from(
-                iframe.contentDocument.querySelectorAll('h1:not(.gh-article-title), h2, h3, h4, h5, h6')
+                iframe.contentDocument.querySelectorAll('.gh-content > :is(h2, h3, h4, h5, h6)[id]')
             );
 
             if (headingElements.length === 0) {
@@ -326,9 +369,9 @@ const ArticleBody: React.FC<{
 
     return (
         <div className='w-full pb-6'>
-            <div className='relative'>
+            <div className='relative -mx-6'>
                 {isLoading && (
-                    <div className='mx-auto mt-6 w-full max-w-[640px]'>
+                    <div className='mx-auto mt-6 w-full max-w-[640px] max-lg:px-4'>
                         <div className='mb-6 flex flex-col gap-2'>
                             <Skeleton className='h-8' />
                             <Skeleton className='h-8 w-full max-w-md' />
@@ -382,28 +425,30 @@ export const Reader: React.FC<ReaderProps> = ({
         resetFontSize
     } = useCustomizerSettings();
     const modalRef = useRef<HTMLElement>(null);
-    const [focusReply, setFocusReply] = useState(false);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
-    const location = useLocation();
 
-    useEffect(() => {
-        const searchParams = new URLSearchParams(location.search);
-        if (searchParams.get('focusReply') === 'true') {
-            setFocusReply(true);
-        }
-    }, [location.search, setFocusReply]);
+    const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
+    const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
+    const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
+    const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
+    const observerRef = useRef<IntersectionObserver | null>(null);
+    const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-    const {data: post, isLoading: isLoadingPost} = usePostForUser('index', postId);
-    const activityData = post;
-    const activityId = activityData?.id;
+    const {
+        post: currentPost,
+        processedReplies,
+        isLoading: isLoadingContent,
+        loadMoreChildren,
+        loadMoreChildReplies,
+        hasMoreChildren,
+        hasMoreChildReplies
+    } = useReplyChainData(postId ?? '', {includeAncestors: false});
+
+    const activityData = currentPost;
     const object = activityData?.object;
     const actor = activityData?.actor;
-    const authors = activityData?.object.metadata.ghostAuthors;
-
-    const {data: thread, isLoading: isLoadingThread} = useThreadForUser('index', activityId);
-    const threadPostIdx = (thread?.posts ?? []).findIndex(item => item.object.id === activityId);
-    const threadChildren = (thread?.posts ?? []).slice(threadPostIdx + 1);
+    const authors = activityData?.object?.metadata?.ghostAuthors;
 
     const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
 
@@ -413,20 +458,102 @@ export const Reader: React.FC<ReaderProps> = ({
         }
     }, [object?.replyCount]);
 
+    useEffect(() => {
+        // Only set up infinite scroll if pagination is supported
+        if (!hasMoreChildren) {
+            return;
+        }
+
+        if (observerRef.current) {
+            observerRef.current.disconnect();
+        }
+
+        const container = modalRef.current;
+        if (!container) {
+            return;
+        }
+
+        observerRef.current = new IntersectionObserver(async (entries) => {
+            if (entries[0].isIntersecting && hasMoreChildren && !isLoadingMoreTopLevelReplies) {
+                setIsLoadingMoreTopLevelReplies(true);
+                try {
+                    await loadMoreChildren();
+                } catch (error) {
+                    // eslint-disable-next-line no-console
+                    console.error('Failed to load more top-level replies:', error);
+                } finally {
+                    setIsLoadingMoreTopLevelReplies(false);
+                }
+            }
+        }, {
+            root: container,
+            rootMargin: '200px'
+        });
+
+        if (loadMoreRef.current) {
+            observerRef.current.observe(loadMoreRef.current);
+        }
+
+        return () => {
+            if (observerRef.current) {
+                observerRef.current.disconnect();
+            }
+        };
+    }, [hasMoreChildren, isLoadingMoreTopLevelReplies, loadMoreChildren]);
+
+    function handleReplyCountChange(increment: number) {
+        setReplyCount((current: number) => current + increment);
+    }
+
+    function handleDelete() {
+        handleReplyCountChange(-1);
+    }
+
+    function toggleChain(chainId: string) {
+        setExpandedChains((prev) => {
+            const newSet = new Set(prev);
+            if (newSet.has(chainId)) {
+                newSet.delete(chainId);
+            } else {
+                newSet.add(chainId);
+                setFullyExpandedChains((fullyExpanded) => {
+                    const newFullyExpanded = new Set(fullyExpanded);
+                    newFullyExpanded.add(chainId);
+                    return newFullyExpanded;
+                });
+            }
+            return newSet;
+        });
+    }
+
+    async function loadMoreForChain(chainId: string, childIndex: number) {
+        if (loadingChains.has(chainId)) {
+            return;
+        }
+
+        setLoadingChains(prev => new Set(prev).add(chainId));
+
+        try {
+            if (loadMoreChildReplies) {
+                await loadMoreChildReplies(childIndex);
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.error('Failed to load more replies for chain:', error);
+        } finally {
+            setLoadingChains((prev) => {
+                const newSet = new Set(prev);
+                newSet.delete(chainId);
+                return newSet;
+            });
+        }
+    }
+
     const onLikeClick = () => {
         // Do API req or smth
         // Don't need to know about setting timeouts or anything like that
     };
 
-    function incrementReplyCount(step: number = 1) {
-        setReplyCount((current: number) => current + step);
-    }
-
-    function decrementReplyCount(step: number = 1) {
-        setReplyCount((current: number) => current - step);
-    }
-
-    const replyBoxRef = useRef<HTMLDivElement>(null);
     const repliesRef = useRef<HTMLDivElement>(null);
 
     const currentMaxWidth = '904px';
@@ -567,159 +694,310 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const navigate = useNavigate();
 
-    return (
-        <div ref={modalRef as React.RefObject<HTMLDivElement>} className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
-            {
-                isLoadingPost ? (
-                    <LoadingIndicator size='lg' />
-                ) : (
-                    <>
-                        <div className='flex h-full flex-col'>
-                            <div className='relative flex-1'>
-                                <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
-                                    <div
-                                        className='grid w-full px-8'
-                                        style={{
-                                            gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
-                                        }}
-                                    >
-                                        <div className='flex items-center'>
-                                            <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
-                                        </div>
-                                        <div className='col-[2/3] mx-auto flex w-full items-center gap-3'>
-                                            <div className='relative z-10 pt-[3px]'>
-                                                <APAvatar author={actor}/>
-                                            </div>
-                                            <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClickRR(actor, navigate, e)}>
-                                                <div className='flex w-full'>
-                                                    <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{actor.name}</span>
-                                                </div>
-                                                <div className='flex w-full'>
-                                                    <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>
-                                                    <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='col-[3/4] flex items-center justify-end gap-2'>
-                                            <Customizer
-                                                backgroundColor={backgroundColor}
-                                                currentFontSizeIndex={currentFontSizeIndex}
-                                                fontStyle={fontStyle}
-                                                onColorChange={handleColorChange}
-                                                onDecreaseFontSize={decreaseFontSize}
-                                                onFontStyleChange={setFontStyle}
-                                                onIncreaseFontSize={increaseFontSize}
-                                                onOpenChange={setIsCustomizerOpen}
-                                                onResetFontSize={resetFontSize}
-                                            />
-                                        </div>
+    if (isLoadingContent) {
+        return (
+            <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
+                <div className='flex h-full flex-col'>
+                    <div className='relative flex-1'>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                            <div
+                                className='grid w-full px-8 max-lg:px-4'
+                                style={{
+                                    gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                }}
+                            >
+                                <div className='flex items-center'>
+                                    <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
+                                </div>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
+                                    <Skeleton className='size-10 rounded-full' />
+                                    <div className='grow pt-1'>
+                                        <Skeleton className='w-full' />
+                                        <Skeleton className='w-2/3' />
                                     </div>
                                 </div>
-                                <div className='relative flex-1'>
-                                    <TableOfContents
-                                        iframeElement={iframeElement}
-                                        modalRef={modalRef}
-                                        tocItems={tocItems}
-                                        onOpenChange={setIsTOCOpen}
+                                <div className='col-[3/4] flex items-center justify-end gap-2'>
+                                    <Customizer
+                                        backgroundColor={backgroundColor}
+                                        currentFontSizeIndex={currentFontSizeIndex}
+                                        fontStyle={fontStyle}
+                                        onColorChange={handleColorChange}
+                                        onDecreaseFontSize={decreaseFontSize}
+                                        onFontStyleChange={setFontStyle}
+                                        onIncreaseFontSize={increaseFontSize}
+                                        onOpenChange={setIsCustomizerOpen}
+                                        onResetFontSize={resetFontSize}
                                     />
-                                    <div className='grow overflow-y-auto'>
-                                        <div className={`mx-auto px-8 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
-                                            <div className='flex flex-col items-center pb-8' id='object-content'>
-                                                <ArticleBody
-                                                    authors={authors}
-                                                    backgroundColor={backgroundColor}
-                                                    excerpt={object?.preview?.content ?? ''}
-                                                    fontSize={fontSize}
-                                                    fontStyle={fontStyle}
-                                                    heading={object.name}
-                                                    html={object.content ?? ''}
-                                                    image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                                    postUrl={object?.url || ''}
-                                                    onHeadingsExtracted={handleHeadingsExtracted}
-                                                    onIframeLoad={handleIframeLoad}
-                                                    onLoadingChange={setIsLoading}
-                                                />
-                                                <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
-                                                    <FeedItemStats
-                                                        commentCount={replyCount}
-                                                        layout={'modal'}
-                                                        likeCount={1}
-                                                        object={object}
-                                                        repostCount={object.repostCount ?? 0}
-                                                        onCommentClick={() => {
-                                                            repliesRef.current?.scrollIntoView({
-                                                                behavior: 'smooth',
-                                                                block: 'center'
-                                                            });
-                                                            setFocusReply(true);
-                                                        }}
-                                                        onLikeClick={onLikeClick}
-                                                    />
-                                                </div>
-                                            </div>
-                                            {object.type === 'Tombstone' && (
-                                                <DeletedFeedItem last={true} />
-                                            )}
-
-                                            <div ref={replyBoxRef} className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
-                                                <APReplyBox
-                                                    focused={focusReply ? 1 : 0}
-                                                    object={object}
-                                                    onReply={incrementReplyCount}
-                                                    onReplyError={decrementReplyCount}
-                                                />
-                                                <FeedItemDivider />
-                                            </div>
-
-                                            {isLoadingThread && <LoadingIndicator size='lg' />}
-
-                                            <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
-                                                {threadChildren.map((item, index) => {
-                                                    const showDivider = index !== threadChildren.length - 1;
-
-                                                    return (
-                                                        <React.Fragment key={item.id}>
-                                                            <FeedItem
-                                                                actor={item.actor}
-                                                                allowDelete={item.object.authored}
-                                                                commentCount={item.object.replyCount ?? 0}
-                                                                isPending={isPendingActivity(item.id)}
-                                                                last={true}
-                                                                layout='reply'
-                                                                object={item.object}
-                                                                parentId={object.id}
-                                                                repostCount={item.object.repostCount ?? 0}
-                                                                type='Note'
-                                                                onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}`);
-                                                                }}
-                                                                onCommentClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(item.object.id)}?focusReply=true`);
-                                                                }}
-                                                                onDelete={decrementReplyCount}
-                                                            />
-                                                            {showDivider && <FeedItemDivider />}
-                                                        </React.Fragment>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
-                                <div className='pointer-events-auto text-gray-600'>
-                                    {getReadingTime(object.content ?? '')}
-                                </div>
-                                <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
-                                    {readingProgress}%
                                 </div>
                             </div>
                         </div>
-                    </>
-                )
-            }
+                        <div className='relative flex-1 max-lg:px-4'>
+                            <div className='mx-auto mt-11 w-full max-w-[640px]'>
+                                <div className='mb-6 flex flex-col gap-2'>
+                                    <Skeleton className='h-8' />
+                                    <Skeleton className='h-8 w-full max-w-md' />
+                                </div>
+                                <Skeleton className='mt-2 h-4' count={4} randomize={true} />
+                                <Skeleton className='mt-8 h-[400px]' />
+                                <Skeleton className='mt-2 h-4' containerClassName='block mt-7 mb-4' count={8} randomize={true} />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentPost) {
+        return (
+            <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
+                <div className='flex h-full flex-col'>
+                    <div className='relative flex-1'>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                            <div
+                                className='grid w-full px-8 max-lg:px-4'
+                                style={{
+                                    gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                }}
+                            >
+                                <div className='flex items-center'>
+                                    <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
+                                </div>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
+                                    <div className='grow text-center'>
+                                        <span>Error loading article.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div ref={modalRef as React.RefObject<HTMLDivElement>} className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`} data-scrollable-container>
+
+            <>
+                <div className='flex h-full flex-col'>
+                    <div className='relative flex-1'>
+                        <div className={`sticky top-0 z-50 flex h-[102px] items-center justify-center rounded-t-md border-b max-md:h-[68px] ${COLOR_OPTIONS[backgroundColor].background} ${COLOR_OPTIONS[backgroundColor].border}`}>
+                            <div
+                                className='grid w-full px-8 max-lg:px-4'
+                                style={{
+                                    gridTemplateColumns: `1fr minmax(0,${currentGridWidth}) 1fr`
+                                }}
+                            >
+                                <div className='flex items-center'>
+                                    <BackButton className={COLOR_OPTIONS[backgroundColor].button} onClick={onClose} />
+                                </div>
+                                <div className='col-[2/3] mx-auto flex w-full items-center gap-3 max-md:hidden'>
+                                    <div className='relative z-10 pt-0.5'>
+                                        <APAvatar author={actor}/>
+                                    </div>
+                                    <div className='relative z-10 mt-0.5 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={e => handleProfileClick(actor, navigate, e)}>
+                                        <div className='flex w-full'>
+                                            <span className='min-w-0 truncate whitespace-nowrap font-semibold text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
+                                        </div>
+                                        <div className='flex w-full'>
+                                            {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                            <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className='col-[3/4] flex items-center justify-end gap-2'>
+                                    <Customizer
+                                        backgroundColor={backgroundColor}
+                                        currentFontSizeIndex={currentFontSizeIndex}
+                                        fontStyle={fontStyle}
+                                        onColorChange={handleColorChange}
+                                        onDecreaseFontSize={decreaseFontSize}
+                                        onFontStyleChange={setFontStyle}
+                                        onIncreaseFontSize={increaseFontSize}
+                                        onOpenChange={setIsCustomizerOpen}
+                                        onResetFontSize={resetFontSize}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                        <div className='relative flex-1'>
+                            <TableOfContents
+                                iframeElement={iframeElement}
+                                modalRef={modalRef}
+                                tocItems={tocItems}
+                                onOpenChange={setIsTOCOpen}
+                            />
+                            {!isLoadingContent && <div className='grow overflow-y-auto'>
+                                <div className={`mx-auto px-6 pb-10 pt-5`} style={{maxWidth: currentMaxWidth}}>
+                                    <div className='flex flex-col items-center pb-8' id='object-content'>
+                                        <ArticleBody
+                                            authors={authors}
+                                            backgroundColor={backgroundColor}
+                                            excerpt={object.summary ?? ''}
+                                            fontSize={fontSize}
+                                            fontStyle={fontStyle}
+                                            heading={object.name}
+                                            html={object.content ?? ''}
+                                            image={typeof object.image === 'string' ? object.image : object.image?.url}
+                                            isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                            postUrl={object?.url || ''}
+                                            onHeadingsExtracted={handleHeadingsExtracted}
+                                            onIframeLoad={handleIframeLoad}
+                                            onLoadingChange={setIsLoading}
+                                        />
+                                        <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
+                                            <FeedItemStats
+                                                actor={actor}
+                                                commentCount={replyCount}
+                                                layout={'modal'}
+                                                likeCount={object.likeCount ?? 0}
+                                                object={object}
+                                                repostCount={object.repostCount ?? 0}
+                                                onLikeClick={onLikeClick}
+                                                onReplyCountChange={handleReplyCountChange}
+                                            />
+                                        </div>
+                                    </div>
+                                    {object.type === 'Tombstone' && (
+                                        <DeletedFeedItem last={true} />
+                                    )}
+
+                                    <div className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
+                                        <APReplyBox
+                                            object={object}
+                                            onReply={() => handleReplyCountChange(1)}
+                                            onReplyError={() => handleReplyCountChange(-1)}
+                                        />
+                                        <FeedItemDivider />
+                                    </div>
+
+                                    {isLoadingContent && <LoadingIndicator size='lg' />}
+
+                                    <div ref={repliesRef} className='mx-auto w-full' style={{maxWidth: currentGridWidth}}>
+                                        {
+                                            processedReplies.map((replyGroup, groupIndex) => {
+                                                const isLastGroup = groupIndex === processedReplies.length - 1;
+                                                const chainId = replyGroup.mainReply.id;
+                                                const isExpanded = expandedChains.has(chainId);
+                                                const isFullyExpanded = fullyExpandedChains.has(chainId);
+                                                const isChainLoading = loadingChains.has(chainId);
+                                                const hasChain = replyGroup.chain.length > 0;
+
+                                                return (
+                                                    <React.Fragment key={replyGroup.mainReply.id}>
+                                                        <FeedItem
+                                                            actor={replyGroup.mainReply.actor}
+                                                            allowDelete={replyGroup.mainReply.object.authored}
+                                                            commentCount={replyGroup.mainReply.object.replyCount ?? 0}
+                                                            isChainParent={hasChain}
+                                                            isPending={isPendingActivity(replyGroup.mainReply.id)}
+                                                            last={!hasChain}
+                                                            layout='reply'
+                                                            likeCount={replyGroup.mainReply.object.likeCount ?? 0}
+                                                            object={replyGroup.mainReply.object}
+                                                            parentId={object.id}
+                                                            repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                            type='Note'
+                                                            onClick={() => {
+                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                            }}
+                                                            onDelete={handleDelete}
+                                                        />
+
+                                                        {hasChain && replyGroup.chain[0] && (
+                                                            <FeedItem
+                                                                key={replyGroup.chain[0].id}
+                                                                actor={replyGroup.chain[0].actor}
+                                                                allowDelete={replyGroup.chain[0].object.authored}
+                                                                commentCount={replyGroup.chain[0].object.replyCount ?? 0}
+                                                                isChainContinuation={true}
+                                                                isPending={isPendingActivity(replyGroup.chain[0].id)}
+                                                                last={replyGroup.chain.length === 1}
+                                                                layout='reply'
+                                                                likeCount={replyGroup.chain[0].object.likeCount ?? 0}
+                                                                object={replyGroup.chain[0].object}
+                                                                parentId={object.id}
+                                                                repostCount={replyGroup.chain[0].object.repostCount ?? 0}
+                                                                type='Note'
+                                                                onClick={() => {
+                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                }}
+                                                                onDelete={handleDelete}
+                                                            />
+                                                        )}
+
+                                                        {hasChain && isExpanded && replyGroup.chain.slice(1).map((chainItem: Activity, chainIndex: number) => {
+                                                            const isLastChainItem = chainIndex === replyGroup.chain.slice(1).length - 1;
+                                                            const hasMoreReplies = hasMoreChildReplies && hasMoreChildReplies(groupIndex);
+                                                            const shouldShowConnector = isLastChainItem && hasMoreReplies;
+
+                                                            return (
+                                                                <FeedItem
+                                                                    key={chainItem.id}
+                                                                    actor={chainItem.actor}
+                                                                    allowDelete={chainItem.object.authored}
+                                                                    commentCount={chainItem.object.replyCount ?? 0}
+                                                                    isChainContinuation={true}
+                                                                    isPending={isPendingActivity(chainItem.id)}
+                                                                    last={isLastChainItem && !shouldShowConnector}
+                                                                    layout='reply'
+                                                                    likeCount={chainItem.object.likeCount ?? 0}
+                                                                    object={chainItem.object}
+                                                                    parentId={object.id}
+                                                                    repostCount={chainItem.object.repostCount ?? 0}
+                                                                    type='Note'
+                                                                    onClick={() => {
+                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
+                                                                    }}
+                                                                    onDelete={handleDelete}
+                                                                />
+                                                            );
+                                                        })}
+
+                                                        {hasChain && replyGroup.chain.length > 1 && !isExpanded && (
+                                                            <ShowRepliesButton
+                                                                variant='expand'
+                                                                onClick={() => toggleChain(chainId)}
+                                                            />
+                                                        )}
+
+                                                        {hasChain && isExpanded && isFullyExpanded && hasMoreChildReplies && hasMoreChildReplies(groupIndex) && (
+                                                            <ShowRepliesButton
+                                                                loading={isChainLoading}
+                                                                variant='loadMore'
+                                                                onClick={() => loadMoreForChain(chainId, groupIndex)}
+                                                            />
+                                                        )}
+
+                                                        {!isLastGroup && <FeedItemDivider />}
+                                                    </React.Fragment>
+                                                );
+                                            })
+                                        }
+
+                                        {isLoadingMoreTopLevelReplies && (
+                                            <div className='flex flex-col items-center justify-center text-center'>
+                                                <LoadingIndicator size='md' />
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {hasMoreChildren && <div ref={loadMoreRef} className='h-1'></div>}
+                                </div>
+                            </div>}
+                        </div>
+                    </div>
+                    {!isLoadingContent && <div className='pointer-events-none !visible sticky bottom-0 hidden items-end justify-between px-10 pb-[42px] lg:!flex'>
+                        <div className='pointer-events-auto text-gray-600'>
+                            {getReadingTime(object.content ?? '')}
+                        </div>
+                        <div key={readingProgress} className='pointer-events-auto min-w-10 text-right text-gray-600 transition-all duration-200 ease-out'>
+                            {readingProgress}%
+                        </div>
+                    </div>}
+                </div>
+            </>
         </div>
     );
 };

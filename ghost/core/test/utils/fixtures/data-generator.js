@@ -2,7 +2,7 @@ const _ = require('lodash');
 const crypto = require('crypto');
 const ObjectId = require('bson-objectid').default;
 const moment = require('moment');
-const constants = require('@tryghost/constants');
+
 const DataGenerator = {};
 
 DataGenerator.markdownToMobiledoc = function markdownToMobiledoc(content) {
@@ -127,8 +127,8 @@ DataGenerator.Content = {
     // Password = Sl1m3rson99
     users: [
         {
-            // owner (owner is still id 1 because of permissions)
-            id: '1',
+            // owner
+            id: '5951f5fc0000000000000000',
             name: 'Joe Bloggs',
             slug: 'joe-bloggs',
             email: 'jbloggs@example.com',
@@ -1016,9 +1016,7 @@ DataGenerator.forKnex = (function () {
 
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1035,9 +1033,7 @@ DataGenerator.forKnex = (function () {
             meta_description: null,
             description: 'description',
             visibility: 'public',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1067,9 +1063,7 @@ DataGenerator.forKnex = (function () {
             type: 'post',
             slug: 'slug',
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            created_by: DataGenerator.Content.users[0].id,
             published_at: new Date(),
             published_by: DataGenerator.Content.users[0].id,
             visibility: 'public'
@@ -1112,10 +1106,8 @@ DataGenerator.forKnex = (function () {
             profile_image: null,
             status: 'active',
             password: 'Sl1m3rson99',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             visibility: 'public',
             location: 'location'
         });
@@ -1255,9 +1247,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             name: 'label',
             slug: 'slug',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1276,9 +1266,7 @@ DataGenerator.forKnex = (function () {
             yearly_price: 5000,
             visibility: 'public',
             benefits: [],
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1310,9 +1298,7 @@ DataGenerator.forKnex = (function () {
             value: null,
             type: 'site',
             created_at: new Date(),
-            created_by: DataGenerator.Content.users[0].id,
-            updated_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id
+            updated_at: new Date()
         });
     }
 
@@ -1322,7 +1308,7 @@ DataGenerator.forKnex = (function () {
         return _.defaults(newObj, {
             id: ObjectId().toHexString(),
             token: crypto.randomUUID(),
-            expires: Date.now() + constants.ONE_DAY_MS
+            expires: moment().add(1, 'days').valueOf()
         });
     }
 
@@ -1335,7 +1321,6 @@ DataGenerator.forKnex = (function () {
             email: 'test@ghost.org',
             role_id: DataGenerator.Content.roles[0].id,
             expires: Date.now() + (60 * 1000),
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
             status: 'sent'
         });
@@ -1348,9 +1333,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             event: 'test',
             target_url: 'https://example.com/hooks/test',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1362,9 +1345,7 @@ DataGenerator.forKnex = (function () {
             id: ObjectId().toHexString(),
             name: 'test integration',
             slug: 'test-integration',
-            created_by: DataGenerator.Content.users[0].id,
             created_at: new Date(),
-            updated_by: DataGenerator.Content.users[0].id,
             updated_at: new Date()
         });
     }
@@ -1501,6 +1482,45 @@ DataGenerator.forKnex = (function () {
             role_name: 'Super Editor',
             user_id: DataGenerator.Content.users[9].id,
             role_id: DataGenerator.Content.roles[6].id
+        }
+    ];
+
+    const user_api_keys = [
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[0].id, // owner
+            type: 'admin',
+            secret: _.repeat('0', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[1].id, // admin
+            type: 'admin',
+            secret: _.repeat('1', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[2].id, // editor
+            type: 'admin',
+            secret: _.repeat('2', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[3].id, // author
+            type: 'admin',
+            secret: _.repeat('3', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[7].id, // contributor
+            type: 'admin',
+            secret: _.repeat('4', 64)
+        },
+        {
+            id: ObjectId().toHexString(),
+            user_id: DataGenerator.Content.users[9].id,
+            type: 'admin',
+            secret: _.repeat('5', 64)
         }
     ];
 
@@ -1988,6 +2008,7 @@ DataGenerator.forKnex = (function () {
         roles,
         users,
         roles_users,
+        user_api_keys,
         webhooks,
         integrations,
         api_keys,

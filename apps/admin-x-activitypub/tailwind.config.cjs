@@ -1,8 +1,8 @@
 const adminXPreset = require('@tryghost/shade/tailwind.cjs');
 
 module.exports = {
-    presets: [adminXPreset('.shade')],
-    content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/admin-x-design-system/es/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}'],
+    presets: [adminXPreset('.shade-activitypub')],
+    content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}', '../../node_modules/@tryghost/shade/es/**/*.{js,ts,jsx,tsx}'],
     theme: {
         extend: {
             keyframes: {
@@ -36,5 +36,14 @@ module.exports = {
                 'onboarding-followers': 'fadeIn 0.2s ease-in 0.5s forwards, scale 0.3s ease-in 0.5s forwards'
             }
         }
-    }
+    },
+    plugins: [
+        require('tailwindcss/plugin')(function ({ addUtilities }) {
+            addUtilities({
+                '.break-anywhere': {
+                    'overflow-wrap': 'anywhere',
+                },
+            })
+        }),
+    ],
 };

@@ -5,6 +5,7 @@
 const events = require('../../lib/common/events');
 const models = require('../../models');
 const labs = require('../../../shared/labs');
+const limits = require('../limits');
 const config = require('../../../shared/config');
 const adapterManager = require('../adapter-manager');
 const SettingsCache = require('../../../shared/settings-cache');
@@ -30,6 +31,7 @@ const getSettingsBREADServiceInstance = () => {
         SettingsModel: models.Settings,
         settingsCache: SettingsCache,
         labsService: labs,
+        limitsService: limits,
         mail,
         singleUseTokenProvider: new SingleUseTokenProvider({
             SingleUseTokenModel: models.SingleUseToken,
@@ -74,6 +76,9 @@ module.exports = {
         const settingsCollection = await models.Settings.populateDefaults();
         const settingsOverrides = config.get('hostSettings:settingsOverrides') || {};
         SettingsCache.init(events, settingsCollection, this.getCalculatedFields(), cacheStore, settingsOverrides);
+
+        // Validate site_uuid matches config
+        await this.validateSiteUuid();
     },
 
     /**
@@ -102,6 +107,13 @@ module.exports = {
 
         // Blocked email domains from member signup, from both config and user settings
         fields.push(new CalculatedField({key: 'all_blocked_email_domains', type: 'string', group: 'members', fn: settingsHelpers.getAllBlockedEmailDomains.bind(settingsHelpers), dependents: ['blocked_email_domains']}));
+
+        // Social web (ActivityPub)
+        fields.push(new CalculatedField({key: 'social_web_enabled', type: 'boolean', group: 'social_web', fn: settingsHelpers.isSocialWebEnabled.bind(settingsHelpers), dependents: ['social_web', 'labs']}));
+
+        // Web analytics
+        fields.push(new CalculatedField({key: 'web_analytics_enabled', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsEnabled.bind(settingsHelpers), dependents: ['web_analytics']}));
+        fields.push(new CalculatedField({key: 'web_analytics_configured', type: 'boolean', group: 'analytics', fn: settingsHelpers.isWebAnalyticsConfigured.bind(settingsHelpers), dependents: ['web_analytics']}));
 
         return fields;
     },
@@ -137,6 +149,30 @@ module.exports = {
                 key: 'email_verification_required',
                 value: false
             }], {context: {internal: true}});
+        }
+    },
+
+    /**
+     * Validates that the site_uuid setting matches the configured site_uuid
+     * This is a safeguard to prevent sites from running with the wrong site_uuid
+     * The configured site_uuid is only used once when the site_uuid setting is set in a migration
+     * Exits with an error if they differ
+     */
+    async validateSiteUuid() {
+        const configSiteUuid = config.get('site_uuid');
+        const settingSiteUuid = SettingsCache.get('site_uuid');
+
+        if (configSiteUuid && settingSiteUuid && configSiteUuid.toLowerCase() !== settingSiteUuid.toLowerCase()) {
+            const logging = require('@tryghost/logging');
+            const errors = require('@tryghost/errors');
+
+            logging.error(`Site UUID mismatch: config has '${configSiteUuid}' but database has '${settingSiteUuid}'`);
+            throw new errors.IncorrectUsageError({
+                message: 'Site UUID configuration does not match database value',
+                context: 'Ghost will not boot if the configured site_uuid does not match the value in the settings table',
+                help: 'Please check your site_uuid configuration',
+                code: 'SITE_UUID_MISMATCH'
+            });
         }
     },
 

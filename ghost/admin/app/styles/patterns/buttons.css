@@ -715,3 +715,37 @@ Usage: CTA buttons grouped together horizontally.
     border-radius: 999px !important;
     border: 1px solid var(--main-bg-color);
 }
+
+/* Spinner for loading state */
+.is-loading {
+    position: relative;
+    opacity: 0.8;
+}
+
+.is-loading::before {
+    content: '';
+    position: absolute;
+    height: 12px;
+    width: 12px;
+    left: 10px;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    border: 2px solid var(--midlightgrey);
+    border-top-color: var(--black);
+    border-radius: 100%;
+    animation: spinner 1s linear infinite;
+}
+
+.is-loading span {
+    padding-left: 18px !important;
+    padding-right: 18px !important;
+}
+
+.is-loading::after {
+    content: none;
+}
+
+@keyframes spinner {
+    to {transform: rotate(360deg);}
+}

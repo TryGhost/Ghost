@@ -1,10 +1,8 @@
 import EditProfile from './EditProfile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
-import {useFeatureFlags} from '@src/lib/feature-flags';
 import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
@@ -16,15 +14,10 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const navigate = useNavigate();
 
-    const {searchQuery: threadsSearchQuery} = useSearchForUser('index', '@ghost@threads.net');
-    const {data: threadsData, isFetching: threadsIsFetching} = threadsSearchQuery;
-
     const {searchQuery: blueskySearchQuery} = useSearchForUser('index', '@bsky.brid.gy@bsky.brid.gy');
     const {data: blueskyData, isFetching: blueskyIsFetching} = blueskySearchQuery;
 
-    const threadsEnabled = threadsData?.accounts[0]?.followedByMe;
     const blueskyEnabled = blueskyData?.accounts[0]?.followedByMe;
-    const {isEnabled} = useFeatureFlags();
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -33,33 +26,31 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                 <SettingHeader>
                     <SettingTitle>Account</SettingTitle>
                     <SettingDescription>
-                        {isEnabled('settings-full') ? 'Edit your profile information and account details' : 'Edit your social web handle'}
+                        Edit your profile information and account details
                     </SettingDescription>
                 </SettingHeader>
                 <Dialog open={isEditingProfile} onOpenChange={setIsEditingProfile}>
                     <DialogTrigger>
-                        <SettingAction><Button variant='secondary'>{isEnabled('settings-full') ? 'Edit profile' : 'Edit handle'}</Button></SettingAction>
+                        <SettingAction><Button variant='secondary'>Edit profile</Button></SettingAction>
                     </DialogTrigger>
                     <DialogContent onOpenAutoFocus={e => e.preventDefault()}>
                         <DialogHeader>
-                            <DialogTitle>{isEnabled('settings-full') ? 'Profile settings' : 'Handle'}</DialogTitle>
+                            <DialogTitle>Profile settings</DialogTitle>
                         </DialogHeader>
                         {account && <EditProfile account={account} setIsEditingProfile={setIsEditingProfile} />}
                     </DialogContent>
                 </Dialog>
             </SettingItem>
-
-            <SettingItem withHover onClick={() => navigate('/preferences/threads-sharing', {state: {account, threadsAccount: threadsData?.accounts[0], isEnabled: threadsEnabled}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/moderation')}>
                 <SettingHeader>
-                    <SettingTitle>Threads sharing</SettingTitle>
-                    <SettingDescription>Share content directly on Threads</SettingDescription>
+                    <SettingTitle>Moderation</SettingTitle>
+                    <SettingDescription>Manage blocked users and domains</SettingDescription>
                 </SettingHeader>
                 <SettingAction className='flex items-center gap-2'>
-                    {threadsIsFetching ? <LoadingIndicator size='sm' /> : threadsEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+            <SettingItem withHover onClick={() => !blueskyIsFetching && navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
@@ -132,7 +123,7 @@ interface SettingItemProps {
 }
 
 const SettingItem: React.FC<SettingItemProps> = ({children, className = '', withHover = false, to, href, onClick}) => {
-    const baseClasses = 'flex items-center justify-between py-3';
+    const baseClasses = 'flex items-center justify-between py-3 gap-4';
     const hoverClasses = withHover ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950' : '';
     const itemClasses = cn(baseClasses, hoverClasses, className);
 

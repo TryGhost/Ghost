@@ -1,4 +1,4 @@
-require('should');
+const assert = require('assert/strict');
 
 const EventProcessingResult = require('../../../../../core/server/services/email-analytics/EventProcessingResult');
 
@@ -6,19 +6,19 @@ describe('EventProcessingResult', function () {
     it('has expected initial state', function () {
         const result = new EventProcessingResult();
 
-        result.delivered.should.equal(0);
-        result.opened.should.equal(0);
-        result.temporaryFailed.should.equal(0);
-        result.permanentFailed.should.equal(0);
-        result.unsubscribed.should.equal(0);
-        result.complained.should.equal(0);
-        result.unhandled.should.equal(0);
-        result.unprocessable.should.equal(0);
+        assert.equal(result.delivered, 0);
+        assert.equal(result.opened, 0);
+        assert.equal(result.temporaryFailed, 0);
+        assert.equal(result.permanentFailed, 0);
+        assert.equal(result.unsubscribed, 0);
+        assert.equal(result.complained, 0);
+        assert.equal(result.unhandled, 0);
+        assert.equal(result.unprocessable, 0);
 
-        result.processingFailures.should.equal(0);
+        assert.equal(result.processingFailures, 0);
 
-        result.emailIds.should.deepEqual([]);
-        result.memberIds.should.deepEqual([]);
+        assert.deepEqual(result.emailIds, []);
+        assert.deepEqual(result.memberIds, []);
     });
 
     it('has expected populated initial state', function () {
@@ -36,19 +36,19 @@ describe('EventProcessingResult', function () {
             memberIds: [4,5]
         });
 
-        result.delivered.should.equal(1);
-        result.opened.should.equal(2);
-        result.temporaryFailed.should.equal(3);
-        result.permanentFailed.should.equal(4);
-        result.unsubscribed.should.equal(5);
-        result.complained.should.equal(6);
-        result.unhandled.should.equal(7);
-        result.unprocessable.should.equal(8);
+        assert.equal(result.delivered, 1);
+        assert.equal(result.opened, 2);
+        assert.equal(result.temporaryFailed, 3);
+        assert.equal(result.permanentFailed, 4);
+        assert.equal(result.unsubscribed, 5);
+        assert.equal(result.complained, 6);
+        assert.equal(result.unhandled, 7);
+        assert.equal(result.unprocessable, 8);
 
-        result.processingFailures.should.equal(9);
+        assert.equal(result.processingFailures, 9);
 
-        result.emailIds.should.deepEqual([1,2,3]);
-        result.memberIds.should.deepEqual([4,5]);
+        assert.deepEqual(result.emailIds, [1,2,3]);
+        assert.deepEqual(result.memberIds, [4,5]);
     });
 
     it('has correct totalEvents value', function () {
@@ -66,7 +66,7 @@ describe('EventProcessingResult', function () {
             memberIds: [4,5]
         });
 
-        result.totalEvents.should.equal(36);
+        assert.equal(result.totalEvents, 36);
     });
 
     describe('merge()', function () {
@@ -99,18 +99,18 @@ describe('EventProcessingResult', function () {
                 memberIds: [6,7]
             });
 
-            result.delivered.should.equal(3);
-            result.opened.should.equal(6);
-            result.temporaryFailed.should.equal(9);
-            result.permanentFailed.should.equal(12);
-            result.unsubscribed.should.equal(15);
-            result.complained.should.equal(18);
-            result.unhandled.should.equal(21);
-            result.unprocessable.should.equal(24);
-            result.processingFailures.should.equal(27);
+            assert.equal(result.delivered, 3);
+            assert.equal(result.opened, 6);
+            assert.equal(result.temporaryFailed, 9);
+            assert.equal(result.permanentFailed, 12);
+            assert.equal(result.unsubscribed, 15);
+            assert.equal(result.complained, 18);
+            assert.equal(result.unhandled, 21);
+            assert.equal(result.unprocessable, 24);
+            assert.equal(result.processingFailures, 27);
 
-            result.emailIds.should.deepEqual([1,2,3,4,5,6]);
-            result.memberIds.should.deepEqual([4,5,6,7]);
+            assert.deepEqual(result.emailIds, [1,2,3,4,5,6]);
+            assert.deepEqual(result.memberIds, [4,5,6,7]);
         });
 
         it('deduplicates id arrays', function () {
@@ -124,8 +124,8 @@ describe('EventProcessingResult', function () {
                 memberIds: [8,7,8,6]
             });
 
-            result.emailIds.should.deepEqual([1,2,3,4]);
-            result.memberIds.should.deepEqual([9,8,7,6]);
+            assert.deepEqual(result.emailIds, [1,2,3,4]);
+            assert.deepEqual(result.memberIds, [9,8,7,6]);
         });
     });
 });

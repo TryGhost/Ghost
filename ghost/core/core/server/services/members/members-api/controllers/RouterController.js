@@ -1,9 +1,10 @@
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const sanitizeHtml = require('sanitize-html');
-const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError} = require('@tryghost/errors');
+const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError, NotFoundError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
+const normalizeEmail = require('../utils/normalize-email');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -46,6 +47,7 @@ module.exports = class RouterController {
      * @param {any} deps.newslettersService
      * @param {any} deps.sentry
      * @param {any} deps.settingsCache
+     * @param {any} deps.urlUtils
      */
     constructor({
         offersAPI,
@@ -62,7 +64,8 @@ module.exports = class RouterController {
         labsService,
         newslettersService,
         sentry,
-        settingsCache
+        settingsCache,
+        urlUtils
     }) {
         this._offersAPI = offersAPI;
         this._paymentsService = paymentsService;
@@ -79,6 +82,7 @@ module.exports = class RouterController {
         this._newslettersService = newslettersService;
         this._sentry = sentry || undefined;
         this._settingsCache = settingsCache;
+        this._urlUtils = urlUtils;
     }
 
     async ensureStripe(_req, res, next) {
@@ -319,13 +323,35 @@ module.exports = class RouterController {
      * @returns
      */
     async _createSubscriptionCheckoutSession(options) {
+        if (options.tier && options.tier.id === 'free') {
+            throw new BadRequestError({
+                message: tpl(messages.badRequest)
+            });
+        }
+
+        const tier = options.tier;
+
+        if (!tier) {
+            throw new NotFoundError({
+                message: tpl(messages.tierNotFound)
+            });
+        }
+
+        if (tier.status === 'archived') {
+            throw new NoPermissionError({
+                message: tpl(messages.tierArchived)
+            });
+        }
+
         if (options.offer) {
             // Attach offer information to stripe metadata for free trial offers
             // free trial offers don't have associated stripe coupons
             options.metadata.offer = options.offer.id;
         }
 
-        if (!options.member && options.email) {
+        const member = options.member;
+
+        if (!member && options.email) {
             // Create a signup link if there is no member with this email address
             options.successUrl = await this._magicLinkService.getMagicLink({
                 tokenData: {
@@ -342,22 +368,26 @@ module.exports = class RouterController {
             });
         }
 
-        const restrictCheckout = options.member?.get('status') === 'paid';
+        if (member) {
+            options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
 
-        if (restrictCheckout) {
-            // This member is already subscribed to a paid tier
-            // We don't want to create a duplicate subscription
-            if (!options.isAuthenticated && options.email) {
-                try {
-                    await this._sendEmailWithMagicLink({email: options.email, requestedType: 'signin'});
-                } catch (err) {
-                    logging.warn(err);
+            const restrictCheckout = member.get('status') === 'paid';
+
+            if (restrictCheckout) {
+                // This member is already subscribed to a paid tier
+                // We don't want to create a duplicate subscription
+                if (!options.isAuthenticated && options.email) {
+                    try {
+                        await this._sendEmailWithMagicLink({email: options.email, requestedType: 'signin'});
+                    } catch (err) {
+                        logging.warn(err);
+                    }
                 }
+                throw new NoPermissionError({
+                    message: messages.existingSubscription,
+                    code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                });
             }
-            throw new NoPermissionError({
-                message: messages.existingSubscription,
-                code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
-            });
         }
 
         try {
@@ -371,6 +401,34 @@ module.exports = class RouterController {
                 err,
                 message: tpl(messages.unableToCheckout)
             });
+        }
+    }
+
+    // Helper method to generate success URL with tier welcome page if available
+    _generateSuccessUrl(originalSuccessUrl, welcomePageURL) {
+        // If there's no welcome page URL, use the original success URL
+        if (!welcomePageURL) {
+            return originalSuccessUrl;
+        }
+
+        try {
+            // Create URL objects
+            const siteUrl = this._urlUtils.getSiteUrl();
+
+            // This will throw if welcomePageURL is invalid
+            const welcomeUrl = new URL(
+                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL,
+                siteUrl
+            );
+
+            // Add success parameters
+            welcomeUrl.searchParams.set('success', 'true');
+            welcomeUrl.searchParams.set('action', 'signup');
+
+            return welcomeUrl.href;
+        } catch (err) {
+            logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
+            return originalSuccessUrl;
         }
     }
 
@@ -452,6 +510,10 @@ module.exports = class RouterController {
         // Store attribution data in the metadata
         await this._setAttributionMetadata(metadata);
 
+        if (metadata.newsletters) {
+            metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
+        }
+
         // Build options
         const options = {
             successUrl: req.body.successUrl,
@@ -478,6 +540,11 @@ module.exports = class RouterController {
                 ...options,
                 ...data
             });
+
+            // Add welcome_page_url to the response if available and member is authenticated
+            if (isAuthenticated && data.tier && data.tier.welcomePageURL) {
+                response.welcomePageUrl = data.tier.welcomePageURL;
+            }
         } else if (type === 'donation') {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
@@ -519,6 +586,23 @@ module.exports = class RouterController {
             });
         }
 
+        // Normalize email to prevent homograph attacks
+        let normalizedEmail;
+
+        try {
+            normalizedEmail = normalizeEmail(email);
+
+            if (normalizedEmail !== email) {
+                logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
+            }
+        } catch (err) {
+            logging.error(`Failed to normalize [${email}]: ${err.message}`);
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
         if (honeypot) {
             logging.warn('Honeypot field filled, this is likely a bot');
 
@@ -540,9 +624,9 @@ module.exports = class RouterController {
 
         try {
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, referrer);
+                await this._handleSignup(req, normalizedEmail, referrer);
             } else {
-                await this._handleSignin(req, referrer);
+                await this._handleSignin(req, normalizedEmail, referrer);
             }
 
             res.writeHead(201);
@@ -560,7 +644,7 @@ module.exports = class RouterController {
         }
     }
 
-    async _handleSignup(req, referrer = null) {
+    async _handleSignup(req, normalizedEmail, referrer = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -574,30 +658,30 @@ module.exports = class RouterController {
         }
 
         const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
-        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
         if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.blockedEmailDomain)
             });
         }
 
-        const {email, emailType} = req.body;
+        const {emailType} = req.body;
 
         const tokenData = {
             labels: req.body.labels,
             name: req.body.name,
             reqIp: req.ip ?? undefined,
-            newsletters: await this._validateNewsletters(req),
+            newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _handleSignin(req, referrer = null) {
-        const {email, emailType} = req.body;
+    async _handleSignin(req, normalizedEmail, referrer = null) {
+        const {emailType} = req.body;
 
-        const member = await this._memberRepository.get({email});
+        const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
             throw new errors.BadRequestError({
@@ -606,45 +690,55 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _validateNewsletters(req) {
-        const {newsletters: requestedNewsletters} = req.body;
-
-        if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
-            const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
-            const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
-            const newsletters = (await this._newslettersService.getAll({
-                filter: `name:[${newsletterNamesFilter}]`,
-                columns: ['id','name','status']
-            }));
-
-            // Check for invalid newsletters
-            if (newsletters.length !== newsletterNames.length) {
-                const validNewsletters = newsletters.map(newsletter => newsletter.name);
-                const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
-
-                throw new errors.BadRequestError({
-                    message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
-                });
-            }
-
-            // Check for archived newsletters
-            const archivedNewsletters = newsletters
-                .filter(newsletter => newsletter.status === 'archived')
-                .map(newsletter => newsletter.name);
-
-            if (archivedNewsletters && archivedNewsletters.length > 0) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
-                });
-            }
-
-            return newsletters
-                .filter(newsletter => newsletter.status === 'active')
-                .map(newsletter => ({id: newsletter.id}));
+    /**
+     * Validates the newsletters in the request body
+     * @param {object[]} requestedNewsletters
+     * @param {string} requestedNewsletters[].name
+     * @returns {Promise<object[] | undefined>} The validated newsletters
+     */
+    async _validateNewsletters(requestedNewsletters) {
+        if (!requestedNewsletters || requestedNewsletters.length === 0) {
+            return undefined;
         }
+
+        if (requestedNewsletters.some(newsletter => !newsletter.name)) {
+            return undefined;
+        }
+
+        const requestedNewsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+        const requestedNewsletterNamesFilter = requestedNewsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
+        const matchedNewsletters = (await this._newslettersService.getAll({
+            filter: `name:[${requestedNewsletterNamesFilter}]`,
+            columns: ['id','name','status']
+        }));
+
+        // Check for invalid newsletters
+        if (matchedNewsletters.length !== requestedNewsletterNames.length) {
+            const validNewsletterNames = matchedNewsletters.map(newsletter => newsletter.name);
+            const invalidNewsletterNames = requestedNewsletterNames.filter(newsletter => !validNewsletterNames.includes(newsletter));
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletterNames})
+            });
+        }
+
+        // Check for archived newsletters
+        const requestedArchivedNewsletters = matchedNewsletters
+            .filter(newsletter => newsletter.status === 'archived')
+            .map(newsletter => newsletter.name);
+
+        if (requestedArchivedNewsletters && requestedArchivedNewsletters.length > 0) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.archivedNewsletters, {newsletters: requestedArchivedNewsletters})
+            });
+        }
+
+        return matchedNewsletters
+            .filter(newsletter => newsletter.status === 'active')
+            .map(newsletter => ({id: newsletter.id}));
     }
 };
 
