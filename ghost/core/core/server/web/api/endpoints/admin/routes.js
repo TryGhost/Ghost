@@ -19,7 +19,6 @@ module.exports = function apiRoutes() {
 
     // ## Public
     router.get('/site', mw.publicAdminApi, http(api.site.read));
-    router.post('/mail_events', mw.publicAdminApi, http(api.mailEvents.add));
 
     // ## Configuration
     router.get('/config', mw.authAdminApi, http(api.config.read));
@@ -247,7 +246,6 @@ module.exports = function apiRoutes() {
     router.get('/tinybird/token', mw.authAdminApi, http(api.tinybird.token));
 
     // ## Sessions
-    router.get('/session', mw.authAdminApi, http(api.session.read));
     // We don't need auth when creating a new session (logging in)
     router.post('/session',
         shared.middleware.brute.globalBlock,

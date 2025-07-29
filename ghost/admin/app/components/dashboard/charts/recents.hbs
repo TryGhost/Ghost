@@ -25,7 +25,7 @@
                 </div>
                 <div class="gh-dashboard-list-body">
                     {{#each this.posts as |post|}}
-                        <LinkTo class="gh-dashboard-list-item permalink" @route="posts.analytics" @model={{post.id}}>
+                        <LinkTo class="gh-dashboard-list-item permalink" @route="posts-x" @model={{post.id}}>
                             <div class="gh-dashboard-list-item-sub">
                                 <span class="gh-dashboard-list-text">{{post.title}}</span>
                             </div>

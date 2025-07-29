@@ -44,7 +44,6 @@ async function getKnexInstance() {
         table.string('secret');
         table.string('integration_id');
         table.datetime('created_at');
-        table.string('created_by');
     });
 
     await knexInstance.insert({
@@ -108,7 +107,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -154,7 +153,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -213,7 +212,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
