@@ -104,6 +104,25 @@ export class ActivityPubService {
         }
     }
 
+    async removeWebhooks() {
+        const integration = await this.knex
+            .select('*')
+            .from('integrations')
+            .where('slug', '=', 'ghost-activitypub')
+            .andWhere('type', '=', 'internal')
+            .first();
+
+        if (!integration) {
+            this.logging.error('No ActivityPub integration found - cannot remove webhooks');
+            return;
+        }
+
+        await this.knex
+            .del()
+            .from('webhooks')
+            .where('integration_id', '=', integration.id);
+    }
+
     async initialiseWebhooks() {
         const integration = await this.knex
             .select('*')
