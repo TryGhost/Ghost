@@ -85,6 +85,24 @@ describe('Acceptance: Tags', function () {
             expect(findAll('[data-test-tag]'), 'internal tag list count').to.have.length(2);
         });
 
+        it('can add tags', async function () {
+            await visit('tags');
+            expect(findAll('[data-test-tag]')).to.have.length(0);
+
+            await click('[data-test-button="new-tag"]');
+
+            expect(currentURL()).to.equal('/tags/new');
+
+            await fillIn('[data-test-input="tag-name"]', 'New tag name');
+            await fillIn('[data-test-input="tag-slug"]', 'new-tag-slug');
+            await click('[data-test-button="save"]');
+            await click('[data-test-link="tags-back"]');
+
+            expect(findAll('[data-test-tag]')).to.have.length(1);
+            expect(find('[data-test-tag] [data-test-tag-name]')).to.have.trimmed.text('New tag name');
+            expect(find('[data-test-tag] [data-test-tag-slug]')).to.have.trimmed.text('new-tag-slug');
+        });
+
         it('can edit tags', async function () {
             const tag = this.server.create('tag', {name: 'To be edited', slug: 'to-be-edited'});
 
@@ -109,6 +127,9 @@ describe('Acceptance: Tags', function () {
             expect(savedTag.slug, 'saved tag slug').to.equal('new-tag-slug');
 
             await click('[data-test-link="tags-back"]');
+
+            // there should not be any duplicate entries
+            expect(findAll('[data-test-tag]')).to.have.length(1, 'edited tag was duplicated in list');
 
             const tagListItem = find('[data-test-tag]');
             expect(tagListItem.querySelector('[data-test-tag-name]')).to.have.trimmed.text('New tag name');

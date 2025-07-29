@@ -39,7 +39,8 @@ export default class TagController extends Controller {
 
     @task({drop: true})
     *saveTask() {
-        let {tag} = this;
+        const {tag} = this;
+        const {isNew} = tag;
 
         try {
             if (tag.get('errors').length !== 0) {
@@ -47,7 +48,9 @@ export default class TagController extends Controller {
             }
             yield tag.save();
 
-            this.tagsManager.tagsScreenInfinityModel?.pushObjects([tag]);
+            if (isNew) {
+                this.tagsManager.tagsScreenInfinityModel?.pushObjects([tag]);
+            }
 
             // replace 'new' route with 'tag' route
             this.replaceRoute('tag', tag);
