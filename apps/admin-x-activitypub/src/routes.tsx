@@ -12,7 +12,6 @@ import OnboardingStep2 from '@components/layout/Onboarding/Step2';
 import OnboardingStep3 from '@components/layout/Onboarding/Step3';
 import Preferences from '@views/Preferences';
 import Profile from '@views/Profile';
-import ThreadsSharing from '@views/Preferences/components/ThreadsSharing';
 import {Navigate, RouteObject} from '@tryghost/admin-x-framework';
 
 export const APP_ROUTE_PREFIX = '/activitypub';
@@ -31,25 +30,33 @@ export const routes: CustomRouteObject[] = [
         children: [
             {
                 index: true,
-                element: <Navigate to="inbox" />
+                element: <Navigate to="reader" />
             },
             {
                 path: 'inbox',
-                element: <Inbox />,
-                pageTitle: 'Inbox'
-            },
-            {
-                path: 'inbox/:postId',
-                element: <Inbox />,
-                pageTitle: 'Inbox'
+                element: <Navigate to="../reader" replace />
             },
             {
                 path: 'feed',
-                element: <Feed />,
-                pageTitle: 'Feed'
+                element: <Navigate to="../notes" replace />
             },
             {
-                path: 'feed/:postId',
+                path: 'reader',
+                element: <Inbox />,
+                pageTitle: 'Reader'
+            },
+            {
+                path: 'reader/:postId',
+                element: <Inbox />,
+                pageTitle: 'Reader'
+            },
+            {
+                path: 'notes',
+                element: <Feed />,
+                pageTitle: 'Notes'
+            },
+            {
+                path: 'notes/:postId',
                 element: <Note />,
                 pageTitle: 'Note'
             },
@@ -82,11 +89,6 @@ export const routes: CustomRouteObject[] = [
                 path: 'preferences/moderation',
                 element: <Moderation />,
                 pageTitle: 'Moderation',
-                showBackButton: true
-            },
-            {
-                path: 'preferences/threads-sharing',
-                element: <ThreadsSharing />,
                 showBackButton: true
             },
             {

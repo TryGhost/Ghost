@@ -14,7 +14,7 @@ import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
-import {useDeleteMutationForUser} from '../../hooks/use-activity-pub-queries';
+import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 export function getAttachment(object: ObjectProperties) {
@@ -46,7 +46,9 @@ export function getAttachment(object: ObjectProperties) {
 
 export function renderFeedAttachment(
     object: ObjectProperties,
-    onImageClick?: (url: string) => void
+    onImageClick?: (url: string) => void,
+    brokenImages?: Set<string>,
+    onImageError?: (url: string) => void
 ) {
     const attachment = getAttachment(object);
 
@@ -59,6 +61,21 @@ export function renderFeedAttachment(
         if (onImageClick) {
             onImageClick(url);
         }
+    };
+
+    const handleImageError = (url: string) => {
+        if (onImageError) {
+            onImageError(url);
+        }
+    };
+
+    const renderImagePlaceholder = (className: string, isSingleImage: boolean = false) => {
+        const minHeight = isSingleImage ? 'min-h-[200px]' : '';
+        return (
+            <div className={`${className} ${minHeight} flex w-full items-center justify-center bg-gray-100 dark:bg-gray-925/30`}>
+                <LucideIcon.ImageOff className="text-gray-400" size={24} strokeWidth={1.5} />
+            </div>
+        );
     };
 
     if (Array.isArray(attachment)) {
@@ -74,10 +91,26 @@ export function renderFeedAttachment(
         }
 
         return (
-            <div className={`attachment-gallery mt-3 grid ${gridClass} gap-2`}>
-                {attachment.map((item, index) => (
-                    <img key={item.url} alt={item.name || `Image-${index}`} className={`size-full cursor-pointer rounded-md object-cover outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`} referrerPolicy='no-referrer' src={item.url} onClick={onImageClick ? handleImageClick(item.url) : undefined} />
-                ))}
+            <div className={`attachment-gallery mt-3 grid w-full ${gridClass} gap-2`}>
+                {attachment.map((item, index) => {
+                    const imageClassName = `size-full rounded-md outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`;
+
+                    if (brokenImages && brokenImages.has(item.url)) {
+                        return renderImagePlaceholder(imageClassName, attachmentCount === 1);
+                    }
+
+                    return (
+                        <img
+                            key={item.url}
+                            alt={item.name || `Image-${index}`}
+                            className={`${imageClassName} cursor-pointer object-cover`}
+                            referrerPolicy='no-referrer'
+                            src={item.url}
+                            onClick={onImageClick ? handleImageClick(item.url) : undefined}
+                            onError={() => handleImageError(item.url)}
+                        />
+                    );
+                })}
             </div>
         );
     }
@@ -87,7 +120,10 @@ export function renderFeedAttachment(
     case 'image/png':
     case 'image/gif':
     case 'image/webp':
-        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} />;
+        if (brokenImages && brokenImages.has(attachment.url)) {
+            return renderImagePlaceholder(`${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`, true);
+        }
+        return <img alt={attachment.name || 'Image'} className={`cursor-pointer ${object.type === 'Article' ? 'w-full rounded-t-md' : 'mt-3 max-h-[420px] rounded-md outline outline-1 -outline-offset-1 outline-black/10'}`} referrerPolicy='no-referrer' src={attachment.url} onClick={onImageClick ? handleImageClick(attachment.url) : undefined} onError={() => handleImageError(attachment.url)} />;
     case 'video/mp4':
     case 'video/webm':
         return <div className='relative mb-4 mt-3'>
@@ -113,6 +149,10 @@ export function renderFeedAttachment(
                 imageUrl = object.image?.url;
             }
 
+            if (brokenImages && brokenImages.has(imageUrl)) {
+                return renderImagePlaceholder(imageClassName, true);
+            }
+
             return (
                 <img
                     alt={attachment.name || 'Image'}
@@ -120,6 +160,7 @@ export function renderFeedAttachment(
                     referrerPolicy='no-referrer'
                     src={imageUrl}
                     onClick={onImageClick ? handleImageClick(imageUrl) : undefined}
+                    onError={() => handleImageError(imageUrl)}
                 />
             );
         }
@@ -234,12 +275,33 @@ const FeedItem: React.FC<FeedItemProps> = ({
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
+    const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
 
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigate();
+
+    const followMutation = useFollowMutationForUser(
+        'index',
+        () => {
+            toast.success(`Followed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to follow');
+        }
+    );
+
+    const unfollowMutation = useUnfollowMutationForUser(
+        'index',
+        () => {
+            toast.info(`Unfollowed ${author?.name}`);
+        },
+        () => {
+            toast.error('Failed to unfollow');
+        }
+    );
 
     useEffect(() => {
         const element = contentRef.current;
@@ -305,10 +367,42 @@ const FeedItem: React.FC<FeedItemProps> = ({
         }
     };
 
+    const handleImageError = (url: string) => {
+        setBrokenImages(prev => new Set(prev).add(url));
+    };
+
     let author = actor;
     if (type === 'Announce') {
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
+
+    const authorHandle = type === 'Announce'
+        ? (author ? getUsername(author) : null)
+        : (actor ? getUsername(actor) : null);
+
+    const followedByMe = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
+        : (actor?.followedByMe || false);
+
+    const isAuthorCurrentUser = type === 'Announce'
+        ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'authored' in object.attributedTo
+            ? (object.attributedTo as {authored: boolean}).authored
+            : (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) &&
+               typeof actor === 'object' && actor &&
+               (object.attributedTo as {id: string}).id === actor.id))
+        : object.authored;
+
+    const handleFollow = () => {
+        if (authorHandle) {
+            followMutation.mutate(authorHandle);
+        }
+    };
+
+    const handleUnfollow = () => {
+        if (authorHandle) {
+            unfollowMutation.mutate(authorHandle);
+        }
+    };
 
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md ${layout === 'inbox' || layout === 'modal' ? 'text-gray-900 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-600' : 'text-gray-500 hover:text-gray-500'} dark:bg-black dark:hover:bg-gray-950 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
@@ -339,40 +433,44 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         </div>}
                         <div className={`border-1 flex flex-col gap-2.5`} data-test-activity>
                             <div className='flex min-w-0 items-center gap-3'>
-                                <APAvatar author={author} disabled={isPending} />
-                                <div className='flex min-w-0 grow flex-col gap-0.5' onClick={(e) => {
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
+                                <div className='flex min-w-0 grow flex-col' onClick={(e) => {
                                     if (!isPending) {
                                         handleProfileClick(author, navigate, e);
                                     }
                                 }}>
-                                    <span className={`min-w-0 truncate font-semibold leading-[normal] break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
+                                    <span className={`min-w-0 truncate font-semibold break-anywhere ${isCompact ? 'text-lg' : 'text-md'} ${!isPending ? 'hover-underline' : ''} dark:text-white`}
                                         data-test-activity-heading
                                     >
                                         {!isLoading ? author.name : <Skeleton className='w-24' />}
                                     </span>
                                     <div className={`flex w-full ${isCompact ? 'text-md' : 'text-sm'} text-gray-700 dark:text-gray-600`}>
-                                        <span className={`truncate leading-tight ${!isPending ? 'hover-underline' : ''}`}>
+                                        <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
                                             {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
                                         </span>
-                                        <div className={`ml-1 leading-tight before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
+                                        <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                             {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
                                         </div>
                                     </div>
                                 </div>
                                 <FeedItemMenu
                                     allowDelete={allowDelete}
+                                    authoredByMe={isAuthorCurrentUser}
                                     disabled={isPending}
+                                    followedByMe={followedByMe}
                                     layout='feed'
                                     trigger={UserMenuTrigger}
                                     onCopyLink={handleCopyLink}
                                     onDelete={handleDelete}
+                                    onFollow={handleFollow}
+                                    onUnfollow={handleUnfollow}
                                 />
                             </div>
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
                                         {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, openLightbox)}
+                                            {renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                             <div className='p-5'>
                                                 <div className='mb-1 line-clamp-2 text-pretty text-lg font-semibold leading-tight tracking-tight break-anywhere' data-test-activity-heading>{object.name}</div>
                                                 <div className='line-clamp-3 leading-[1.4em] break-anywhere'>{object.preview?.content}</div>
@@ -401,7 +499,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 {isTruncated && (
                                                     <button className='mt-1 text-blue-600' type='button'>Show more</button>
                                                 )}
-                                                {renderFeedAttachment(object, openLightbox)}
+                                                {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                             </div>
                                         }
                                     </div>
@@ -449,7 +547,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>}
                                 {(showHeader) && <>
                                     <div className='relative z-10 pt-[3px]'>
-                                        <APAvatar author={author}/>
+                                        <APAvatar author={author} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                                     </div>
                                     <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                         if (!isPending) {
@@ -469,7 +567,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     <div className='flex flex-col items-start'>
                                         {object.name && <H4 className='mb-1 leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content-large text-pretty text-[1.6rem] tracking-[-0.011em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>
-                                        {renderFeedAttachment(object, openLightbox)}
+                                        {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                         <div className='space-between ml-[-8px] mt-3 flex'>
                                             {showStats && <FeedItemStats
                                                 actor={author}
@@ -484,7 +582,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                 </div>
                             </div>
-                            <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
+                            <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors max-lg:hidden`}></div>
                         </div>
                         <div className="mt-3 h-px bg-gray-200 dark:bg-gray-950"></div>
                     </div>
@@ -506,7 +604,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                     <div className={`group/article relative ${isCompact ? 'pb-6' : isChainContinuation ? 'pb-5' : 'py-5'} ${!isPending ? 'cursor-pointer' : 'pointer-events-none'}`} data-layout='reply' data-object-id={object.id} onClick={onClick}>
                         <div className={`border-1 z-10 flex items-start gap-3 border-b-gray-200`} data-test-activity>
                             <div className='relative z-10 pt-[3px]'>
-                                <APAvatar author={author} disabled={isPending} />
+                                <APAvatar author={author} disabled={isPending} showFollowButton={!isAuthorCurrentUser && !followedByMe} />
                             </div>
                             <div className='flex w-full min-w-0 flex-col gap-2'>
                                 <div className='flex w-full items-center justify-between'>
@@ -525,19 +623,23 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     </div>
                                     {!isCompact && <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
                                         disabled={isPending}
+                                        followedByMe={followedByMe}
                                         layout='reply'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />}
                                 </div>
                                 <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {(object.type === 'Article') && renderFeedAttachment(object, openLightbox)}
+                                        {(object.type === 'Article') && renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                         {object.name && <H4 className='mt-2.5 text-pretty leading-tight break-anywhere' data-test-activity-heading>{object.name}</H4>}
                                         {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: openLinksInNewTab(object.content || '') ?? ''})} ref={contentRef} className='ap-note-content text-pretty tracking-[-0.006em] text-gray-900 break-anywhere dark:text-gray-600 [&_p+p]:mt-3'></div>}
-                                        {(object.type === 'Note') && renderFeedAttachment(object, openLightbox)}
+                                        {(object.type === 'Note') && renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
                                         {(object.type === 'Article') && <Button
                                             className='mt-3 w-full'
                                             id='read-more'
@@ -559,8 +661,8 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                             </div>
                         </div>
-                        <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors`}></div>
-                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : isChainContinuation ? 'bottom-[5px] top-[51px]' : isChainParent ? 'bottom-[5px] top-[71px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200`}></div>}
+                        <div className={`absolute -inset-x-3 -inset-y-0 z-0 rounded transition-colors max-lg:hidden`}></div>
+                        {!last && <div className={`absolute left-[19px] ${isCompact ? 'bottom-[8px] top-[51px]' : isChainContinuation ? 'bottom-[5px] top-[51px]' : isChainParent ? 'bottom-[5px] top-[71px]' : 'bottom-[-7px] top-[71px]'} z-0 w-[2px] rounded-sm bg-gray-200 dark:bg-gray-950`}></div>}
                     </div>
                 )}
                 <ImageLightbox
@@ -632,10 +734,14 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                     />}
                                     <FeedItemMenu
                                         allowDelete={allowDelete}
+                                        authoredByMe={isAuthorCurrentUser}
+                                        followedByMe={followedByMe}
                                         layout='inbox'
                                         trigger={UserMenuTrigger}
                                         onCopyLink={handleCopyLink}
                                         onDelete={handleDelete}
+                                        onFollow={handleFollow}
+                                        onUnfollow={handleUnfollow}
                                     />
                                 </div>
                             </div>

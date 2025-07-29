@@ -5,7 +5,7 @@ const shared = require('../../../shared');
 const apiMw = require('../../middleware');
 
 const messages = {
-    notImplemented: 'The server does not support the functionality required to fulfill the request.',
+    apiTokenBlocked: 'API tokens do not have permission to access this endpoint',
     staffTokenBlocked: 'Staff tokens are not allowed to access this endpoint'
 };
 
@@ -14,7 +14,7 @@ const messages = {
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
-const notImplemented = function notImplemented(req, res, next) {
+const tokenPermissionCheck = function tokenPermissionCheck(req, res, next) {
     // CASE: user is logged in with user auth, skip to permission system
     if (!req.api_key) {
         return next();
@@ -64,12 +64,14 @@ const notImplemented = function notImplemented(req, res, next) {
         schedules: ['PUT'],
         files: ['POST'],
         media: ['POST'],
-        db: ['POST'],
+        db: ['GET', 'POST'],
         settings: ['GET'],
-        oembed: ['GET']
+        comments: ['GET', 'POST', 'PUT'],
+        oembed: ['GET'],
+        'search-index': ['GET']
     };
 
-    const match = req.url.match(/^\/(\w+)\/?/);
+    const match = req.url.match(/^\/([^/?]+)\/?/);
 
     if (match) {
         const entity = match[1];
@@ -79,10 +81,9 @@ const notImplemented = function notImplemented(req, res, next) {
         }
     }
 
-    next(new errors.InternalServerError({
-        errorType: 'NotImplementedError',
-        message: tpl(messages.notImplemented),
-        statusCode: 501
+    next(new errors.NoPermissionError({
+        message: tpl(messages.apiTokenBlocked),
+        statusCode: 403
     }));
 };
 
@@ -100,7 +101,7 @@ module.exports.authAdminApi = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];
 
 /**
@@ -116,7 +117,7 @@ module.exports.authAdminApiWithUrl = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];
 
 /**
@@ -128,5 +129,5 @@ module.exports.publicAdminApi = [
     apiMw.cors,
     shared.middleware.urlRedirects.adminSSLAndHostRedirect,
     shared.middleware.prettyUrls,
-    notImplemented
+    tokenPermissionCheck
 ];

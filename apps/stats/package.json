@@ -20,6 +20,9 @@
         "dev:start": "vite",
         "test": "yarn test:unit --coverage",
         "test:unit": "vitest run test/unit",
+        "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' playwright test",
+        "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=100 yarn test:acceptance --headed",
+        "test:acceptance:full": "ALL_BROWSERS=1 yarn test:acceptance",
         "test:watch": "vitest",
         "test:coverage": "vitest run --coverage",
         "build": "tsc && vite build",
@@ -30,21 +33,23 @@
         "preview": "vite preview"
     },
     "devDependencies": {
+        "@faker-js/faker": "9.8.0",
+        "@playwright/test": "1.54.1",
         "@tanstack/react-query": "4.36.1",
         "@testing-library/jest-dom": "5.17.0",
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
         "@types/react": "18.3.23",
         "@types/react-svg-map": "2.1.4",
-        "@vitejs/plugin-react": "4.5.0",
-        "msw": "2.10.2",
-        "vite": "4.5.14",
+        "@vitejs/plugin-react": "4.7.0",
+        "dotenv": "16.6.1",
+        "msw": "2.10.4",
+        "vite": "5.4.19",
         "vite-plugin-svgr": "4.3.0",
-        "vitest": "0.34.3"
+        "vitest": "1.6.1"
     },
     "dependencies": {
         "@svg-maps/world": "1.0.1",
-        "@tinybirdco/charts": "0.2.4",
         "@tryghost/admin-x-framework": "0.0.0",
         "@tryghost/shade": "0.0.0",
         "i18n-iso-countries": "7.14.0",

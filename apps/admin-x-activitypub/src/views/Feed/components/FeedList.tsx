@@ -2,6 +2,7 @@ import FeedInput from './FeedInput';
 import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
 import NewNoteModal from '@src/components/modals/NewNoteModal';
+import SuggestedProfiles from './SuggestedProfiles';
 import {Activity} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
@@ -71,7 +72,7 @@ const FeedList:React.FC<FeedListProps> = ({
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 max-w-[620px] flex-col items-start'>
                                         <FeedInput user={user} />
-                                        <ul className='mx-auto flex w-full flex-col px-4' data-testid="feed-list">
+                                        <ul className='mx-auto flex w-full flex-col px-4 max-lg:px-0' data-testid="feed-list">
                                             {activities.map((activity, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key
@@ -91,11 +92,14 @@ const FeedList:React.FC<FeedListProps> = ({
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/feed/${encodeURIComponent(activity.id)}`);
+                                                            navigate(`/notes/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
                                                         <Separator />
+                                                    )}
+                                                    {index === 3 && (
+                                                        <SuggestedProfiles />
                                                     )}
                                                     {index === loadMoreIndex && (
                                                         <div ref={loadMoreRef} className='h-1'></div>

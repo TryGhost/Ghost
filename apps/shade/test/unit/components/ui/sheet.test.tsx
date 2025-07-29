@@ -83,7 +83,7 @@ describe('Sheet Components', () => {
 
         const title = screen.getByTestId('sheet-title');
         assert.equal(title.textContent, 'Test Title', 'Should have correct text content');
-        assert.ok(title.className.includes('text-2xl font-semibold'), 'Should have default styling');
+        assert.ok(title.className.includes('text-xl font-semibold'), 'Should have default styling');
     });
 
     it('renders SheetDescription with correct styling', () => {

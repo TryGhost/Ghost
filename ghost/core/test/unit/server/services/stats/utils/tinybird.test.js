@@ -6,6 +6,8 @@ describe('Tinybird Client', function () {
     let tinybirdClient;
     let mockConfig;
     let mockRequest;
+    let mockSettingsCache;
+    let mockTinybirdService;
     
     beforeEach(function () {
         // Set up mocks
@@ -17,18 +19,30 @@ describe('Tinybird Client', function () {
             get: sinon.stub()
         };
 
+        mockSettingsCache = {
+            get: sinon.stub()
+        };
+
         // Configure mocks
         mockConfig.get.withArgs('timezone').returns('UTC');
         mockConfig.get.withArgs('tinybird:stats').returns({
-            id: 'site-id',
             endpoint: 'https://api.tinybird.co',
             token: 'tb-token'
         });
+        mockSettingsCache.get.withArgs('site_uuid').returns('931ade9e-a4f1-4217-8625-34bd34250c16');
+        mockTinybirdService = {
+            getToken: sinon.stub().returns({
+                token: 'mock-jwt-token',
+                exp: 1719859200
+            })
+        };
 
         // Create tinybird client with mocked dependencies
         tinybirdClient = tinybird.create({
             config: mockConfig,
-            request: mockRequest
+            request: mockRequest,
+            settingsCache: mockSettingsCache,
+            tinybirdService: mockTinybirdService
         });
     });
 
@@ -45,7 +59,7 @@ describe('Tinybird Client', function () {
 
             should.exist(url);
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
             url.should.containEql('date_from=2023-01-01');
             url.should.containEql('date_to=2023-01-31');
             // url.should.containEql('timezone=UTC');
@@ -53,7 +67,7 @@ describe('Tinybird Client', function () {
 
             should.exist(options);
             should.exist(options.headers);
-            options.headers.Authorization.should.equal('Bearer tb-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
 
         it('uses tbVersion if provided', function () {
@@ -74,7 +88,7 @@ describe('Tinybird Client', function () {
                 memberStatus: 'paid'
             });
 
-            url.should.containEql('site_uuid=site-id');
+            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
             url.should.containEql('timezone=America%2FNew_York');
             url.should.containEql('member_status=paid');
         });
@@ -82,7 +96,6 @@ describe('Tinybird Client', function () {
         it('uses local endpoint and token when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
-                id: 'site-id',
                 endpoint: 'https://api.tinybird.co',
                 token: 'tb-token',
                 local: {
@@ -95,13 +108,12 @@ describe('Tinybird Client', function () {
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
             
             url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer local-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
         
         it('ignores tbVersion when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
-                id: 'site-id',
                 endpoint: 'https://api.tinybird.co',
                 token: 'tb-token',
                 local: {
@@ -223,7 +235,7 @@ describe('Tinybird Client', function () {
             mockRequest.get.calledOnce.should.be.true();
             const [url, options] = mockRequest.get.firstCall.args;
             url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer tb-token');
+            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
         });
         
         it('returns null when request fails', async function () {

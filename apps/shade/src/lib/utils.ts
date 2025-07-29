@@ -221,8 +221,42 @@ export const formatTimestamp = (timestamp: string) => {
 
 // Add thousands indicator to numbers
 export const formatNumber = (value: number): string => {
+    if (isNaN(value) || !isFinite(value)) {
+        return '0';
+    }
     return new Intl.NumberFormat('en-US').format(Math.round(value));
 };
+
+// Abbreviate numbers
+export function abbreviateNumber(number: number) {
+    const num = Number(number);
+
+    if (num < 1000) {
+        return formatNumber(num);
+    }
+
+    if (num < 1000000) {
+        // For thousands: round to nearest 100 for 10.3k, nearest 1000 for 101k
+        const roundTo = num < 100000 ? 100 : 1000;
+
+        const rounded = Math.round(num / roundTo) * roundTo;
+        const abbreviated = rounded / 1000;
+
+        if (abbreviated === 1000) {
+            return '1M';
+        }
+
+        const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+        return `${formatted}k`;
+    }
+
+    // For millions: round to nearest 100,000 for 1.1M
+    const roundTo = 100000;
+    const rounded = Math.round(num / roundTo) * roundTo;
+    const abbreviated = rounded / 1000000;
+    const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+    return `${formatted}M`;
+}
 
 // Format time duration
 export const formatDuration = (seconds: number): string => {
@@ -546,11 +580,11 @@ export const formatDisplayDateWithRange = (date: string, range: number): string 
 
 // Helper function to format member names with fallback to email
 export const formatMemberName = (member: {name?: string; email?: string}) => {
-    return member.name || member.email || 'Unknown Member';
+    return (member.name && member.name.trim()) || member.email || 'Unknown Member';
 };
 
 // Helper function to get member initials
-export const getMemberInitials = (member: {name?: string; email?: string}) => {
+export const getMemberInitials = (member: {name?: string}) => {
     const name = formatMemberName(member);
     const words = name.split(' ');
     if (words.length >= 2) {
