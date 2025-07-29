@@ -101,6 +101,7 @@ describe('Acceptance: Tags', function () {
             expect(findAll('[data-test-tag]')).to.have.length(1);
             expect(find('[data-test-tag] [data-test-tag-name]')).to.have.trimmed.text('New tag name');
             expect(find('[data-test-tag] [data-test-tag-slug]')).to.have.trimmed.text('new-tag-slug');
+            expect(find('[data-test-tag] [data-test-tag-count]')).to.have.trimmed.text('0 posts');
         });
         
         it('can edit tags', async function () {
