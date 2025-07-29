@@ -7,40 +7,41 @@ SQL >
         {% set _single_day = defined(date_from) and day_diff(date_from, date_to) == 0 %}
         with
             {% if defined(date_from) %}
-                toStartOfDay(
-                    toDate(
-                        {{
-                            Date(
-                                date_from,
-                                description="Starting day for filtering a date range",
-                                required=False,
-                            )
-                        }}
-                    )
+                toDateTime(
+                    {{
+                        Date(
+                            date_from,
+                            description="Starting day for filtering a date range (in site timezone)",
+                            required=False,
+                        )
+                    }},
+                    {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
                 ) as start,
-            {% else %} toStartOfDay(timestampAdd(today(), interval -7 day)) as start,
+            {% else %} toDateTime(timestampAdd(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}), interval -7 day)) as start,
             {% end %}
             {% if defined(date_to) %}
-                toStartOfDay(
-                    toDate(
+                timestampAdd(
+                    toDateTime(
                         {{
                             Date(
                                 date_to,
-                                description="Finishing day for filtering a date range",
+                                description="Finishing day for filtering a date range (in site timezone)",
                                 required=False,
                             )
-                        }}
-                    )
+                        }},
+                        {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}
+                    ),
+                    interval 1 day
                 ) as end
-            {% else %} toStartOfDay(today()) as end
+            {% else %} timestampAdd(toStartOfDay(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})), interval 1 day) as end
             {% end %}
         {% if _single_day %}
             select
                 arrayJoin(
                     arrayMap(
-                        x -> toDateTime(toString(toDateTime(x)), {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}),
+                        x -> toDateTime(x, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}),
                         range(
-                            toUInt32(toDateTime(start)), toUInt32(timestampAdd(end, interval 1 day)), 3600
+                            toUInt32(start), toUInt32(end), 3600
                         )
                     )
                 ) as date
@@ -48,8 +49,8 @@ SQL >
             select
                 arrayJoin(
                     arrayMap(
-                        x -> toDate(x),
-                        range(toUInt32(start), toUInt32(timestampAdd(end, interval 1 day)), 24 * 3600)
+                        x -> toDate(toDateTime(x, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})),
+                        range(toUInt32(start), toUInt32(end), 24 * 3600)
                     )
                 ) as date
         {% end %}
@@ -62,12 +63,13 @@ DESCRIPTION >
 SQL >
 
     %
+        
         select
             site_uuid,
             {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
-                toStartOfHour(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
+                toStartOfHour(toTimezone(first_pageview, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) as date,
             {% else %}
-                toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
+                toDate(toTimezone(first_pageview, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) as date,
             {% end %}
             session_id,
             pageviews,
@@ -78,11 +80,15 @@ SQL >
                 on fs.session_id = sd.session_id
         where
             site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
-            {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
-                and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
+            {% if defined(date_from) %}
+                and first_pageview >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
             {% else %}
-                {% if defined(date_from) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
-                {% if defined(date_to) %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+                and first_pageview >= toDateTime(timestampAdd(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}), interval -7 day))
+            {% end %}
+            {% if defined(date_to) %}
+                and first_pageview < timestampAdd(toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}), interval 1 day)
+            {% else %}
+                and first_pageview < timestampAdd(toStartOfDay(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})), interval 1 day)
             {% end %}
 
 
@@ -111,27 +117,32 @@ DESCRIPTION >
 SQL >
 
     %
+            
             select
                 {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
-                    toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
+                    toStartOfHour(toTimezone(timestamp, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) as date,
                 {% else %}
-                    toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
+                    toDate(toTimezone(timestamp, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})) as date,
                 {% end %}
                 count() pageviews
             from timeseries a
             inner join _mv_hits h on
                 {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
-                    a.date = toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
+                    a.date = toStartOfHour(toTimezone(timestamp, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}))
                 {% else %}
-                    a.date = toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
+                    a.date = toDate(toTimezone(timestamp, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}))
                 {% end %}
             where
                 site_uuid = {{ String(site_uuid, 'mock_site_uuid', description="Tenant ID", required=True) }}
-                {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
-                    and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) = {{ Date(date_from) }}
+                {% if defined(date_from) %}
+                    and timestamp >= toDateTime({{ Date(date_from) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})
                 {% else %}
-                    {% if defined(date_from) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= {{ Date(date_from) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) >= timestampAdd(today(), interval -7 day) {% end %}
-                    {% if defined(date_to) %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= {{ Date(date_to) }} {% else %} and toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) <= today() {% end %}
+                    and timestamp >= toDateTime(timestampAdd(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}), interval -7 day))
+                {% end %}
+                {% if defined(date_to) %}
+                    and timestamp < timestampAdd(toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }}), interval 1 day)
+                {% else %}
+                    and timestamp < timestampAdd(toStartOfDay(now({{ String(timezone, 'Etc/UTC', description="Site timezone", required=True) }})), interval 1 day)
                 {% end %}
                 {% if defined(member_status) %} and member_status IN {{ Array(member_status, "'undefined', 'free', 'paid'", description="Member status to filter on", required=False) }} {% end %}
                 {% if defined(device) %} and device = {{ String(device, description="Device to filter on", required=False) }} {% end %}
