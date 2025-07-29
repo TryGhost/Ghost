@@ -350,7 +350,7 @@ const Newsletters: React.FC = () => {
             open_rate: stat.open_rate,
             total_clicks: stat.total_clicks || 0,
             click_rate: stat.click_rate || 0
-        }));
+        })).sort((a, b) => new Date(a.send_date).getTime() - new Date(b.send_date).getTime());
     }, [newsletterStatsData]);
 
     // Separate loading states for different sections
