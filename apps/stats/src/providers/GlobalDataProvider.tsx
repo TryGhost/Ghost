@@ -46,10 +46,13 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const [audience, setAudience] = useState(7);
     const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
-    // Only include tinybirdTokenQuery in requests if stats config is present
-    const requests = hasStatsConfig ? [config, settings, site, tinybirdTokenQuery] : [config, settings, site];
+    // Only include tinybirdTokenQuery errors if it's a real error (not just missing token)
+    const requests = [config, settings, site];
+    if (hasStatsConfig && tinybirdTokenQuery.error) {
+        requests.push(tinybirdTokenQuery);
+    }
     const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = requests.some(request => request.isLoading);
+    const isLoading = [config, settings, site, tinybirdTokenQuery].some(request => request.isLoading);
 
     if (error) {
         throw error;

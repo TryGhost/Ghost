@@ -91,10 +91,13 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         }
     });
 
-    // Only include tinybirdTokenQuery in requests if stats config is present
-    const requests = hasStatsConfig ? [config, site, settings, tinybirdTokenQuery] : [config, site, settings];
+    // Only include tinybirdTokenQuery errors if it's a real error (not just missing token)
+    const requests = [config, site, settings];
+    if (hasStatsConfig && tinybirdTokenQuery.error) {
+        requests.push(tinybirdTokenQuery);
+    }
     const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = requests.some(request => request.isLoading);
+    const isLoading = [config, site, settings, tinybirdTokenQuery].some(request => request.isLoading);
 
     if (error) {
         throw error;
