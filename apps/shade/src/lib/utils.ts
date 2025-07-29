@@ -292,6 +292,23 @@ export const centsToDollars = (value: number) => {
     return Math.round(value / 100);
 };
 
+/* Date/Time helpers
+/* -------------------------------------------------------------------------- */
+
+// Get user's timezone
+export const getUserTimezone = (): string => {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+};
+
+// Get timezone-aware moment instance
+export const getTzMoment = (date?: string | Date | Moment, timezone?: string): Moment => {
+    const tz = timezone || getUserTimezone();
+    if (date) {
+        return moment.tz(date, tz);
+    }
+    return moment().tz(tz);
+};
+
 /* Chart formatters
 /* -------------------------------------------------------------------------- */
 
@@ -415,10 +432,9 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-    const publishedDate = new Date(startDate);
-    const today = new Date();
-    const diffInTime = today.getTime() - publishedDate.getTime();
-    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+    const publishedDate = getTzMoment(startDate).startOf('day');
+    const today = getTzMoment().endOf('day');
+    const diffInDays = today.diff(publishedDate, 'days') + 1;
 
     // Ensure minimum of 1 day to avoid issues with same-day publications
     return Math.max(diffInDays, 1);
@@ -426,16 +442,16 @@ export const getRangeForStartDate = (startDate: string) => {
 
 //Return today and startdate for charts
 export const getRangeDates = (range: number) => {
-    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    const endDate = moment().tz(timezone).endOf('day');
+    const timezone = getUserTimezone();
+    const endDate = getTzMoment().endOf('day');
     let startDate;
 
     if (range === -1) {
         // Year to date - use January 1st of current year
-        startDate = moment().tz(timezone).startOf('year');
+        startDate = getTzMoment().startOf('year');
     } else {
         // Regular range calculation
-        startDate = moment().tz(timezone).subtract(range - 1, 'days').startOf('day');
+        startDate = getTzMoment().subtract(range - 1, 'days').startOf('day');
     }
 
     return {startDate, endDate, timezone};
