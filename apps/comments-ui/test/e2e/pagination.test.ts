@@ -16,21 +16,22 @@ test.describe('Pagination', async () => {
         await expect(frame.getByTestId('pagination-component')).toBeVisible();
 
         // Check text in pagination button
-        await expect(frame.getByTestId('pagination-component')).toContainText('Show 1 previous comment');
+        await expect(frame.getByTestId('pagination-component')).toContainText('Load more (1)');
 
         // Test total comments with test-id comment-component is 5
         await expect(frame.getByTestId('comment-component')).toHaveCount(20);
 
         // Check only the first latest 20 comments are visible
-        await expect(frame.getByText('This is comment 1.')).not.toBeVisible();
+        await expect(frame.getByText('This is comment 1.')).toBeVisible();
         await expect(frame.getByText('This is comment 2.')).toBeVisible();
         await expect(frame.getByText('This is comment 3.')).toBeVisible();
         await expect(frame.getByText('This is comment 4.')).toBeVisible();
         await expect(frame.getByText('This is comment 5.')).toBeVisible();
         await expect(frame.getByText('This is comment 6.')).toBeVisible();
         await expect(frame.getByText('This is comment 20.')).toBeVisible();
+        await expect(frame.getByText('This is comment 21.')).not.toBeVisible();
 
-        // 
+        //
 
         // Click the pagination button
         await frame.getByTestId('pagination-component').click();
@@ -39,7 +40,7 @@ test.describe('Pagination', async () => {
         await expect(frame.getByTestId('comment-component')).toHaveCount(21);
 
         // Check comments 6 is visible
-        await expect(frame.getByText('This is comment 1.')).toBeVisible();
+        await expect(frame.getByText('This is comment 21.')).toBeVisible();
 
         // Check the pagination button is not visible
         await expect(frame.getByTestId('pagination-component')).not.toBeVisible();

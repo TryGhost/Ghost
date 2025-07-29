@@ -5,6 +5,7 @@ const tpl = require('@tryghost/tpl');
 const providers = require('./providers');
 const parseContext = require('./parse-context');
 const actionsMap = require('./actions-map-cache');
+const {setIsRoles} = require('../../models/role-utils');
 
 const messages = {
     noPermissionToAction: 'You do not have permission to perform this action',
@@ -66,8 +67,8 @@ class CanThisResult {
 
                         return true;
                     };
-
-                    if (loadedPermissions.user && _.some(loadedPermissions.user.roles, {name: 'Owner'})) {
+                    const {isOwner} = setIsRoles(loadedPermissions);
+                    if (isOwner) {
                         hasUserPermission = true;
                     } else if (!_.isEmpty(userPermissions)) {
                         hasUserPermission = _.some(userPermissions, checkPermission);
@@ -80,9 +81,16 @@ class CanThisResult {
                     // Check api key permissions if they were passed
                     hasApiKeyPermission = true;
                     if (!_.isNull(apiKeyPermissions)) {
-                        // api key request have no user, but we want the user permissions checks to pass
-                        hasUserPermission = true;
-                        hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        if (loadedPermissions.user) {
+                            // Staff API key scenario: both user and API key present
+                            // Use USER permissions and ignore API key permissions
+                            hasApiKeyPermission = true; // Allow API key check to pass
+                        } else {
+                            // Traditional API key scenario: API key only, no user
+                            // Use API key permissions as before
+                            hasUserPermission = true;
+                            hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                        }
                     }
 
                     // Offer a chance for the TargetModel to override the results

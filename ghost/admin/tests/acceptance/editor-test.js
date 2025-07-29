@@ -5,6 +5,7 @@ import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
 import {enableLabsFlag} from '../helpers/labs-flag';
@@ -22,7 +23,12 @@ describe('Acceptance: Editor', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
+        mockAnalyticsApps();
         this.server.loadFixtures('configs');
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -68,6 +74,17 @@ describe('Acceptance: Editor', function () {
         expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
     });
 
+    it('does not redirect to staff page when authenticated as super editor', async function () {
+        let role = this.server.create('role', {name: 'Super Editor'});
+        let author = this.server.create('user', {roles: [role], slug: 'test-user'});
+        this.server.create('post', {authors: [author]});
+
+        await authenticateSession();
+        await visit('/editor/post/1');
+
+        expect(currentURL(), 'currentURL').to.equal('/editor/post/1');
+    });
+    
     it('displays 404 when post does not exist', async function () {
         let role = this.server.create('role', {name: 'Editor'});
         this.server.create('user', {roles: [role], slug: 'test-user'});
@@ -603,7 +620,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+            ).to.equal(`#posts-x`);
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {

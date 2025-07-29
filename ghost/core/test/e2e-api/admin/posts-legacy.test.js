@@ -3,7 +3,6 @@ const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');
 const _ = require('lodash');
-const ObjectId = require('bson-objectid').default;
 const moment = require('moment-timezone');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
@@ -267,9 +266,7 @@ describe('Posts API', function () {
             published_at: '2016-05-30T07:00:00.000Z',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
-            updated_at: moment('2016-05-30T06:30:00.456Z').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment('2016-05-30T06:30:00.456Z').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -303,8 +300,6 @@ describe('Posts API', function () {
         modelJson.published_at.toISOString().should.eql('2016-05-30T07:00:00.000Z');
         modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
         modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
-        modelJson.updated_by.should.not.eql(post.updated_by);
-        modelJson.created_by.should.not.eql(post.created_by);
 
         modelJson.posts_meta.feature_image_alt.should.eql(post.feature_image_alt);
         modelJson.posts_meta.feature_image_caption.should.eql(post.feature_image_caption);
@@ -407,7 +402,9 @@ describe('Posts API', function () {
             .expect('Cache-Control', testUtils.cacheRules.private)
             .expect(200);
 
-        res2.headers['x-cache-invalidate'].should.eql('/p/' + res2.body.posts[0].uuid + '/');
+        const uuid = res2.body.posts[0].uuid;
+        const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
+        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
 
         // Newsletter should be returned as null
         should(res2.body.posts[0].newsletter).be.null();
@@ -444,7 +441,9 @@ describe('Posts API', function () {
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.private);
 
-        res2.headers['x-cache-invalidate'].should.eql('/p/' + res2.body.posts[0].uuid + '/');
+        const uuid = res2.body.posts[0].uuid;
+        const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
+        res2.headers['x-cache-invalidate'].should.eql(expectedPattern);
 
         unsplashMock.isDone().should.be.true();
 
@@ -563,8 +562,6 @@ describe('Posts API', function () {
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString(),
             newsletter: {
                 // This should be ignored, the default one should be used instead
                 id: testUtils.DataGenerator.Content.newsletters[0].id
@@ -605,9 +602,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -649,9 +644,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -707,9 +700,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -778,9 +769,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -848,9 +837,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -921,9 +908,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -993,9 +978,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1064,9 +1047,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1135,9 +1116,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1230,9 +1209,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1320,9 +1297,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1412,9 +1387,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1511,9 +1484,7 @@ describe('Posts API', function () {
             feature_image_caption: 'Testing <b>feature image caption</b>',
             mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
-            updated_at: moment().subtract(2, 'days').toDate(),
-            created_by: ObjectId().toHexString(),
-            updated_by: ObjectId().toHexString()
+            updated_at: moment().subtract(2, 'days').toDate()
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1694,9 +1665,7 @@ describe('Posts API', function () {
                 feature_image_caption: 'Testing <b>feature image caption</b>',
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
-                updated_at: moment().subtract(2, 'days').toDate(),
-                created_by: ObjectId().toHexString(),
-                updated_by: ObjectId().toHexString()
+                updated_at: moment().subtract(2, 'days').toDate()
             };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1758,9 +1727,7 @@ describe('Posts API', function () {
                 feature_image_caption: 'Testing <b>feature image caption</b>',
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
-                updated_at: moment().subtract(2, 'days').toDate(),
-                created_by: ObjectId().toHexString(),
-                updated_by: ObjectId().toHexString()
+                updated_at: moment().subtract(2, 'days').toDate()
             };
 
             const res = await request.post(localUtils.API.getApiQuery('posts'))

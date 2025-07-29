@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, settingsWithStripe} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Tips and donations', () => {
     test('Is not shown when Stripe is disabled', async ({page}) => {
@@ -23,12 +22,20 @@ test.describe('Tips and donations', () => {
         await expect(page.locator('[data-setting-nav-item] #tips-and-donations')).toBeVisible();
         await expect(section).toBeVisible();
 
-        await expect(section.getByTestId('suggested-amount')).toHaveText(/\$5/);
-        await expect(section.getByTestId('donate-url')).toHaveText('http://test.com/#/portal/support');
+        const suggestedAmountInput = section.getByRole('textbox', {name: 'Suggested amount'});
+        await expect(suggestedAmountInput).toBeVisible();
+        await expect(suggestedAmountInput).toHaveValue('5');
+
+        await expect(section.getByRole('combobox')).toBeVisible();
+
+        const donateUrl = section.getByTestId('donate-url');
+        await expect(donateUrl).toBeVisible();
+        await expect(donateUrl).toHaveText('http://test.com/#/portal/support');
+
         await expect(section.getByTestId('preview-shareable-link')).not.toBeVisible();
         await expect(section.getByTestId('copy-shareable-link')).not.toBeVisible();
 
-        await section.getByTestId('donate-url').hover();
+        await donateUrl.hover();
 
         await expect(section.getByTestId('preview-shareable-link')).toBeVisible();
         await expect(section.getByTestId('copy-shareable-link')).toBeVisible();

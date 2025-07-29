@@ -24,16 +24,21 @@ Router.map(function () {
     this.route('site');
     this.route('dashboard');
     this.route('launch');
-    this.route('stats');
+
+    this.route('stats-x', {path: '/analytics'}, function () {
+        this.route('stats-x', {path: '/*sub'});
+    });
 
     this.route('pro', function () {
         this.route('pro-sub', {path: '/*sub'});
     });
 
     this.route('posts');
-    this.route('posts.analytics', {path: '/posts/analytics/:post_id'});
     this.route('posts.mentions', {path: '/posts/analytics/:post_id/mentions'});
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
+    this.route('posts-x', {path: '/posts/analytics/:post_id'}, function () {
+        this.route('posts-x', {path: '/*sub'});
+    });
 
     this.route('restore-posts', {path: '/restore'});
 
@@ -82,11 +87,6 @@ Router.map(function () {
     this.route('member.new', {path: '/members/new'});
     this.route('member', {path: '/members/:member_id'});
     this.route('members-activity');
-
-    // this.route('offers');
-
-    // this.route('offer.new', {path: '/offers/new'});
-    // this.route('offer', {path: '/offers/:offer_id'});
 
     this.route('error404', {path: '/*path'});
 

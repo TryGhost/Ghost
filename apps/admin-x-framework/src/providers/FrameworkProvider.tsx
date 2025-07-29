@@ -1,8 +1,20 @@
 import {ErrorBoundary as SentryErrorBoundary} from '@sentry/react';
-import {QueryClientProvider} from '@tanstack/react-query';
-import {ReactNode, createContext, useContext} from 'react';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ReactNode, createContext, useContext, useMemo} from 'react';
 import queryClient from '../utils/queryClient';
 import {ExternalLink} from './RoutingProvider';
+
+// Stats-specific configuration
+export interface StatsConfig {
+    endpoint?: string;
+    id?: string;
+    token?: string;
+    local?: {
+        enabled?: boolean;
+        endpoint?: string;
+        token?: string;
+    };
+}
 
 export interface FrameworkProviderProps {
     ghostVersion: string;
@@ -18,6 +30,13 @@ export interface FrameworkProviderProps {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    
+    // Optional QueryClient configuration for apps that need different defaults
+    queryClientOptions?: {
+        staleTime?: number;
+        refetchOnMount?: boolean;
+        refetchOnWindowFocus?: boolean;
+    };
 
     children: ReactNode;
 }
@@ -42,10 +61,30 @@ const FrameworkContext = createContext<FrameworkContextType>({
     onDelete: () => {}
 });
 
-export function FrameworkProvider({children, ...props}: FrameworkProviderProps) {
+export function FrameworkProvider({children, queryClientOptions, ...props}: FrameworkProviderProps) {
+    const client = useMemo(() => {
+        if (!queryClientOptions) {
+            return queryClient;
+        }
+        
+        return new QueryClient({
+            defaultOptions: {
+                queries: {
+                    refetchOnWindowFocus: queryClientOptions.refetchOnWindowFocus ?? false,
+                    staleTime: queryClientOptions.staleTime ?? 5 * (60 * 1000), // 5 mins
+                    refetchOnMount: queryClientOptions.refetchOnMount ?? false,
+                    cacheTime: 10 * (60 * 1000), // 10 mins
+                    // We have custom retry logic for specific errors in fetchApi()
+                    retry: false,
+                    networkMode: 'always'
+                }
+            }
+        });
+    }, [queryClientOptions]);
+
     return (
         <SentryErrorBoundary>
-            <QueryClientProvider client={queryClient}>
+            <QueryClientProvider client={client}>
                 <FrameworkContext.Provider value={props}>
                     {children}
                 </FrameworkContext.Provider>

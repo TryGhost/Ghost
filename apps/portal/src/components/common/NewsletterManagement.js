@@ -77,9 +77,12 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     );
 }
 
-function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters}) {
+function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNewslettersEnabled}) {
     const {site} = useContext(AppContext);
     const newsletters = getSiteNewsletters({site});
+    if (!hasNewslettersEnabled) {
+        return null;
+    }
     return newsletters.map((newsletter) => {
         return (
             <NewsletterPrefSection
@@ -97,13 +100,14 @@ function ShowPaidMemberMessage({site, isPaid}) {
 
     if (isPaid) {
         return (
-            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {{title}}', {title: site?.title})}</p>
+            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
         );
     }
     return null;
 }
 
 export default function NewsletterManagement({
+    hasNewslettersEnabled,
     notification,
     subscribedNewsletters,
     updateSubscribedNewsletters,
@@ -127,6 +131,7 @@ export default function NewsletterManagement({
             <div className='gh-portal-section flex'>
                 <div className='gh-portal-list'>
                     <NewsletterPrefs
+                        hasNewslettersEnabled={hasNewslettersEnabled}
                         subscribedNewsletters={subscribedNewsletters}
                         setSubscribedNewsletters={(updatedNewsletters) => {
                             let newsletters = updatedNewsletters.map((d) => {
@@ -161,8 +166,8 @@ export default function NewsletterManagement({
             </div>
             <footer className={'gh-portal-action-footer' + (hasMemberGotEmailSuppression({member}) ? ' gh-feature-suppressions' : '')}>
                 <div style={{width: '100%'}}>
-                    <ShowPaidMemberMessage 
-                        isPaid={isPaidMember} 
+                    <ShowPaidMemberMessage
+                        isPaid={isPaidMember}
                         site={site}
                         subscribedNewsletters={subscribedNewsletters}
                     />

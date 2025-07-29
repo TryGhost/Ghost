@@ -31,13 +31,15 @@ const SUPPORTED_LOCALES = [
     'ko', // Korean
     'kz', // Kazach
     'lt', // Lithuanian
+    'lv', // Latvian
     'mk', // Macedonian
     'mn', // Mongolian
     'ms', // Malay
+    'nb', // Norwegian Bokmål
     'ne', // Nepali
     'nl', // Dutch
     'nn', // Norwegian Nynorsk
-    'no', // Norwegian
+    'pa', // Punjabi (Gurmukhi, India)
     'pl', // Polish
     'pt', // Portuguese
     'pt-BR', // Portuguese (Brazil)
@@ -84,17 +86,14 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
-    let interpolation = {};
-    if (ns === 'newsletter') {
-        interpolation = {
-            prefix: '{',
-            suffix: '}'
-        };
-    }
+    const interpolation = {
+        prefix: '{',
+        suffix: '}'
+    };
 
     let resources = generateResources(SUPPORTED_LOCALES, ns);
     i18nextInstance.init({
@@ -108,7 +107,10 @@ module.exports = (lng = 'en', ns = 'portal') => {
         returnEmptyString: false,
 
         // do not load a fallback
-        fallbackLng: false,
+        fallbackLng: {
+            no: ['nb', 'en'],
+            default: ['en']
+        },
 
         ns: ns,
         defaultNS: ns,

@@ -1,3 +1,4 @@
+import sinon from 'sinon';
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
 import {buildMember, buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
@@ -10,9 +11,8 @@ test.describe('Actions', async () => {
             mockedApi,
             page,
             publication: 'Publisher Weekly',
-            labs: {
-                commentImprovements: labs
-            }
+            // always return `labs` value for any labs.x property access
+            labs: new Proxy({}, {get: () => labs})
         });
     }
 
@@ -26,6 +26,7 @@ test.describe('Actions', async () => {
     });
 
     test('Can like and unlike a comment', async ({page}) => {
+        // NOTE: comments are ordered by likes
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -43,7 +44,7 @@ test.describe('Actions', async () => {
         const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
-        const comment = frame.getByTestId('comment-component').nth(0);
+        const comment = frame.getByTestId('comment-component').nth(1);
         const likeButton = comment.getByTestId('like-button');
         await expect(likeButton).toHaveCount(1);
 
@@ -65,7 +66,7 @@ test.describe('Actions', async () => {
         await expect(likeButton).toHaveText('0');
 
         // Check state for already liked comment
-        const secondComment = frame.getByTestId('comment-component').nth(1);
+        const secondComment = frame.getByTestId('comment-component').nth(0);
         const likeButton2 = secondComment.getByTestId('like-button');
         await expect(likeButton2).toHaveCount(1);
         const icon2 = likeButton2.locator('svg');
@@ -96,6 +97,275 @@ test.describe('Actions', async () => {
         await expect(likeButton).toHaveText('0');
     });
 
+    test('Like button is disabled while api is loading, UI updates instantly', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveCount(1);
+
+        const icon = likeButton.locator('svg');
+        await expect(icon).not.toHaveClass(/fill/);
+        await expect(likeButton).toHaveText('0');
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('1');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+    });
+
+    test('Like state reverts when like api request is unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 3</p>'
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('0');
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('0');
+    });
+
+    test('like button UI updates instantly when unliking a comment', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('51');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+    });
+
+    test('loads all replies with multiple API calls when replying to comment with >100 replies', async ({page}) => {
+        // Create a comment with 150 replies to test pagination
+        const replies = Array.from({length: 150}, (_, i) => buildReply({
+            id: `reply-${String(i + 1).padStart(3, '0')}`,
+            html: `<p>This is reply ${i + 1}</p>`
+        }));
+
+        mockedApi.addComment({
+            id: 'comment-1',
+            html: '<p>Comment with many replies</p>',
+            replies
+        });
+
+        // Spy on the API calls to verify pagination
+        const getRepliesSpy = sinon.spy(mockedApi.requestHandlers, 'getReplies');
+
+        const {frame} = await initializeTest(page);
+
+        // Click reply on the main comment to trigger loadMoreReplies with limit: 'all'
+        // Use nth(0) to get the first reply button which belongs to the main comment
+        const replyButton = frame.getByTestId('reply-button').nth(0);
+        await replyButton.click();
+
+        // Wait for the reply form to appear - use a more specific selector
+        await frame.getByTestId('reply-form').waitFor();
+
+        // Verify multiple API calls were made for pagination
+        expect(getRepliesSpy.callCount).toBeGreaterThan(1);
+
+        // Verify the calls used different afterReplyId values indicating pagination
+        const calls = getRepliesSpy.getCalls();
+        const firstCallUrl = new URL(calls[0].args[0].request().url());
+        const secondCallUrl = new URL(calls[1].args[0].request().url());
+
+        // First call should start after the 3rd initially loaded reply
+        const firstFilter = firstCallUrl.searchParams.get('filter');
+        expect(firstFilter).toContain('reply-003');
+
+        // Second call should start after the 100th reply from first batch
+        const secondFilter = secondCallUrl.searchParams.get('filter');
+        expect(secondFilter).toContain('reply-103');
+
+        // Both calls should use limit=100
+        expect(firstCallUrl.searchParams.get('limit')).toBe('100');
+        expect(secondCallUrl.searchParams.get('limit')).toBe('100');
+    });
+
+    test('loads all replies with multiple API calls when replying to a reply with >100 replies', async ({page}) => {
+        // Create a comment with 150 replies to test pagination when replying to a reply
+        const replies = Array.from({length: 150}, (_, i) => buildReply({
+            id: `reply-${String(i + 1).padStart(3, '0')}`,
+            html: `<p>This is reply ${i + 1}</p>`
+        }));
+
+        mockedApi.addComment({
+            id: 'comment-1',
+            html: '<p>Comment with many replies</p>',
+            replies
+        });
+
+        // Spy on the API calls to verify pagination
+        const getRepliesSpy = sinon.spy(mockedApi.requestHandlers, 'getReplies');
+
+        const {frame} = await initializeTest(page);
+
+        // Click reply on one of the reply comments to trigger loadMoreReplies with limit: 'all' and isReply: true
+        const replyComment = frame.locator('#reply-002'); // Target a specific reply
+        const replyButton = replyComment.getByTestId('reply-button');
+        await replyButton.click();
+
+        // Wait for the reply form to appear - use a more specific selector
+        await frame.getByTestId('reply-form').waitFor();
+
+        // Verify multiple API calls were made for pagination
+        expect(getRepliesSpy.callCount).toBeGreaterThan(1);
+
+        // Verify the calls used different afterReplyId values indicating pagination
+        const calls = getRepliesSpy.getCalls();
+        const firstCallUrl = new URL(calls[0].args[0].request().url());
+        const secondCallUrl = new URL(calls[1].args[0].request().url());
+
+        // First call should start after the 3rd initially loaded reply (only 3 are shown initially)
+        const firstFilter = firstCallUrl.searchParams.get('filter');
+        expect(firstFilter).toContain('reply-003');
+
+        // Second call should start after the 100th reply from first batch
+        const secondFilter = secondCallUrl.searchParams.get('filter');
+        expect(secondFilter).toContain('reply-103');
+
+        // Both calls should use limit=100
+        expect(firstCallUrl.searchParams.get('limit')).toBe('100');
+        expect(secondCallUrl.searchParams.get('limit')).toBe('100');
+    });
+
+    test('like button UI updates instantly when unliking a comment and can like again after button is enabled', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('51');
+        expect(likeButton.isDisabled()).toBeTruthy();
+        expect(memberLikeSpy.called).toBe(true);
+
+        expect(await likeButton.isDisabled()).toBeFalsy();
+
+        await likeButton.click();
+        await expect(likeButton).toHaveText('52');
+    });
+
+    test('Like state reverts when unlike api request is unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            liked: true,
+            count: {
+                likes: 52
+            }
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is filled
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const likeButton = comment.getByTestId('like-button');
+        await expect(likeButton).toHaveText('52');
+        const icon = likeButton.locator('svg');
+        await expect(icon).toHaveClass(/fill/);
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('52');
+    });
+
+    test('Can revert state of a reply if its unsuccessful', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>',
+                    liked: true,
+                    count: {
+                        likes: 3
+                    }
+                })
+            ]
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Check like button is not filled yet
+        const comment = frame.getByTestId('comment-component').nth(0);
+        const reply = comment.getByTestId('comment-component').nth(0);
+        // check if reply contains text This is a reply to 1
+        await expect(reply).toContainText('This is a reply to 1');
+
+        const likeButton = reply.getByTestId('like-button');
+
+        mockedApi.setFailure('likeComment', {
+            status: 500,
+            body: {error: 'Internal Server Error'}
+        });
+        await likeButton.click();
+        mockedApi.setDelay(100); // give time for disabled state
+        await expect(likeButton).toHaveText('3');
+    });
+
     test('Can reply to a comment', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
@@ -120,7 +390,7 @@ test.describe('Actions', async () => {
 
         // Click button
         await replyButton.click();
-        const editor = frame.getByTestId('form-editor');
+        const editor = comment.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         // Wait for focused
         await waitEditorFocused(editor);
@@ -145,28 +415,8 @@ test.describe('Actions', async () => {
         await expect(frame.getByText('This is a reply 123')).toHaveCount(1);
     });
 
-    test('Reply-to-reply action not shown without labs flag', async ({
-        page
-    }) => {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
-        const {frame} = await initializeTest(page);
-
-        const parentComment = frame.getByTestId('comment-component').nth(0);
-        const replyComment = parentComment.getByTestId('comment-component').nth(0);
-
-        expect(replyComment.getByTestId('reply-button')).not.toBeVisible();
-    });
-
     async function testReplyToReply(page) {
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         const parentComment = frame.getByTestId('comment-component').nth(0);
         const replyComment = parentComment.getByTestId('comment-component').nth(0);
@@ -174,7 +424,7 @@ test.describe('Actions', async () => {
         const replyReplyButton = replyComment.getByTestId('reply-button');
         await replyReplyButton.click();
 
-        const editor = frame.getByTestId('form-editor').nth(1);
+        const editor = parentComment.getByTestId('form-editor');
         await expect(editor).toBeVisible();
         await waitEditorFocused(editor);
 
@@ -218,6 +468,20 @@ test.describe('Actions', async () => {
         await testReplyToReply(page);
     });
 
+    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>',
+            status: 'deleted',
+            replies: [
+                mockedApi.buildReply({
+                    html: '<p>This is a reply to 1</p>'
+                })
+            ]
+        });
+
+        await testReplyToReply(page);
+    });
+
     test('Can highlight reply when clicking on reply to: snippet', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>',
@@ -235,7 +499,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         await frame.getByTestId('comment-in-reply-to').click();
 
@@ -274,7 +538,7 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         await frame.getByTestId('comment-in-reply-to').click();
 
@@ -298,20 +562,6 @@ test.describe('Actions', async () => {
         const timeout = 3000;
         await page.waitForTimeout(timeout);
         await expect(markElement).not.toBeVisible();
-    });
-
-    test('Can reply to a reply with a deleted parent comment', async function ({page}) {
-        mockedApi.addComment({
-            html: '<p>This is comment 1</p>',
-            status: 'deleted',
-            replies: [
-                mockedApi.buildReply({
-                    html: '<p>This is a reply to 1</p>'
-                })
-            ]
-        });
-
-        await testReplyToReply(page);
     });
 
     test('Can add expertise', async ({page}) => {
@@ -361,6 +611,13 @@ test.describe('Actions', async () => {
         );
     });
 
+    async function deleteComment(page, frame, commentComponent) {
+        await commentComponent.getByTestId('more-button').first().click();
+        await frame.getByTestId('delete').click();
+        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
+        await popupIframe.getByTestId('delete-popup-confirm').click();
+    }
+
     test('Can delete a comment', async ({page}) => {
         const loggedInMember = buildMember();
         mockedApi.setMember(loggedInMember);
@@ -370,17 +627,10 @@ test.describe('Actions', async () => {
             member: loggedInMember
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(0);
     });
@@ -399,21 +649,34 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
         const comment = frame.getByTestId('comment-component').nth(0);
-        const reply = comment.getByTestId('comment-component').nth(0);
-        const moreButton = reply.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const replyToDelete = comment.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, replyToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(1);
         await expect(frame.getByTestId('replies-line')).not.toBeVisible();
+    });
+
+    test('Deleting a reply updates pagination', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+
+        mockedApi.addComment({
+            html: '<p>Parent comment</p>',
+            // 6 replies
+            replies: Array.from({length: 6}, (_, i) => buildReply({member: loggedInMember, html: `<p>Reply ${i + 1}</p>`}))
+        });
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
+
+        const replyToDelete = frame.getByTestId('comment-component').nth(2);
+        await deleteComment(page, frame, replyToDelete);
+
+        // Replies count does not change - we still have 3 unloaded replies
+        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
     });
 
     test('Can delete a comment with replies', async ({page}) => {
@@ -430,24 +693,33 @@ test.describe('Actions', async () => {
             ]
         });
 
-        const {frame} = await initializeTest(page, {labs: true});
+        const {frame} = await initializeTest(page);
 
-        const comment = frame.getByTestId('comment-component').nth(0);
-        const moreButton = comment.getByTestId('more-button').first();
-        await moreButton.click();
-        await frame.getByTestId('delete').click();
-
-        const popupIframe = page.frameLocator('iframe[title="deletePopup"]');
-
-        await expect(popupIframe.getByTestId('delete-popup')).toBeVisible();
-        await popupIframe.getByTestId('delete-popup-confirm').click();
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
 
         await expect(frame.getByTestId('comment-component')).toHaveCount(2);
         await expect(frame.getByText('This comment has been removed')).toBeVisible();
         await expect(frame.getByTestId('replies-line')).toBeVisible();
     });
 
-    test.describe('Sorting - flag needs to be enabled', () => {
+    test('Resets comments list after deleting a top-level comment', async ({page}) => {
+        const loggedInMember = buildMember();
+        mockedApi.setMember(loggedInMember);
+        // We have a page limit of 20, this will show the load more button
+        mockedApi.addComments(21, {member: loggedInMember});
+
+        const {frame} = await initializeTest(page);
+        await expect(frame.getByTestId('pagination-component')).toBeVisible();
+
+        const commentToDelete = frame.getByTestId('comment-component').nth(0);
+        await deleteComment(page, frame, commentToDelete);
+
+        // more button should have disappeared because the list was reloaded
+        await expect(frame.getByTestId('pagination-component')).not.toBeVisible();
+    });
+
+    test.describe('Sorting', () => {
         test('Renders Sorting Form dropdown', async ({page}) => {
             mockedApi.addComment({
                 html: '<p>This is comment 1</p>'
@@ -471,7 +743,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -501,7 +773,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2022-02-01T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -538,7 +810,7 @@ test.describe('Actions', async () => {
                 html: '<p>This is comment 6</p>'
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = frame.getByTestId('comments-sorting-form');
 
@@ -575,7 +847,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -618,7 +890,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -657,7 +929,7 @@ test.describe('Actions', async () => {
                 created_at: new Date('2024-04-03T00:00:00Z')
             });
 
-            const {frame} = await initializeTest(page, {labs: true});
+            const {frame} = await initializeTest(page);
 
             const sortingForm = await frame.getByTestId('comments-sorting-form');
 
@@ -720,7 +992,7 @@ test.describe('Actions', async () => {
         await frame.getByTestId('edit').click();
 
         // Verify the edit form is visible
-        await expect(frame.getByTestId('form-editor')).toBeVisible();
+        await expect(parentComment.getByTestId('form-editor')).toBeVisible();
 
         // Verify replies are still visible while editing
         await expect(replies[0]).toBeVisible();

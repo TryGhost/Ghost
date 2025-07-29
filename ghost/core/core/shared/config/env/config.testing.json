@@ -14,6 +14,9 @@
     "logging": {
         "level": "error"
     },
+    "security": {
+        "staffDeviceVerification": false
+    },
     "spam": {
         "user_login": {
             "minWait": 600000,

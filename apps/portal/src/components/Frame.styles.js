@@ -7,7 +7,7 @@ import {GlobalStyles} from './Global.styles';
 import {ActionButtonStyles} from './common/ActionButton';
 import {BackButtonStyles} from './common/BackButton';
 import {SwitchStyles} from './common/Switch';
-import AccountHomePageStyles from './pages/AccountHomePage/AccountHomePage.css';
+import AccountHomePageStyles from './pages/AccountHomePage/AccountHomePage.css?inline';
 import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
@@ -17,12 +17,13 @@ import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';
 import {FeedbackPageStyles} from './pages/FeedbackPage';
-import EmailSuppressedPage from './pages/EmailSuppressedPage.css';
-import EmailSuppressionFAQ from './pages/EmailSuppressionFAQ.css';
-import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css';
+import EmailSuppressedPage from './pages/EmailSuppressedPage.css?inline';
+import EmailSuppressionFAQ from './pages/EmailSuppressionFAQ.css?inline';
+import EmailReceivingFAQ from './pages/EmailReceivingFAQ.css?inline';
 import {TipsAndDonationsSuccessStyle} from './pages/SupportSuccess';
 import {TipsAndDonationsErrorStyle} from './pages/SupportError';
 import {RecommendationsPageStyles} from './pages/RecommendationsPage';
+import NotificationStyle from './Notification.styles';
 
 // Global styles
 const FrameStyles = `
@@ -998,7 +999,7 @@ const MobileStyles = `
         margin-bottom: 0;
     }
 
-    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message {
+    .preview .gh-portal-invite-only-notification + .gh-portal-signup-message, .preview .gh-portal-paid-members-only-notification + .gh-portal-signup-message {
         margin-bottom: 16px;
     }
 
@@ -1275,6 +1276,7 @@ export function getFrameStyles({site}) {
         MagicLinkStyles +
         SignupPageStyles +
         OfferPageStyles({site}) +
+        NotificationStyle +
         PopupNotificationStyles +
         MobileStyles +
         MultipleProductsGlobalStyles +

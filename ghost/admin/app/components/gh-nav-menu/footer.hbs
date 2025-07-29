@@ -106,11 +106,11 @@
             </GhBasicDropdown>
         </div>
         <div class="flex items-center pe-all">
-            {{#if (or (gh-user-can-admin this.session.user) this.session.user.isEditor)}}
+            {{#if (or (gh-user-can-admin this.session.user) this.session.user.isEitherEditor)}}
                 <LinkTo class="gh-nav-bottom-tabicon" @route="settings-x" @current-when={{this.isSettingsRoute}} data-test-nav="settings">{{svg-jar "settings" title="Settings (CTRL/⌘ + ,)"}}</LinkTo>
             {{/if}}
             <div class="nightshift-toggle-container">
-                <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{action (toggle "nightShift" this.feature)}}>
+                <div class="nightshift-toggle {{if this.feature.nightShift "on"}}" {{on "click" this.toggleNightShift}} role="button">
                     <div class="sun">{{svg-jar "sun"}}</div>
                     <div class="moon">{{svg-jar "moon"}}</div>
                     <div class="thumb"></div>

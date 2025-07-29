@@ -4,6 +4,7 @@ import PostSuccessModal from '../modal-post-success';
 import anime from 'animejs/lib/anime.es.js';
 import {action} from '@ember/object';
 import {didCancel, task} from 'ember-concurrency';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -30,6 +31,9 @@ export default class Analytics extends Component {
     @service router;
     @service modals;
     @service notifications;
+    @service session;
+
+    @inject config;
 
     @tracked sources = null;
     @tracked links = null;
@@ -197,39 +201,19 @@ export default class Analytics extends Component {
     }
 
     updateLinkData(linksData) {
-        let updatedLinks;
-        if (this.links?.length) {
-            updatedLinks = this.links.map((link) => {
-                let linkData = linksData.find(l => l.link.link_id === link.link.link_id);
-                if (linkData) {
-                    return {
-                        ...linkData,
-                        link: {
-                            ...linkData.link,
-                            originalTo: linkData.link.to,
-                            to: this.utils.cleanTrackedUrl(linkData.link.to, false),
-                            title: this.utils.cleanTrackedUrl(linkData.link.to, true)
-                        }
-                    };
+        let cleanedLinks = linksData.map((link) => {
+            return {
+                ...link,
+                link: {
+                    ...link.link,
+                    originalTo: link.link.to,
+                    to: this.utils.cleanTrackedUrl(link.link.to, false),
+                    title: this.utils.cleanTrackedUrl(link.link.to, true)
                 }
-                return link;
-            });
-        } else {
-            updatedLinks = linksData.map((link) => {
-                return {
-                    ...link,
-                    link: {
-                        ...link.link,
-                        originalTo: link.link.to,
-                        to: this.utils.cleanTrackedUrl(link.link.to, false),
-                        title: this.utils.cleanTrackedUrl(link.link.to, true)
-                    }
-                };
-            });
-        }
+            };
+        });
 
-        // Remove duplicates by title ad merge
-        const linksByTitle = updatedLinks.reduce((acc, link) => {
+        const linksByTitle = cleanedLinks.reduce((acc, link) => {
             if (!acc[link.link.title]) {
                 acc[link.link.title] = link;
             } else {
@@ -245,7 +229,11 @@ export default class Analytics extends Component {
             return acc;
         }, {});
 
-        this.links = Object.values(linksByTitle);
+        this.links = Object.values(linksByTitle).sort((a, b) => {
+            const aClicks = a.count?.clicks || 0;
+            const bClicks = b.count?.clicks || 0;
+            return bClicks - aClicks;
+        });
     }
 
     async fetchReferrersStats() {

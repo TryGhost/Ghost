@@ -1,4 +1,4 @@
-import {Activity, ActivityPubAPI} from './activitypub';
+import {ActivityPubAPI} from './activitypub';
 
 function NotFound() {
     return new Response(null, {
@@ -35,749 +35,6 @@ function Fetch(specs: Record<string, Spec>) {
 }
 
 describe('ActivityPubAPI', function () {
-    describe('getInbox', function () {
-        test('It passes the token to the inbox endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/inbox/index': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'Collection',
-                        items: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getInbox();
-        });
-
-        test('Returns an empty array when the inbox is empty', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/inbox/index': {
-                    response: JSONResponse({
-                        type: 'Collection',
-                        items: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getInbox();
-            const expected: never[] = [];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('Returns all the items array when the inbox is not empty', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/inbox/index': {
-                    response:
-                     JSONResponse({
-                         type: 'Collection',
-                         orderedItems: [{
-                             type: 'Create',
-                             object: {
-                                 type: 'Note'
-                             }
-                         }]
-                     })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getInbox();
-            const expected: Activity[] = [
-                {
-                    type: 'Create',
-                    object: {
-                        type: 'Note'
-                    }
-                }
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('Returns an array when the orderedItems key is a single object', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/inbox/index': {
-                    response:
-                     JSONResponse({
-                         type: 'Collection',
-                         orderedItems: {
-                             type: 'Create',
-                             object: {
-                                 type: 'Note'
-                             }
-                         }
-                     })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getInbox();
-            const expected: Activity[] = [
-                {
-                    type: 'Create',
-                    object: {
-                        type: 'Note'
-                    }
-                }
-            ];
-
-            expect(actual).toEqual(expected);
-        });
-    });
-
-    describe('getOutbox', function () {
-        test('It passes the token to the outbox collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getOutbox();
-        });
-
-        test('It returns an array of activities in the outbox collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/activity/1'},
-                            {id: 'https://example.com/activity/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/activity/1'},
-                {id: 'https://example.com/activity/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/outbox/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/outbox/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getOutbox();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
-    describe('getFollowing', function () {
-        test('It passes the token to the following collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/following/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getFollowing();
-        });
-
-        test('It returns an array of actors in the following collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/following/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/person/1'},
-                            {id: 'https://example.com/person/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/person/1'},
-                {id: 'https://example.com/person/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/following/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/following/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/following/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/following/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowing();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
-    describe('getFollowers', function () {
-        test('It passes the token to the followers collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/followers/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getFollowers();
-        });
-
-        test('It returns an array of actors in the followers collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/followers/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/person/1'},
-                            {id: 'https://example.com/person/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/person/1'},
-                {id: 'https://example.com/person/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/followers/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/followers/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/followers/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/followers/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getFollowers();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
-    describe('getLiked', function () {
-        test('It passes the token to the liked collection endpoint', async function () {
-            const fakeFetch = Fetch({
-                'https://auth.api/': {
-                    response: JSONResponse({
-                        identities: [{
-                            token: 'fake-token'
-                        }]
-                    })
-                },
-                'https://activitypub.api/.ghost/activitypub/liked/index?cursor=0': {
-                    async assert(_resource, init) {
-                        const headers = new Headers(init?.headers);
-                        expect(headers.get('Authorization')).toContain('fake-token');
-                    },
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: []
-                    })
-                }
-            });
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            await api.getLiked();
-        });
-
-        test('It returns an array of liked activities in the liked collection', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [
-                            {id: 'https://example.com/activity/1'},
-                            {id: 'https://example.com/activity/2'}
-                        ],
-                        next: null
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.data).toEqual([
-                {id: 'https://example.com/activity/1'},
-                {id: 'https://example.com/activity/2'}
-            ]);
-        });
-
-        test('It returns next if it is present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({
-                        type: 'OrderedCollection',
-                        orderedItems: [],
-                        next: 'https://activitypub.api/.ghost/activitypub/following/index?cursor=2'
-                    })
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.next).toEqual('2');
-        });
-
-        test('It returns a default return value when the response is null', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse(null)
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns a default return value if orderedItems is not present in the response', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-            const expected = {
-                data: [],
-                next: null
-            };
-
-            expect(actual).toEqual(expected);
-        });
-
-        test('It returns an empty array if orderedItems in the response is not an array', async function () {
-            const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/liked/index?cursor=0`]: {
-                    response: JSONResponse({})
-                }
-            });
-
-            const api = new ActivityPubAPI(
-                new URL('https://activitypub.api'),
-                new URL('https://auth.api'),
-                'index',
-                fakeFetch
-            );
-
-            const actual = await api.getLiked();
-
-            expect(actual.data).toEqual([]);
-        });
-    });
-
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({
@@ -788,7 +45,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                'https://activitypub.api/.ghost/activitypub/actions/follow/@user@domain.com': {
+                'https://activitypub.api/.ghost/activitypub/v1/actions/follow/@user@domain.com': {
                     async assert(_resource, init) {
                         const headers = new Headers(init?.headers);
                         expect(headers.get('Authorization')).toContain('fake-token');
@@ -810,13 +67,16 @@ describe('ActivityPubAPI', function () {
     describe('note', function () {
         test('It creates a note and returns it', async function () {
             const fakeFetch = Fetch({
-                [`https://activitypub.api/.ghost/activitypub/actions/note`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
                     async assert(_resource, init) {
                         expect(init?.method).toEqual('POST');
                         expect(init?.body).toEqual('{"content":"Hello, world!"}');
                     },
                     response: JSONResponse({
-                        id: 'https://example.com/note/abc123'
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!'
+                        }
                     })
                 }
             });
@@ -831,7 +91,103 @@ describe('ActivityPubAPI', function () {
             const result = await api.note('Hello, world!');
 
             expect(result).toEqual({
-                id: 'https://example.com/note/abc123'
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!'
+            });
+        });
+
+        test('It creates a note with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/note`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Test alt text"}}');
+                    },
+                    response: JSONResponse({
+                        post: {
+                            id: 'https://example.com/note/abc123',
+                            content: 'Hello, world!',
+                            image: 'https://example.com/image.jpg'
+                        }
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.note('Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Test alt text'});
+
+            expect(result).toEqual({
+                id: 'https://example.com/note/abc123',
+                content: 'Hello, world!',
+                image: 'https://example.com/image.jpg'
+            });
+        });
+    });
+
+    describe('reply', function () {
+        test('It creates a reply and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!"}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!');
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123'
+            });
+        });
+
+        test('It creates a reply with image and returns it', async function () {
+            const fakeFetch = Fetch({
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/reply/123`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                        expect(init?.body).toEqual('{"content":"Hello, world!","image":{"url":"https://example.com/image.jpg","altText":"Reply image alt text"}}');
+                    },
+                    response: JSONResponse({
+                        id: 'https://example.com/reply/abc123',
+                        content: 'Hello, world!',
+                        inReplyTo: '123',
+                        image: 'https://example.com/image.jpg'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.reply('123', 'Hello, world!', {url: 'https://example.com/image.jpg', altText: 'Reply image alt text'});
+
+            expect(result).toEqual({
+                id: 'https://example.com/reply/abc123',
+                content: 'Hello, world!',
+                inReplyTo: '123',
+                image: 'https://example.com/image.jpg'
             });
         });
     });
@@ -848,9 +204,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({
-                        profiles: [
+                        accounts: [
                             {
                                 handle,
                                 name: 'Foo Bar'
@@ -869,7 +225,7 @@ describe('ActivityPubAPI', function () {
 
             const actual = await api.search(handle);
             const expected = {
-                profiles: [
+                accounts: [
                     {
                         handle,
                         name: 'Foo Bar'
@@ -880,7 +236,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('It returns an empty array when there are no profiles in the response', async function () {
+        test('It returns an empty array when there are no accounts in the response', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -891,7 +247,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/actions/search?query=${encodeURIComponent(handle)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/search?query=${encodeURIComponent(handle)}`]: {
                     response: JSONResponse({})
                 }
             });
@@ -905,16 +261,16 @@ describe('ActivityPubAPI', function () {
 
             const actual = await api.search(handle);
             const expected = {
-                profiles: []
+                accounts: []
             };
 
             expect(actual).toEqual(expected);
         });
     });
 
-    describe('getProfile', function () {
-        test('It returns a profile', async function () {
-            const handle = '@foo@bar.baz';
+    describe('getThread', function () {
+        test('It returns a thread', async function () {
+            const activityId = 'https://example.com/thread/abc123';
 
             const fakeFetch = Fetch({
                 'https://auth.api/': {
@@ -924,9 +280,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/thread/${encodeURIComponent(activityId)}`]: {
                     response: JSONResponse({
-                        handle,
+                        id: activityId,
                         name: 'Foo Bar'
                     })
                 }
@@ -939,9 +295,9 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getProfile(handle);
+            const actual = await api.getThread(activityId);
             const expected = {
-                handle,
+                id: activityId,
                 name: 'Foo Bar'
             };
 
@@ -949,10 +305,8 @@ describe('ActivityPubAPI', function () {
         });
     });
 
-    describe('getFollowersForProfile', function () {
-        test('It returns an array of followers for a profile', async function () {
-            const handle = '@foo@bar.baz';
-
+    describe('getFeed', function () {
+        test('It returns an array of posts', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -961,20 +315,14 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
-                        followers: [
+                        posts: [
                             {
-                                actor: {
-                                    id: 'https://example.com/users/bar'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/abc123'
                             },
                             {
-                                actor: {
-                                    id: 'https://example.com/users/baz'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/def456'
                             }
                         ],
                         next: null
@@ -989,27 +337,19 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getFeed();
 
-            expect(actual.followers).toEqual([
+            expect(actual.posts).toEqual([
                 {
-                    actor: {
-                        id: 'https://example.com/users/bar'
-                    },
-                    isFollowing: false
+                    id: 'https://example.com/posts/abc123'
                 },
                 {
-                    actor: {
-                        id: 'https://example.com/users/baz'
-                    },
-                    isFollowing: false
+                    id: 'https://example.com/posts/def456'
                 }
             ]);
         });
 
         test('It returns next if it is present in the response', async function () {
-            const handle = '@foo@bar.baz';
-
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1018,9 +358,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
-                        followers: [],
+                        posts: [],
                         next: 'abc123'
                     })
                 }
@@ -1033,13 +373,11 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
-
+            const actual = await api.getFeed();
             expect(actual.next).toEqual('abc123');
         });
 
         test('It includes next in the query when provided', async function () {
-            const handle = '@foo@bar.baz';
             const next = 'abc123';
 
             const fakeFetch = Fetch({
@@ -1050,14 +388,11 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes?next=${next}`]: {
                     response: JSONResponse({
-                        followers: [
+                        posts: [
                             {
-                                actor: {
-                                    id: 'https://example.com/users/qux'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/def456'
                             }
                         ],
                         next: null
@@ -1072,14 +407,11 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle, next);
+            const actual = await api.getFeed(next);
             const expected = {
-                followers: [
+                posts: [
                     {
-                        actor: {
-                            id: 'https://example.com/users/qux'
-                        },
-                        isFollowing: false
+                        id: 'https://example.com/posts/def456'
                     }
                 ],
                 next: null
@@ -1089,8 +421,6 @@ describe('ActivityPubAPI', function () {
         });
 
         test('It returns a default return value when the response is null', async function () {
-            const handle = '@foo@bar.baz';
-
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1099,7 +429,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1111,18 +441,16 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getFeed();
             const expected = {
-                followers: [],
+                posts: [],
                 next: null
             };
 
             expect(actual).toEqual(expected);
         });
 
-        test('It returns a default return value if followers is not present in the response', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns a default return value if posts is not present in the response', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1131,7 +459,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1143,18 +471,16 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
+            const actual = await api.getFeed();
             const expected = {
-                followers: [],
+                posts: [],
                 next: null
             };
 
             expect(actual).toEqual(expected);
         });
 
-        test('It returns an empty array of followers if followers in the response is not an array', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1163,9 +489,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/followers`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/notes`]: {
                     response: JSONResponse({
-                        followers: []
+                        posts: []
                     })
                 }
             });
@@ -1177,16 +503,13 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowersForProfile(handle);
-
-            expect(actual.followers).toEqual([]);
+            const actual = await api.getFeed();
+            expect(actual.posts).toEqual([]);
         });
     });
 
-    describe('getFollowingForProfile', function () {
-        test('It returns an array of following actors for a profile', async function () {
-            const handle = '@foo@bar.baz';
-
+    describe('getInbox', function () {
+        test('It returns an array of posts', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1195,20 +518,14 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
-                        following: [
+                        posts: [
                             {
-                                actor: {
-                                    id: 'https://example.com/users/bar'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/abc123'
                             },
                             {
-                                actor: {
-                                    id: 'https://example.com/users/baz'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/def456'
                             }
                         ],
                         next: null
@@ -1223,27 +540,19 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle);
+            const actual = await api.getInbox();
 
-            expect(actual.following).toEqual([
+            expect(actual.posts).toEqual([
                 {
-                    actor: {
-                        id: 'https://example.com/users/bar'
-                    },
-                    isFollowing: false
+                    id: 'https://example.com/posts/abc123'
                 },
                 {
-                    actor: {
-                        id: 'https://example.com/users/baz'
-                    },
-                    isFollowing: false
+                    id: 'https://example.com/posts/def456'
                 }
             ]);
         });
 
         test('It returns next if it is present in the response', async function () {
-            const handle = '@foo@bar.baz';
-
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1252,9 +561,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
-                        following: [],
+                        posts: [],
                         next: 'abc123'
                     })
                 }
@@ -1267,13 +576,12 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle);
+            const actual = await api.getInbox();
 
             expect(actual.next).toEqual('abc123');
         });
 
         test('It includes next in the query when provided', async function () {
-            const handle = '@foo@bar.baz';
             const next = 'abc123';
 
             const fakeFetch = Fetch({
@@ -1284,14 +592,11 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader?next=${next}`]: {
                     response: JSONResponse({
-                        following: [
+                        posts: [
                             {
-                                actor: {
-                                    id: 'https://example.com/users/qux'
-                                },
-                                isFollowing: false
+                                id: 'https://example.com/posts/def456'
                             }
                         ],
                         next: null
@@ -1306,14 +611,11 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle, next);
+            const actual = await api.getInbox(next);
             const expected = {
-                following: [
+                posts: [
                     {
-                        actor: {
-                            id: 'https://example.com/users/qux'
-                        },
-                        isFollowing: false
+                        id: 'https://example.com/posts/def456'
                     }
                 ],
                 next: null
@@ -1323,8 +625,6 @@ describe('ActivityPubAPI', function () {
         });
 
         test('It returns a default return value when the response is null', async function () {
-            const handle = '@foo@bar.baz';
-
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1333,7 +633,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1345,18 +645,16 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle);
+            const actual = await api.getInbox();
             const expected = {
-                following: [],
+                posts: [],
                 next: null
             };
 
             expect(actual).toEqual(expected);
         });
 
-        test('It returns a default return value if following is not present in the response', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns a default return value if posts is not present in the response', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1365,7 +663,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1377,18 +675,16 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle);
+            const actual = await api.getInbox();
             const expected = {
-                following: [],
+                posts: [],
                 next: null
             };
 
             expect(actual).toEqual(expected);
         });
 
-        test('It returns an empty following array if following in the response is not an array', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1397,9 +693,9 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/following`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/feed/reader`]: {
                     response: JSONResponse({
-                        following: []
+                        posts: []
                     })
                 }
             });
@@ -1411,14 +707,217 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getFollowingForProfile(handle);
+            const actual = await api.getInbox();
 
-            expect(actual.following).toEqual([]);
+            expect(actual.posts).toEqual([]);
         });
     });
 
-    describe('getPostsForProfile', function () {
-        test('It returns an array of posts for a profile', async function () {
+    describe('getPostsByAccount', function () {
+        test('It returns an array of posts', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me');
+
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me');
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me', next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me');
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me');
+            const expected = {
+                posts: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me`]: {
+                    response: JSONResponse({
+                        posts: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsByAccount('me');
+
+            expect(actual.posts).toEqual([]);
+        });
+
+        test('It returns an array of posts for a remote profile', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -1429,7 +928,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
                     response: JSONResponse({
                         posts: [
                             {
@@ -1461,7 +960,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getPostsByAccount(handle);
 
             expect(actual.posts).toEqual([
                 {
@@ -1482,8 +981,7 @@ describe('ActivityPubAPI', function () {
                 }
             ]);
         });
-
-        test('It returns next if it is present in the response', async function () {
+        test('It returns a default return value when the response is null for remote profile', async function () {
             const handle = '@foo@bar.baz';
 
             const fakeFetch = Fetch({
@@ -1494,11 +992,8 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts`]: {
-                    response: JSONResponse({
-                        posts: [],
-                        next: 'abc123'
-                    })
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/${handle}`]: {
+                    response: JSONResponse(null)
                 }
             });
 
@@ -1509,15 +1004,18 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getPostsByAccount(handle);
+            const expected = {
+                posts: [],
+                next: null
+            };
 
-            expect(actual.next).toEqual('abc123');
+            expect(actual).toEqual(expected);
         });
+    });
 
-        test('It includes next in the query when provided', async function () {
-            const handle = '@foo@bar.baz';
-            const next = 'abc123';
-
+    describe('getPostsLikedByAccount', function () {
+        test('It returns an array of posts', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1526,16 +1024,14 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts?next=${next}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: [
                             {
-                                actor: {
-                                    id: 'https://example.com/users/bar'
-                                },
-                                object: {
-                                    content: 'Hello, world!'
-                                }
+                                id: 'https://example.com/posts/abc123'
+                            },
+                            {
+                                id: 'https://example.com/posts/def456'
                             }
                         ],
                         next: null
@@ -1550,26 +1046,49 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle, next);
-            const expected = {
-                posts: [
-                    {
-                        actor: {
-                            id: 'https://example.com/users/bar'
-                        },
-                        object: {
-                            content: 'Hello, world!'
-                        }
-                    }
-                ],
-                next: null
-            };
+            const actual = await api.getPostsLikedByAccount();
 
-            expect(actual).toEqual(expected);
+            expect(actual.posts).toEqual([
+                {
+                    id: 'https://example.com/posts/abc123'
+                },
+                {
+                    id: 'https://example.com/posts/def456'
+                }
+            ]);
         });
 
-        test('It returns a default return value when the response is null', async function () {
-            const handle = '@foo@bar.baz';
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
+                    response: JSONResponse({
+                        posts: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount();
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
 
             const fakeFetch = Fetch({
                 'https://auth.api/': {
@@ -1579,7 +1098,48 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked?next=${next}`]: {
+                    response: JSONResponse({
+                        posts: [
+                            {
+                                id: 'https://example.com/posts/def456'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPostsLikedByAccount(next);
+            const expected = {
+                posts: [
+                    {
+                        id: 'https://example.com/posts/def456'
+                    }
+                ],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse(null)
                 }
             });
@@ -1591,7 +1151,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getPostsLikedByAccount();
             const expected = {
                 posts: [],
                 next: null
@@ -1600,9 +1160,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('It returns a default return value if followers is not present in the response', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns a default return value if posts is not present in the response', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1611,7 +1169,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({})
                 }
             });
@@ -1623,7 +1181,7 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getPostsLikedByAccount();
             const expected = {
                 posts: [],
                 next: null
@@ -1632,9 +1190,7 @@ describe('ActivityPubAPI', function () {
             expect(actual).toEqual(expected);
         });
 
-        test('It returns an empty array of followers if followers in the response is not an array', async function () {
-            const handle = '@foo@bar.baz';
-
+        test('It returns an empty array of posts if posts in the response is not an array', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1643,7 +1199,7 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/profile/${handle}/posts`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/posts/me/liked`]: {
                     response: JSONResponse({
                         posts: []
                     })
@@ -1657,16 +1213,14 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getPostsForProfile(handle);
+            const actual = await api.getPostsLikedByAccount();
 
             expect(actual.posts).toEqual([]);
         });
     });
 
-    describe('getThread', function () {
-        test('It returns a thread', async function () {
-            const activityId = 'https://example.com/thread/abc123';
-
+    describe('getNotifications', function () {
+        test('It returns an array of notifications', async function () {
             const fakeFetch = Fetch({
                 'https://auth.api/': {
                     response: JSONResponse({
@@ -1675,10 +1229,19 @@ describe('ActivityPubAPI', function () {
                         }]
                     })
                 },
-                [`https://activitypub.api/.ghost/activitypub/thread/${encodeURIComponent(activityId)}`]: {
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
                     response: JSONResponse({
-                        id: activityId,
-                        name: 'Foo Bar'
+                        notifications: [
+                            {
+                                id: 'https://example.com/notifications/abc123',
+                                type: 'like'
+                            },
+                            {
+                                id: 'https://example.com/notifications/def456',
+                                type: 'reply'
+                            }
+                        ],
+                        next: null
                     })
                 }
             });
@@ -1690,13 +1253,347 @@ describe('ActivityPubAPI', function () {
                 fakeFetch
             );
 
-            const actual = await api.getThread(activityId);
+            const actual = await api.getNotifications();
+
+            expect(actual.notifications).toEqual([
+                {
+                    id: 'https://example.com/notifications/abc123',
+                    type: 'like'
+                },
+                {
+                    id: 'https://example.com/notifications/def456',
+                    type: 'reply'
+                }
+            ]);
+        });
+
+        test('It returns next if it is present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
+                    response: JSONResponse({
+                        notifications: [],
+                        next: 'abc123'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotifications();
+
+            expect(actual.next).toEqual('abc123');
+        });
+
+        test('It includes next in the query when provided', async function () {
+            const next = 'abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications?next=${next}`]: {
+                    response: JSONResponse({
+                        notifications: [
+                            {
+                                id: 'https://example.com/notifications/def456',
+                                type: 'like'
+                            }
+                        ],
+                        next: null
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotifications(next);
             const expected = {
-                id: activityId,
-                name: 'Foo Bar'
+                notifications: [
+                    {
+                        id: 'https://example.com/notifications/def456',
+                        type: 'like'
+                    }
+                ],
+                next: null
             };
 
             expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotifications();
+            const expected = {
+                notifications: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns a default return value if posts is not present in the response', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotifications();
+            const expected = {
+                notifications: [],
+                next: null
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns an empty array of notifications if notifications in the response is not an array', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications`]: {
+                    response: JSONResponse({
+                        notifications: []
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotifications();
+
+            expect(actual.notifications).toEqual([]);
+        });
+    });
+
+    describe('getPost', function () {
+        test('It returns a post', async function () {
+            const postId = 'https://example.com/posts/abc123';
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/post/${encodeURIComponent(postId)}`]: {
+                    response: JSONResponse({
+                        id: postId,
+                        title: 'Foo Bar Baz'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getPost(postId);
+            const expected = {
+                id: postId,
+                title: 'Foo Bar Baz'
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('updateAccount', function () {
+        test('It updates an account', async function () {
+            const data = {
+                name: 'Foo Bar Baz',
+                username: 'foo-bar-baz',
+                bio: 'Just a foo bar baz',
+                avatarUrl: 'https://example.com/avatar.png',
+                bannerImageUrl: 'https://example.com/banner.png'
+            };
+
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/account`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify(data));
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.updateAccount(data);
+        });
+    });
+
+    describe('getNotificationsCount', function () {
+        test('It returns the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
+                    response: JSONResponse({
+                        count: 5
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 5
+            };
+
+            expect(actual).toEqual(expected);
+        });
+
+        test('It returns zero count when the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/count`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const actual = await api.getNotificationsCount();
+            const expected = {
+                count: 0
+            };
+
+            expect(actual).toEqual(expected);
+        });
+    });
+
+    describe('resetNotificationsCount', function () {
+        test('It resets the notifications count', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/notifications/unread/reset`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                    },
+                    response: JSONResponse({})
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.resetNotificationsCount();
+            expect(result).toBe(true);
         });
     });
 });

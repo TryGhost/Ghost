@@ -46,6 +46,14 @@ async function assertSubscription(subscriptionId, asserts) {
     models.Base.Model.prototype.serialize.call(subscription).should.match(asserts);
 }
 
+// Helper methods to update the customer and subscription
+function set(object, newValues) {
+    for (const key of Object.keys(object)) {
+        delete object[key];
+    }
+    Object.assign(object, newValues);
+}
+
 describe('Members API', function () {
     // @todo: Test what happens when a complimentary subscription ends (should create comped -> free event)
     // @todo: Test what happens when a complimentary subscription starts a paid subscription
@@ -120,6 +128,21 @@ describe('Members API', function () {
                     return [200, coupon];
                 }
 
+                if (resource === 'prices') {
+                    return [200, {
+                        id: 'price_123',
+                        product: 'product_123',
+                        active: true,
+                        nickname: 'month',
+                        currency: 'usd',
+                        recurring: {
+                            interval: 'month'
+                        },
+                        unit_amount: 150,
+                        type: 'recurring'
+                    }];
+                }
+
                 return [500];
             });
 
@@ -129,14 +152,6 @@ describe('Members API', function () {
     afterEach(function () {
         mockManager.restore();
     });
-
-    // Helper methods to update the customer and subscription
-    function set(object, newValues) {
-        for (const key of Object.keys(object)) {
-            delete object[key];
-        }
-        Object.assign(object, newValues);
-    }
 
     describe('/webhooks/stripe/', function () {
         before(async function () {
@@ -1855,7 +1870,7 @@ describe('Members API', function () {
                 });
         });
 
-        async function testAttributionOnSignup(attribution, attributionResource) {
+        async function testWithAttribution(attribution, attributionResource) {
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
 
@@ -1900,31 +1915,7 @@ describe('Members API', function () {
                 }
             });
 
-            // Stripe first sends a customer.subscription.created webhook
-            const subscriptionWebhookPayload = JSON.stringify({
-                type: 'customer.subscription.created',
-                data: {
-                    object: subscription
-                }
-            });
-
-            const subscriptionWebhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: subscriptionWebhookPayload,
-                secret: process.env.WEBHOOK_SECRET
-            });
-
-            await membersAgent.post('/webhooks/stripe/')
-                .body(subscriptionWebhookPayload)
-                .header('content-type', 'application/json')
-                .header('stripe-signature', subscriptionWebhookSignature)
-                .expectStatus(200);
-
-            // This should not create a member in the database yet
-            const {body: bodyAfterSubscriptionWebhook} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
-            assert.equal(bodyAfterSubscriptionWebhook.members.length, 0, 'A member was created before the checkout.session.completed webhook was sent');
-
-            // Then it sends a checkout.session.completed webhook
-            const checkoutWebhookPayload = JSON.stringify({
+            let webhookPayload = JSON.stringify({
                 type: 'checkout.session.completed',
                 data: {
                     object: {
@@ -1940,15 +1931,15 @@ describe('Members API', function () {
                 }
             });
 
-            const checkoutWebhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: checkoutWebhookPayload,
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
                 secret: process.env.WEBHOOK_SECRET
             });
 
             await membersAgent.post('/webhooks/stripe/')
-                .body(checkoutWebhookPayload)
+                .body(webhookPayload)
                 .header('content-type', 'application/json')
-                .header('stripe-signature', checkoutWebhookSignature)
+                .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
             const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
@@ -1970,9 +1961,9 @@ describe('Members API', function () {
                         subscription_id: subscriptionModel.id,
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null
                     }
                 ]
             });
@@ -1990,9 +1981,9 @@ describe('Members API', function () {
                         created_at: memberModel.get('created_at'),
 
                         // Defaults if attribution is not set
-                        attribution_id: attribution?.id ?? null,
-                        attribution_url: attribution?.url ?? null,
-                        attribution_type: attribution?.type ?? null,
+                        attribution_id: attribution?.id || null,
+                        attribution_url: attribution?.url || null,
+                        attribution_type: attribution?.type || null,
                         source: 'member'
                     }
                 ]
@@ -2017,26 +2008,177 @@ describe('Members API', function () {
             return memberModel;
         }
 
-        async function testAttributionOnUpgrade(attribution, attributionResource) {
+        const subscriptionAttributions = [];
+
+        it('Creates a SubscriptionCreatedEvent with url attribution', async function () {
+            // This mainly tests for nullable fields being set to null and handled correctly
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/', true);
+
+            await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: 'homepage',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with post attribution', async function () {
+            const id = fixtureManager.get('posts', 0).id;
+            const post = await models.Post.where('id', id).fetch({require: true});
+
+            const attribution = {
+                id: post.id,
+                url: '/out-of-date-url/',
+                type: 'post'
+            };
+
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+            await testWithAttribution(attribution, {
+                id: post.id,
+                url: absoluteUrl,
+                type: 'post',
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with deleted post attribution', async function () {
+            const attribution = {
+                id: 'doesnt-exist-anylonger',
+                url: '/removed-blog-post/',
+                type: 'post'
+            };
+
+            const absoluteUrl = urlUtils.createUrl('/removed-blog-post/', true);
+
+            await testWithAttribution(attribution, {
+                id: null,
+                url: absoluteUrl,
+                type: 'url',
+                title: '/removed-blog-post/',
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with page attribution', async function () {
+            const id = fixtureManager.get('posts', 5).id;
+            const post = await models.Post.where('id', id).fetch({require: true});
+
+            const attribution = {
+                id: post.id,
+                url: '/out-of-date-url/',
+                type: 'page'
+            };
+
+            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+
+            await testWithAttribution(attribution, {
+                id: post.id,
+                url: absoluteUrl,
+                type: 'page',
+                title: post.get('title'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with tag attribution', async function () {
+            const id = fixtureManager.get('tags', 0).id;
+            const tag = await models.Tag.where('id', id).fetch({require: true});
+
+            const attribution = {
+                id: tag.id,
+                url: '/out-of-date-url/',
+                type: 'tag'
+            };
+
+            const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
+
+            await testWithAttribution(attribution, {
+                id: tag.id,
+                url: absoluteUrl,
+                type: 'tag',
+                title: tag.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with author attribution', async function () {
+            const id = fixtureManager.get('users', 0).id;
+            const author = await models.User.where('id', id).fetch({require: true});
+
+            const attribution = {
+                id: author.id,
+                url: '/out-of-date-url/',
+                type: 'author'
+            };
+
+            const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
+
+            await testWithAttribution(attribution, {
+                id: author.id,
+                url: absoluteUrl,
+                type: 'author',
+                title: author.get('name'),
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent without attribution', async function () {
+            const attribution = undefined;
+            await testWithAttribution(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
+            // Shouldn't happen, but to make sure we handle it
+            const attribution = {};
+            await testWithAttribution(attribution, {
+                id: null,
+                url: null,
+                type: null,
+                title: null,
+                referrer_source: null,
+                referrer_medium: null,
+                referrer_url: null
+            });
+        });
+
+        it('The customer.subscription.created webhook should set the attribution metadata', async function () {
+            // set up all necessary resources
             const customer_id = createStripeID('cust');
             const subscription_id = createStripeID('sub');
-
-            const interval = 'month';
-            const unit_amount = 150;
-
-            // Create initial free member
-            const initialFreeMember = await models.Member.add({
-                email: `${customer_id}@email.com`,
-                status: 'free',
-                email_disabled: false
-            });
-
-            // Create a Stripe Customer too for the free member, as this is created during Stripe Checkout, i.e. before receiving Stripe webhooks
-            await models.MemberStripeCustomer.add({
-                member_id: initialFreeMember.id,
-                customer_id: customer_id,
-                email: initialFreeMember.get('email')
-            });
+            const attribution = {
+                id: null,
+                url: '/',
+                type: 'url'
+            };
 
             set(subscription, {
                 id: subscription_id,
@@ -2050,12 +2192,12 @@ describe('Members API', function () {
                             id: 'price_123',
                             product: 'product_123',
                             active: true,
-                            nickname: interval,
+                            nickname: 'month',
                             currency: 'usd',
                             recurring: {
-                                interval
+                                interval: 'month'
                             },
-                            unit_amount,
+                            unit_amount: 150,
                             type: 'recurring'
                         }
                     }]
@@ -2063,7 +2205,11 @@ describe('Members API', function () {
                 start_date: beforeNow / 1000,
                 current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
                 cancel_at_period_end: false,
-                metadata: {}
+                metadata: { // set the attribution on the subscription
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
             });
 
             set(customer, {
@@ -2076,66 +2222,43 @@ describe('Members API', function () {
                 }
             });
 
-            // Stripe first sends a customer.subscription.created webhook
-            const subscriptionWebhookPayload = JSON.stringify({
+            const memberData = {
+                name: 'test',
+                email: 'memberTestAdd@test.com',
+                subscribed: false,
+                stripe_customer_id: customer_id
+            };
+    
+            // create our free member
+            const res = await adminAgent
+                .post(`/members/`)
+                .body({members: [memberData]})
+                .expectStatus(201);
+            let member = res.body.members[0];
+
+            let webhookPayload = JSON.stringify({
                 type: 'customer.subscription.created',
                 data: {
                     object: subscription
                 }
             });
 
-            const subscriptionWebhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: subscriptionWebhookPayload,
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
                 secret: process.env.WEBHOOK_SECRET
             });
 
             await membersAgent.post('/webhooks/stripe/')
-                .body(subscriptionWebhookPayload)
+                .body(webhookPayload)
                 .header('content-type', 'application/json')
-                .header('stripe-signature', subscriptionWebhookSignature)
+                .header('stripe-signature', webhookSignature)
                 .expectStatus(200);
 
-            // This should not create a member subscription in the database yet
-            const {body: bodyAfterSubscriptionWebhook} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
-            const memberAfterSubscriptionWebhook = bodyAfterSubscriptionWebhook.members[0];
+            const {body} = await adminAgent.get(`/members/${member.id}/`);
+            member = body.members[0]; // update member model with latest data
 
-            assert.equal(memberAfterSubscriptionWebhook.subscriptions.length, 0, 'The member should not have a subscription after customer.subscription.updated');
-            assert.equal(memberAfterSubscriptionWebhook.status, 'free', 'The member status should still be "free" after customer.subscription.updated');
-
-            // Then it sends a checkout.session.completed webhook
-            const checkoutWebhookPayload = JSON.stringify({
-                type: 'checkout.session.completed',
-                data: {
-                    object: {
-                        mode: 'subscription',
-                        customer: customer.id,
-                        subscription: subscription.id,
-                        metadata: attribution ? {
-                            attribution_id: attribution.id,
-                            attribution_url: attribution.url,
-                            attribution_type: attribution.type
-                        } : {}
-                    }
-                }
-            });
-
-            const checkoutWebhookSignature = stripe.webhooks.generateTestHeaderString({
-                payload: checkoutWebhookPayload,
-                secret: process.env.WEBHOOK_SECRET
-            });
-
-            await membersAgent.post('/webhooks/stripe/')
-                .body(checkoutWebhookPayload)
-                .header('content-type', 'application/json')
-                .header('stripe-signature', checkoutWebhookSignature)
-                .expectStatus(200);
-
-            const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
-            assert.equal(body.members.length, 1, 'The member was not created');
-            const member = body.members[0];
-
-            assert.equal(member.status, 'paid', 'The member should be "paid" after checkout.session.completed');
-            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription after checkout.session.completed');
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
             // Convert Stripe ID to internal model ID
             const subscriptionModel = await getSubscription(member.subscriptions[0].id);
@@ -2155,209 +2278,107 @@ describe('Members API', function () {
                     }
                 ]
             });
+        });
 
-            await adminAgent
-                .get(`/members/${member.id}/`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    members: new Array(1).fill(memberMatcherShallowIncludes)
-                })
-                .matchHeaderSnapshot({
-                    'content-version': anyContentVersion,
-                    etag: anyEtag
-                })
-                .expect(({body: body3}) => {
-                    should(body3.members[0].subscriptions[0].attribution).eql(attributionResource);
-                    subscriptionAttributions.push(body3.members[0].subscriptions[0].attribution);
-                });
-        }
-
-        const subscriptionAttributions = [];
-
-        it('Creates a SubscriptionCreatedEvent with url attribution', async function () {
-            // This mainly tests for nullable fields being set to null and handled correctly
+        it('The checkout.session.completed webhook should set the attribution metadata', async function () {
+            const customer_id = createStripeID('cust');
+            const subscription_id = createStripeID('sub');
             const attribution = {
                 id: null,
                 url: '/',
                 type: 'url'
             };
 
-            const absoluteUrl = urlUtils.createUrl('/', true);
+            set(subscription, {
+                id: subscription_id,
+                customer: customer_id,
+                status: 'active',
+                items: {
+                    type: 'list',
+                    data: [{
+                        id: 'item_123',
+                        price: {
+                            id: 'price_123',
+                            product: 'product_123',
+                            active: true,
+                            nickname: 'month',
+                            currency: 'usd',
+                            recurring: {
+                                interval: 'month'
+                            },
+                            unit_amount: 150,
+                            type: 'recurring'
+                        }
+                    }]
+                },
+                start_date: beforeNow / 1000,
+                current_period_end: Math.floor(beforeNow / 1000) + (60 * 60 * 24 * 31),
+                cancel_at_period_end: false,
+                metadata: {
+                    attribution_id: attribution.id,
+                    attribution_url: attribution.url,
+                    attribution_type: attribution.type
+                }
+            });
 
-            const attributionResource = {
-                id: null,
-                url: absoluteUrl,
-                type: 'url',
-                title: 'homepage',
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
+            set(customer, {
+                id: customer_id,
+                name: 'Test Member',
+                email: `${customer_id}@email.com`,
+                subscriptions: {
+                    type: 'list',
+                    data: [subscription]
+                }
+            });
 
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
+            let webhookPayload = JSON.stringify({
+                type: 'checkout.session.completed',
+                data: {
+                    object: {
+                        mode: 'subscription',
+                        customer: customer.id,
+                        subscription: subscription.id
+                    }
+                }
+            });
 
-        it('Creates a SubscriptionCreatedEvent with post attribution', async function () {
-            const id = fixtureManager.get('posts', 0).id;
-            const post = await models.Post.where('id', id).fetch({require: true});
+            let webhookSignature = stripe.webhooks.generateTestHeaderString({
+                payload: webhookPayload,
+                secret: process.env.WEBHOOK_SECRET
+            });
 
-            const attribution = {
-                id: post.id,
-                url: '/out-of-date-url/',
-                type: 'post'
-            };
+            await membersAgent.post('/webhooks/stripe/')
+                .body(webhookPayload)
+                .header('content-type', 'application/json')
+                .header('stripe-signature', webhookSignature)
+                .expectStatus(200);
 
-            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
+            const {body} = await adminAgent.get(`/members/?search=${customer_id}@email.com`);
+            assert.equal(body.members.length, 1, 'The member was not created');
+            const member = body.members[0];
 
-            const attributionResource = {
-                id: post.id,
-                url: absoluteUrl,
-                type: 'post',
-                title: post.get('title'),
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
+            assert.equal(member.status, 'paid', 'The member should be "paid"');
+            assert.equal(member.subscriptions.length, 1, 'The member should have a single subscription');
 
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
+            // Convert Stripe ID to internal model ID
+            const subscriptionModel = await getSubscription(member.subscriptions[0].id);
 
-        it('Creates a SubscriptionCreatedEvent with deleted post attribution', async function () {
-            const attribution = {
-                id: 'doesnt-exist-anylonger',
-                url: '/removed-blog-post/',
-                type: 'post'
-            };
+            // subscription created event should have attribution
+            await assertMemberEvents({
+                eventType: 'SubscriptionCreatedEvent',
+                memberId: member.id,
+                asserts: [
+                    {
+                        member_id: member.id,
+                        subscription_id: subscriptionModel.id,
 
-            const absoluteUrl = urlUtils.createUrl('/removed-blog-post/', true);
-
-            const attributionResource = {
-                id: null,
-                url: absoluteUrl,
-                type: 'url',
-                title: '/removed-blog-post/',
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
-
-        it('Creates a SubscriptionCreatedEvent with page attribution', async function () {
-            const id = fixtureManager.get('posts', 5).id;
-            const post = await models.Post.where('id', id).fetch({require: true});
-
-            const attribution = {
-                id: post.id,
-                url: '/out-of-date-url/',
-                type: 'page'
-            };
-
-            const absoluteUrl = urlService.getUrlByResourceId(post.id, {absolute: true});
-
-            const attributionResource = {
-                id: post.id,
-                url: absoluteUrl,
-                type: 'page',
-                title: post.get('title'),
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
-
-        it('Creates a SubscriptionCreatedEvent with tag attribution', async function () {
-            const id = fixtureManager.get('tags', 0).id;
-            const tag = await models.Tag.where('id', id).fetch({require: true});
-
-            const attribution = {
-                id: tag.id,
-                url: '/out-of-date-url/',
-                type: 'tag'
-            };
-
-            const absoluteUrl = urlService.getUrlByResourceId(tag.id, {absolute: true});
-
-            const attributionResource = {
-                id: tag.id,
-                url: absoluteUrl,
-                type: 'tag',
-                title: tag.get('name'),
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
-
-        it('Creates a SubscriptionCreatedEvent with author attribution', async function () {
-            const id = fixtureManager.get('users', 0).id;
-            const author = await models.User.where('id', id).fetch({require: true});
-
-            const attribution = {
-                id: author.id,
-                url: '/out-of-date-url/',
-                type: 'author'
-            };
-
-            const absoluteUrl = urlService.getUrlByResourceId(author.id, {absolute: true});
-
-            const attributionResource = {
-                id: author.id,
-                url: absoluteUrl,
-                type: 'author',
-                title: author.get('name'),
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
-
-        it('Creates a SubscriptionCreatedEvent without attribution', async function () {
-            const attribution = undefined;
-
-            const attributionResource = {
-                id: null,
-                url: null,
-                type: null,
-                title: null,
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
-        });
-
-        it('Creates a SubscriptionCreatedEvent with empty attribution object', async function () {
-            // Shouldn't happen, but to make sure we handle it
-            const attribution = {};
-
-            const attributionResource = {
-                id: null,
-                url: null,
-                type: null,
-                title: null,
-                referrer_source: null,
-                referrer_medium: null,
-                referrer_url: null
-            };
-
-            await testAttributionOnSignup(attribution, attributionResource);
-            await testAttributionOnUpgrade(attribution, attributionResource);
+                        // Defaults if attribution is not set
+                        attribution_id: attribution?.id,
+                        attribution_url: attribution?.url,
+                        attribution_type: attribution?.type
+                    }
+                ]
+            });
         });
 
         // Activity feed
@@ -2365,17 +2386,11 @@ describe('Members API', function () {
         it('Returns subscription created attributions in activity feed', async function () {
             // Check activity feed
             await adminAgent
-                .get(`/members/events/?filter=type:subscription_event&limit=100`)
+                .get(`/members/events/?filter=type:subscription_event`)
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
-                })
-                .matchBodySnapshot({
-                    events: new Array(subscriptionAttributions.length).fill({
-                        data: anyObject,
-                        type: 'subscription_event'
-                    })
                 })
                 .expect(({body}) => {
                     should(body.events.find(e => e.type !== 'subscription_event')).be.undefined();

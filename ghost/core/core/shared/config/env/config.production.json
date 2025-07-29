@@ -16,6 +16,10 @@
         "rotation": {
             "enabled": true
         },
-        "transports": ["file", "stdout"]
+        "transports": ["file"]
+    },
+    "explore": {
+        "update_url": "https://explore.ghost.org/api/update",
+        "testimonials_url": "https://explore.ghost.org/api/testimonials"
     }
 }

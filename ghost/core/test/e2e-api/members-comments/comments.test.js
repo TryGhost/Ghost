@@ -1,15 +1,15 @@
 const assert = require('assert/strict');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, dbUtils} = require('../../utils/e2e-framework');
-const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean} = matchers;
+const {nullable, anyEtag, anyObjectId, anyLocationFor, anyISODateTime, anyErrorId, anyUuid, anyNumber, anyBoolean, stringMatching} = matchers;
 const should = require('should');
 const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
-const {mockLabsEnabled, mockLabsDisabled} = require('../../utils/e2e-framework-mock-manager');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
+let emailMockReceiver;
 
 async function getPaidProduct() {
     return await models.Product.findOne({type: 'paid'});
@@ -215,7 +215,7 @@ function testPostComment({post_id, html, parent_id, in_reply_to_id}, {status = 2
         .matchHeaderSnapshot({
             etag: anyEtag,
             location: anyLocationFor('comments'),
-            'x-cache-invalidate': matchers.stringMatching(
+            'x-cache-invalidate': stringMatching(
                 parent_id
                     ? new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
                     : new RegExp('/api/members/comments/post/[0-9a-f]{24}/')
@@ -246,7 +246,7 @@ async function testCanCommentOnPost(member) {
     });
 
     // Check if author got an email
-    mockManager.assert.sentEmailCount(1);
+    emailMockReceiver.assertSentEmailCount(1);
     assertAuthorEmailSent(postAuthorEmail, postTitle, {
         // Note that the <strong> tag is removed by the sanitizer
         html: new RegExp(escapeRegExp('<p>This is a message</p><p></p><p>New line</p>'))
@@ -277,7 +277,7 @@ async function testCanReply(member, emailMatchers = {}) {
         html: 'This is a reply'
     });
 
-    mockManager.assert.sentEmailCount(2);
+    emailMockReceiver.assertSentEmailCount(2);
     assertAuthorEmailSent(postAuthorEmail, postTitle);
 
     mockManager.assert.sentEmail({
@@ -349,9 +349,7 @@ describe('Comments API', function () {
     });
 
     beforeEach(async function () {
-        mockManager.mockMail();
-
-        mockLabsDisabled('commentImprovements');
+        emailMockReceiver = mockManager.mockMail();
 
         // ensure we don't have data dependencies across tests
         await dbUtils.truncate('comments');
@@ -403,52 +401,44 @@ describe('Comments API', function () {
                 ]);
             });
 
-            describe('when commentImprovements flag is enabled', function () {
-                beforeEach(function () {
-                    mockLabsEnabled('commentImprovements');
+            it('excludes hidden comments', async function () {
+                const hiddenComment = await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a hidden comment',
+                    status: 'hidden'
                 });
 
-                it('excludes hidden comments', async function () {
-                    const hiddenComment = await dbFns.addComment({
-                        post_id: postId,
-                        member_id: fixtureManager.get('members', 2).id,
-                        html: 'This is a hidden comment',
-                        status: 'hidden'
-                    });
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
 
-                    const data2 = await membersAgent
-                        .get(`/api/comments/post/${postId}/`)
-                        .expectStatus(200);
+                // check that hiddenComment.id is not in the response
+                should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
+                should(data2.body.comments.length).eql(0);
+            });
 
-                    // check that hiddenComment.id is not in the response
-                    should(data2.body.comments.map(c => c.id)).not.containEql(hiddenComment.id);
-                    should(data2.body.comments.length).eql(0);
+            it('excludes deleted comments', async function () {
+                await dbFns.addComment({
+                    post_id: postId,
+                    member_id: fixtureManager.get('members', 2).id,
+                    html: 'This is a deleted comment',
+                    status: 'deleted'
                 });
 
-                it('excludes deleted comments', async function () {
-                    // await mockManager.mockLabsEnabled('commentImprovements');
-                    await dbFns.addComment({
-                        post_id: postId,
-                        member_id: fixtureManager.get('members', 2).id,
-                        html: 'This is a deleted comment',
-                        status: 'deleted'
-                    });
+                const data2 = await membersAgent
+                    .get(`/api/comments/post/${postId}/`)
+                    .expectStatus(200);
 
-                    const data2 = await membersAgent
-                        .get(`/api/comments/post/${postId}/`)
-                        .expectStatus(200);
-
-                    // go through all comments and check if the deleted comment is not there
-                    data2.body.comments.forEach((comment) => {
-                        should(comment.html).not.eql('This is a deleted comment');
-                    });
-
-                    data2.body.comments.length.should.eql(0);
+                // go through all comments and check if the deleted comment is not there
+                data2.body.comments.forEach((comment) => {
+                    should(comment.html).not.eql('This is a deleted comment');
                 });
+
+                data2.body.comments.length.should.eql(0);
             });
 
             it('shows hidden and deleted comment where there is a reply', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
                 await setupBrowseCommentsData();
                 const hiddenComment = await dbFns.addComment({
                     post_id: postId,
@@ -505,7 +495,6 @@ describe('Comments API', function () {
             });
 
             it('Returns nothing if both parent and reply are hidden', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
                 const hiddenComment = await dbFns.addComment({
                     post_id: postId,
                     member_id: fixtureManager.get('members', 0).id,
@@ -652,11 +641,7 @@ describe('Comments API', function () {
                 should.not.exist(response.body.comments[0].unsubscribe_url);
             });
 
-            describe('browse by post when commentImprovements flag is enabled', function () {
-                beforeEach(function () {
-                    mockLabsEnabled('commentImprovements');
-                });
-
+            describe('browse by post', function () {
                 it('excludes deleted comments', async function () {
                     await dbFns.addComment({
                         member_id: fixtureManager.get('members', 2).id,
@@ -879,7 +864,7 @@ describe('Comments API', function () {
                 });
 
                 // Check only the author got an email (because we are the author of this parent comment)
-                mockManager.assert.sentEmailCount(1);
+                emailMockReceiver.assertSentEmailCount(1);
                 assertAuthorEmailSent(postAuthorEmail, postTitle);
 
                 // Wait for the dispatched events (because this happens async)
@@ -913,7 +898,6 @@ describe('Comments API', function () {
             });
 
             it('hidden replies are not included in the count', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
                 const {parent} = await dbFns.addCommentWithReplies({
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
@@ -928,7 +912,6 @@ describe('Comments API', function () {
             });
 
             it('deleted replies are not included in the count', async function () {
-                await mockManager.mockLabsEnabled('commentImprovements');
                 const {parent} = await dbFns.addCommentWithReplies({
                     member_id: fixtureManager.get('members', 0).id,
                     replies: new Array(5).fill({
@@ -1012,7 +995,7 @@ describe('Comments API', function () {
                     .expectStatus(204)
                     .matchHeaderSnapshot({
                         etag: anyEtag,
-                        'x-cache-invalidate': matchers.stringMatching(
+                        'x-cache-invalidate': stringMatching(
                             new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/replies/')
                         )
                     })
@@ -1136,7 +1119,7 @@ describe('Comments API', function () {
                 const report = reports.models[0];
                 report.get('member_id').should.eql(loggedInMember.id);
 
-                mockManager.assert.sentEmailCount(0);
+                emailMockReceiver.assertSentEmailCount(0);
             });
 
             it('Can edit a comment on a post', async function () {
@@ -1335,10 +1318,6 @@ describe('Comments API', function () {
             });
 
             describe('replies to replies', function () {
-                beforeEach(function () {
-                    mockLabsEnabled('commentImprovements');
-                });
-
                 it('can browse comments with replies to replies', async function () {
                     const {replies: [reply]} = await dbFns.addCommentWithReplies({
                         member_id: fixtureManager.get('members', 1).id,
@@ -1383,7 +1362,7 @@ describe('Comments API', function () {
 
                     // replied-to comment author is notified
                     // parent comment author is notified
-                    mockManager.assert.sentEmailCount(3);
+                    emailMockReceiver.assertSentEmailCount(3);
                     assertAuthorEmailSent(postAuthorEmail, postTitle);
                     mockManager.assert.sentEmail({
                         subject: '↪️ New reply to your comment on Ghost',
@@ -1417,7 +1396,7 @@ describe('Comments API', function () {
                         should.not.exist(newComment.in_reply_to_snippet);
 
                         // only author and parent email sent
-                        mockManager.assert.sentEmailCount(2);
+                        emailMockReceiver.assertSentEmailCount(2);
                     });
                 });
 
@@ -1442,7 +1421,7 @@ describe('Comments API', function () {
                     should.not.exist(newComment.parent_id);
 
                     // only author email sent
-                    mockManager.assert.sentEmailCount(1);
+                    emailMockReceiver.assertSentEmailCount(1);
                 });
 
                 it('in_reply_to_id is ignored id in_reply_to_id has a different parent', async function () {

@@ -1,10 +1,10 @@
 import Service, {inject as service} from '@ember/service';
 import config from 'ghost-admin/config/environment';
-import {SignJWT} from 'jose';
 import {tracked} from '@glimmer/tracking';
 
 export default class MigrateService extends Service {
     @service ajax;
+    @service billing;
     @service router;
     @service ghostPaths;
     @service settings;
@@ -27,40 +27,32 @@ export default class MigrateService extends Service {
         return url;
     }
 
-    async apiToken() {
-        // TODO: Getting the token can be improved
+    async apiKey() {
         const ghostIntegrationsUrl = this.ghostPaths.url.api('integrations') + '?include=api_keys';
         return this.ajax.request(ghostIntegrationsUrl).then(async (response) => {
             const ssmIntegration = response.integrations.find(r => r.slug === 'self-serve-migration');
 
             const key = ssmIntegration.api_keys[0].secret;
-            const [id, secret] = key.split(':');
 
-            function hexToBytes(hex) {
-                let bytes = [];
-                for (let c = 0; c < hex.length; c += 2) {
-                    bytes.push(parseInt(hex.substr(c, 2), 16));
-                }
-                return new Uint8Array(bytes);
-            }
-
-            const encodedSecret = hexToBytes(secret);
-
-            const token = await new SignJWT({})
-                .setProtectedHeader({
-                    alg: 'HS256',
-                    typ: 'JWT',
-                    kid: id
-                })
-                .setIssuedAt()
-                .setExpirationTime('5m')
-                .setAudience('/admin/')
-                .sign(encodedSecret);
-
-            return token;
+            return key;
         }).catch((error) => {
             throw error;
         });
+    }
+
+    async postMessagePayload() {
+        const theKey = await this.apiKey();
+        const theOwner = await this.billing.getOwnerUser();
+
+        let payload = {
+            apiUrl: this.apiUrl,
+            apiKey: theKey,
+            stripe: this.isStripeConnected,
+            ghostVersion: this.ghostVersion,
+            ownerEmail: theOwner.email
+        };
+
+        return payload;
     }
 
     get isStripeConnected() {
@@ -85,13 +77,13 @@ export default class MigrateService extends Service {
         return url;
     }
 
-    // Sends a route update to a child route in the BMA, because we can't control
+    // Sends a route update to a child route in the migrate app, because we can't control
     // navigating to it otherwise
     sendRouteUpdate(route) {
         this.getMigrateIframe().contentWindow.postMessage({
             query: 'routeUpdate',
             response: route
-        }, '*');
+        }, this.migrateUrl);
     }
 
     // Controls migrate window modal visibility and sync of the URL visible in browser
@@ -123,6 +115,12 @@ export default class MigrateService extends Service {
 
         this.router.transitionTo(childRoute || '/migrate');
         this.toggleMigrateWindow(true);
+    }
+
+    closeMigrateWindow() {
+        window.location.hash = '/settings/migration';
+        this.router.transitionTo('/settings/migration');
+        this.toggleMigrateWindow(false);
     }
 
     getMigrateIframe() {

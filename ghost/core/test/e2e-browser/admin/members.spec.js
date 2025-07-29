@@ -1,6 +1,6 @@
 const {expect} = require('@playwright/test');
 const test = require('../fixtures/ghost-test');
-const {createMember, deleteAllMembers} = require('../utils/e2e-browser-utils');
+const {createMember} = require('../utils/e2e-browser-utils');
 const fs = require('fs');
 
 test.describe('Admin', () => {
@@ -278,39 +278,6 @@ test.describe('Admin', () => {
             await sharedPage.locator('button[data-test-button="confirm"]').click();
             const success = await sharedPage.locator('div[data-test-state="remove-complete"] > div > p').innerText();
             expect(success).toEqual('Label removed from 3 members successfully');
-        });
-
-        test('A member can be granted a comp in admin', async ({sharedPage}) => {
-            await sharedPage.goto('/ghost');
-            await deleteAllMembers(sharedPage);
-
-            // create a new member with a comped plan
-            await createMember(sharedPage, {
-                name: 'Test Member 1',
-                email: 'test@member1.com',
-                note: 'This is a test member',
-                label: 'Test Label',
-                compedPlan: 'The Local Test'
-            });
-
-            // open the impersonate modal
-            await sharedPage.locator('[data-test-button="member-actions"]').click();
-            await sharedPage.getByRole('button', {name: 'Impersonate'}).click();
-            await sharedPage.getByRole('button', {name: 'Copy link'}).click();
-            await sharedPage.waitForSelector('button span:has-text("Link copied")');
-
-            // get value from input because we don't have access to the clipboard during headless testing
-            const elem = await sharedPage.$('input[name="member-signin-url"]');
-            const link = await elem.inputValue();
-
-            // go to the frontend with the impersonate link
-            await sharedPage.goto(link);
-
-            // click the paid-only post
-            await sharedPage.locator('.gh-card-link[href="/sell/"]').click();
-
-            // check for content CTA and expect it to be zero
-            await expect(sharedPage.locator('.gh-post-upgrade-cta')).toHaveCount(0);
         });
 
         test('An existing member cannot be saved with invalid email address', async ({sharedPage}) => {

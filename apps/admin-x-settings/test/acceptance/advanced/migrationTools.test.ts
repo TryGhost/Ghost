@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {expectExternalNavigate, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
-import {globalDataRequests} from '../../utils/acceptance';
+import {expectExternalNavigate, globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Migration tools', async () => {
     test('Built-in migrators', async ({page}) => {
@@ -14,6 +13,11 @@ test.describe('Migration tools', async () => {
 
         await migrationSection.getByRole('button', {name: 'Substack'}).click();
         await expectExternalNavigate(page, {route: '/migrate/substack'});
+
+        await page.goto('/');
+
+        await migrationSection.getByRole('button', {name: 'WordPress'}).click();
+        await expectExternalNavigate(page, {route: '/migrate/wordpress'});
 
         await page.goto('/');
 

@@ -28,8 +28,10 @@ module.exports = {
     twitter_description: 'twitter_description',
     members_support_address: 'members_support_address',
     members_enabled: 'members_enabled',
+    donations_enabled: 'donations_enabled',
     allow_self_signup: 'allow_self_signup',
     members_invite_only: 'members_invite_only',
+    members_signup_access: 'members_signup_access',
     paid_members_enabled: 'paid_members_enabled',
     firstpromoter_account: 'firstpromoter_account',
     portal_button_style: 'portal_button_style',
@@ -47,5 +49,6 @@ module.exports = {
     default_email_address: 'default_email_address',
     support_email_address: 'support_email_address',
     editor_default_email_recipients: 'editor_default_email_recipients',
-    labs: 'labs'
+    labs: 'labs',
+    site_uuid: 'site_uuid'
 };

@@ -106,6 +106,10 @@
                 {
                     "name": "Scheduler Integration",
                     "description": "Internal Scheduler Client"
+                },
+                {
+                    "name": "Super Editor",
+                    "description": "Super Editors"
                 }
             ]
         },
@@ -718,7 +722,7 @@
             "name": "User",
             "entries": [
                 {
-                    "id": 1,
+                    "id": "__OWNER_USER_ID__",
                     "name": "Ghost",
                     "email": "ghost@example.com",
                     "status": "inactive",
@@ -742,8 +746,7 @@
                     "type": "post",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
-                    "published_by": "1"
+                    "published_by": "__OWNER_USER_ID__"
                 },
                 {
                     "title": "About this site",
@@ -753,8 +756,7 @@
                     "type": "page",
                     "status": "published",
                     "visibility": "public",
-                    "created_by": "1",
-                    "published_by": "1"
+                    "published_by": "__OWNER_USER_ID__"
                 }
             ]
         },
@@ -871,10 +873,12 @@
                     "link": "all",
                     "mention": "browse",
                     "collection": "all",
-                    "recommendation": "all"
+                    "recommendation": "all",
+                    "identity": "read"
                 },
                 "DB Backup Integration": {
-                    "db": "all"
+                    "db": "all",
+                    "member": "browse"
                 },
                 "Scheduler Integration": {
                     "post": "publish"
@@ -916,6 +920,29 @@
                     "collection": "all",
                     "recommendation": "all",
                     "member_signin_url": "read"
+                },
+                "Super Editor": {
+                    "notification": "all",
+                    "post": "all",
+                    "setting": ["browse", "read"],
+                    "slug": "all",
+                    "tag": "all",
+                    "user": "all",
+                    "role": "all",
+                    "invite": "all",
+                    "theme": ["browse", "readActive"],
+                    "email_preview": "all",
+                    "email": "all",
+                    "snippet": "all",
+                    "label": ["browse", "read", "edit", "add", "destroy"],
+                    "product": ["browse", "read"],
+                    "newsletter": ["browse", "read"],
+                    "collection": "all",
+                    "recommendation": ["browse", "read"],
+                    "member": ["browse", "read", "add", "edit", "destroy"],
+                    "member_signin_url": "read",
+                    "offer": ["browse", "read"],
+                    "comment": "all"
                 },
                 "Editor": {
                     "notification": "all",
@@ -994,7 +1021,7 @@
                 "match": "name"
             },
             "entries": {
-                "1": ["Owner"]
+                "__OWNER_USER_ID__": ["Owner"]
             }
         }
     ]

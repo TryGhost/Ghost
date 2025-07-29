@@ -8,11 +8,11 @@ import React from 'react';
 import SearchableSection from '../../SearchableSection';
 
 export const searchKeywords = {
-    integrations: ['advanced', 'integrations', 'zapier', 'slack', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github'],
-    migrationtools: ['import', 'export', 'migrate', 'substack', 'substack', 'migration', 'medium'],
+    integrations: ['advanced', 'integrations', 'zapier', 'slack', 'unsplash', 'first promoter', 'firstpromoter', 'pintura', 'disqus', 'analytics', 'ulysses', 'typeform', 'buffer', 'plausible', 'github', 'webhooks'],
+    migrationtools: ['import', 'export', 'migrate', 'substack', 'substack', 'migration', 'medium', 'wordpress', 'wp', 'squarespace'],
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
-    labs: ['advanced', 'labs', 'alpha', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
-    history: ['advanced', 'history', 'log', 'events', 'user events', 'staff'],
+    labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
+    history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
     dangerzone: ['danger', 'danger zone', 'delete', 'content', 'delete all content', 'delete site']
 };
 

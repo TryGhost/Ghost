@@ -252,7 +252,7 @@ export default class KoenigLexicalEditor extends Component {
         if (this.offers) {
             return this.offers;
         }
-        this.offers = yield this.store.query('offer', {limit: 'all', filter: 'status:active'});
+        this.offers = yield this.store.query('offer', {filter: 'status:active'});
         return this.offers;
     }
 
@@ -440,8 +440,8 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             renderLabels: !this.session.user.isContributor,
             feature: {
-                collectionsCard: this.feature.collectionsCard,
-                contentVisibility: this.feature.contentVisibility
+                contentVisibility: this.feature.contentVisibility,
+                contentVisibilityAlpha: this.feature.contentVisibilityAlpha
             },
             deprecated: { // todo fix typo
                 headerV1: true // if false, shows header v1 in the menu

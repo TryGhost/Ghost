@@ -68,10 +68,18 @@ export default class ReVerifyModal extends Component {
     @tracked flowErrors = '';
     @tracked verifyData = new VerifyData();
     @tracked resendTokenCountdown = DEFAULT_RESEND_TOKEN_COUNTDOWN;
+    @tracked twoFactorRequired = false;
 
     constructor() {
         super(...arguments);
         this.resetData();
+
+        const errorCode = this.session.get('errorCode');
+
+        if (errorCode === '2FA_TOKEN_REQUIRED') {
+            this.twoFactorRequired = true;
+        }
+        this.session.set('errorCode', null); // Clear it after reading
     }
 
     @action
@@ -102,7 +110,7 @@ export default class ReVerifyModal extends Component {
         } catch (error) {
             if (error?.payload?.errors) {
                 const [firstError] = error.payload.errors;
-                
+
                 if (firstError.type === 'UnauthorizedError') {
                     this.verifyData.setTokenError('Your verification code is incorrect.');
                 } else {
@@ -136,12 +144,12 @@ export default class ReVerifyModal extends Component {
                 contentType: 'application/json;charset=utf-8',
                 dataType: 'text'
             });
-            
+
             this.notifications.showNotification(
                 'A new verification code has been sent to your email.',
                 {type: 'success'}
             );
-            
+
             this.delayResendAvailabilityTask.perform();
             return TASK_SUCCESS;
         } catch (error) {

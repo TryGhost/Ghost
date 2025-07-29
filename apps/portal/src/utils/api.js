@@ -10,9 +10,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     }
 
-    function contentEndpointFor({resource, params = ''}) {
+    function contentEndpointFor({resource, params = {}}) {
         if (apiUrl && apiKey) {
-            return `${apiUrl.replace(/\/$/, '')}/${resource}/?key=${apiKey}&limit=all${params}`;
+            const searchParams = new URLSearchParams({
+                ...params,
+                key: apiKey
+            });
+            return `${apiUrl.replace(/\/$/, '')}/${resource}/?${searchParams.toString()}`;
         }
         return '';
     }
@@ -47,7 +51,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         newsletters() {
-            const url = contentEndpointFor({resource: 'newsletters'});
+            const url = contentEndpointFor({resource: 'newsletters', params: {limit: 100}});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -64,7 +68,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         },
 
         tiers() {
-            const url = contentEndpointFor({resource: 'tiers', params: '&include=monthly_price,yearly_price,benefits'});
+            const url = contentEndpointFor({resource: 'tiers', params: {limit: 100, include: 'monthly_price,yearly_price,benefits'}});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -114,9 +118,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        recommendations({limit}) {
-            let url = contentEndpointFor({resource: 'recommendations'});
-            url = url.replace('limit=all', `limit=${limit}`);
+        recommendations({limit = 100} = {limit: 100}) {
+            const url = contentEndpointFor({resource: 'recommendations', params: {limit}});
             return makeRequest({
                 url,
                 method: 'GET',
@@ -254,11 +257,15 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return res.text();
             } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
                 throw new Error('Failed to start a members session');
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, autoRedirect = true}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -270,7 +277,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 requestSrc: 'portal',
                 redirect,
                 integrityToken,
-                honeypot: phonenumber, // we don't actually use a phone #, this is from a hidden field to prevent bot activity
+                // we don't actually use a phone #, this is from a hidden field to prevent bot activity
+                honeypot: phonenumber,
+                token,
                 autoRedirect
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
@@ -290,7 +299,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             if (res.ok) {
                 return 'Success';
             } else {
-                // Try to read body error message that is human readable and should be shown to the user
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
                     throw humanError;
@@ -376,11 +384,13 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(body)
-            }).then(function (res) {
+            }).then(async function (res) {
                 if (res.ok) {
                     return 'Success';
                 } else {
-                    throw new Error('Failed to send email address verification email');
+                    const errData = await res.json();
+                    const errMssg = errData?.errors?.[0]?.message || 'Failed to send email address verification email';
+                    throw new Error(errMssg);
                 }
             });
         },
@@ -451,7 +461,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async checkoutDonation({successUrl, cancelUrl, metadata = {}} = {}) {
+        async checkoutDonation({successUrl, cancelUrl, metadata = {}, personalNote = ''} = {}) {
             const identity = await api.member.identity();
             const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
 
@@ -466,7 +476,8 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 metadata: metadataObj,
                 successUrl,
                 cancelUrl,
-                type: 'donation'
+                type: 'donation',
+                personalNote
             };
 
             const response = await makeRequest({
@@ -589,7 +600,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         } catch (e) {
             // Ignore
         }
+
         site = transformApiSiteData({site});
+
         return {site, member};
     };
 

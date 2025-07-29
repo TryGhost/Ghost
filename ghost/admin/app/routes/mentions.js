@@ -2,6 +2,7 @@ import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import InfinityModel from 'ember-infinity/lib/infinity-model';
 import RSVP from 'rsvp';
 import classic from 'ember-classic-decorator';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 @classic
@@ -14,16 +15,18 @@ class LoadSourceMentions extends InfinityModel {
 }
 
 export default class MentionsRoute extends AuthenticatedRoute {
+    @inject config;
     @service store;
     @service feature;
     @service infinity;
 
     perPage = 10;
 
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+        const params = transition.to.params;
         if (!this.feature.webmentions) {
-            return this.transitionTo('dashboard');
+            return this.transitionTo('posts-x', params.post_id);
         }
     }
 

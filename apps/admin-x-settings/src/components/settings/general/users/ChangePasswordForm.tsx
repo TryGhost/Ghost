@@ -1,4 +1,4 @@
-import {Button, Heading, SettingGroup, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {User, useUpdatePassword} from '@tryghost/admin-x-framework/api/users';
 import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {useEffect, useRef, useState} from 'react';
@@ -63,6 +63,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
     }>({});
     const newPasswordRef = useRef<HTMLInputElement>(null);
     const confirmNewPasswordRef = useRef<HTMLInputElement>(null);
+    const oldPasswordRef = useRef<HTMLInputElement>(null);
 
     const {mutateAsync: updatePassword} = useUpdatePassword();
     const handleError = useHandleError();
@@ -142,28 +143,36 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
         }
     }, [saveState]);
 
+    useEffect(() => {
+        if (editPassword) {
+            setTimeout(() => {
+                if (isCurrentUser) {
+                    oldPasswordRef.current?.focus();
+                } else {
+                    newPasswordRef.current?.focus();
+                }
+            }, 100);
+        }
+    }, [editPassword, isCurrentUser]);
+
     const showPasswordInputs = () => {
         setEditPassword(true);
     };
 
-    const view = (
-        <Button
-            color='grey'
-            label='Change password'
-            onClick={showPasswordInputs}
-        />
-    );
-    let buttonLabel = 'Change password';
+    let buttonLabel = 'Save password';
     if (saveState === 'saving') {
-        buttonLabel = 'Updating...';
+        buttonLabel = 'Saving...';
     } else if (saveState === 'saved') {
-        buttonLabel = 'Updated';
+        buttonLabel = 'Saved';
     }
+
     const form = (
         <>
             {isCurrentUser && <TextField
+                data-testid="old-password"
                 error={!!errors.oldPassword}
                 hint={errors.oldPassword}
+                inputRef={oldPasswordRef}
                 title="Old password"
                 type="password"
                 value={oldPassword}
@@ -172,6 +181,7 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 }}
             />}
             <TextField
+                data-testid="new-password"
                 error={!!errors.newPassword}
                 hint={errors.newPassword}
                 inputRef={newPasswordRef}
@@ -183,60 +193,74 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
                 }}
             />
             <TextField
+                data-testid="confirm-password"
                 error={!!errors.confirmNewPassword}
                 hint={errors.confirmNewPassword}
                 inputRef={confirmNewPasswordRef}
-                title="Verify password"
+                title="Confirm new password"
                 type="password"
                 value={confirmNewPassword}
                 onChange={(e) => {
                     setConfirmNewPassword(e.target.value);
                 }}
             />
-            <Button
-                color='red'
-                label={buttonLabel}
-                onClick={async () => {
-                    setSaveState('saving');
-                    const validationErrors = validate({password: newPassword, confirmPassword: confirmNewPassword});
-                    setErrors(validationErrors);
-                    if (Object.keys(validationErrors).length > 0) {
+            <div className='mt-1 flex items-center justify-end gap-3'>
+                <Button
+                    color='outline'
+                    label='Cancel'
+                    onClick={() => {
+                        setEditPassword(false);
                         setOldPassword('');
                         setNewPassword('');
                         setConfirmNewPassword('');
-                        setSaveState('');
-                        return;
-                    }
-                    try {
-                        await updatePassword({
-                            newPassword,
-                            confirmNewPassword,
-                            oldPassword,
-                            userId: user?.id
-                        });
-                        setSaveState('saved');
-                    } catch (e) {
-                        setSaveState('');
-                        showToast({
-                            type: 'error',
-                            title: e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`
-                        });
-                        handleError(e, {withToast: false});
-                    }
-                }}
-            />
+                        setErrors({});
+                    }}
+                />
+                <Button
+                    color='green'
+                    data-testid='save-password-button'
+                    label={buttonLabel}
+                    onClick={async () => {
+                        setSaveState('saving');
+                        const validationErrors = validate({password: newPassword, confirmPassword: confirmNewPassword});
+                        setErrors(validationErrors);
+                        if (Object.keys(validationErrors).length > 0) {
+                            setSaveState('');
+                            return;
+                        }
+                        try {
+                            await updatePassword({
+                                newPassword,
+                                confirmNewPassword,
+                                oldPassword,
+                                userId: user?.id
+                            });
+                            setSaveState('saved');
+                        } catch (e) {
+                            setSaveState('');
+                            showToast({
+                                type: 'error',
+                                title: e instanceof ValidationError ? e.message : `Couldn't update password. Please try again.`
+                            });
+                            handleError(e, {withToast: false});
+                        }
+                    }}
+                />
+            </div>
         </>
     );
 
-    return (
-        <SettingGroup
-            border={false}
-            customHeader={<Heading level={4}>Password</Heading>}
-            title='Password'
+    const initialView = (
+        <div className='relative flex flex-col'>
+            <TextField containerClassName='grow' disabled={true} title='Password' type='password' value='••••••••••••' />
+            <Button className='absolute right-0 top-0' color='green' data-testid='change-password-button' label='Change' link={true} onClick={showPasswordInputs} />
+        </div>
+    );
 
-        >
-            {editPassword ? form : view}
-        </SettingGroup>
+    return (
+        <>
+            {editPassword ? form : initialView}
+        </>
     );
 };
 
