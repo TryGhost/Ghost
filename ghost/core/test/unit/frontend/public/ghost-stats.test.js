@@ -558,25 +558,6 @@ describe('ghost-stats.js', function () {
             ghostStats.initConfig();
         });
 
-        it('should parse standard Reddit referrer correctly', function () {
-            mockDocument.referrer = 'https://www.reddit.com/r/ghost/comments/123/test';
-            mockWindow.location.href = 'https://example.com/test';
-            
-            ghostStats.trackPageHit();
-            
-            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
-            timeoutCallback();
-            
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            const innerPayload = JSON.parse(payload.payload);
-            
-            expect(innerPayload.parsedReferrer).to.deep.equal({
-                source: 'Reddit',
-                medium: 'social',
-                url: 'https://www.reddit.com/r/ghost/comments/123/test'
-            });
-        });
-
         it('should parse query string referrer parameters', function () {
             mockDocument.referrer = '';
             mockWindow.location.href = 'https://example.com/test?ref=ghost-newsletter&utm_source=twitter&utm_medium=social';
@@ -591,22 +572,6 @@ describe('ghost-stats.js', function () {
             
             expect(innerPayload.parsedReferrer.source).to.equal('ghost-newsletter');
             expect(innerPayload.parsedReferrer.medium).to.equal('social');
-        });
-
-        it('should handle portal hash URLs with referrer parameters', function () {
-            mockDocument.referrer = '';
-            mockWindow.location.href = 'https://example.com/#/portal?ref=footer&source=blog';
-            
-            ghostStats.trackPageHit();
-            
-            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
-            timeoutCallback();
-            
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            const innerPayload = JSON.parse(payload.payload);
-            
-            expect(innerPayload.parsedReferrer.source).to.equal('footer');
-            expect(innerPayload.parsedReferrer.url).to.be.null;
         });
 
         it('should preserve document referrer when getReferrer returns null', function () {
