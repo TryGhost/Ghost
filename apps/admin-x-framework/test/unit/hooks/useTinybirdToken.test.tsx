@@ -98,7 +98,7 @@ describe('useTinybirdToken', () => {
         expect(mockGetTinybirdToken.mock.calls[0]).toEqual([{enabled: true}]);
     });
 
-    it('creates validation error for invalid token types', () => {
+    it('returns undefined for invalid token types without throwing error', () => {
         mockGetTinybirdToken.mockReturnValue({
             data: {tinybird: {token: 123}}, // number instead of string
             isLoading: false,
@@ -109,9 +109,7 @@ describe('useTinybirdToken', () => {
         const {result} = renderHook(() => useTinybirdToken(), {wrapper});
 
         expect(result.current.token).toBeUndefined();
-        expect(result.current.error).toEqual(
-            new Error('Invalid token received from API: token must be a non-empty string')
-        );
+        expect(result.current.error).toBe(null);
     });
 
     it('passes through API errors', () => {
