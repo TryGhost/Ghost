@@ -481,6 +481,39 @@ describe('ghost-stats.js', function () {
             mockWindow.Cypress = undefined;
         });
 
+        it('should skip initialization when in an iframe', function () {
+            // Configure with valid settings
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            // Simulate being in an iframe (window.self !== window.top)
+            const originalSelf = mockWindow.self;
+            const originalTop = mockWindow.top;
+            mockWindow.self = mockWindow;
+            mockWindow.top = {different: 'window'}; // Different from self
+            
+            expect(ghostStats.init()).to.be.false;
+            expect(mockWindow.Tinybird).to.not.exist;
+            
+            // Restore original values
+            mockWindow.self = originalSelf;
+            mockWindow.top = originalTop;
+        });
+
+        it('should initialize when NOT in an iframe', function () {
+            // Configure with valid settings
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            // Simulate NOT being in an iframe (window.self === window.top)
+            mockWindow.self = mockWindow;
+            mockWindow.top = mockWindow; // Same as self
+            
+            expect(ghostStats.init()).to.be.true;
+            expect(mockWindow.Tinybird).to.exist;
+            expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+        });
+
         it('should handle missing configuration gracefully', function () {
             expect(ghostStats.init()).to.be.false;
         });
