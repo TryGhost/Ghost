@@ -67,7 +67,7 @@
     align-items: center;
     position: sticky;
     bottom: 0px;
-    background: #fff;
+    background: var(--white);
     padding: 32px;
     margin-bottom: -32px;
     box-shadow: 0px -7px 15px -10px rgba(0, 0, 0, 0.15);
