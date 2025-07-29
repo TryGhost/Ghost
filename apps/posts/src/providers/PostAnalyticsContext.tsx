@@ -91,13 +91,16 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         }
     });
 
-    // Only include tinybirdTokenQuery errors if it's a real error (not just missing token)
-    const requests = [config, site, settings];
-    if (hasStatsConfig && tinybirdTokenQuery.error) {
-        requests.push(tinybirdTokenQuery);
-    }
-    const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = [config, site, settings, tinybirdTokenQuery].some(request => request.isLoading);
+    // Check for errors in the ghost requests
+    const ghostRequests = [config, site, settings];
+    const ghostError = ghostRequests.map(request => request.error).find(Boolean);
+    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
+    const error = ghostError || tinybirdError;
+    
+    // Check loading states
+    const isGhostLoading = ghostRequests.some(request => request.isLoading);
+    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
+    const isLoading = isGhostLoading || isTinybirdLoading;
 
     if (error) {
         throw error;
