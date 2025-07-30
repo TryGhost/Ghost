@@ -128,7 +128,9 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                                 }
                                 setDialogOpen(true);
                             }}>
-                                {isBlocked || isDomainBlocked ? 'Unblock' : 'Block'} user
+                                {isBlocked || isDomainBlocked ? 'Unblock' : 'Block'}
+                                {` `}
+                                {!isBlocked && isDomainBlocked ? 'domain' : 'user'}
                             </Button>
                         </PopoverClose>
                     </div>
