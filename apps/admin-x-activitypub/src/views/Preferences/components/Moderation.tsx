@@ -4,8 +4,10 @@ import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
 import {Button, H2, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger} from '@tryghost/shade';
+import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {toast} from 'sonner';
 import {useBlockDomainMutationForUser, useBlockMutationForUser, useBlockedAccountsForUser, useBlockedDomainsForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useNavigate} from '@tryghost/admin-x-framework';
 
 const Moderation: React.FC = () => {
     const {data: blockedAccountsData, isLoading: blockedAccountsLoading} = useBlockedAccountsForUser('index');
@@ -27,6 +29,7 @@ const Moderation: React.FC = () => {
     const [unblockedDomainIds, setUnblockedDomainIds] = useState<Set<string>>(new Set());
 
     const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const handleUnblock = (account: Account) => {
         setUnblockedAccountIds((prev) => {
@@ -98,16 +101,20 @@ const Moderation: React.FC = () => {
                                 </NoValueLabel>
                             ) : (
                                 blockedAccounts.map((account, index) => (
-                                    <ActivityItem key={account.apId ? account.apId : `loading-${index}`}>
-                                        <APAvatar author={
-                                            {
-                                                icon: {
-                                                    url: account.avatarUrl
-                                                },
-                                                name: account.name,
-                                                handle: account.handle
-                                            }
-                                        } />
+                                    <ActivityItem
+                                        key={account.apId ? account.apId : `loading-${index}`}
+                                        onClick={!blockedAccountsLoading ? () => handleProfileClick(account.handle, navigate) : undefined}
+                                    >
+                                        <APAvatar
+                                            author={
+                                                {
+                                                    icon: {
+                                                        url: account.avatarUrl
+                                                    },
+                                                    name: account.name,
+                                                    handle: account.handle
+                                                }
+                                            } />
                                         <div className='flex min-w-0  flex-col'>
                                             <span className='block truncate font-semibold text-black dark:text-white'>{!blockedAccountsLoading ? account.name : <Skeleton className='w-24' />}</span>
                                             <span className='block truncate text-sm text-gray-600'>{!blockedAccountsLoading ? account.handle : <Skeleton className='w-40' />}</span>
@@ -117,7 +124,10 @@ const Moderation: React.FC = () => {
                                             <Button
                                                 className='ml-auto min-w-[90px] text-red hover:!bg-red/5 hover:text-red-400'
                                                 variant='outline'
-                                                onClick={() => handleBlock(account)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleBlock(account);
+                                                }}
                                             >
                                                 Block
                                             </Button>
@@ -126,7 +136,10 @@ const Moderation: React.FC = () => {
                                                 <Button
                                                     className='ml-auto min-w-[90px]'
                                                     variant='destructive'
-                                                    onClick={() => handleUnblock(account)}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleUnblock(account);
+                                                    }}
                                                     onMouseEnter={() => setHoveredItemId(account.apId)}
                                                     onMouseLeave={() => setHoveredItemId(null)}
                                                 >
