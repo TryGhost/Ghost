@@ -201,7 +201,7 @@ export default [
     },
     {
         name: 'Asia/Kathmandu',
-        label: '(GMT +5:45) Katmandu'
+        label: '(GMT +5:45) Kathmandu'
     },
     
     {
