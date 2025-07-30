@@ -1184,9 +1184,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     max-width: var(--main-layout-content-maxwidth);
 }
 
-.gh-nav-hidden + .gh-main .gh-canvas {
-    padding-left: 80px;
-    padding-right: 80px;
+@media (min-width: 800px) {
+    .gh-nav-hidden + .gh-main .gh-canvas {
+        padding-left: 80px;
+        padding-right: 80px;
+    }
 }
 
 .gh-canvas.gh-canvas-sticky {
