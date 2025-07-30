@@ -141,7 +141,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
 
     const {data: account, isLoading: isLoadingAccount, error: accountError} = useAccountForUser('index', (params.handle || 'me'));
 
-    if (accountError && isApiError(accountError)) {
+    if (accountError && isApiError(accountError) && accountError.statusCode !== 404) {
         return <Error statusCode={accountError.statusCode} />;
     }
 
