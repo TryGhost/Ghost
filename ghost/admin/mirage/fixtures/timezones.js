@@ -1,270 +1,270 @@
 export default [
     {
         name: 'Pacific/Pago_Pago',
-        label: '(GMT -11:00) Midway Island, Samoa'
+        label: 'Midway Island, Samoa'
     },
     {
         name: 'Pacific/Honolulu',
-        label: '(GMT -10:00) Hawaii'
+        label: 'Hawaii'
     },
     {
         name: 'America/Anchorage',
-        label: '(GMT -9:00) Alaska'
+        label: 'Alaska'
     },
     {
         name: 'America/Tijuana',
-        label: '(GMT -8:00) Chihuahua, La Paz, Mazatlan'
+        label: 'Chihuahua, La Paz, Mazatlan'
     },
     {
         name: 'America/Los_Angeles',
-        label: '(GMT -8:00) Pacific Time (US & Canada); Tijuana'
+        label: 'Pacific Time (US & Canada); Tijuana'
     },
     {
         name: 'America/Phoenix',
-        label: '(GMT -7:00) Arizona'
+        label: 'Arizona'
     },
     {
         name: 'America/Denver',
-        label: '(GMT -7:00) Mountain Time (US & Canada)'
+        label: 'Mountain Time (US & Canada)'
     },
     {
         name: 'America/Costa_Rica',
-        label: '(GMT -6:00) Central America'
+        label: 'Central America'
     },
     {
         name: 'America/Chicago',
-        label: '(GMT -6:00) Central Time (US & Canada)'
+        label: 'Central Time (US & Canada)'
     },
     {
         name: 'America/Mexico_City',
-        label: '(GMT -6:00) Guadalajara, Mexico City, Monterrey'
+        label: 'Guadalajara, Mexico City, Monterrey'
     },
     {
         name: 'America/Regina',
-        label: '(GMT -6:00) Saskatchewan'
+        label: 'Saskatchewan'
     },
     {
         name: 'America/Bogota',
-        label: '(GMT -5:00) Bogota, Lima, Quito'
+        label: 'Bogota, Lima, Quito'
     },
     {
         name: 'America/New_York',
-        label: '(GMT -5:00) Eastern Time (US & Canada)'
+        label: 'Eastern Time (US & Canada)'
     },
     {
         name: 'America/Fort_Wayne',
-        label: '(GMT -5:00) Indiana (East)'
+        label: 'Indiana (East)'
     },
     {
         name: 'America/Caracas',
-        label: '(GMT -4:00) Caracas, La Paz'
+        label: 'Caracas, La Paz'
     },
     {
         name: 'America/Halifax',
-        label: '(GMT -4:00) Atlantic Time (Canada); Brasilia, Greenland'
+        label: 'Atlantic Time (Canada); Brasilia, Greenland'
     },
     {
         name: 'America/Santiago',
-        label: '(GMT -4:00) Santiago'
+        label: 'Santiago'
     },
     {
         name: 'America/St_Johns',
-        label: '(GMT -3:30) Newfoundland'
+        label: 'Newfoundland'
     },
     {
         name: 'America/Argentina/Buenos_Aires',
-        label: '(GMT -3:00) Buenos Aires, Georgetown'
+        label: 'Buenos Aires, Georgetown'
     },
     {
         name: 'America/Noronha',
-        label: '(GMT -2:00) Fernando de Noronha'
+        label: 'Fernando de Noronha'
     },
     {
         name: 'Atlantic/Azores',
-        label: '(GMT -1:00) Azores'
+        label: 'Azores'
     },
     {
         name: 'Atlantic/Cape_Verde',
-        label: '(GMT -1:00) Cape Verde Is.'
+        label: 'Cape Verde Is.'
     },
     {
         name: 'Etc/UTC',
-        label: '(GMT) UTC'
+        label: 'UTC'
     },
     {
         name: 'Africa/Casablanca',
-        label: '(GMT +0:00) Casablanca, Monrovia'
+        label: 'Casablanca, Monrovia'
     },
     {
         name: 'Europe/Dublin',
-        label: '(GMT +0:00) Dublin, Edinburgh, London'
+        label: 'Dublin, Edinburgh, London'
     },
     {
         name: 'Europe/Amsterdam',
-        label: '(GMT +1:00) Amsterdam, Berlin, Rome, Stockholm, Vienna'
+        label: 'Amsterdam, Berlin, Rome, Stockholm, Vienna'
     },
     {
         name: 'Europe/Prague',
-        label: '(GMT +1:00) Belgrade, Bratislava, Budapest, Prague'
+        label: 'Belgrade, Bratislava, Budapest, Prague'
     },
     {
         name: 'Europe/Paris',
-        label: '(GMT +1:00) Brussels, Copenhagen, Madrid, Paris'
+        label: 'Brussels, Copenhagen, Madrid, Paris'
     },
     {
         name: 'Europe/Warsaw',
-        label: '(GMT +1:00) Sarajevo, Skopje, Warsaw, Zagreb'
+        label: 'Sarajevo, Skopje, Warsaw, Zagreb'
     },
     {
         name: 'Africa/Lagos',
-        label: '(GMT +1:00) West Central Africa'
+        label: 'West Central Africa'
     },
     {
         name: 'Europe/Athens',
-        label: '(GMT +2:00) Athens, Beirut, Bucharest'
+        label: 'Athens, Beirut, Bucharest'
     },
     {
         name: 'Africa/Cairo',
-        label: '(GMT +2:00) Cairo, Egypt'
+        label: 'Cairo, Egypt'
     },
     {
         name: 'Africa/Maputo',
-        label: '(GMT +2:00) Harare'
+        label: 'Harare'
     },
     {
         name: 'Europe/Kiev',
-        label: '(GMT +2:00) Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius'
+        label: 'Helsinki, Kyiv, Riga, Sofia, Tallinn, Vilnius'
     },
     {
         name: 'Asia/Jerusalem',
-        label: '(GMT +2:00) Jerusalem'
+        label: 'Jerusalem'
     },
     {
         name: 'Africa/Johannesburg',
-        label: '(GMT +2:00) Pretoria'
+        label: 'Pretoria'
     },
     {
         name: 'Asia/Baghdad',
-        label: '(GMT +3:00) Baghdad'
+        label: 'Baghdad'
     },
     {
         name: 'Asia/Riyadh',
-        label: '(GMT +3:00) Kuwait, Nairobi, Riyadh'
+        label: 'Kuwait, Nairobi, Riyadh'
     },
     {
         name: 'Europe/Istanbul',
-        label: '(GMT +3:00) Istanbul, Ankara'
+        label: 'Istanbul, Ankara'
     },
     {
         name: 'Europe/Moscow',
-        label: '(GMT +3:00) Moscow, St. Petersburg, Volgograd'
+        label: 'Moscow, St. Petersburg, Volgograd'
     },
     {
         name: 'Asia/Tehran',
-        label: '(GMT +3:30) Tehran'
+        label: 'Tehran'
     },
     {
         name: 'Asia/Dubai',
-        label: '(GMT +4:00) Abu Dhabi, Muscat'
+        label: 'Abu Dhabi, Muscat'
     },
     {
         name: 'Asia/Baku',
-        label: '(GMT +4:00) Baku, Tbilisi, Yerevan'
+        label: 'Baku, Tbilisi, Yerevan'
     },
     {
         name: 'Asia/Kabul',
-        label: '(GMT +4:30) Kabul'
+        label: 'Kabul'
     },
     {
         name: 'Asia/Karachi',
-        label: '(GMT +5:00) Islamabad, Karachi, Tashkent'
+        label: 'Islamabad, Karachi, Tashkent'
     },
     {
         name: 'Asia/Yekaterinburg',
-        label: '(GMT +5:00) Yekaterinburg'
+        label: 'Yekaterinburg'
     },
     {
         name: 'Asia/Kolkata',
-        label: '(GMT +5:30) Chennai, Calcutta, Mumbai, New Delhi'
+        label: 'Chennai, Calcutta, Mumbai, New Delhi'
     },
     {
         name: 'Asia/Kathmandu',
-        label: '(GMT +5:45) Katmandu'
+        label: 'Katmandu'
     },
     {
         name: 'Asia/Almaty',
-        label: '(GMT +6:00) Almaty, Novosibirsk'
+        label: 'Almaty, Novosibirsk'
     },
     {
         name: 'Asia/Dhaka',
-        label: '(GMT +6:00) Astana, Dhaka, Sri Jayawardenepura'
+        label: 'Astana, Dhaka, Sri Jayawardenepura'
     },
     {
         name: 'Asia/Rangoon',
-        label: '(GMT +6:30) Rangoon'
+        label: 'Rangoon'
     },
     {
         name: 'Asia/Bangkok',
-        label: '(GMT +7:00) Bangkok, Hanoi, Jakarta'
+        label: 'Bangkok, Hanoi, Jakarta'
     },
     {
         name: 'Asia/Krasnoyarsk',
-        label: '(GMT +7:00) Krasnoyarsk'
+        label: 'Krasnoyarsk'
     },
     {
         name: 'Asia/Hong_Kong',
-        label: '(GMT +8:00) Beijing, Chongqing, Hong Kong, Urumqi'
+        label: 'Beijing, Chongqing, Hong Kong, Urumqi'
     },
     {
         name: 'Asia/Irkutsk',
-        label: '(GMT +8:00) Irkutsk, Ulaan Bataar'
+        label: 'Irkutsk, Ulaan Bataar'
     },
     {
         name: 'Asia/Singapore',
-        label: '(GMT +8:00) Kuala Lumpur, Perth, Singapore, Taipei'
+        label: 'Kuala Lumpur, Perth, Singapore, Taipei'
     },
     {
         name: 'Asia/Tokyo',
-        label: '(GMT +9:00) Osaka, Sapporo, Tokyo'
+        label: 'Osaka, Sapporo, Tokyo'
     },
     {
         name: 'Asia/Seoul',
-        label: '(GMT +9:00) Seoul'
+        label: 'Seoul'
     },
     {
         name: 'Asia/Yakutsk',
-        label: '(GMT +9:00) Yakutsk'
+        label: 'Yakutsk'
     },
     {
         name: 'Australia/Adelaide',
-        label: '(GMT +9:30) Adelaide'
+        label: 'Adelaide'
     },
     {
         name: 'Australia/Darwin',
-        label: '(GMT +9:30) Darwin'
+        label: 'Darwin'
     },
     {
         name: 'Australia/Brisbane',
-        label: '(GMT +10:00) Brisbane, Guam, Port Moresby'
+        label: 'Brisbane, Guam, Port Moresby'
     },
     {
         name: 'Australia/Sydney',
-        label: '(GMT +10:00) Canberra, Hobart, Melbourne, Sydney, Vladivostok'
+        label: 'Canberra, Hobart, Melbourne, Sydney, Vladivostok'
     },
     {
         name: 'Asia/Magadan',
-        label: '(GMT +11:00) Magadan, Soloman Is., New Caledonia'
+        label: 'Magadan, Soloman Is., New Caledonia'
     },
     {
         name: 'Pacific/Auckland',
-        label: '(GMT +12:00) Auckland, Wellington'
+        label: 'Auckland, Wellington'
     },
     {
         name: 'Pacific/Fiji',
-        label: '(GMT +12:00) Fiji, Kamchatka, Marshall Is.'
+        label: 'Fiji, Kamchatka, Marshall Is.'
     },
     {
         name: 'Pacific/Kwajalein',
-        label: '(GMT +12:00) International Date Line West'
+        label: 'International Date Line West'
     }
 ];
