@@ -622,7 +622,7 @@ export function useBlockDomainMutationForUser(handle: string) {
                 return;
             }
             queryClient.setQueryData(
-                QUERY_KEYS.account(handle),
+                QUERY_KEYS.account(data.handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -659,7 +659,7 @@ export function useUnblockDomainMutationForUser(handle: string) {
                 return;
             }
             queryClient.setQueryData(
-                QUERY_KEYS.account(handle),
+                QUERY_KEYS.account(data.handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
