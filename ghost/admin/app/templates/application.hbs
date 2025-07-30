@@ -14,7 +14,9 @@
             <div class="gh-alert-content">
                 A new major version of Ghost is available! <a href="https://ghost.org/6" target="_blank" rel="noopener noreferrer" class="whatsnew">See what's new</a>
             </div>
-            <a class="button" href="#" {{on "click" this.openUpdateTab}}>Update to Ghost 6.0 &rarr;</a>
+            <button class="button" type="button" {{on "click" this.openUpdateTab}}>
+                Update to Ghost 6.0 &rarr;
+            </button>
         {{else}}
             <div class="gh-alert-content">
                 Your Ghost install is ready for a major update!

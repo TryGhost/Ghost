@@ -371,7 +371,7 @@
     font-weight: 500;
 }
 
-.gh-update-banner.gh-60 a.button {
+.gh-update-banner.gh-60 .button {
     margin-left: 8px;
     height: 32px;
     font-weight: 600;
@@ -389,12 +389,12 @@
     background: linear-gradient(45deg, #122220 0%, #172E2C 100%);
 }
 
-.gh-update-banner.gh-60 a.button {
+.gh-update-banner.gh-60 .button {
     background: linear-gradient(45deg, #317B9B 0%, #319B99 100%);
     color: #fff;
 }
 
-.gh-update-banner.gh-60 a.button:hover {
+.gh-update-banner.gh-60 .button:hover {
     opacity: 0.9;
 }
 
