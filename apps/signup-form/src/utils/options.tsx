@@ -9,6 +9,12 @@ export function useOptions(scriptTag: HTMLElement) {
             labels.push(scriptTag.dataset[`label-${labels.length + 1}`] as string);
         }
 
+        const newsletters = [];
+
+        while (scriptTag.dataset[`newsletter-${newsletters.length + 1}`]) {
+            newsletters.push(scriptTag.dataset[`newsletter-${newsletters.length + 1}`] as string);
+        }
+
         return {
             title: scriptTag.dataset.title || undefined,
             description: scriptTag.dataset.description || undefined,
@@ -19,6 +25,7 @@ export function useOptions(scriptTag: HTMLElement) {
             buttonTextColor: scriptTag.dataset.buttonTextColor || undefined,
             site: scriptTag.dataset.site || window.location.origin,
             labels,
+            newsletters,
             locale: scriptTag.dataset.locale || 'en'
         };
     }, [scriptTag]);
