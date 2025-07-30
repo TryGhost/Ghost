@@ -25,6 +25,7 @@ Object {
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,
+      "themeTranslation": true,
       "urlCache": true,
       "webmentions": true,
     },
