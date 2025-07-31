@@ -160,6 +160,16 @@ export const formatQueryDate = (date: Moment) => {
 
 // Format date for UI, result is in the formate of `12 Jun 2025`
 export const formatDisplayDate = (dateString: string): string => {
+    // If the date is a Date object, convert it to a string
+    // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+    if (dateString instanceof Date) {
+        dateString = dateString.toISOString();
+    }
+    // Fallback to empty string if dateString is an unexpected type. Better to fallback to empty string than to crash the app
+    if (!dateString || dateString.length === 0 || typeof dateString !== 'string') {
+        return '';
+    }
+
     // Check if this is a datetime string (contains time) or just a date
     const hasTime = dateString.includes(':');
     
