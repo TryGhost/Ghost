@@ -52,6 +52,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
 
     useEffect(() => {
         if (!limiter) {
+            setIsCheckingLimit(false);
             return;
         }
 
