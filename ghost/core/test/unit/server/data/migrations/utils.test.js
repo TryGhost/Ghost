@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 const utils = require('../../../../../core/server/data/migrations/utils');
 
@@ -735,7 +736,7 @@ async function setupNullableTestDb() {
 
 // Helper function to check column nullable status for SQLite
 async function checkColumnNullable(table, column, knex) {
-    const response = await knex.raw(`PRAGMA table_info("${table}")`);
+    const response = await knex.raw(`PRAGMA table_info(??)`, [table]);
     const columnInfo = response.find(col => col.name === column);
     return columnInfo ? columnInfo.notnull === 0 : null;
 }
@@ -744,7 +745,7 @@ describe('migrations/utils/schema nullable functions', function () {
     describe('createSetNullableMigration', function () {
         it('Sets a not-nullable column to nullable', async function () {
             const knex = await setupNullableTestDb();
-            
+
             const migration = utils.createSetNullableMigration('test_nullable_migration', 'not_nullable_col');
 
             should.ok(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
@@ -777,7 +778,7 @@ describe('migrations/utils/schema nullable functions', function () {
             should.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Spy on logging to verify skip message
-            const logSpy = sinon.spy(require('@tryghost/logging'), 'warn');
+            const logSpy = sinon.spy(logging, 'warn');
 
             try {
                 const runDownMigration = await runUpMigration(knex, migration);
@@ -791,7 +792,7 @@ describe('migrations/utils/schema nullable functions', function () {
                 await runDownMigration();
             } finally {
                 logSpy.restore();
-                
+
                 await knex.destroy();
             }
         });
@@ -847,7 +848,7 @@ describe('migrations/utils/schema nullable functions', function () {
                 await runDownMigration();
             } finally {
                 logSpy.restore();
-                
+
                 await knex.destroy();
             }
         });
