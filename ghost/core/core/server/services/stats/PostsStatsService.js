@@ -678,10 +678,6 @@ class PostsStatsService {
         return subquery;
     }
 
-
-
-
-
     /**
      * Get newsletter stats for sent or published posts with a specific newsletter_id
      *
