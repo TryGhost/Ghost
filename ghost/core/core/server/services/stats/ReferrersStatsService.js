@@ -250,7 +250,6 @@ class ReferrersStatsService {
         return rows;
     }
 
-
     /**
      * Fetch MRR sources with date range
      * @param {string} startDate 
