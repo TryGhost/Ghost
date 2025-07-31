@@ -267,6 +267,49 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
     });
 }
 
+function updateAccountFollowsCaches(queryClient: QueryClient, targetHandle: string, isFollowing: boolean) {
+    // Get all account follows queries from the cache
+    const cache = queryClient.getQueryCache();
+    const queries = cache.getAll();
+
+    queries.forEach((query) => {
+        const queryKey = query.queryKey;
+        // Check if this is an account_follows query
+        if (Array.isArray(queryKey) && queryKey[0] === 'account_follows') {
+            queryClient.setQueryData(queryKey, (oldData?: {
+                pages: Array<{
+                    accounts: Array<{
+                        id: string;
+                        handle: string;
+                        isFollowing: boolean;
+                        [key: string]: unknown;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map(page => ({
+                        ...page,
+                        accounts: page.accounts.map((account) => {
+                            if (account.handle === targetHandle) {
+                                return {
+                                    ...account,
+                                    isFollowing: isFollowing
+                                };
+                            }
+                            return account;
+                        })
+                    }))
+                };
+            });
+        }
+    });
+}
+
 // Update non-paginated caches (should only be called once per mutation)
 function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
@@ -993,9 +1036,8 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the follows query cache for the account performing the unfollow
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            // Update isFollowing status in all account follows caches
+            updateAccountFollowsCaches(queryClient, fullHandle, false);
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1109,12 +1151,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
 
-            // Invalidate the follows query cache for the account performing the follow
-            // because we cannot directly add to it due to potentially incompatible data
-            // shapes
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
-
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            // Update isFollowing status in all account follows caches
+            updateAccountFollowsCaches(queryClient, fullHandle, true);
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
