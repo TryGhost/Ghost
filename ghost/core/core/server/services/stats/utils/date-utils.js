@@ -10,8 +10,8 @@ const moment = require('moment-timezone');
  */
 function getDateBoundaries(options) {
     const timezone = options.timezone || 'UTC';
-    const dateFrom = options.date_from ? moment.tz(options.date_from, timezone).utc().startOf('day').toISOString() : null;
-    const dateTo = options.date_to ? moment.tz(options.date_to, timezone).utc().endOf('day').toISOString() : null;
+    const dateFrom = options.date_from ? moment.tz(options.date_from, timezone).startOf('day').utc().toISOString() : null;
+    const dateTo = options.date_to ? moment.tz(options.date_to, timezone).endOf('day').utc().toISOString() : null;
     return {dateFrom, dateTo};
 }
 
