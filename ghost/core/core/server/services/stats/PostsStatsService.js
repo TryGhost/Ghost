@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
+const moment = require('moment-timezone');
 
 // Import source normalization from ReferrersStatsService
 const {normalizeSource} = require('./ReferrersStatsService');
@@ -692,34 +693,24 @@ class PostsStatsService {
      * @param {string} dateColumn - The date column to filter on
      */
     _applyDateFilter(query, options, dateColumn) {
-        // Note: Timezone handling might require converting dates before querying,
-        // depending on how created_at is stored (UTC assumed here).
+        const timezone = options.timezone || 'UTC';
+        
         if (options.date_from) {
             try {
-                // Attempt to parse and validate the date
-                const fromDate = new Date(options.date_from);
-                if (!isNaN(fromDate.getTime())) {
-                    query.where(dateColumn, '>=', fromDate);
-                } else {
-                    logging.warn(`Invalid date_from format: ${options.date_from}. Skipping filter.`);
-                }
+                // Parse date in the specified timezone and convert to UTC for database query
+                const fromDate = moment.tz(options.date_from, timezone).startOf('day').utc().toDate();
+                query.where(dateColumn, '>=', fromDate);
             } catch (e) {
-                logging.warn(`Error parsing date_from: ${options.date_from}. Skipping filter.`);
+                logging.warn(`Error parsing date_from: ${options.date_from} with timezone: ${timezone}. Skipping filter.`);
             }
         }
         if (options.date_to) {
             try {
-                const toDate = new Date(options.date_to);
-                if (!isNaN(toDate.getTime())) {
-                    // Include the whole day for the 'to' date by setting to end of day
-                    const endOfDay = new Date(toDate);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    query.where(dateColumn, '<=', endOfDay);
-                } else {
-                    logging.warn(`Invalid date_to format: ${options.date_to}. Skipping filter.`);
-                }
+                // Parse date in the specified timezone and convert to UTC for database query
+                const toDate = moment.tz(options.date_to, timezone).endOf('day').utc().toDate();
+                query.where(dateColumn, '<=', toDate);
             } catch (e) {
-                logging.warn(`Error parsing date_to: ${options.date_to}. Skipping filter.`);
+                logging.warn(`Error parsing date_to: ${options.date_to} with timezone: ${timezone}. Skipping filter.`);
             }
         }
     }

@@ -1,4 +1,4 @@
-const moment = require('moment');
+const moment = require('moment-timezone');
 
 // Source normalization mapping - consolidated from frontend apps
 const SOURCE_NORMALIZATION_MAP = new Map([
@@ -254,12 +254,14 @@ class ReferrersStatsService {
      * Fetch MRR sources with date range
      * @param {string} startDate 
      * @param {string} endDate 
+     * @param {string} [timezone='UTC'] - Timezone for date interpretation
      * @returns {Promise<MrrCountStatDate[]>}
      **/
-    async fetchMrrSourcesWithRange(startDate, endDate) {
+    async fetchMrrSourcesWithRange(startDate, endDate, timezone = 'UTC') {
         const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+        // Convert dates from site timezone to UTC for database query
+        const startDateTime = moment.tz(startDate, timezone).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const endDateTime = moment.tz(endDate, timezone).endOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
         
         // Join subscription created events with paid subscription events to get MRR changes
         const rows = await knex('members_subscription_created_events as msce')
@@ -285,12 +287,14 @@ class ReferrersStatsService {
      * Returns both free signups (excluding those who converted) and paid conversions
      * @param {string} startDate 
      * @param {string} endDate 
+     * @param {string} [timezone='UTC'] - Timezone for date interpretation
      * @returns {Promise<{source: string, signups: number, paid_conversions: number}[]>}
      **/
-    async fetchMemberCountsBySource(startDate, endDate) {
+    async fetchMemberCountsBySource(startDate, endDate, timezone = 'UTC') {
         const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+        // Convert dates from site timezone to UTC for database query
+        const startDateTime = moment.tz(startDate, timezone).startOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
+        const endDateTime = moment.tz(endDate, timezone).endOf('day').utc().format('YYYY-MM-DD HH:mm:ss');
         
         // Query 1: Free members who haven't converted to paid within the same time window
         const freeSignupsQuery = knex('members_created_events as mce')
@@ -357,13 +361,14 @@ class ReferrersStatsService {
      * @param {string} endDate - End date in YYYY-MM-DD format
      * @param {string} [orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
      * @param {number} [limit=50] - Maximum number of sources to return
+     * @param {string} [timezone='UTC'] - Timezone for date interpretation
      * @returns {Promise<{data: AttributionCountStatWithMrr[], meta: {}}>}
      */
-    async getTopSourcesWithRange(startDate, endDate, orderBy = 'signups desc', limit = 50) {
+    async getTopSourcesWithRange(startDate, endDate, orderBy = 'signups desc', limit = 50, timezone = 'UTC') {
         // Get deduplicated member counts and MRR data in parallel
         const [memberCounts, mrrEntries] = await Promise.all([
-            this.fetchMemberCountsBySource(startDate, endDate),
-            this.fetchMrrSourcesWithRange(startDate, endDate)
+            this.fetchMemberCountsBySource(startDate, endDate, timezone),
+            this.fetchMrrSourcesWithRange(startDate, endDate, timezone)
         ]);
 
         // Aggregate by source (not by date + source)

@@ -229,8 +229,8 @@ class StatsService {
         return result;
     }
 
-    async getTopSourcesWithRange(startDate, endDate, orderBy, limit) {
-        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit);
+    async getTopSourcesWithRange(startDate, endDate, orderBy, limit, timezone) {
+        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit, timezone);
     }
 
     /**

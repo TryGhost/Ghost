@@ -371,6 +371,33 @@ describe('ReferrersStatsService', function () {
             assert.equal(febGoogle.paid_conversions, 1, 'February should have 1 paid conversion');
         });
 
+        it('should handle timezone conversion correctly', async function () {
+            // Create an event at 11pm UTC on Jan 15, which is Jan 16 in timezones ahead of UTC
+            const utcDate = '2024-01-15 23:00:00';
+            
+            await db('members_created_events').insert([
+                {member_id: 'tz_member_1', referrer_source: 'Google', created_at: utcDate}
+            ]);
+
+            // Query with UTC timezone - should find the member on Jan 15
+            const utcResult = await stats.getTopSourcesWithRange('2024-01-15', '2024-01-15', 'signups desc', 50, 'UTC');
+            const utcGoogle = utcResult.data.find(s => s.source === 'Google');
+            assert(utcGoogle, 'Google should exist in UTC results');
+            assert.equal(utcGoogle.signups, 1, 'Should find 1 signup on Jan 15 in UTC');
+
+            // Query with Asia/Tokyo timezone (UTC+9) - should NOT find the member on Jan 15
+            // because 11pm UTC on Jan 15 is 8am on Jan 16 in Tokyo
+            const tokyoResult = await stats.getTopSourcesWithRange('2024-01-15', '2024-01-15', 'signups desc', 50, 'Asia/Tokyo');
+            const tokyoGoogle = tokyoResult.data.find(s => s.source === 'Google');
+            assert(!tokyoGoogle, 'Should not find any signups on Jan 15 in Tokyo timezone');
+
+            // Query for Jan 16 in Tokyo timezone - should find the member
+            const tokyo16Result = await stats.getTopSourcesWithRange('2024-01-16', '2024-01-16', 'signups desc', 50, 'Asia/Tokyo');
+            const tokyo16Google = tokyo16Result.data.find(s => s.source === 'Google');
+            assert(tokyo16Google, 'Google should exist in Tokyo Jan 16 results');
+            assert.equal(tokyo16Google.signups, 1, 'Should find 1 signup on Jan 16 in Tokyo timezone');
+        });
+
         it('should handle members who sign up and convert with different sources', async function () {
             const testDate = '2024-01-15';
             

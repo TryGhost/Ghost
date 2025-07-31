@@ -533,11 +533,14 @@ const controller = {
             };
         },
         async query(frame) {
+            const {order = 'free_members desc', limit = 50, timezone = 'UTC'} = frame.options;
+            
             return await statsService.api.getTopSourcesWithRange(
                 frame.options.date_from, 
                 frame.options.date_to, 
-                frame.options.order || 'free_members desc',
-                frame.options.limit || 50
+                order,
+                limit,
+                timezone
             );
         }
     }
