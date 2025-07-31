@@ -458,6 +458,47 @@ describe('PostsStatsService', function () {
             assert.equal(result.data[0].post_id, 'post1');
             assert.ok(result.data[1].post_id === 'post2' || result.data[1].post_id === 'post3');
         });
+
+        it('respects timezone when filtering by date range', async function () {
+            // Create an event at 11pm UTC on Jan 15, which is Jan 16 in timezones ahead of UTC
+            const utcDate = new Date('2024-01-15T23:00:00Z');
+            
+            await _createPost('tz_post', 'Timezone Test Post');
+            await _createFreeSignupEvent('tz_post', 'tz_member', 'Google', utcDate);
+
+            // Query with UTC timezone - should find the event on Jan 15
+            const utcResult = await service.getTopPosts({
+                date_from: '2024-01-15',
+                date_to: '2024-01-15',
+                timezone: 'UTC'
+            });
+            
+            const utcPost = utcResult.data.find(p => p.post_id === 'tz_post');
+            assert(utcPost, 'Should find the post when querying Jan 15 in UTC');
+            assert.equal(utcPost.free_members, 1, 'Should have 1 free member on Jan 15 in UTC');
+
+            // Query with Asia/Tokyo timezone (UTC+9) - should NOT find the event on Jan 15
+            // because 11pm UTC on Jan 15 is 8am on Jan 16 in Tokyo
+            const tokyoResult = await service.getTopPosts({
+                date_from: '2024-01-15',
+                date_to: '2024-01-15',
+                timezone: 'Asia/Tokyo'
+            });
+            
+            const tokyoPost = tokyoResult.data.find(p => p.post_id === 'tz_post');
+            assert(!tokyoPost, 'Should not find the post when querying Jan 15 in Tokyo timezone');
+
+            // Query for Jan 16 in Tokyo timezone - should find the event
+            const tokyo16Result = await service.getTopPosts({
+                date_from: '2024-01-16',
+                date_to: '2024-01-16',
+                timezone: 'Asia/Tokyo'
+            });
+            
+            const tokyo16Post = tokyo16Result.data.find(p => p.post_id === 'tz_post');
+            assert(tokyo16Post, 'Should find the post when querying Jan 16 in Tokyo timezone');
+            assert.equal(tokyo16Post.free_members, 1, 'Should have 1 free member on Jan 16 in Tokyo');
+        });
     });
 
     describe('getReferrersForPost', function () {

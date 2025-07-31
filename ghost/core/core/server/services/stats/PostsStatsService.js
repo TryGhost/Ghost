@@ -143,12 +143,22 @@ class PostsStatsService {
                             const subquery1 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                 .from('members_created_events')
                                 .whereNotNull('attribution_url');
-                            if (options.date_from || options.date_to) {
-                                if (options.date_from) {
-                                    subquery1.where('created_at', '>=', options.date_from);
+                            // Use timezone-aware date filtering
+                            const timezone = options.timezone || 'UTC';
+                            if (options.date_from) {
+                                try {
+                                    const fromDate = moment.tz(options.date_from, timezone).startOf('day').utc().toDate();
+                                    subquery1.where('created_at', '>=', fromDate);
+                                } catch (e) {
+                                    logging.warn(`Error parsing date_from: ${options.date_from} with timezone: ${timezone}. Skipping filter.`);
                                 }
-                                if (options.date_to) {
-                                    subquery1.where('created_at', '<=', options.date_to + ' 23:59:59');
+                            }
+                            if (options.date_to) {
+                                try {
+                                    const toDate = moment.tz(options.date_to, timezone).endOf('day').utc().toDate();
+                                    subquery1.where('created_at', '<=', toDate);
+                                } catch (e) {
+                                    logging.warn(`Error parsing date_to: ${options.date_to} with timezone: ${timezone}. Skipping filter.`);
                                 }
                             }
                             
@@ -156,12 +166,21 @@ class PostsStatsService {
                                 const subquery2 = this.select('attribution_url', 'attribution_type', 'attribution_id')
                                     .from('members_subscription_created_events')
                                     .whereNotNull('attribution_url');
-                                if (options.date_from || options.date_to) {
-                                    if (options.date_from) {
-                                        subquery2.where('created_at', '>=', options.date_from);
+                                // Use timezone-aware date filtering (reuse outer timezone)
+                                if (options.date_from) {
+                                    try {
+                                        const fromDate = moment.tz(options.date_from, timezone).startOf('day').utc().toDate();
+                                        subquery2.where('created_at', '>=', fromDate);
+                                    } catch (e) {
+                                        logging.warn(`Error parsing date_from: ${options.date_from} with timezone: ${timezone}. Skipping filter.`);
                                     }
-                                    if (options.date_to) {
-                                        subquery2.where('created_at', '<=', options.date_to + ' 23:59:59');
+                                }
+                                if (options.date_to) {
+                                    try {
+                                        const toDate = moment.tz(options.date_to, timezone).endOf('day').utc().toDate();
+                                        subquery2.where('created_at', '<=', toDate);
+                                    } catch (e) {
+                                        logging.warn(`Error parsing date_to: ${options.date_to} with timezone: ${timezone}. Skipping filter.`);
                                     }
                                 }
                             })
