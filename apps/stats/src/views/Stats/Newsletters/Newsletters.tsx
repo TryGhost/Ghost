@@ -85,7 +85,7 @@ const NewsletterTableRows: React.FC<{
                                 </div>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(new Date(post.send_date))}
+                                {formatDisplayDate(post.send_date)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
