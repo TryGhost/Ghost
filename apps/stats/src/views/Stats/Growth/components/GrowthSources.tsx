@@ -29,6 +29,7 @@ interface GrowthSourcesTableProps {
 const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, currencySymbol, limit, defaultSourceIconUrl}) => {
     // Data is already sorted by the backend, so we just need to apply limit if specified
     const displayData = limit ? data.slice(0, limit) : data;
+    const {appSettings} = useAppContext();
 
     return (
         <TableBody>
@@ -61,12 +62,16 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
                     <TableCell className='text-right font-mono text-sm'>
                             +{formatNumber(row.free_members)}
                     </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
+                    {appSettings?.paidMembersEnabled &&
+                    <>
+                        <TableCell className='text-right font-mono text-sm'>
                             +{formatNumber(row.paid_members)}
-                    </TableCell>
-                    <TableCell className='text-right font-mono text-sm'>
+                        </TableCell>
+                        <TableCell className='text-right font-mono text-sm'>
                             +{currencySymbol}{centsToDollars(row.mrr)}
-                    </TableCell>
+                        </TableCell>
+                    </>
+                    }
                 </TableRow>
             ))}
         </TableBody>
@@ -242,23 +247,27 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
                                             <TableHeader>
                                                 <TableRow>
                                                     <TableHead>
-                                                    Source
+                                                        Source
                                                     </TableHead>
                                                     <TableHead className='w-[110px] text-right'>
                                                         <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='free_members desc'>
-                                                    Free members
+                                                        Free members
                                                         </SortButton>
                                                     </TableHead>
-                                                    <TableHead className='w-[110px] text-right'>
-                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
-                                                    Paid members
-                                                        </SortButton>
-                                                    </TableHead>
-                                                    <TableHead className='w-[110px] text-right'>
-                                                        <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
-                                                    MRR impact
-                                                        </SortButton>
-                                                    </TableHead>
+                                                    {appSettings?.paidMembersEnabled &&
+                                                    <>
+                                                        <TableHead className='w-[110px] text-right'>
+                                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='paid_members desc'>
+                                                            Paid members
+                                                            </SortButton>
+                                                        </TableHead>
+                                                        <TableHead className='w-[110px] text-right'>
+                                                            <SortButton activeSortBy={sortBy} setSortBy={setSortBy} sortBy='mrr desc'>
+                                                            MRR impact
+                                                            </SortButton>
+                                                        </TableHead>
+                                                    </>
+                                                    }
                                                 </TableRow>
                                             </TableHeader>
                                             <GrowthSourcesTableBody
