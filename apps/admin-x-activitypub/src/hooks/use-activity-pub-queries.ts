@@ -1018,9 +1018,9 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
 
                     return {
                         ...oldData,
-                        pages: oldData.pages.map((page) => ({
+                        pages: oldData.pages.map(page => ({
                             ...page,
-                            accounts: page.accounts.filter((account) => account.handle !== fullHandle)
+                            accounts: page.accounts.filter(account => account.handle !== fullHandle)
                         }))
                     };
                 });
