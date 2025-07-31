@@ -993,9 +993,41 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the follows query cache for the account performing the unfollow
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            const followingHandle = handle === 'index' ? 'me' : handle;
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
+            const existingData = queryClient.getQueryData(accountFollowsQueryKey);
+            
+            // Update the following list cache if it exists, otherwise invalidate
+            if (existingData) {
+                queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
+                    pages: Array<{
+                        accounts: Array<{
+                            id: string;
+                            name: string;
+                            handle: string;
+                            avatarUrl: string;
+                            blockedByMe: boolean;
+                            domainBlockedByMe: boolean;
+                            isFollowing: boolean;
+                        }>;
+                    }>;
+                }) => {
+                    if (!oldData?.pages) {
+                        return oldData;
+                    }
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map(page => ({
+                            ...page,
+                            accounts: page.accounts.filter(account => account.handle !== fullHandle)
+                        }))
+                    };
+                });
+            } else {
+                // Cache doesn't exist, invalidate to fetch fresh data when needed
+                queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            }
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1109,12 +1141,55 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
 
-            // Invalidate the follows query cache for the account performing the follow
-            // because we cannot directly add to it due to potentially incompatible data
-            // shapes
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
+            const followingHandle = handle === 'index' ? 'me' : handle;
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
+            const existingData = queryClient.getQueryData(accountFollowsQueryKey);
+            
+            // Update the following list cache if it exists, otherwise invalidate
+            if (existingData) {
+                queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
+                    pages: Array<{
+                        accounts: Array<{
+                            id: string;
+                            name: string;
+                            handle: string;
+                            avatarUrl: string;
+                            blockedByMe: boolean;
+                            domainBlockedByMe: boolean;
+                            isFollowing: boolean;
+                        }>;
+                    }>;
+                }) => {
+                    if (!oldData?.pages?.[0]) {
+                        return oldData;
+                    }
 
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+                    const followedAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle));
+                    if (!followedAccount) {
+                        return oldData;
+                    }
+
+                    const newFollowing = {
+                        id: followedAccount.id,
+                        name: followedAccount.name,
+                        handle: followedAccount.handle,
+                        avatarUrl: followedAccount.avatarUrl,
+                        blockedByMe: followedAccount.blockedByMe,
+                        domainBlockedByMe: followedAccount.domainBlockedByMe,
+                        isFollowing: true
+                    };
+
+                    return {
+                        ...oldData,
+                        pages: [{
+                            ...oldData.pages[0],
+                            accounts: [newFollowing, ...oldData.pages[0].accounts]
+                        }, ...oldData.pages.slice(1)]
+                    };
+                });
+            } else {
+                queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            }
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1506,13 +1581,24 @@ export function useAccountForUser(handle: string, profileHandle: string) {
 }
 
 export function useAccountFollowsForUser(profileHandle: string, type: AccountFollowsType) {
+    const queryClient = useQueryClient();
+    
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.accountFollows(profileHandle, type),
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
 
-            return api.getAccountFollows(profileHandle, type, pageParam);
+            const response = await api.getAccountFollows(profileHandle, type, pageParam);
+            
+            // Cache individual account data for follow mutations
+            if (response.accounts) {
+                response.accounts.forEach((account) => {
+                    queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+                });
+            }
+            
+            return response;
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -2374,6 +2460,11 @@ export function useExploreProfilesForUser(handle: string) {
     const fetchExploreProfilesFromJSON = useCallback(async () => {
         const accounts = await fetchAndFilterAccounts();
 
+        // Cache account data for follow mutations
+        accounts.forEach((account: Account) => {
+            queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+        });
+
         const results = {
             uncategorized: {
                 categoryName: 'Recommended',
@@ -2385,7 +2476,7 @@ export function useExploreProfilesForUser(handle: string) {
             results,
             nextPage: undefined
         };
-    }, [fetchAndFilterAccounts]);
+    }, [fetchAndFilterAccounts, queryClient]);
 
     const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
@@ -2453,6 +2544,13 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const randomAccounts = accounts
                 .sort(() => Math.random() - 0.5)
                 .slice(0, limit);
+
+            // Cache account data for follow mutations
+            if (randomAccounts.length > 0) {
+                randomAccounts.forEach((account: Account) => {
+                    queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+                });
+            }
 
             return randomAccounts.length > 0 ? randomAccounts : null;
         },
