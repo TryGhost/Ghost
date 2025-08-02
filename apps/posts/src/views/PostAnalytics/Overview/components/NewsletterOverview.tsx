@@ -1,4 +1,4 @@
-import React, {useMemo} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber, formatPercentage} from '@tryghost/shade';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/NewsLetterRadialChart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';
@@ -15,6 +15,23 @@ interface NewsletterOverviewProps {
 const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
+    const isSmallViewport = () => Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 600;
+    const [isMobile, setIsMobile] = useState(() => isSmallViewport());
+
+    useEffect(() => {
+        const handleResize = () => {
+            setIsMobile(isSmallViewport());
+        };
+
+        window.addEventListener('resize', handleResize);
+
+        // Call once to make sure state is in sync on mount
+        handleResize();
+
+        return () => {
+            window.removeEventListener('resize', handleResize);
+        };
+    }, []);
 
     // Calculate stats from post data
     const stats = useMemo(() => {
@@ -60,7 +77,8 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
-    const fullWidth = post.email_only || !isWebShown;
+    
+    const fullWidth = !isMobile && (post.email_only || !isWebShown);
 
     return (
         <Card className={`group/datalist overflow-hidden ${fullWidth && 'col-span-2'}`}>
@@ -112,23 +130,25 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                 </div>
 
                             </KpiCardHeader>
+                            {!fullWidth && <Separator className="col-span-2" />}
+                            <div className='mx-auto my-6 h-[240px]'>
+                                <NewsletterRadialChart
+                                    className='pointer-events-none aspect-square h-[240px]'
+                                    config={commonChartConfig}
+                                    data={commonChartData}
+                                    tooltip={false}
+                                />
+                            </div>
+                            
                         </div>
-                        {!fullWidth && <Separator />}
-                        <div className='mx-auto my-6 h-[240px]'>
-                            <NewsletterRadialChart
-                                className='pointer-events-none aspect-square h-[240px]'
-                                config={commonChartConfig}
-                                data={commonChartData}
-                                tooltip={false}
-                            />
-                        </div>
+
                     </div>
 
                     <div className={`${fullWidth && 'pl-6'}`}>
                         {!fullWidth && <Separator />}
                         <div className={fullWidth ? '' : 'pt-3'}>
                             <div className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}>
-                                <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
+                                <span className='text-muted-foreground font-medium'>Top clicked links in this email</span>
                                 <HTable>Members</HTable>
                             </div>
 
