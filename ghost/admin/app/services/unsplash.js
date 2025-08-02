@@ -111,12 +111,19 @@ export default Service.extend({
 
     _search: task(function* (term) {
         yield timeout(DEBOUNCE_MS);
+        const searchTermAtRequest = term;
 
         let url = `${API_URL}/search/photos?query=${term}&per_page=30`;
-        yield this._makeRequest(url);
+        yield this._makeRequest(url, {searchTermAtRequest});
     }).restartable(),
 
-    _addPhotosFromResponse(response) {
+    _addPhotosFromResponse(response, searchTermAtRequest) {
+        // If this is a search result, only apply it if the search term still matches
+        // This prevents race conditions where old search results overwrite new ones
+        if (searchTermAtRequest && searchTermAtRequest !== this.searchTerm) {
+            return;
+        }
+
         let photos = response.results || response;
 
         photos.forEach(photo => this._addPhoto(photo));
@@ -191,7 +198,7 @@ export default Service.extend({
             .then(response => this._checkStatus(response))
             .then(response => this._extractPagination(response))
             .then(response => response.json())
-            .then(response => this._addPhotosFromResponse(response))
+            .then(response => this._addPhotosFromResponse(response, options.searchTermAtRequest))
             .catch(() => {
                 // if the error text isn't already set then we've get a connection error from `fetch`
                 if (!options.ignoreErrors && !this.error) {
