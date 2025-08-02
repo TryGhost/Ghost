@@ -17,6 +17,8 @@ interface SourcesTableProps {
 }
 
 const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', children = 'Source', data, mode, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
+    const {appSettings} = useAppContext();
+
     if (mode === 'growth') {
         return (
             <Table>
@@ -24,8 +26,12 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                     <TableRow>
                         <TableHead className='min-w-[320px]' variant={headerStyle === 'table' ? 'default' : 'cardhead'}>{children}</TableHead>
                         <TableHead className='w-[110px] text-right'>Free members</TableHead>
-                        <TableHead className='w-[110px] text-right'>Paid members</TableHead>
-                        <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
+                        {appSettings?.paidMembersEnabled &&
+                        <>
+                            <TableHead className='w-[110px] text-right'>Paid members</TableHead>
+                            <TableHead className='w-[100px] text-right'>MRR impact</TableHead>
+                        </>
+                        }
                     </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -58,8 +64,12 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                     }
                                 </TableCell>
                                 <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.free_members || 0)}</TableCell>
-                                <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
-                                <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                {appSettings?.paidMembersEnabled &&
+                                <>
+                                    <TableCell className='text-right font-mono text-sm'>+{formatNumber(row.paid_members || 0)}</TableCell>
+                                    <TableCell className='text-right font-mono text-sm'>+${centsToDollars(row.mrr || 0)}</TableCell>
+                                </>
+                                }
                             </TableRow>
                         );
                     })}
