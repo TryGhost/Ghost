@@ -7,6 +7,13 @@ export default class GhUnsplashPhoto extends Component {
     @tracked height = 0;
     @tracked width = 1200;
 
+    // Overlay button selectors for touch device handling
+    static OVERLAY_BUTTON_SELECTORS = [
+        '.gh-unsplash-button-likes',
+        '.gh-unsplash-button-download',
+        '.gh-unsplash-photo-author'
+    ];
+
     get style() {
         return htmlSafe(this.args.zoomed ? 'width: auto; margin: 0;' : '');
     }
@@ -55,9 +62,7 @@ export default class GhUnsplashPhoto extends Component {
     @action
     zoom(event) {
         const {target} = event;
-        const isOverlayButtonClick = target.closest('.gh-unsplash-button-likes') || 
-                                   target.closest('.gh-unsplash-button-download') ||
-                                   target.closest('.gh-unsplash-photo-author');
+        const isOverlayButtonClick = GhUnsplashPhoto.OVERLAY_BUTTON_SELECTORS.some(selector => target.closest(selector));                           
 
         if (this.isTouchDevice && isOverlayButtonClick) {
             return;
