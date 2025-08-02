@@ -404,6 +404,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 
     const [selectedTab, setSelectedTab] = useState<string>('profile');
 
+    // Override the default "×" icon.
+    const topRightContent: React.ReactNode = <></>;
+
     return (
         <Modal
             afterClose={navigateOnClose}
@@ -417,6 +420,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
+            topRightContent={topRightContent}
             width={canAccessSettings(currentUser) ? 600 : 'full'}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
