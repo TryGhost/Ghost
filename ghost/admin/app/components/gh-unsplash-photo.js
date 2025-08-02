@@ -41,6 +41,10 @@ export default class GhUnsplashPhoto extends Component {
         this.height = this.width * this.args.photo.ratio;
     }
 
+    get isTouchDevice() {
+        return window.matchMedia('(pointer: coarse)').matches;
+    }
+
     @action
     select(event) {
         event.preventDefault();
@@ -51,6 +55,13 @@ export default class GhUnsplashPhoto extends Component {
     @action
     zoom(event) {
         const {target} = event;
+
+        // Prevent zooming on touch devices
+        if (this.isTouchDevice) {
+            event.stopPropagation();
+            event.preventDefault();
+            return;
+        }
 
         // only zoom when it wasn't one of the child links clicked
         if (!target.matches('a') && target.closest('a').classList.contains('gh-unsplash-photo')) {
