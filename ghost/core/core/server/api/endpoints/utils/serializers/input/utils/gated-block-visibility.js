@@ -47,7 +47,7 @@ function preserveGatedBlockVisibility(html, lexicalDoc) {
     // Apply visibility settings to matching cards in Lexical document
     const modifiedDoc = JSON.parse(JSON.stringify(lexicalDoc)); // Deep clone
     
-    gatedBlocks.forEach(block => {
+    gatedBlocks.forEach((block) => {
         applyVisibilityToMatchingCards(modifiedDoc.root, block);
     });
 
@@ -106,7 +106,7 @@ function applyVisibilityToMatchingCards(node, gatedBlock) {
 
     // Recursively process children
     if (node.children && Array.isArray(node.children)) {
-        node.children.forEach(child => {
+        node.children.forEach((child) => {
             applyVisibilityToMatchingCards(child, gatedBlock);
         });
     }
