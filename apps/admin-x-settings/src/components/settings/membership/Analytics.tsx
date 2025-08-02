@@ -49,9 +49,14 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 disabled={!isWebAnalyticsConfigured || isWebAnalyticsLimited}
                 gap='gap-0'
                 hint={
-                    <>
-                        Cookie-free, first party traffic analytics for your site, powered by <a className='text-green' href="https://ghost.org/integrations/tinybird" rel="noopener noreferrer" target='_blank'>Tinybird</a>
-                    </>
+                    !isWebAnalyticsConfigured ?
+                        <>
+                            Cookie-free, first party traffic analytics for your site
+                        </>
+                        :
+                        <>
+                            Cookie-free, first party traffic analytics for your site, powered by <a className='text-green' href="https://ghost.org/integrations/tinybird" rel="noopener noreferrer" target='_blank'>Tinybird</a>
+                        </>
                 }
                 label='Web analytics'
                 labelClasses='py-4 w-full'
