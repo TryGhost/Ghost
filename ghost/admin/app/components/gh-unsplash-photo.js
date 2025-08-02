@@ -55,8 +55,14 @@ export default class GhUnsplashPhoto extends Component {
     @action
     zoom(event) {
         const {target} = event;
+        const isOverlayButtonClick = target.closest('.gh-unsplash-button-likes') || 
+                                   target.closest('.gh-unsplash-button-download') ||
+                                   target.closest('.gh-unsplash-photo-author');
 
-        // Prevent zooming on touch devices
+        if (this.isTouchDevice && isOverlayButtonClick) {
+            return;
+        }
+
         if (this.isTouchDevice) {
             event.stopPropagation();
             event.preventDefault();
