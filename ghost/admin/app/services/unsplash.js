@@ -118,8 +118,8 @@ export default Service.extend({
     }).restartable(),
 
     _addPhotosFromResponse(response, searchTermAtRequest) {
-        // If this is a search result, only apply it if the search term still matches
-        // This prevents race conditions where old search results overwrite new ones
+        // If a search term was provided at the time of the request,
+        // we only want to add photos if the search term matches the current one.
         if (searchTermAtRequest && searchTermAtRequest !== this.searchTerm) {
             return;
         }
