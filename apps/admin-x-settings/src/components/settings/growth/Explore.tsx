@@ -65,7 +65,7 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 onChange={event => toggleSetting('explore_ping', event)}
             />
         }
-        description='Join the Ghost Explore directory and help new readers find your site.'
+        description={`Promote your site across Ghost's website and publishing network`}
         keywords={keywords}
         navid='explore'
         testId='explore'
@@ -79,8 +79,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     containerClasses='!items-center'
                     direction='rtl'
                     gap='gap-0'
-                    hint={'Make your member count and revenue public to improve your ranking on Explore'}
-                    label='Share growth data'
+                    hint={'Enabling this will use your revenue/member growth data to rank your site more highly on Ghost Explore. Total member count will be displayed publicly, other data will be kept private.'}
+                    label='Share growth data to rank higher?'
                     labelClasses='w-full'
                     testId='explore-growth-toggle'
                     onChange={event => toggleSetting('explore_ping_growth', event)}
