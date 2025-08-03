@@ -165,26 +165,19 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 }}>
                                                     <PostListTooltip
                                                         className='left-auto right-0 translate-x-0'
-                                                        metrics={
-                                                            appSettings?.paidMembersEnabled ?
-
-                                                                [{
-                                                                    icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                    label: 'Free members',
-                                                                    metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
-                                                                },
-                                                                {
-                                                                    icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                    label: 'Paid members',
-                                                                    metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
-                                                                }]
-                                                                :
-                                                                [{
-                                                                    icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                    label: 'Free members',
-                                                                    metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
-                                                                }]
-                                                        }
+                                                        metrics={[
+                                                            {
+                                                                icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Free members',
+                                                                metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
+                                                            },
+                                                            // Only show paid members if paid members are enabled
+                                                            ...(appSettings?.paidMembersEnabled ? [{
+                                                                icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
+                                                                label: 'Paid members',
+                                                                metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
+                                                            }] : [])
+                                                        ]}
                                                         title='New members'
                                                     />
                                                     <div className={metricClass}>
