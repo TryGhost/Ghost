@@ -285,19 +285,21 @@
                                     {{/if}}
                                 </span>
                             </div>
-                            <div class="metric">
-                                <div class="data">
-                                    {{svg-jar "analytics-paid-members"}}
-                                    Paid
+                            {{#if this.membersUtils.paidMembersEnabled}}
+                                <div class="metric">
+                                    <div class="data">
+                                        {{svg-jar "analytics-paid-members"}}
+                                        Paid
+                                    </div>
+                                    <span>
+                                        {{#if this.hasMemberData}}
+                                            {{format-number this.memberCounts.paid}}
+                                        {{else}}
+                                            0
+                                        {{/if}}
+                                    </span>
                                 </div>
-                                <span>
-                                    {{#if this.hasMemberData}}
-                                        {{format-number this.memberCounts.paid}}
-                                    {{else}}
-                                        0
-                                    {{/if}}
-                                </span>
-                            </div>
+                            {{/if}}
                         </div>
                     </div>
                         <div class="gh-post-list-analytics-metric" data-test-analytics-member-conversions>
