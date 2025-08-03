@@ -168,13 +168,13 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                         metrics={[
                                                             {
                                                                 icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                label: 'Free members',
+                                                                label: 'Free',
                                                                 metric: post.free_members > 0 ? `+${formatNumber(post.free_members)}` : '0'
                                                             },
                                                             // Only show paid members if paid members are enabled
                                                             ...(appSettings?.paidMembersEnabled ? [{
                                                                 icon: <LucideIcon.CreditCard className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
-                                                                label: 'Paid members',
+                                                                label: 'Paid',
                                                                 metric: post.paid_members > 0 ? `+${formatNumber(post.paid_members)}` : '0'
                                                             }] : [])
                                                         ]}
