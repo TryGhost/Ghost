@@ -14,7 +14,7 @@
     "test": "playwright test",
     "test:factory": "playwright test --config=data-factory/playwright.config.mjs",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers data-factory --ext .ts --cache"
+    "lint": "eslint helpers factories --ext .ts --cache"
   },
   "files": [
     "build"

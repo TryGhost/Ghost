@@ -1,5 +1,5 @@
 // Test fixtures with automatic cleanup and helpers
-export {test, expect} from './test-fixtures';
+export {test, expect} from './fixtures/playwright';
 
 // Direct factory access for advanced usage
 export {DataFactory} from './data-factory';

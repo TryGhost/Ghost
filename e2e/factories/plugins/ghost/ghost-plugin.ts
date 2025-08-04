@@ -3,7 +3,11 @@ import {BasePlugin} from '../base-plugin';
 import {createDatabase} from './database';
 import {PostFactory} from './posts/post-factory';
 import type {PostOptions, PostResult} from './posts/types';
-import {KnexPersistenceAdapter, PersistenceAdapter, DefaultEntityRegistry} from '../../persistence';
+import {
+    KnexPersistenceAdapter,
+    PersistenceAdapter,
+    EntityRegistry, DatabaseMetadata
+} from '../../persistence';
 
 export interface GhostPluginOptions {
     database?: Knex;
@@ -37,11 +41,8 @@ export class GhostPlugin extends BasePlugin {
         this.postFactory = this.registerFactory(new PostFactory());
     }
 
-    /**
-     * Creates the default persistence adapter for Ghost
-     */
     private createDefaultPersistence(): PersistenceAdapter {
-        const registry = new DefaultEntityRegistry();
+        const registry = new EntityRegistry<DatabaseMetadata>();
         registry.register('posts', {
             tableName: 'posts'
         });

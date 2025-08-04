@@ -1,4 +1,4 @@
-import {test, expect} from '../test-fixtures';
+import {test, expect} from '../fixtures/playwright';
 
 test.describe('Data Factory Examples', () => {
     test('create a simple published post', async ({factory}) => {
@@ -6,34 +6,34 @@ test.describe('Data Factory Examples', () => {
             title: 'Hello World',
             custom_excerpt: 'This is my first post'
         });
-        
+
         expect(post.title).toBe('Hello World');
         expect(post.status).toBe('published');
         expect(post.published_at).toBeDefined();
     });
-    
+
     test('create post with analytics', async ({ghost, tinybird}) => {
         const post = await ghost.createPublishedPost({
             title: 'Popular Article',
             featured: true
         });
-        
+
         // Generate 100 page views
         const hits = await tinybird.createPageHitsForPost(post.uuid, 100, {
             member_status: 'free',
             pathname: `/posts/${post.slug}`
         });
-        
+
         expect(hits).toHaveLength(100);
         expect(hits[0].payload.post_uuid).toBe(post.uuid);
     });
-    
+
     test('multi-session analytics example', async ({ghost, tinybird}) => {
         const post = await ghost.createPublishedPost({
             title: 'Popular Post',
             featured: true
         });
-        
+
         // Session 1: New visitor from Google
         const session1 = tinybird.createNewSession();
         await tinybird.createSessionHits(session1, 3, {
@@ -41,14 +41,14 @@ test.describe('Data Factory Examples', () => {
             referrer: 'https://google.com',
             member_status: 'undefined'
         });
-        
+
         // Session 2: Returning paid member
         const session2 = tinybird.createNewSession();
         await tinybird.createSessionHits(session2, 5, {
             post_uuid: post.uuid,
             member_status: 'paid'
         });
-        
+
         // Session 3: Free member browsing
         const session3 = tinybird.createNewSession();
         await tinybird.createPageHit({
@@ -62,7 +62,7 @@ test.describe('Data Factory Examples', () => {
             post_uuid: post.uuid,
             member_status: 'free'
         });
-        
+
         // Check page hit stats
         const pageHitStats = tinybird.getStats();
         expect(pageHitStats.sessions).toBe(3);

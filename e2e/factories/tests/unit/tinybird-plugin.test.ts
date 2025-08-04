@@ -1,9 +1,9 @@
-import {test, expect} from '../../test-fixtures';
+import {test, expect} from '../../fixtures/playwright';
 import {isTinybirdAvailable} from '../../plugins/tinybird/check-availability';
 
 test.describe('Tinybird Plugin', () => {
     let tinybirdAvailable = false;
-    
+
     test.beforeAll(async () => {
         tinybirdAvailable = await isTinybirdAvailable();
         if (!tinybirdAvailable) {
@@ -11,7 +11,7 @@ test.describe('Tinybird Plugin', () => {
             console.warn('⚠️  Tinybird is not available. Tinybird tests will be skipped. Run `tb local` to enable these tests.');
         }
     });
-    
+
     test.beforeEach(async ({}, testInfo) => {
         if (!tinybirdAvailable) {
             testInfo.skip();
@@ -19,7 +19,7 @@ test.describe('Tinybird Plugin', () => {
     });
     test('should create a page hit with defaults', async ({tinybird}) => {
         const hit = await tinybird.createPageHit();
-        
+
         expect(hit.timestamp).toBeTruthy();
         expect(hit.action).toBe('page_hit');
         expect(hit.version).toBe('1');
@@ -29,10 +29,10 @@ test.describe('Tinybird Plugin', () => {
         expect(hit.payload.member_status).toBe('undefined');
         expect(hit.payload['user-agent']).toBeTruthy();
     });
-    
+
     test('should create page hit with custom options', async ({tinybird, ghost}) => {
         const post = await ghost.createPost();
-        
+
         const hit = await tinybird.createPageHit({
             post_uuid: post.uuid,
             pathname: `/posts/${post.slug}`,
@@ -41,7 +41,7 @@ test.describe('Tinybird Plugin', () => {
             locale: 'fr-FR',
             location: 'FR'
         });
-        
+
         expect(hit.payload.post_uuid).toBe(post.uuid);
         expect(hit.payload.pathname).toBe(`/posts/${post.slug}`);
         expect(hit.payload.member_status).toBe('paid');
@@ -50,7 +50,7 @@ test.describe('Tinybird Plugin', () => {
         expect(hit.payload.location).toBe('FR');
         expect(hit.payload.meta.referrerSource).toBe('Google');
     });
-    
+
     test('should parse referrer sources correctly', async ({tinybird}) => {
         const testCases = [
             {referrer: 'https://google.com/search', expected: 'Google'},
@@ -63,107 +63,107 @@ test.describe('Tinybird Plugin', () => {
             {referrer: 'https://facebook.com', expected: 'Facebook'},
             {referrer: 'https://example.com', expected: 'example.com'}
         ];
-        
+
         for (const {referrer, expected} of testCases) {
             const hit = await tinybird.createPageHit({referrer});
             expect(hit.payload.meta.referrerSource).toBe(expected);
         }
     });
-    
+
     test('should create multiple page hits', async ({tinybird, ghost}) => {
         const post = await ghost.createPost();
         const hits = await tinybird.createPageHits(5, {
             post_uuid: post.uuid
         });
-        
+
         expect(hits).toHaveLength(5);
         hits.forEach((hit) => {
             expect(hit.payload.post_uuid).toBe(post.uuid);
         });
     });
-    
+
     test('should create page hits for a specific post', async ({tinybird, ghost}) => {
         const post = await ghost.createPublishedPost();
         const hits = await tinybird.createPageHitsForPost(post.uuid, 10, {
             member_status: 'free'
         });
-        
+
         expect(hits).toHaveLength(10);
         hits.forEach((hit) => {
             expect(hit.payload.post_uuid).toBe(post.uuid);
             expect(hit.payload.member_status).toBe('free');
         });
     });
-    
+
     test('should manage sessions correctly', async ({tinybird}) => {
         // Create new session
         const session1 = tinybird.createNewSession();
         expect(session1).toBeTruthy();
         expect(typeof session1).toBe('string');
-        
+
         // Create another session
         const session2 = tinybird.createNewSession();
         expect(session2).not.toBe(session1);
-        
+
         // Create hits with specific session
         const hits = await tinybird.createSessionHits(session1, 3, {
             pathname: '/about'
         });
-        
+
         expect(hits).toHaveLength(3);
         hits.forEach((hit) => {
             expect(hit.session_id).toBe(session1);
             expect(hit.payload.pathname).toBe('/about');
         });
     });
-    
+
     test('should track sessions for cleanup', async ({tinybird}) => {
         const initialStats = tinybird.getStats();
-        
+
         // Create hits with auto-generated sessions
         await tinybird.createPageHit();
         await tinybird.createPageHit();
-        
+
         // Create hits with manual sessions
         const session = tinybird.createNewSession();
         await tinybird.createSessionHits(session, 3);
-        
+
         const finalStats = tinybird.getStats();
         expect(finalStats.sessions).toBe(initialStats.sessions + 3); // 2 auto + 1 manual
         expect(finalStats.events).toBe(initialStats.events + 5);
     });
-    
+
     test('should format timestamps correctly', async ({tinybird}) => {
         const customDate = new Date('2024-01-15T10:30:45.123Z');
         const hit = await tinybird.createPageHit({
             timestamp: customDate
         });
-        
+
         // Tinybird expects format: "2024-01-15 10:30:45.123"
         expect(hit.timestamp).toBe('2024-01-15 10:30:45.123');
     });
-    
+
     test('should generate proper href URLs', async ({tinybird}) => {
         const testCases = [
             {pathname: '/', expected: 'https://example.com/'},
             {pathname: '/about', expected: 'https://example.com/about'},
             {pathname: '/posts/my-post', expected: 'https://example.com/posts/my-post'}
         ];
-        
+
         for (const {pathname, expected} of testCases) {
             const hit = await tinybird.createPageHit({pathname});
             expect(hit.payload.href).toBe(expected);
         }
     });
-    
+
     test('should allow custom session IDs in page hits', async ({tinybird}) => {
         const customSessionId = 'test-session-123';
         const hit = await tinybird.createPageHit({
             session_id: customSessionId
         });
-        
+
         expect(hit.session_id).toBe(customSessionId);
-        
+
         // Should still track the session
         const stats = tinybird.getStats();
         expect(stats.sessions).toBeGreaterThan(0);

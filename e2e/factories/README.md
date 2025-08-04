@@ -24,7 +24,7 @@ Plugin-based test data factory for Ghost and Tinybird with a clean, extensible a
 ### Basic Example
 
 ```typescript
-import {test, expect} from './data-factory';
+import {test, expect} from './factories';
 
 test('create content', async ({factory}) => {
     // Access plugins through factory
@@ -65,7 +65,7 @@ test('both plugins', async ({ghost, tinybird}) => {
 ### Custom Plugin Configuration
 
 ```typescript
-import {DataFactory, GhostPlugin, TinybirdPlugin} from './data-factory';
+import {DataFactory, GhostPlugin, TinybirdPlugin} from './factories';
 
 // Ghost only
 const ghostFactory = new DataFactory({
@@ -150,7 +150,7 @@ data-factory/
 │       └── interfaces.ts # HTTP client interfaces
 ├── base-factory.ts       # Base factory class
 ├── data-factory.ts       # Main coordinator
-├── test-fixtures.ts      # Playwright integration
+├── playwright.ts      # Playwright integration
 ├── tests/                # Test suite
 └── index.ts             # Public exports
 ```
@@ -176,7 +176,7 @@ data-factory/
 # Run all data factory tests
 yarn test:factory
 
-# Run linter (includes data-factory directory)
+# Run linter (includes factories directory)
 yarn lint
 
 # Type checking
@@ -204,7 +204,7 @@ test('build vs create', async ({factory}) => {
 
 ### Basic Usage
 ```typescript
-import {test, expect} from './data-factory';
+import {test, expect} from './factories';
 
 test('blog with analytics', async ({factory}) => {
     // Create content

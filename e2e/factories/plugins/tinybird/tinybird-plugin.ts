@@ -3,21 +3,22 @@ import {PageHitFactory} from './page-hits/page-hit-factory';
 import {getTinybirdConfig} from './config';
 import type {TinybirdConfig} from './interfaces';
 import type {PageHitOptions, PageHitResult} from './page-hits/types';
-import {PersistenceAdapter, TinybirdPersistenceAdapter} from '../../persistence';
-import {DefaultEntityRegistry} from '../../persistence/entity-registry';
+import {
+    EntityRegistry,
+    PersistenceAdapter,
+    TinyBirdApiMetadata,
+    TinybirdPersistenceAdapter
+} from '../../persistence';
 
 export interface TinybirdPluginOptions {
     config?: TinybirdConfig;
     persistence?: PersistenceAdapter;
 }
 
-/**
- * Tinybird plugin that coordinates all analytics-related factories
- */
 export class TinybirdPlugin extends BasePlugin {
     readonly name = 'tinybird';
 
-    private config: TinybirdConfig;
+    private readonly config: TinybirdConfig;
     private pageHitFactory?: PageHitFactory;
 
     constructor(options: TinybirdPluginOptions = {}) {
@@ -39,11 +40,8 @@ export class TinybirdPlugin extends BasePlugin {
         await super.destroy();
     }
 
-    /**
-     * Creates the default persistence adapter for Tinybird
-     */
     private createDefaultPersistence(): PersistenceAdapter {
-        const registry = new DefaultEntityRegistry();
+        const registry = new EntityRegistry<TinyBirdApiMetadata>();
         registry.register('analytics_events', {
             endpoint: '?name=analytics_events',
             primaryKey: 'session_id'

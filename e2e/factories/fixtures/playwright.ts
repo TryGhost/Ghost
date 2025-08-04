@@ -1,12 +1,12 @@
 import {test as base} from '@playwright/test';
-import {DataFactory} from './data-factory';
-import {GhostPlugin} from './plugins/ghost/ghost-plugin';
-import {TinybirdPlugin} from './plugins/tinybird/tinybird-plugin';
+import {DataFactory} from '../data-factory';
+import {GhostPlugin} from '../plugins/ghost/ghost-plugin';
+import {TinybirdPlugin} from '../plugins/tinybird/tinybird-plugin';
 
 /**
  * Extended Playwright test context with data factory integration.
  * Provides automatic cleanup through a single factory instance.
- * 
+ *
  * Usage:
  * - test({factory}) - Full factory access
  * - test({ghost, tinybird}) - Direct plugin access
@@ -24,11 +24,11 @@ export const test = base.extend<{
         await use(factory);
         await factory.cleanup();
     },
-    
+
     ghost: async ({factory}, use) => {
         await use(factory.ghost);
     },
-    
+
     tinybird: async ({factory}, use) => {
         await use(factory.tinybird);
     }

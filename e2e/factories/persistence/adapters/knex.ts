@@ -1,13 +1,12 @@
 import type {Knex} from 'knex';
 import type {PersistenceAdapter} from '../adapter';
-import type {EntityRegistry} from '../entity-registry';
+import type {DatabaseMetadata, EntityRegistry} from '../entity-registry';
 
 export class KnexPersistenceAdapter implements PersistenceAdapter {
-    constructor(private db: Knex, private registry: EntityRegistry) {}
+    constructor(private db: Knex, private registry: EntityRegistry<DatabaseMetadata>) {}
 
     async insert<T>(entityType: string, data: T): Promise<T> {
         const {tableName} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         await this.db(tableName).insert(data);
         return data;
@@ -15,7 +14,6 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
 
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
         const {tableName, primaryKey = 'id'} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         await this
             .db(tableName)
@@ -32,7 +30,6 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
 
     async delete(entityType: string, id: string): Promise<void> {
         const {tableName, primaryKey = 'id'} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         await this
             .db(tableName)
@@ -46,7 +43,6 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
         }
 
         const {tableName, primaryKey = 'id'} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         await this
             .db(tableName)
@@ -56,7 +52,6 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
 
     async findById<T>(entityType: string, id: string): Promise<T | null> {
         const {tableName, primaryKey = 'id'} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         const result = await this.db(tableName)
             .where(primaryKey, id)
@@ -67,7 +62,6 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
 
     async findMany<T>(entityType: string, query?: Record<string, unknown>): Promise<T[]> {
         const {tableName} = this.registry.getMetadata(entityType);
-        this.validateTableNameForEntityType(tableName, entityType);
 
         let queryBuilder = this.db(tableName);
 
@@ -76,11 +70,5 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
         }
 
         return await queryBuilder.select();
-    }
-
-    private validateTableNameForEntityType(tableName: string | undefined, entityType: string) {
-        if (!tableName) {
-            throw new Error(`No table configured for entity type: ${entityType}`);
-        }
     }
 }
