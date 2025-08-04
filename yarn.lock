@@ -24557,10 +24557,10 @@ mysql2@3.14.1:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
-mysql2@3.14.2:
-  version "3.14.2"
-  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.14.2.tgz#21fa725162da92d49261dce26362de539e11e5ca"
-  integrity sha512-YD6mZMeoypmheHT6b2BrVmQFvouEpRICuvPIREulx2OvP1xAxxeqkMQqZSTBefv0PiOBKGYFa2zQtY+gf/4eQw==
+mysql2@3.14.3:
+  version "3.14.3"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.14.3.tgz#52aa6266b416d8b629bf398ba2be9840492b9b08"
+  integrity sha512-fD6MLV8XJ1KiNFIF0bS7Msl8eZyhlTDCDl75ajU5SJtpdx9ZPEACulJcqJWr1Y8OYyxsFc4j3+nflpmhxCU5aQ==
   dependencies:
     aws-ssl-profiles "^1.1.1"
     denque "^2.1.0"
