@@ -1,15 +1,11 @@
-import {getTinybirdConfig} from '../../config/persistence';
-import {FetchHttpClient} from './interfaces';
+import {tinybirdConfig} from '../config/persistence';
+import {FetchHttpClient} from '../utils/http-client';
 
-/**
- * Check if Tinybird service is available
- */
 export async function isTinybirdAvailable(): Promise<boolean> {
     try {
-        const config = getTinybirdConfig();
+        const config = tinybirdConfig();
         const httpClient = new FetchHttpClient();
 
-        // Try to hit the Tinybird endpoint
         const response = await httpClient.fetch(`${config.host}/v0/pipes`, {
             method: 'GET',
             headers: {

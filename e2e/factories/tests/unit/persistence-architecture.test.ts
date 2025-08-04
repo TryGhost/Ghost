@@ -1,7 +1,7 @@
 import {test, expect} from '@playwright/test';
-import {GhostPlugin} from '../../plugins/ghost/ghost-plugin';
+import {GhostPlugin} from '../../plugins/ghost-plugin';
 import {PostFactory, PageHitFactory} from '../../factories';
-import {TinybirdPlugin} from '../../plugins/tinybird/tinybird-plugin';
+import {TinybirdPlugin} from '../../plugins/tinybird-plugin';
 import type {PersistenceAdapter} from '../../persistence/adapter';
 
 // Mock persistence adapter for testing

@@ -1,13 +1,12 @@
-import {BasePlugin} from '../base-plugin';
-import {PageHitFactory, PageHitResult, PageHitOptions} from '../../factories/page-hit-factory';
-import {tinybirdConfig} from '../../config/persistence';
-import type {TinybirdConfig} from './interfaces';
+import {BasePlugin} from './base-plugin';
+import {PageHitFactory, PageHitResult, PageHitOptions} from '../factories/page-hit-factory';
+import {tinybirdConfig, TinybirdConfig} from '../config/persistence';
 import {
     EntityRegistry,
     PersistenceAdapter,
     TinyBirdApiMetadata,
     TinybirdPersistenceAdapter
-} from '../../persistence';
+} from '../persistence';
 
 export interface TinybirdPluginOptions {
     config?: TinybirdConfig;

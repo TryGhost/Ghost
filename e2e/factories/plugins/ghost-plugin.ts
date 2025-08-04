@@ -1,12 +1,12 @@
 import type {Knex} from 'knex';
-import {BasePlugin} from '../base-plugin';
-import {createDatabase} from './database';
-import {PostFactory, PostOptions, PostResult} from '../../factories/post-factory';
+import {BasePlugin} from './base-plugin';
+import {createDatabase} from '../utils/database';
+import {PostFactory, PostOptions, PostResult} from '../factories/post-factory';
 import {
     KnexPersistenceAdapter,
     PersistenceAdapter,
     EntityRegistry, DatabaseMetadata
-} from '../../persistence';
+} from '../persistence';
 
 export interface GhostPluginOptions {
     database?: Knex;

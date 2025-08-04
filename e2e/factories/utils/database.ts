@@ -1,5 +1,5 @@
 import knex, {Knex} from 'knex';
-import {ghostConfig} from '../../config/persistence';
+import {ghostConfig} from '../config/persistence';
 
 /**
  * Simple database connection for Ghost.

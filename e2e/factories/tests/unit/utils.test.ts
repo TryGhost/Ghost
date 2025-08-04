@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test';
-import {generateId, generateUuid, generateSlug} from '../../utils/utils'
+import {generateId, generateUuid, generateSlug} from '../../utils/utils';
 
 test.describe('Utils', () => {
     test('should generate unique IDs', () => {

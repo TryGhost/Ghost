@@ -11,6 +11,11 @@ export function ghostConfig() {
     };
 }
 
+export interface TinybirdConfig {
+    host: string;
+    token: string;
+}
+
 export function tinybirdConfig() {
     return {
         host: process.env.TINYBIRD_HOST || 'http://localhost:7181/v0/events',

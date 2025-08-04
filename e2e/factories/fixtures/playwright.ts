@@ -1,6 +1,6 @@
 import {test as base} from '@playwright/test';
-import {DataFactory} from '../data-factory';
-import {GhostPlugin} from '../plugins/ghost/ghost-plugin';
+import {DataFactory} from '../data-management/data-factory';
+import {GhostPlugin} from '../plugins/ghost-plugin';
 import {TinybirdPlugin} from '../plugins/tinybird/tinybird-plugin';
 
 /**

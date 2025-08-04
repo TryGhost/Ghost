@@ -1,4 +1,4 @@
-import type {Factory} from '../base-factory';
+import type {Factory} from '../factories/factory';
 import type {PersistenceAdapter} from '../persistence/adapter';
 
 /**

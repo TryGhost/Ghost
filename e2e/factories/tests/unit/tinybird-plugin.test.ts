@@ -1,5 +1,5 @@
 import {test, expect} from '../../fixtures/playwright';
-import {isTinybirdAvailable} from '../../plugins/tinybird/check-availability';
+import {isTinybirdAvailable} from '../../health_checks/check-availability';
 
 test.describe('Tinybird Plugin', () => {
     let tinybirdAvailable = false;

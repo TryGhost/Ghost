@@ -1,14 +1,14 @@
 import type {PersistenceAdapter} from '../adapter';
-import type {EntityRegistry} from '../types';
-import type {TinybirdConfig, HttpClient} from '../../plugins/tinybird/interfaces';
-import {FetchHttpClient} from '../../plugins/tinybird/interfaces';
+import type {EntityRegistry, TinyBirdApiMetadata} from '../entity-registry';
+import type {TinybirdConfig} from '../../config/persistence';
+import {FetchHttpClient, HttpClient} from '../../utils/http-client';
 
 export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     private httpClient: HttpClient;
 
     constructor(
         private config: TinybirdConfig,
-        private registry: EntityRegistry,
+        private registry: EntityRegistry<TinyBirdApiMetadata>,
         httpClient?: HttpClient
     ) {
         this.httpClient = httpClient ?? new FetchHttpClient();
