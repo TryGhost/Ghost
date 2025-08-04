@@ -75,7 +75,10 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const site = useBrowseSite();
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
-    const tinybirdTokenQuery = useTinybirdToken();
+    
+    // Only fetch Tinybird token if stats config is present
+    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
@@ -88,9 +91,16 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         }
     });
 
-    const requests = [config, site, settings, tinybirdTokenQuery];
-    const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = requests.some(request => request.isLoading);
+    // Check for errors in the ghost requests
+    const ghostRequests = [config, site, settings];
+    const ghostError = ghostRequests.map(request => request.error).find(Boolean);
+    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
+    const error = ghostError || tinybirdError;
+    
+    // Check loading states
+    const isGhostLoading = ghostRequests.some(request => request.isLoading);
+    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
+    const isLoading = isGhostLoading || isTinybirdLoading;
 
     if (error) {
         throw error;

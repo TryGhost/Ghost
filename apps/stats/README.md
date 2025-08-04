@@ -1,6 +1,6 @@
 # Ghost Stats App
 
-The Ghost Stats App provides analytics and insights for Ghost sites.
+Ghost Admin Stats micro-frontend that provides analytics and insights for Ghost sites.
 
 ## Features
 
@@ -42,8 +42,6 @@ yarn
 # Run yarn dev in the root of the repo
 yarn dev
 ```
-
-The Stats app is only displayed if the `trafficAnalytics` labs flag is enabled. With this enabled, the "Stats" tab should appear in your site's dashboard.
 
 ### Build
 

@@ -79,9 +79,11 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                         navigate('/growth/');
                     }}>Growth</PageMenuItem>
 
-                    <PageMenuItem value="/locations/" onClick={() => {
-                        navigate('/locations/');
-                    }}>Locations</PageMenuItem>
+                    {appSettings?.analytics.webAnalytics && (
+                        <PageMenuItem value="/locations/" onClick={() => {
+                            navigate('/locations/');
+                        }}>Locations</PageMenuItem>
+                    )}
                 </PageMenu>
                 <NavbarActions>
                     {children}

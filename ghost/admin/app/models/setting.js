@@ -24,8 +24,6 @@ export default Model.extend(ValidationEngine, {
     password: attr('string'),
     slackUrl: attr('string'),
     slackUsername: attr('string'),
-    amp: attr('boolean'),
-    ampGtagId: attr('string'),
     firstpromoter: attr('boolean'),
     firstpromoterId: attr('string'),
     unsplash: attr('boolean'),
@@ -53,6 +51,7 @@ export default Model.extend(ValidationEngine, {
     announcementContent: attr('string'),
     announcementBackground: attr('string'),
     announcementVisibility: attr('json-string'),
+
     /**
      * Analytics settings
      */
@@ -60,7 +59,8 @@ export default Model.extend(ValidationEngine, {
     emailTrackClicks: attr('boolean'),
     outboundLinkTagging: attr('boolean'),
     membersTrackSources: attr('boolean'),
-    webAnalytics: attr('boolean'),
+    webAnalyticsEnabled: attr('boolean'), // computed setting
+
     /**
      * Members settings
      */

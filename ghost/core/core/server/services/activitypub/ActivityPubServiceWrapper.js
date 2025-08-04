@@ -32,16 +32,23 @@ module.exports = class ActivityPubServiceWrapper {
             IdentityTokenServiceWrapper.instance
         );
 
-        if (settingsCache.get('social_web_enabled')) {
-            await ActivityPubServiceWrapper.instance.initialiseWebhooks();
-            ActivityPubServiceWrapper.initialised = true;
-        } else {
-            events.on('settings.labs.edited', async () => {
-                if (settingsCache.get('social_web_enabled') && !ActivityPubServiceWrapper.initialised) {
-                    await ActivityPubServiceWrapper.instance.initialiseWebhooks();
+        async function configureActivityPub() {
+            if (settingsCache.get('social_web_enabled')) {
+                if (!ActivityPubServiceWrapper.initialised) {
+                    await ActivityPubServiceWrapper.instance.enable();
                     ActivityPubServiceWrapper.initialised = true;
                 }
-            });
+            } else {
+                if (ActivityPubServiceWrapper.initialised) {
+                    await ActivityPubServiceWrapper.instance.disable();
+                    ActivityPubServiceWrapper.initialised = false;
+                }
+            }
         }
+
+        events.on('settings.labs.edited', configureActivityPub);
+        events.on('settings.social_web.edited', configureActivityPub);
+
+        configureActivityPub();
     }
 };
