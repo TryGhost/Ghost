@@ -26,7 +26,9 @@ const messages = {
  * @returns {boolean}
  */
 function needsNormalization(segment) {
-    if (!segment) return false;
+    if (!segment) {
+        return false;
+    }
     
     try {
         const decoded = decodeURIComponent(segment);
@@ -43,7 +45,9 @@ function needsNormalization(segment) {
  * @returns {string}
  */
 function normalizeSegment(segment) {
-    if (!segment) return segment;
+    if (!segment) {
+        return segment;
+    }
     
     try {
         const decoded = decodeURIComponent(segment);
@@ -55,19 +59,18 @@ function normalizeSegment(segment) {
 
 const normalizeUrls = function normalizeUrls(req, res, next) {
     let pathToTest = (req.baseUrl ? req.baseUrl : '') + req.path;
-    let decodedURI;
 
     // Only process taxonomy routes (tags, authors)
-    const taxonomyMatch = pathToTest.match(/^(.*\/(tag|author)\/([^\/]+))(\/.*)?$/);
+    const taxonomyMatch = pathToTest.match(/^(.*(tag|author)\/([^/]+))(\/.*)?$/);
     
     if (!taxonomyMatch) {
         return next();
     }
 
-    const [, basePath, taxonomyType, slug, remainder] = taxonomyMatch;
+    const [, basePath, , slug, remainder] = taxonomyMatch;
     
     try {
-        decodedURI = decodeURIComponent(pathToTest);
+        decodeURIComponent(pathToTest);
     } catch (err) {
         return next(new errors.NotFoundError({
             message: tpl(messages.pageNotFound),

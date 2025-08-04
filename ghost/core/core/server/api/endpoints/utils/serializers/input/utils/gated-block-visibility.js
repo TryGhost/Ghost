@@ -47,7 +47,7 @@ function preserveGatedBlockVisibility(html, lexicalDoc) {
     // Apply visibility settings to matching cards in Lexical document
     const modifiedDoc = JSON.parse(JSON.stringify(lexicalDoc)); // Deep clone
     
-    gatedBlocks.forEach(block => {
+    gatedBlocks.forEach((block) => {
         applyVisibilityToMatchingCards(modifiedDoc.root, block);
     });
 
@@ -64,17 +64,17 @@ function extractContentIdentifiers(content) {
     const identifiers = {};
     
     // Extract CTA card specific identifiers
-    const ctaTextMatch = content.match(/<div[^>]*kg-cta-text[^>]*>(.*?)<\/div>/s);
+    const ctaTextMatch = content.match(/<div[^>]*\bkg-cta-text\b[^>]*>(.*?)<\/div>/s);
     if (ctaTextMatch) {
         identifiers.ctaText = ctaTextMatch[1].replace(/<[^>]*>/g, '').trim();
     }
     
-    const buttonTextMatch = content.match(/<a[^>]*kg-cta-button[^>]*>(.*?)<\/a>/s);
+    const buttonTextMatch = content.match(/<a[^>]*\bkg-cta-button\b[^>]*>(.*?)<\/a>/s);
     if (buttonTextMatch) {
         identifiers.buttonText = buttonTextMatch[1].replace(/<[^>]*>/g, '').trim();
     }
     
-    const buttonUrlMatch = content.match(/href="([^"]*)"[^>]*kg-cta-button/);
+    const buttonUrlMatch = content.match(/href="([^"]*)"[^>]*\bkg-cta-button\b/);
     if (buttonUrlMatch) {
         identifiers.buttonUrl = buttonUrlMatch[1];
     }
@@ -164,7 +164,9 @@ function shouldApplyVisibilityToCard(cardNode, gatedBlock) {
     
     // For other card types, apply basic matching
     // This could be enhanced with more specific matching logic per card type
-    return true;
+    // For now, only apply to the first matching card type to avoid false positives
+    // TODO: Implement proper matching logic for each card type
+    return false;
 }
 
 /**
