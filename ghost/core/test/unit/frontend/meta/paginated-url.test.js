@@ -164,4 +164,55 @@ describe('getPaginatedUrl', function () {
             urls.should.have.property('page10', '/blog/featured/page/10/');
         });
     });
+
+    describe('accented characters and special characters', function () {
+        it('should properly encode accented characters in tag URLs for pagination', function () {
+            // Setup tests - simulating a tag with accented characters
+            data.relativeUrl = '/tag/sécurité incendie/page/2/';
+            data.pagination = {prev: 1, next: 3};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results - URLs should be properly encoded
+            // 'sécurité incendie' should become 's%C3%A9curit%C3%A9%20incendie'
+            urls.should.have.property('next', 'http://127.0.0.1:2369/tag/s%C3%A9curit%C3%A9%20incendie/page/3/');
+            urls.should.have.property('prev', 'http://127.0.0.1:2369/tag/s%C3%A9curit%C3%A9%20incendie/');
+            urls.should.have.property('page1', '/tag/s%C3%A9curit%C3%A9%20incendie/');
+            urls.should.have.property('page5', '/tag/s%C3%A9curit%C3%A9%20incendie/page/5/');
+            urls.should.have.property('page10', '/tag/s%C3%A9curit%C3%A9%20incendie/page/10/');
+        });
+
+        it('should properly encode spaces in tag URLs for pagination', function () {
+            // Setup tests - simulating a tag with spaces
+            data.relativeUrl = '/tag/hello world/';
+            data.pagination = {prev: null, next: 2};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results - spaces should be encoded as %20
+            urls.should.have.property('next', 'http://127.0.0.1:2369/tag/hello%20world/page/2/');
+            urls.should.have.property('prev', null);
+            urls.should.have.property('page1', '/tag/hello%20world/');
+            urls.should.have.property('page5', '/tag/hello%20world/page/5/');
+            urls.should.have.property('page10', '/tag/hello%20world/page/10/');
+        });
+        
+        it('should handle mixed accented characters and special symbols', function () {
+            // Setup tests - simulating complex characters
+            data.relativeUrl = '/tag/café & résumé!/';
+            data.pagination = {prev: null, next: 2};
+
+            // Execute test
+            const urls = getTestUrls();
+
+            // Check results - all special characters should be properly encoded
+            urls.should.have.property('next', 'http://127.0.0.1:2369/tag/caf%C3%A9%20%26%20r%C3%A9sum%C3%A9!/page/2/');
+            urls.should.have.property('prev', null);
+            urls.should.have.property('page1', '/tag/caf%C3%A9%20%26%20r%C3%A9sum%C3%A9!/');
+            urls.should.have.property('page5', '/tag/caf%C3%A9%20%26%20r%C3%A9sum%C3%A9!/page/5/');
+            urls.should.have.property('page10', '/tag/caf%C3%A9%20%26%20r%C3%A9sum%C3%A9!/page/10/');
+        });
+    });
 });
