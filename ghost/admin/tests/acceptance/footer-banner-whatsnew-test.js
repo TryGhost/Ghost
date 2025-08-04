@@ -65,7 +65,7 @@ describe('Acceptance: FooterBanner WhatsNew', function () {
         expect(find('.gh-sidebar-banner.gh-whatsnew-toast')).to.not.exist;
     });
 
-    it('dismisses the banner when "What\'s New" in the user profile dropdown is clicked', async function() {
+    it('dismisses the banner when "What\'s New" in the user profile dropdown is clicked', async function () {
         await visit('/posts');
 
         await click('.gh-nav .gh-nav-bottom .ember-basic-dropdown-trigger');
