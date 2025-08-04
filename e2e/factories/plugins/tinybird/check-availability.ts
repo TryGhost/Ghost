@@ -1,4 +1,4 @@
-import {getTinybirdConfig} from './config';
+import {getTinybirdConfig} from '../../config/persistence';
 import {FetchHttpClient} from './interfaces';
 
 /**
@@ -8,7 +8,7 @@ export async function isTinybirdAvailable(): Promise<boolean> {
     try {
         const config = getTinybirdConfig();
         const httpClient = new FetchHttpClient();
-        
+
         // Try to hit the Tinybird endpoint
         const response = await httpClient.fetch(`${config.host}/v0/pipes`, {
             method: 'GET',
@@ -16,7 +16,7 @@ export async function isTinybirdAvailable(): Promise<boolean> {
                 Authorization: `Bearer ${config.token}`
             }
         });
-        
+
         return response.ok;
     } catch (error) {
         return false;

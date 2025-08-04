@@ -141,14 +141,14 @@ data-factory/
 │   ├── ghost/
 │   │   ├── posts/        # Post factory
 │   │   ├── ghost-plugin.ts # Ghost plugin coordinator
-│   │   ├── config.ts     # Ghost configuration
+│   │   ├── persistence.ts     # Ghost configuration
 │   │   └── database.ts   # Database utilities
 │   └── tinybird/
 │       ├── page-hits/    # Page hit factory
 │       ├── tinybird-plugin.ts # Tinybird plugin coordinator
-│       ├── config.ts     # Tinybird configuration
+│       ├── persistence.ts     # Tinybird configuration
 │       └── interfaces.ts # HTTP client interfaces
-├── base-factory.ts       # Base factory class
+├── factory.ts       # Base factory class
 ├── data-factory.ts       # Main coordinator
 ├── playwright.ts      # Playwright integration
 ├── tests/                # Test suite

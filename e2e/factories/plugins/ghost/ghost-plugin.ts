@@ -1,8 +1,7 @@
 import type {Knex} from 'knex';
 import {BasePlugin} from '../base-plugin';
 import {createDatabase} from './database';
-import {PostFactory} from './posts/post-factory';
-import type {PostOptions, PostResult} from './posts/types';
+import {PostFactory, PostOptions, PostResult} from '../../factories/post-factory';
 import {
     KnexPersistenceAdapter,
     PersistenceAdapter,
@@ -21,7 +20,7 @@ export interface GhostPluginOptions {
 export class GhostPlugin extends BasePlugin {
     readonly name = 'ghost';
 
-    private db: Knex;
+    private readonly db: Knex;
     postFactory: PostFactory;
 
     constructor(options: GhostPluginOptions = {}) {

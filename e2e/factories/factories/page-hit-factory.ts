@@ -1,36 +1,72 @@
-import {Factory} from '../../../base-factory';
+import {Factory} from './factory';
 import {faker} from '@faker-js/faker';
-import {generateUuid} from '../../../utils';
-import type {PageHitOptions, PageHitResult} from './types';
+import {generateUuid} from '../utils/utils';
+
+// Tinybird Page Hit Options
+export interface PageHitOptions {
+    timestamp?: Date;
+    session_id?: string;
+    post_uuid?: string;
+    member_uuid?: string;
+    member_status?: 'free' | 'paid' | 'comped' | 'undefined';
+    pathname?: string;
+    referrer?: string;
+    user_agent?: string;
+    locale?: string;
+    location?: string;
+}
+
+// Tinybird Page Hit Result
+export interface PageHitResult {
+    timestamp: string;
+    action: 'page_hit';
+    version: '1';
+    session_id: string;
+    payload: {
+        site_uuid: string;
+        member_uuid: string;
+        member_status: string;
+        post_uuid: string;
+        pathname: string;
+        referrer: string;
+        'user-agent': string;
+        locale: string;
+        location: string;
+        href: string;
+        meta: {
+            referrerSource?: string;
+        };
+    };
+}
 
 export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     name = 'pageHit';
     entityType = 'analytics_events'; // Maps to Tinybird datasource
     private createdSessionIds = new Set<string>();
     private eventCount = 0;
-    
+
     constructor(
         private siteUuid: string
     ) {
         super();
     }
-    
+
     async destroy(): Promise<void> {
         // Clear tracked sessions
         this.createdSessionIds.clear();
         this.eventCount = 0;
     }
-    
+
     /**
      * Build a page hit event without sending it
      */
     build(options?: PageHitOptions): PageHitResult {
         const timestamp = options?.timestamp || new Date();
         const pathname = options?.pathname || '/';
-        
+
         // Generate new session_id if not provided
         const sessionId = options?.session_id || generateUuid();
-        
+
         // Build the event
         const event: PageHitResult = {
             timestamp: timestamp.toISOString().replace('T', ' ').slice(0, -1),
@@ -51,22 +87,22 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
                 meta: {}
             }
         };
-        
+
         // Add referrer source if we have a referrer
         if (options?.referrer) {
             event.payload.meta.referrerSource = this.getReferrerSource(options.referrer);
         }
-        
+
         return event;
     }
-    
+
     /**
      * Override extractId to use session_id as the identifier
      */
     protected extractId(entity: PageHitResult): string | undefined {
         return entity.session_id;
     }
-    
+
     /**
      * Build and send a page hit event to Tinybird
      * Override to track sessions for custom cleanup
@@ -74,14 +110,14 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     async create(options?: PageHitOptions): Promise<PageHitResult> {
         // Use base class create which will call our build() and use persistence
         const event = await super.create(options);
-        
+
         // Track the session for our custom session-based cleanup
         this.createdSessionIds.add(event.session_id);
         this.eventCount += 1;
-        
+
         return event;
     }
-    
+
     /**
      * Parse referrer source from URL
      */
@@ -96,17 +132,17 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
             't.co': 'Twitter',
             'facebook.com': 'Facebook'
         };
-        
+
         // Check domains in order (more specific first)
         for (const [domain, source] of Object.entries(sourceMap)) {
             if (referrer.includes(domain)) {
                 return source;
             }
         }
-        
+
         return new URL(referrer).hostname;
     }
-    
+
     /**
      * Create multiple hits for the same session
      */
@@ -121,7 +157,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
         }
         return hits;
     }
-    
+
     /**
      * Create a new session and return its ID for reuse
      */
@@ -130,7 +166,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
         this.createdSessionIds.add(sessionId);
         return sessionId;
     }
-    
+
     /**
      * Get statistics about created data
      */

@@ -1,8 +1,7 @@
 import {BasePlugin} from '../base-plugin';
-import {PageHitFactory} from './page-hits/page-hit-factory';
-import {getTinybirdConfig} from './config';
+import {PageHitFactory, PageHitResult, PageHitOptions} from '../../factories/page-hit-factory';
+import {tinybirdConfig} from '../../config/persistence';
 import type {TinybirdConfig} from './interfaces';
-import type {PageHitOptions, PageHitResult} from './page-hits/types';
 import {
     EntityRegistry,
     PersistenceAdapter,
@@ -23,9 +22,8 @@ export class TinybirdPlugin extends BasePlugin {
 
     constructor(options: TinybirdPluginOptions = {}) {
         super();
-        this.config = options.config ?? getTinybirdConfig();
+        this.config = options.config ?? tinybirdConfig();
 
-        // Set persistence adapter if provided
         if (options.persistence) {
             this.setPersistenceAdapter(options.persistence);
         }
@@ -93,9 +91,6 @@ export class TinybirdPlugin extends BasePlugin {
         });
     }
 
-    // *
-    // Convenience methods
-    // *
     createNewSession(): string {
         return this.pageHits.createNewSession();
     }
