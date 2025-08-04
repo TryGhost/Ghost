@@ -2,21 +2,12 @@ import {test, expect} from '../../fixtures/playwright';
 import {isTinybirdAvailable} from '../../health_checks/check-availability';
 
 test.describe('Tinybird Plugin', () => {
-    let tinybirdAvailable = false;
-
-    test.beforeAll(async () => {
-        tinybirdAvailable = await isTinybirdAvailable();
-        if (!tinybirdAvailable) {
-            // eslint-disable-next-line no-console
-            console.warn('⚠️  Tinybird is not available. Tinybird tests will be skipped. Run `tb local` to enable these tests.');
+    test.beforeAll(async ({}, testInfo) => {
+        if (!await isTinybirdAvailable()) {
+            testInfo.skip(true, 'Tinybird is not available.');
         }
     });
 
-    test.beforeEach(async ({}, testInfo) => {
-        if (!tinybirdAvailable) {
-            testInfo.skip();
-        }
-    });
     test('should create a page hit with defaults', async ({tinybird}) => {
         const hit = await tinybird.createPageHit();
 

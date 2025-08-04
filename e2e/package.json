@@ -12,7 +12,7 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
-    "test:factory": "playwright test --config=data-factory/playwright.config.mjs",
+    "test:factory": "playwright test --config=factories/playwright.config.mjs",
     "test:types": "tsc --noEmit",
     "lint": "eslint helpers factories --ext .ts --cache"
   },

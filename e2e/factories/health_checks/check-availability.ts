@@ -13,6 +13,11 @@ export async function isTinybirdAvailable(): Promise<boolean> {
             }
         });
 
+        if (!response.ok) {
+            // eslint-disable-next-line no-console
+            console.warn('⚠️  Tinybird is not available. Tinybird tests will be skipped. Run `tb local` to enable these tests.');
+        }
+
         return response.ok;
     } catch (error) {
         return false;

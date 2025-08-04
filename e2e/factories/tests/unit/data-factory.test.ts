@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test';
-import {GhostPlugin, TinybirdPlugin, BasePlugin} from '../../index';
+import {GhostPlugin, TinybirdPlugin, BasePlugin} from '../../data-management';
 import {DataFactory} from '../../data-management/data-factory';
 
 test.describe('DataFactory', () => {

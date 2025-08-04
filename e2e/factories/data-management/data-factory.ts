@@ -1,6 +1,6 @@
-import type {DataFactoryPlugin} from '../plugins/base-plugin';
-import {GhostPlugin} from '../plugins/ghost-plugin';
-import {TinybirdPlugin} from '../plugins/tinybird-plugin';
+import type {DataFactoryPlugin} from './base-plugin';
+import {GhostPlugin} from './ghost-plugin';
+import {TinybirdPlugin} from './tinybird-plugin';
 import {getSiteUuid} from '../utils/database';
 
 export interface DataFactoryOptions {
@@ -35,7 +35,6 @@ export class DataFactory {
     }
 
     async initialize(): Promise<void> {
-        // Setup all plugins
         for (const plugin of this.plugins.values()) {
             await plugin.setup();
         }

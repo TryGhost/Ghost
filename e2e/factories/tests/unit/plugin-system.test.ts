@@ -1,5 +1,5 @@
 import {test, expect} from '@playwright/test';
-import {GhostPlugin, BasePlugin} from '../../index';
+import {GhostPlugin, BasePlugin} from '../../data-management';
 import {DataFactory} from '../../data-management/data-factory';
 
 // Test plugin for testing the plugin system
