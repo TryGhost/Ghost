@@ -54,6 +54,15 @@ describe('Cache-Control middleware', function () {
         });
     });
 
+    it('correctly sets the noCache profile headers', function (done) {
+        cacheControl('noCache')(null, res, function (a) {
+            should.not.exist(a);
+            res.set.calledOnce.should.be.true();
+            res.set.calledWith({'Cache-Control': 'no-cache, max-age=0, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0'}).should.be.true();
+            done();
+        });
+    });
+
     it('will not set headers without a profile', function (done) {
         cacheControl()(null, res, function (a) {
             should.not.exist(a);

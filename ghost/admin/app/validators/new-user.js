@@ -12,7 +12,7 @@ export default BaseValidator.extend(PasswordValidatorMixin, {
     name(model) {
         let name = model.name;
 
-        if (!validator.isLength(name || '', 1)) {
+        if (!validator.isLength(name || '', {min: 1})) {
             model.errors.add('name', 'Please enter a name.');
             model.hasValidated.addObject('email');
             this.invalidate();

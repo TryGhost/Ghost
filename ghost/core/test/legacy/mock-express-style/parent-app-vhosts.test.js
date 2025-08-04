@@ -23,7 +23,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('no separate admin', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -128,7 +128,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -279,7 +279,7 @@ describe('Integration - Web - vhosts', function () {
 
     describe('separate admin host w/ admin redirects disabled', function () {
         before(async function () {
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');
@@ -318,7 +318,7 @@ describe('Integration - Web - vhosts', function () {
     describe('same host separate protocol', function () {
         before(async function () {
             localUtils.urlService.resetGenerators();
-            localUtils.defaultMocks(sinon, {amp: true});
+            localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             configUtils.set('url', 'http://example.com');

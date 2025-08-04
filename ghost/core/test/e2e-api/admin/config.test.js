@@ -1,4 +1,5 @@
-const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
+const assert = require('assert/strict');
+const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyContentLength, stringMatching} = matchers;
 
 /**
@@ -12,6 +13,10 @@ describe('Config API', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
+    });
+
+    afterEach(async function () {
+        await configUtils.restore();
     });
 
     describe('As Unauthorized User', function () {
@@ -41,6 +46,17 @@ describe('Config API', function () {
                     'content-version': anyContentVersion,
                     'content-length': anyContentLength, // Length can differ slightly based on the database, environment and version values
                     etag: anyEtag
+                });
+        });
+
+        it('Will receive exploreTestimonialsUrl if set', async function () {
+            // This is only set in production config, so we override it to test it works
+            configUtils.set('explore:testimonials_url', 'https://testing.com/that/this/is/set/correctly');
+            await agent
+                .get('/config/')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.config.exploreTestimonialsUrl, 'https://testing.com/that/this/is/set/correctly');
                 });
         });
     });

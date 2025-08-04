@@ -16,13 +16,6 @@ describe('getOgType', function () {
         should.equal(ogType, 'article');
     });
 
-    it('should return og type article if context is type amp', function () {
-        const ogType = getOgType({
-            context: ['amp', 'post']
-        });
-        should.equal(ogType, 'article');
-    });
-
     it('should return og type website if context is not author or post', function () {
         const ogType = getOgType({
             context: ['tag']

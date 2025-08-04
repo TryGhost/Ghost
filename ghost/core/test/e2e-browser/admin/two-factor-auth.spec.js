@@ -4,13 +4,13 @@ const test = require('../fixtures/ghost-test');
 
 const {
     AdminLoginPage,
-    AdminDashboardPage
+    AdminAnalyticsPage
 } = require('./pages/index');
 
 // NOTE: The tests do not use the shared page, as it needs to clear cookies
 test.describe('Two-Factor authentication', () => {
     function fetchOwnerUserFixture() {
-        return DataGenerator.Content.users.find(user => user.id === '1');
+        return DataGenerator.Content.users[0];
     }
 
     test.beforeEach(async ({page}) => {
@@ -25,8 +25,8 @@ test.describe('Two-Factor authentication', () => {
         await adminLoginPage.signIn(email, password);
         await adminLoginPage.verifyTwoFactorToken(await verificationToken.getToken());
 
-        const adminDashboardPage = new AdminDashboardPage(page);
-        await expect(adminDashboardPage.siteTitle).toHaveText(/The Local Test/);
+        const adminAnalyticsPage = new AdminAnalyticsPage(page);
+        await expect(adminAnalyticsPage.siteTitle).toHaveText(/The Local Test/);
     });
 
     test('Clicking the resend button sends a second email', async ({page, verificationToken}) => {
@@ -40,7 +40,7 @@ test.describe('Two-Factor authentication', () => {
 
         await adminLoginPage.verifyTwoFactorToken(await verificationToken.getToken());
 
-        const adminDashboardPage = new AdminDashboardPage(page);
-        await expect(adminDashboardPage.siteTitle).toHaveText(/The Local Test/);
+        const adminAnalyticsPage = new AdminAnalyticsPage(page);
+        await expect(adminAnalyticsPage.siteTitle).toHaveText(/The Local Test/);
     });
 });

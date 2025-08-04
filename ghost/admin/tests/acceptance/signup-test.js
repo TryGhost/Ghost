@@ -1,5 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {blur, click, currentRouteName, fillIn, find, focus} from '@ember/test-helpers';
+import {blur, click, currentRouteName, currentURL, fillIn, find, focus} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -10,9 +11,16 @@ describe('Acceptance: Signup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    it('can signup successfully', async function () {
-        let server = this.server;
+    beforeEach(function () {
+        mockAnalyticsApps();
+    });
 
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
+
+    // Helper function to setup signup flow
+    async function setupSignupFlow(server, {fillForm = true, role = 'Author'} = {}) {
         server.get('/authentication/invitation', function () {
             return {
                 invitation: [{valid: true}]
@@ -27,7 +35,7 @@ describe('Acceptance: Signup', function () {
             expect(params.invitation[0].token).to.equal('MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
             // ensure that `/users/me/` request returns a user
-            let role = server.create('role', {name: 'Author'});
+            role = server.create('role', {name: role});
             users.create({email: 'kevin@test2@ghost.org', roles: [role]});
 
             return {
@@ -42,6 +50,17 @@ describe('Acceptance: Signup', function () {
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
         expect(currentRouteName()).to.equal('signup');
+
+        if (fillForm) {
+            await fillIn('[data-test-input="name"]', 'Test User');
+            await fillIn('[data-test-input="email"]', 'kevin+test2@ghost.org');
+            await fillIn('[data-test-input="password"]', 'thisissupersafe');
+        }
+    }
+
+    it('can signup successfully', async function () {
+        // Setup the signup flow but don't fill the form yet (we'll test validation)
+        await setupSignupFlow(this.server, {fillForm: false});
 
         // focus out in Name field triggers inline error
         await focus('[data-test-input="name"]');
@@ -210,5 +229,28 @@ describe('Acceptance: Signup', function () {
 
         expect(currentRouteName()).to.equal('signin');
         expect(find('.gh-alert-content').textContent).to.have.string('not exist');
+    });
+
+    describe('success routing', function () {
+        it('redirects admin user to analytics', async function () {
+            await setupSignupFlow(this.server, {role: 'Administrator'});
+            await click('[data-test-button="signup"]');
+
+            expect(currentURL()).to.equal('/analytics');
+        });
+
+        it('redirects contributor user to posts', async function () {
+            await setupSignupFlow(this.server, {role: 'Contributor'});
+            await click('[data-test-button="signup"]');
+
+            expect(currentURL()).to.equal('/posts');
+        });
+
+        it('redirects author user to site', async function () {
+            await setupSignupFlow(this.server, {role: 'Author'});
+            await click('[data-test-button="signup"]');
+
+            expect(currentURL()).to.equal('/site');
+        });
     });
 });

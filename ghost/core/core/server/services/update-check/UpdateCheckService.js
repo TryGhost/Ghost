@@ -116,7 +116,10 @@ class UpdateCheckService {
             const hash = (await this.api.settings.read(_.extend({key: 'db_hash'}, internal))).settings[0];
             const theme = (await this.api.settings.read(_.extend({key: 'active_theme'}, internal))).settings[0];
             const posts = await this.api.posts.browse();
-            const users = await this.api.users.browse(internal);
+            const users = await this.api.users.browse({
+                ...internal,
+                include: ['roles']
+            });
             const npm = await util.promisify(exec)('npm -v');
 
             const blogUrl = this.config.siteUrl;
@@ -128,7 +131,20 @@ class UpdateCheckService {
             data.theme = theme ? theme.value : '';
             data.post_count = posts && posts.meta && posts.meta.pagination ? posts.meta.pagination.total : 0;
             data.user_count = users && users.users && users.users.length ? users.users.length : 0;
-            data.blog_created_at = users && users.users && users.users[0] && users.users[0].created_at ? moment(users.users[0].created_at).unix() : '';
+
+            let blogCreatedAt = null;
+
+            if (users && users.users && users.users.length > 0) {
+                const ownerUser = users.users.find(user => user.roles.some(role => role.name === 'Owner'));
+
+                if (ownerUser) {
+                    blogCreatedAt = ownerUser.created_at;
+                } else {
+                    blogCreatedAt = users.users[0].created_at;
+                }
+            }
+
+            data.blog_created_at = blogCreatedAt ? moment(blogCreatedAt).unix() : '';
             data.npm_version = npm.stdout.trim();
 
             return data;

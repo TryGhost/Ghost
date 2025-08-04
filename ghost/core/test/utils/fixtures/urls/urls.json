@@ -1,12 +1,12 @@
 {
-    "1": {
+    "5951f5fc0000000000000000": {
         "url": "/author/joe-bloggs/",
         "generatorId": 3,
         "resource": {
             "_events": {},
             "_eventsCount": 2,
             "data": {
-                "id": "1",
+                "id": "5951f5fc0000000000000000",
                 "name": "Joe Bloggs",
                 "slug": "joe-bloggs",
                 "email": "jbloggs@example.com",
@@ -16,9 +16,7 @@
                 "visibility": "public",
                 "last_seen": "2021-11-17T12:56:49.000Z",
                 "created_at": "2021-11-17T12:56:48.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:49.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:49.000Z"
             },
             "config": {
                 "type": "authors",
@@ -43,11 +41,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:44.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -100,11 +96,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:45.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -157,11 +151,9 @@
                 "visibility": "paid",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:46.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -214,11 +206,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:47.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -271,11 +261,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:48.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -328,11 +316,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:49.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -385,11 +371,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:50.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -443,11 +427,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:51.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "author": "5951f5fca366002ebd5dbef7",
                 "primary_author": null,
@@ -477,11 +459,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:52.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "author": "5951f5fca366002ebd5dbef7",
                 "primary_author": null,
@@ -511,11 +491,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:53.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "author": "5951f5fca366002ebd5dbef7",
                 "primary_author": null,
@@ -545,11 +523,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:45.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:45.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:54.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "author": "5951f5fca366002ebd5dbef7",
                 "primary_author": null,
@@ -584,9 +560,7 @@
                 "canonical_url": null,
                 "accent_color": null,
                 "created_at": "2021-11-17T12:56:43.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:43.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:43.000Z"
             },
             "config": {
                 "type": "tags",
@@ -611,9 +585,7 @@
                 "visibility": "public",
                 "last_seen": null,
                 "created_at": "2021-11-17T12:56:44.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:44.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:44.000Z"
             },
             "config": {
                 "type": "authors",
@@ -638,11 +610,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1",
                 "published_at": "2015-01-01T00:00:00.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -655,7 +625,7 @@
                     }
                 ],
                 "posts_meta": {},
-                "author": "1",
+                "author": "5951f5fc0000000000000000",
                 "primary_author": null,
                 "primary_tag": {
                     "id": "618ba1febe2896088840a6db",
@@ -685,11 +655,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1",
                 "published_at": "2015-01-02T00:00:00.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -702,7 +670,7 @@
                     }
                 ],
                 "posts_meta": {},
-                "author": "1",
+                "author": "5951f5fc0000000000000000",
                 "primary_author": null,
                 "primary_tag": {
                     "id": "618ba1febe2896088840a6db",
@@ -738,9 +706,7 @@
                 "canonical_url": null,
                 "accent_color": null,
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:41.000Z"
             },
             "config": {
                 "type": "tags",
@@ -771,9 +737,7 @@
                 "canonical_url": null,
                 "accent_color": null,
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:41.000Z"
             },
             "config": {
                 "type": "tags",
@@ -798,11 +762,9 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1",
                 "published_at": "2015-01-03T00:00:00.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [
                     {
@@ -811,7 +773,7 @@
                     }
                 ],
                 "posts_meta": {},
-                "author": "1",
+                "author": "5951f5fc0000000000000000",
                 "primary_author": null,
                 "primary_tag": {
                     "id": "618ba1fdbe2896088840a675",
@@ -847,9 +809,7 @@
                 "canonical_url": null,
                 "accent_color": null,
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
-                "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1"
+                "updated_at": "2021-11-17T12:56:41.000Z"
             },
             "config": {
                 "type": "tags",
@@ -874,15 +834,13 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:41.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "tags": [],
                 "posts_meta": {},
-                "author": "1",
+                "author": "5951f5fc0000000000000000",
                 "primary_author": null,
                 "primary_tag": null
             },
@@ -910,14 +868,12 @@
                 "visibility": "public",
                 "email_recipient_filter": "none",
                 "created_at": "2021-11-17T12:56:41.000Z",
-                "created_by": "1",
                 "updated_at": "2021-11-17T12:56:41.000Z",
-                "updated_by": "1",
                 "published_at": "2021-11-17T12:56:41.000Z",
-                "published_by": "1",
+                "published_by": "5951f5fc0000000000000000",
                 "canonical_url": null,
                 "posts_meta": {},
-                "author": "1"
+                "author": "5951f5fc0000000000000000"
             },
             "config": {
                 "type": "pages",

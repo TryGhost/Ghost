@@ -82,9 +82,9 @@ const Posts: React.FC<PostsProps> = ({
                             type={activity.type}
                             onClick={() => {
                                 if (activity.object.type === 'Note') {
-                                    navigate(`/feed/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/notes/${encodeURIComponent(activity.object.id)}`);
                                 } else if (activity.object.type === 'Article') {
-                                    navigate(`/inbox/${encodeURIComponent(activity.object.id)}`);
+                                    navigate(`/reader/${encodeURIComponent(activity.object.id)}`);
                                 }
                             }}
                         />

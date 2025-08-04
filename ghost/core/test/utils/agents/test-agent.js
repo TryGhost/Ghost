@@ -20,16 +20,27 @@ class TestAgent extends Agent {
     }
 
     /**
-     * Reset the authorization header.
+     * Delete the authorization header.
      * Authorization header is set when using token authentication.
      * We need to reset the authorization header when logging in with username/password.
      *
      * @returns {void}
      */
-    resetAuth() {
+    clearAuthHeaders() {
         if (this.defaults.headers.Authorization) {
             delete this.defaults.headers.Authorization;
         }
+    }
+
+    /**
+     * Delete the authorization header and cookies.
+     * Ensures that the agent is not authenticated.
+     *
+     * @returns {void}
+     */
+    resetAuthentication() {
+        this.clearAuthHeaders();
+        this.clearCookies();
     }
 }
 

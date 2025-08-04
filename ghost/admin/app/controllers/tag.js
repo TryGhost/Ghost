@@ -9,6 +9,8 @@ export default class TagController extends Controller {
     @service modals;
     @service notifications;
     @service router;
+    @service tagsManager;
+
     @inject config;
 
     get tag() {
@@ -43,8 +45,12 @@ export default class TagController extends Controller {
             if (tag.get('errors').length !== 0) {
                 return;
             }
+            const wasNew = tag.isNew;
             yield tag.save();
 
+            if (wasNew) {
+                this.tagsManager.tagsScreenInfinityModel?.pushObjects([tag]);
+            }
             // replace 'new' route with 'tag' route
             this.replaceRoute('tag', tag);
 

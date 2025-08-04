@@ -1,6 +1,8 @@
 const logging = require('@tryghost/logging');
 const {default: ObjectID} = require('bson-objectid');
-const {createTransactionalMigration, meta} = require('../../utils');
+const {createTransactionalMigration} = require('../../utils');
+
+const MIGRATION_USER = 1;
 
 module.exports = createTransactionalMigration(
     async function up(knex) {
@@ -18,7 +20,7 @@ module.exports = createTransactionalMigration(
             id: (new ObjectID()).toHexString(),
             name: 'Ghost Explore Integration',
             description: 'Internal Integration for the Ghost Explore directory',
-            created_by: meta.MIGRATION_USER,
+            created_by: MIGRATION_USER,
             created_at: knex.raw('current_timestamp')
         });
     },

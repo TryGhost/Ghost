@@ -237,7 +237,6 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
             stripe_price_id: stripePrice.stripe_price_id,
             start_date: dateToDatabaseString(startDate),
             created_at: dateToDatabaseString(startDate),
-            created_by: 'unused',
             mrr,
             plan_id: stripeProduct.stripe_product_id,
             plan_nickname: `${ghostProduct.name} - ${stripePrice.nickname}`,

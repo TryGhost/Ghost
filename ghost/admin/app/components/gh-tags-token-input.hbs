@@ -1,0 +1,24 @@
+<GhTokenInput
+    @extra={{hash
+        tokenComponent=(component "gh-token-input/tag-token")
+    }}
+    @onChange={{this.updateTags}}
+    @onCreate={{this.createTag}}
+    @onOpen={{this.loadInitialTags}}
+    @options={{this.availableTags}}
+    @optionsComponent={{component "power-select-vertical-collection-options" lastReached=(perform this.loadMoreTagsTask)}}
+    @registerAPI={{this.registerPowerSelectAPI}}
+    @renderInPlace={{@renderInPlace}}
+    {{!-- null falls back to GhTokenInput's client-side search --}}
+    @search={{if this.useServerSideSearch (perform this.searchTagsTask) null}}
+    @selected={{@selected}}
+    {{!-- null falls back to GhTokenInput's default of showing create option when nothing matches client-side search results --}}
+    @showCreateWhen={{if this.useServerSideSearch this.showCreateWhen null}}
+    @triggerId={{@triggerId}}
+    @triggerClass={{@triggerClass}}
+    @placeholder={{@placeholder}}
+    @allowCreation={{@allowCreation}}
+    @disabled={{@disabled}}
+    @selectedItemComponent={{@selectedItemComponent}}
+    @class={{@class}}
+/>

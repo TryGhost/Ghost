@@ -101,7 +101,6 @@ describe('templates', function () {
                 hasTemplateStub.withArgs('page').returns(true);
                 hasTemplateStub.withArgs('page-about').returns(true);
                 hasTemplateStub.withArgs('post').returns(true);
-                hasTemplateStub.withArgs('amp').returns(true);
             });
 
             it('returns first matching template', function () {
@@ -111,7 +110,6 @@ describe('templates', function () {
             });
 
             it('returns correctly if template list is a string', function () {
-                _private.pickTemplate('amp', 'fallback').should.eql('amp');
                 _private.pickTemplate('subscribe', 'fallback').should.eql('fallback');
                 _private.pickTemplate('post', 'fallback').should.eql('post');
             });

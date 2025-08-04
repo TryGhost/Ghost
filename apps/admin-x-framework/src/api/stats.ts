@@ -94,7 +94,10 @@ export type MrrTotalItem = {
 export type MrrHistoryResponseType = {
     stats: MrrHistoryItem[];
     meta: {
-        totals: MrrTotalItem[];
+        totals: {
+            mrr: number;
+            currency: string;
+        }[];
     };
 };
 
@@ -148,13 +151,46 @@ export type TopPostViewsStats = {
     title: string;
     published_at: string;
     feature_image: string;
+    status: string;
+    authors: string;
     views: number;
+    sent_count: number | null;
+    opened_count: number | null;
     open_rate: number | null;
+    clicked_count: number;
+    click_rate: number | null;
     members: number;
+    free_members: number;
+    paid_members: number;
 };
 
 export type TopPostViewsResponseType = {
     stats: TopPostViewsStats[];
+};
+
+// Types for subscription stats
+export type SubscriptionStatItem = {
+    date: string;
+    tier: string;
+    cadence: string;
+    positive_delta: number;
+    negative_delta: number;
+    signups: number;
+    cancellations: number;
+    count: number;
+};
+
+export type SubscriptionStatsResponseType = {
+    stats: SubscriptionStatItem[];
+    meta: {
+        tiers: string[];
+        cadences: string[];
+        totals: {
+            tier: string;
+            cadence: string;
+            count: number;
+        }[];
+    };
 };
 
 // Requests
@@ -169,6 +205,7 @@ const newsletterSubscriberStatsDataType = 'NewsletterSubscriberStatsResponseType
 const postGrowthStatsDataType = 'PostGrowthStatsResponseType';
 const mrrHistoryDataType = 'MrrHistoryResponseType';
 const topPostViewsDataType = 'TopPostViewsResponseType';
+const subscriptionStatsDataType = 'SubscriptionStatsResponseType';
 
 export const useTopContent = createQuery<TopContentResponseType>({
     dataType,
@@ -197,6 +234,11 @@ export const usePostGrowthStats = createQueryWithId<PostGrowthStatsResponseType>
 export const useMrrHistory = createQuery<MrrHistoryResponseType>({
     dataType: mrrHistoryDataType,
     path: '/stats/mrr/'
+});
+
+export const useSubscriptionStats = createQuery<SubscriptionStatsResponseType>({
+    dataType: subscriptionStatsDataType,
+    path: '/stats/subscriptions/'
 });
 
 export const usePostStats = createQueryWithId<PostStatsResponseType>({

@@ -4,7 +4,9 @@ import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
 export default class TagsController extends Controller {
+    @service infinity;
     @service router;
+    @service tagsManager;
 
     queryParams = ['type'];
     @tracked type = 'public';
@@ -14,16 +16,22 @@ export default class TagsController extends Controller {
     }
 
     get filteredTags() {
-        return this.tags.filter((tag) => {
-            return (!tag.isNew && (!this.type || tag.visibility === this.type));
+        // new tags are preemptively added to the client-side tagsScreenInfinityModel,
+        // but if the new tag is included in a later pagination request it will end up duplicated
+        // this makes sure each tag only shows up once
+        const tagMap = new Map();
+        
+        this.tags.forEach((tag) => {
+            if (!tag.isNew && !tag.isDestroyed && !tag.isDestroying && !tag.isDeleted && (!this.type || tag.visibility === this.type)) {
+                tagMap.set(tag.id, tag);
+            }
         });
+        
+        return [...tagMap.values()];
     }
 
     get sortedTags() {
-        return this.filteredTags.sort((tagA, tagB) => {
-            // ignorePunctuation means the # in internal tag names is ignored
-            return tagA.name.localeCompare(tagB.name, undefined, {ignorePunctuation: true});
-        });
+        return this.tagsManager.sortTags(this.filteredTags);
     }
 
     @action
@@ -34,5 +42,10 @@ export default class TagsController extends Controller {
     @action
     newTag() {
         this.router.transitionTo('tag.new');
+    }
+
+    @action
+    loadMoreTags() {
+        this.infinity.infinityLoad(this.model);
     }
 }

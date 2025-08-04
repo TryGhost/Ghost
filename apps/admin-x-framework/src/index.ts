@@ -6,10 +6,16 @@ export {FrameworkProvider, useFramework} from './providers/FrameworkProvider';
 export type {AppSettings, BaseAppProps, AppContextType, AppProviderProps} from './providers/AppProvider';
 export {AppProvider, useAppContext} from './providers/AppProvider';
 
-// Analytics
-export type {AnalyticsFeatures} from './hooks/useAnalyticsFeatures';
-export {useAnalyticsFeatures} from './hooks/useAnalyticsFeatures';
+// Hooks
 export {useActiveVisitors} from './hooks/useActiveVisitors';
+export {default as useForm} from './hooks/useForm';
+export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/useForm';
+export {default as useHandleError} from './hooks/useHandleError';
+export {default as useFilterableApi} from './hooks/useFilterableApi';
+export {useTinybirdToken} from './hooks/useTinybirdToken';
+export type {UseTinybirdTokenResult} from './hooks/useTinybirdToken';
+export {useTinybirdQuery} from './hooks/useTinybirdQuery';
+export type {UseTinybirdQueryOptions} from './hooks/useTinybirdQuery';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
@@ -36,3 +42,7 @@ export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect
 // Data fetching
 export type {InfiniteData} from '@tanstack/react-query';
 export {useQueryClient} from '@tanstack/react-query';
+
+// API
+export type {TinybirdToken, TinybirdTokenResponseType} from './api/tinybird';
+export {getTinybirdToken} from './api/tinybird';

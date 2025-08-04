@@ -22,7 +22,8 @@ module.exports = {
             'pintura',
             'signupForm',
             'stats',
-            'security'
+            'security',
+            'exploreTestimonialsUrl'
         ];
 
         frame.response = {

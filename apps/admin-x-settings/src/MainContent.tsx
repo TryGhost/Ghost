@@ -2,10 +2,9 @@ import ExitSettingsButton from './components/ExitSettingsButton';
 import Settings from './components/Settings';
 import Sidebar from './components/Sidebar';
 import Users from './components/settings/general/Users';
-import useFeatureFlag from './hooks/useFeatureFlag';
 import {Heading, confirmIfDirty, topLevelBackdropClasses, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {ReactNode, useEffect} from 'react';
-import {canAccessSettings, hasAdminAccess, isEditorUser} from '@tryghost/admin-x-framework/api/users';
+import {canAccessSettings, isEditorUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'react-hot-toast';
 import {useGlobalData} from './components/providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
@@ -25,7 +24,6 @@ const MainContent: React.FC = () => {
     const {currentUser} = useGlobalData();
     const {route, updateRoute, loadingModal} = useRouting();
     const {isDirty} = useGlobalDirtyState();
-    const hasActivityPub = useFeatureFlag('ActivityPub');
 
     const navigateAway = (escLocation: string) => {
         window.location.hash = escLocation;
@@ -35,11 +33,7 @@ const MainContent: React.FC = () => {
         const handleKeyDown = (event: KeyboardEvent) => {
             if (event.key === 'Escape') {
                 confirmIfDirty(isDirty, () => {
-                    if (hasActivityPub && hasAdminAccess(currentUser)) {
-                        navigateAway('/activitypub');
-                    } else {
-                        navigateAway('/dashboard');
-                    }
+                    navigateAway('/');
                 });
             }
         };
@@ -49,7 +43,7 @@ const MainContent: React.FC = () => {
         return () => {
             window.removeEventListener('keydown', handleKeyDown);
         };
-    }, [isDirty, hasActivityPub, currentUser]);
+    }, [isDirty]);
 
     useEffect(() => {
         // resets any toasts that may have been left open on initial load

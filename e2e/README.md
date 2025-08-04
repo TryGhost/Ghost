@@ -1,6 +1,12 @@
-# Ghost E2E Test Suite
+# Ghost End-To-End Test Suite
 
-End-to-end testing for Ghost using Playwright. This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
+This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
+
+## Prerequisites
+
+- **Node.js**: Version specified in `.nvmrc`
+- **Ghost instance**: Running and accessible (see setup below)
+- **Dependencies**: Installed via `yarn` from repository root
 
 ## Quick Start
 
@@ -17,108 +23,135 @@ yarn dev
 yarn test:e2e
 ```
 
-## Prerequisites
-
-- **Node.js**: Version specified in `.nvmrc`
-- **Ghost instance**: Running and accessible (see setup below)
-- **Dependencies**: Installed via `yarn` from repository root
-
 ## Running Tests
 
-### Locally with Development Ghost
+### Locally - with Development Ghost
 
 1. **Start Ghost in development mode:**
-   ```bash
-   # From repository root
-   yarn dev
-   ```
-   This starts Ghost on `http://localhost:2368`
+
+```bash
+# From repository root
+yarn dev
+```
+This starts Ghost on `http://localhost:2368`
 
 2. **Run e2e tests:**
-   ```bash
-   # From repository root
-   yarn test:e2e
-   
-   # Or directly from e2e directory
-   cd e2e
-   yarn test
-   ```
 
-### Locally with Custom Ghost Instance
+```bash
+# From repository root
+yarn test:e2e
+
+# Or directly from e2e directory
+cd e2e
+yarn test
+```
+
+### Locally - with Custom Ghost Instance
 
 If you have Ghost running on a different URL:
 
 ```bash
+# From repository root
 GHOST_BASE_URL=http://localhost:3000 yarn test:e2e
 ```
 
 ### Running Specific Tests
 
+Within `e2e` folder, run one of the following commands: 
+
 ```bash
-# Run all tests
+# All tests
 yarn test
 
-# Run frontend tests only
-yarn test:frontend
+# Specific test file
+yarn test specific/folder/testfile.spec.ts
 
-# Run a specific test file
-yarn test test/frontend/homepage.spec.ts
-
-# Run tests matching a pattern
+# Matching a pattern
 yarn test --grep "homepage"
 
-# Run with browser visible (for debugging)
-PLAYWRIGHT_DEBUG=1 yarn test:frontend
+# With browser visible (for debugging)
+yarn test --debug
 ```
 
-## Test Development
+## Tests Development
 
-### Project Structure
+The test suite is organized into separate directories for different areas/functions:
 
+### **Current Test Suites**
+- `tests/public/` - Public-facing site tests (homepage, posts, etc.)
+
+### **Suggested Additional Test Suites**
+- `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
+
+We can decide on additional sub-folders as we go.
+
+Example structure for admin tests:
+```text
+tests/admin/
+├── login.spec.ts
+├── posts.spec.ts
+└── settings.spec.ts
 ```
+
+Project folder structure can be seen below: 
+
+```text
 e2e/
-├── test/                  # Test suites organized by area
-│   ├── frontend/          # Frontend/public site tests
-│   │   └── homepage.spec.ts
-│   └── .eslintrc.js      # Test-specific ESLint config
-├── src/                  # Test utilities and helpers
-│   ├── pages/            # Page Object Models
-│   │   └── HomePage.ts   # Home page interactions
-│   └── index.ts          # Main exports
-├── playwright.config.mjs # Playwright configuration
-├── package.json         # Dependencies and scripts
-└── tsconfig.json        # TypeScript configuration
+├── tests/                      # All the tests
+│   ├── public/                 # Public site tests
+│   │   └── testname.spec.ts    # Test cases
+│   ├── admin/                  # Admin site tests
+│   │   └── testname.spec.ts    # Test cases
+│   └── .eslintrc.js            # Test-specific ESLint config
+├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
+│   ├── pages/                  # Page Object Models
+│   │   └── HomePage.ts         # Page Object
+│   ├── utils/                  # Utils
+│   │   └── math.ts             # Math related utils   
+│   └── index.ts                # Main exports
+├── playwright.config.mjs       # Playwright configuration
+├── package.json                # Dependencies and scripts
+└── tsconfig.json               # TypeScript configuration
 ```
 
 ### Writing Tests
 
-Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework with page objects:
+Tests use [Playwright Test](https://playwright.dev/docs/writing-tests) framework with page objects.
+Aim to format tests in Arrange Act Assert style - it will help you with directions when writing your tests.
 
 ```typescript
-import {test, expect} from '@playwright/test';
-import {HomePage} from '../src/pages/HomePage';
-
 test.describe('Ghost Homepage', () => {
-    test('homepage loads correctly', async ({page}) => {
+    test('loads correctly', async ({page}) => {
+        // ARRANGE - setup fixtures, create helpers, prepare things that helps will need to be executed
         const homePage = new HomePage(page);
         
+        // ACT - do the actions you need to do, to verify certain behaviour
         await homePage.goto();
-        await homePage.expectToBeLoaded();
+        
+        // ASSERT
+        await expect(homePage.title).toBeVisible();
     });
 });
 ```
 
-#### Using Page Objects
+### Using Page Objects
 
-Page objects encapsulate page interactions:
+Page objects encapsulate page elements, and interactions. To read more about them, check [this link out](https://www.selenium.dev/documentation/test_practices/encouraged/page_object_models/) and [this link](https://martinfowler.com/bliki/PageObject.html).
 
 ```typescript
 // Create a page object for admin login
 export class AdminLoginPage {
-    constructor(private page: Page) {}
+    private pageUrl:string;
+    
+    constructor(private page: Page) {
+        this.pageUrl = '/ghost'
+    }
+
+    async goto(urlToVisit = this.pageUrl) {
+        await this.page.goto(urlToVisit);
+    }
     
     async login(email: string, password: string) {
-        await this.page.goto('/ghost/');
         await this.page.fill('[name="identification"]', email);
         await this.page.fill('[name="password"]', password);
         await this.page.click('button[type="submit"]');
@@ -128,9 +161,9 @@ export class AdminLoginPage {
 
 ### Best Practices
 
-1. **Use page object patterns** for complex interactions
-2. **Add meaningful assertions** beyond just page loads
-3. **Use data-testid attributes** for reliable element selection
+1. **Use page object patterns** to separate page elements, actions on the pages, complex logic from tests. They should help you make them more readable and UI elements reusable.
+2. **Add meaningful assertions** beyond just page loads. Keep assertions in tests.
+3. **Use `data-testid` attributes** for reliable element selection, in case you **cannot** locate elements in a simple way. Example: `page.getByLabel('User Name')`. Avoid, css, xpath locators - they make tests brittle. 
 4. **Clean up test data** when tests modify Ghost state
 5. **Group related tests** in describe blocks
 
@@ -166,9 +199,6 @@ From the e2e directory:
 # Run all tests
 yarn test
 
-# Run specific test suites
-yarn test:frontend
-
 # Run TypeScript type checking
 yarn test:types
 
@@ -180,6 +210,7 @@ yarn build
 yarn dev           # Watch mode for TypeScript compilation
 ```
 
+## Resolving issues
 
 ### Ghost Not Starting
 
@@ -197,7 +228,7 @@ tail -f ghost/core/content/logs/ghost-dev.log
 
 1. **Screenshots**: Playwright captures screenshots on failure
 2. **Traces**: Available in `test-results/` directory
-3. **Debug Mode**: Run with `PLAYWRIGHT_DEBUG=1` to see browser
+3. **Debug Mode**: Run with `yarn test --debug` or `yarn test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
 
 ### Port Conflicts
@@ -211,37 +242,5 @@ lsof -i :2369
 
 # Kill conflicting processes
 kill -9 <PID>
-```
-
-## Extending the Test Suite
-
-The test suite is organized into separate directories for different areas/functions:
-
-### **Current Test Suites**
-- `test/frontend/` - Public-facing site tests (homepage, posts, etc.)
-
-### **Suggested Additional Test Suites**
-- `test/admin/` - Ghost admin panel tests (login, content creation, settings)
-- `test/members/` - Member-related functionality (signup, login, account management)
-- `test/api/` - API integration tests
-- `test/themes/` - Theme switching and customization tests
-- `test/analytics/` - Analytics-related tests (analytics tab, post analytics)
-
-### **Creating New Test Suites**
-
-1. **Create a new directory** under `test/` (e.g., `test/admin/`)
-2. **Add corresponding npm script** in `package.json`:
-   ```json
-   "test:admin": "playwright test test/admin"
-   ```
-3. **Create page objects** in `src/pages/` for the new area
-4. **Write tests** using the established patterns
-
-Example structure for admin tests:
-```
-test/admin/
-├── login.spec.ts
-├── posts.spec.ts
-└── settings.spec.ts
 ```
 

@@ -1,6 +1,5 @@
-import {chooseOptionInSelect, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, globalDataRequests, limitRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Newsletter settings', async () => {
     test('Supports creating a new newsletter', async ({page}) => {
@@ -342,7 +341,7 @@ test.describe('Newsletter settings', async () => {
                 }]
             }}
         }});
-        
+
         const awesomeNewsletterRow = section.getByRole('row', {name: /Awesome newsletter/});
         await awesomeNewsletterRow.hover();
 

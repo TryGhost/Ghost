@@ -16,7 +16,7 @@ export default BaseValidator.create({
             model.errors.add('email', 'Invalid email.');
             model.hasValidated.pushObject('email');
             this.invalidate();
-        } else if (!validator.isLength(email, 0, 191)) {
+        } else if (!validator.isLength(email, {max: 191})) {
             model.errors.add('email', 'Email is too long');
             model.hasValidated.pushObject('email');
             this.invalidate();

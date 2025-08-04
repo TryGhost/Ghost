@@ -1,5 +1,5 @@
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { parseReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrer } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -40,7 +40,7 @@ export class GhostStats {
 
         // Get required parameters
         config.host = currentScript.getAttribute('data-host');
-        config.token = currentScript.getAttribute('data-token');
+        config.token = currentScript.getAttribute('data-token') || null;
         config.domain = currentScript.getAttribute('data-domain');
         
         // Get optional parameters
@@ -55,17 +55,35 @@ export class GhostStats {
         }
 
         // Validate required configuration
-        return !!(config.host && config.token);
+        return !!(config.host);
+    }
+
+    generateUUID() {
+        if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+            return crypto.randomUUID();
+        }
+
+        // Fallback to a simple UUID generator
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
     }
 
     async trackEvent(name, payload) {
         try {
             // Check if we have required configuration
-            if (!config.host || !config.token) {
-                throw new Error('Missing required configuration (host or token)');
+            // Token is optional — if using the analytics service, it will set the token itself
+            if (!config.host) {
+                throw new Error('Missing required configuration (host)');
             }
 
-            const url = `${config.host}?name=${encodeURIComponent(config.datasource)}&token=${encodeURIComponent(config.token)}`;
+            let url = `${config.host}?name=${encodeURIComponent(config.datasource)}`;
+            if (config.token) {
+                url += `&token=${encodeURIComponent(config.token)}`;
+            }
+            payload.event_id = this.generateUUID();
 
             // Process the payload, masking sensitive data
             const processedPayload = processPayload(payload, config.globalAttributes, config.stringifyPayload);
@@ -143,13 +161,16 @@ export class GhostStats {
         const navigator = this.browser.getNavigator();
         const location = this.browser.getLocation();
 
+        const referrerData = parseReferrer(location?.href);
+        referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
+
         // Wait a bit for SPA routers
         this.browser.setTimeout(() => {
             this.trackEvent('page_hit', {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
+                parsedReferrer: referrerData,
                 pathname: location?.pathname,
                 href: location?.href,
             });
@@ -189,6 +210,11 @@ export class GhostStats {
     init() {
         // Skip in test environments
         if (this.isTestEnv) {
+            return false;
+        }
+
+        // Skip if page is loaded in an iframe (admin preview, embeds, etc.)
+        if (this.browser.window && this.browser.window.self !== this.browser.window.top) {
             return false;
         }
 

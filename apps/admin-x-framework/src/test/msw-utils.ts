@@ -94,6 +94,13 @@ export const fixtures = {
             {date: '2024-01-02', mrr: 1020, currency: 'USD'}
         ],
         meta: {totals: {mrr: 1020}}
+    },
+
+    // Tinybird fixtures
+    tinybirdToken: {
+        tinybird: {
+            token: 'mock-tinybird-token-for-testing'
+        }
     }
 };
 
@@ -130,6 +137,11 @@ export const handlers = {
 
     browseMrrHistory: http.get('/ghost/api/admin/stats/mrr/', () => {
         return HttpResponse.json(fixtures.mrrHistory);
+    }),
+
+    // Tinybird handlers
+    browseTinybirdToken: http.get('/ghost/api/admin/tinybird/token/', () => {
+        return HttpResponse.json(fixtures.tinybirdToken);
     })
 };
 

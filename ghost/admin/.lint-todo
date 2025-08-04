@@ -184,3 +184,7 @@ add|ember-template-lint|no-invalid-interactive|42|30|42|30|ffabb36d3b9e207aba8ff
 add|ember-template-lint|no-invalid-interactive|74|30|74|30|ffabb36d3b9e207aba8ff78ac29b648f2b314bb2|1749427200000|||app/components/gh-nav-menu/main.hbs
 add|ember-template-lint|no-unknown-arguments-for-builtin-components|76|32|76|32|571c3d774ed33480f528b54b323b23bfd7148eee|1749427200000|||app/components/gh-nav-menu/main.hbs
 remove|ember-template-lint|no-invalid-interactive|47|26|47|26|da9f7c0f319619ff98a53fd679c47841cfaa3c1d|1746489600000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-unknown-arguments-for-builtin-components|79|24|79|24|b8aae2daed1c14cf280800b3d282d11fb14851a4|1746489600000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-action|74|30|74|30|3b76c38861ddcdfaa277e272a1d27293c2659524|1749427200000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-invalid-interactive|74|30|74|30|ffabb36d3b9e207aba8ff78ac29b648f2b314bb2|1749427200000|||app/components/gh-nav-menu/main.hbs
+remove|ember-template-lint|no-unknown-arguments-for-builtin-components|76|32|76|32|571c3d774ed33480f528b54b323b23bfd7148eee|1749427200000|||app/components/gh-nav-menu/main.hbs

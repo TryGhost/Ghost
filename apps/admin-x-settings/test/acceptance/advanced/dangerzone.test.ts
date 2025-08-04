@@ -1,6 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
-import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('DangerZone', async () => {
     test('Delete all content', async ({page}) => {

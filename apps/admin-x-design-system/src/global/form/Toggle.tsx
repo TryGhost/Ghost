@@ -15,6 +15,7 @@ export interface ToggleProps {
     size?: ToggleSizes;
     label?: React.ReactNode;
     labelStyle?: 'heading' | 'value';
+    containerClasses?: string;
     labelClasses?: string;
     toggleBg?: 'green' | 'black' | 'stripetest';
     separator?: boolean;
@@ -22,6 +23,7 @@ export interface ToggleProps {
     hint?: React.ReactNode;
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     gap?: string;
+    testId?: string;
 }
 
 const Toggle: React.FC<ToggleProps> = ({
@@ -29,6 +31,7 @@ const Toggle: React.FC<ToggleProps> = ({
     direction,
     label,
     labelStyle = 'value',
+    containerClasses,
     labelClasses,
     toggleBg = 'black',
     hint,
@@ -38,7 +41,8 @@ const Toggle: React.FC<ToggleProps> = ({
     disabled,
     name,
     onChange,
-    gap = 'gap-2'
+    gap = 'gap-2',
+    testId
 }) => {
     const id = useId();
 
@@ -100,21 +104,21 @@ const Toggle: React.FC<ToggleProps> = ({
 
     return (
         <div>
-            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'}`}>
+            <div className={`group flex items-start ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'} ${containerClasses}`}>
                 <TogglePrimitive.Root className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
-                    'enabled:hover:cursor-pointer disabled:opacity-40 enabled:group-hover:opacity-80',
+                    'enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 enabled:group-hover:opacity-80',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
-                )} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
+                )} data-testid={testId} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
                     <TogglePrimitive.Thumb className={clsx(
                         thumbSizeStyles,
                         'block translate-x-0.5 rounded-full bg-white transition-transform duration-100 will-change-transform'
                     )} />
                 </TogglePrimitive.Root>
                 {label &&
-                    <label className={`flex grow flex-col hover:cursor-pointer ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
+                    <label className={`flex grow flex-col ${!disabled && 'hover:cursor-pointer'} ${direction === 'rtl' && 'order-1'} ${labelStyles}`} htmlFor={id}>
                         {
                             labelStyle === 'heading' ?
                                 <span className={`${Heading6StylesGrey} mt-1`}>{label}</span>

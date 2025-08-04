@@ -5,20 +5,20 @@ SQL >
         action,
         version,
         coalesce(session_id, '0') as session_id,
-        toString(payload.locale) as locale,
-        toString(payload.location) as location,
+        JSONExtractString(payload, 'locale') as locale,
+        JSONExtractString(payload, 'location') as location,
         case
-            when isNull(payload.referrerSource) then toString(payload.meta.referrerSource)
-            else toString(payload.referrerSource)
+            when JSONExtractString(payload, 'referrerSource') = '' then JSONExtractString(payload, 'meta', 'referrerSource')
+            else JSONExtractString(payload, 'referrerSource')
         end as referrer,
-        toString(payload.pathname) as pathname,
-        toString(payload.href) as href,
+        JSONExtractString(payload, 'pathname') as pathname,
+        JSONExtractString(payload, 'href') as href,
         site_uuid,
-        toString(payload.member_uuid) as member_uuid,
-        toString(payload.member_status) as member_status,
-        toString(payload.post_uuid) as post_uuid,
-        toString(payload.post_type) as post_type,
-        lower(toString(getSubcolumn(payload,'user-agent'))) as user_agent
+        JSONExtractString(payload, 'member_uuid') as member_uuid,
+        JSONExtractString(payload, 'member_status') as member_status,
+        JSONExtractString(payload, 'post_uuid') as post_uuid,
+        JSONExtractString(payload, 'post_type') as post_type,
+        lower(JSONExtractString(payload, 'user-agent')) as user_agent
     FROM analytics_events
     where action = 'page_hit'
 

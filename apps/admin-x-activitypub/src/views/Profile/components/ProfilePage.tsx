@@ -5,7 +5,8 @@ import Layout from '@src/components/layout';
 import ProfileMenu from './ProfileMenu';
 import UnblockButton from './UnblockButton';
 import {Account} from '@src/api/activitypub';
-import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount} from '@tryghost/shade';
+import {Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H4, LucideIcon, NoValueLabel, NoValueLabelIcon, Skeleton, Tabs, TabsContent, TabsList, TabsTrigger, TabsTriggerCount, abbreviateNumber} from '@tryghost/shade';
+import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {SettingAction} from '@src/views/Preferences/components/Settings';
 import {toast} from 'sonner';
 import {useAccountForUser, useBlockDomainMutationForUser, useBlockMutationForUser, useUnblockDomainMutationForUser, useUnblockMutationForUser} from '@src/hooks/use-activity-pub-queries';
@@ -93,16 +94,23 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         }
     }, [isExpanded]);
 
+    if (!isLoadingAccount && !account) {
+        return (
+            <Layout>
+                <div className='mx-auto mt-4 flex w-full max-w-[620px] flex-col items-center [&_svg]:translate-x-px'>
+                    <EmptyViewIndicator>
+                        <EmptyViewIcon><LucideIcon.UserRoundX /></EmptyViewIcon>
+                        <div>Profile not found</div>
+                    </EmptyViewIndicator>
+                </div>
+            </Layout>
+        );
+    }
+
     return (
         <Layout>
-            <div className='z-0 -mx-8 -mt-9 flex flex-col items-center pb-16'>
+            <div className='z-0 mx-[max(-4vw,-32px)] -mt-9 flex flex-col items-center pb-16'>
                 <div className='mx-auto w-full'>
-                    {!isLoadingAccount && !account && (
-                        <NoValueLabel>
-                            <NoValueLabelIcon><LucideIcon.UserRoundPlus /></NoValueLabelIcon>
-                            Profile not found
-                        </NoValueLabel>
-                    )}
                     <>
                         {account?.bannerImageUrl ?
                             <div className='h-[15vw] min-h-[200px] w-full overflow-hidden bg-gradient-to-tr from-gray-200 to-gray-100'>
@@ -114,7 +122,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 />
                             </div>
                             :
-                            <div className='h-[8vw] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
+                            <div className='h-[max(8vw,132px)] w-full overflow-hidden bg-gradient-to-tr from-white to-white dark:from-black dark:to-black'></div>
                         }
                         <div className={`mx-auto max-w-[620px] px-6 ${(!account?.bannerImageUrl && !canGoBack) ? '-mt-8' : '-mt-12'}`}>
                             <div className='flex items-end justify-between'>
@@ -215,15 +223,15 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     <TabsTrigger value="posts">Posts</TabsTrigger>
                                     {!params.handle && <TabsTrigger value="likes">
                                         Likes
-                                        <TabsTriggerCount>{account?.likedCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.likedCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>}
                                     <TabsTrigger value="following">
                                         Following
-                                        <TabsTriggerCount>{account?.followingCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.followingCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>
                                     <TabsTrigger value="followers">
                                         Followers
-                                        <TabsTriggerCount>{account?.followerCount || 0}</TabsTriggerCount>
+                                        <TabsTriggerCount>{abbreviateNumber(account?.followerCount || 0)}</TabsTriggerCount>
                                     </TabsTrigger>
                                 </TabsList>
                                 <TabsContent value='posts'>

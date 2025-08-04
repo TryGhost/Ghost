@@ -88,7 +88,7 @@ const SuggestedProfiles: React.FC = () => {
                 <div className='relative'>
                     {canScrollLeft && (
                         <Button
-                            className='absolute -left-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent dark:text-gray-600 dark:hover:text-white'
+                            className='absolute -left-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollLeft}
                         >
@@ -98,7 +98,7 @@ const SuggestedProfiles: React.FC = () => {
 
                     {canScrollRight && (
                         <Button
-                            className='absolute -right-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent dark:text-gray-600 dark:hover:text-white'
+                            className='absolute -right-10 top-1/2 z-10 size-10 -translate-y-1/2 text-gray-700 hover:bg-transparent max-lg:hidden dark:text-gray-600 dark:hover:text-white'
                             variant='ghost'
                             onClick={scrollRight}
                         >

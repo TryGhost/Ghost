@@ -106,7 +106,7 @@ const Note = () => {
     if (isLoading) {
         return (
             <Layout>
-                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 px-8 pt-9'>
+                <div className='mx-auto flex max-w-[620px] flex-col items-center gap-3 pt-9 lg:px-8'>
                     <div className='flex w-full items-center gap-3'>
                         <Skeleton className='size-10 rounded-full' />
                         <div className='grow pt-1'>
@@ -199,11 +199,11 @@ const Note = () => {
             <div className='mx-auto flex h-full max-w-[620px] flex-col'>
                 <div className='relative flex-1'>
                     <div className='grow overflow-y-auto'>
-                        <div className={`mx-auto px-8 pb-10 pt-5`}>
+                        <div className={`mx-auto px-8 pb-10 pt-5 max-lg:px-0`}>
                             {!threadParents.length &&
-                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10' : 'pt-5'}`}>
-                                <div className='relative z-10 pt-[3px]'>
-                                    <APAvatar author={currentPost.actor} showFollowButton={!currentPost.actor.authored && !currentPost.actor.followedByMe}/>
+                            <div className={`col-[2/3] mx-auto flex w-full items-center gap-3 ${canGoBack ? 'pt-10 max-md:pt-5' : 'pt-5'}`}>
+                                <div className='relative z-10'>
+                                    <APAvatar author={currentPost.actor} showFollowButton={!currentPost.object.authored && !currentPost.actor.followedByMe}/>
                                 </div>
                                 <div className='relative z-10 flex w-full min-w-0 cursor-pointer flex-col overflow-visible text-[1.5rem]' onClick={(e) => {
                                     handleProfileClick(currentPost.actor, navigate, e);
@@ -212,7 +212,7 @@ const Note = () => {
                                         <span className='min-w-0 truncate whitespace-nowrap font-semibold hover:underline'>{currentPost.actor.name}</span>
                                     </div>
                                     <div className='flex w-full'>
-                                        <span className='text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
+                                        <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
                                         <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                     </div>
                                 </div>
@@ -235,7 +235,7 @@ const Note = () => {
                                             repostCount={item.object.repostCount ?? 0}
                                             type='Note'
                                             onClick={() => {
-                                                navigate(`/${item.object.type === 'Article' ? 'inbox' : 'feed'}/${encodeURIComponent(item.object.id)}`);
+                                                navigate(`/${item.object.type === 'Article' ? 'reader' : 'notes'}/${encodeURIComponent(item.object.id)}`);
                                             }}
                                         />
                                     )
@@ -288,7 +288,7 @@ const Note = () => {
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
-                                                                navigate(`/feed/${encodeURIComponent(replyGroup.mainReply.id)}`);
+                                                                navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
                                                         />
@@ -309,7 +309,7 @@ const Note = () => {
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
-                                                                    navigate(`/feed/${encodeURIComponent(replyGroup.chain[0].id)}`);
+                                                                    navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
                                                             />
@@ -336,7 +336,7 @@ const Note = () => {
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
-                                                                        navigate(`/feed/${encodeURIComponent(chainItem.id)}`);
+                                                                        navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
                                                                 />

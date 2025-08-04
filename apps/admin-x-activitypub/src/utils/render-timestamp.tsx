@@ -17,7 +17,7 @@ export function renderTimestamp(object: ObjectProperties, asLink = true) {
     const timestamp = formatTimestamp(date);
     const formattedTimestamp = getFormattedTimestamp(date);
 
-    if (asLink) {
+    if (asLink && !object.url?.includes('/.ghost/activitypub')) {
         return (
             <a
                 className='whitespace-nowrap text-gray-700 hover:underline'

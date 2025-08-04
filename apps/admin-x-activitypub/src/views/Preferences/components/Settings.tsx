@@ -123,7 +123,7 @@ interface SettingItemProps {
 }
 
 const SettingItem: React.FC<SettingItemProps> = ({children, className = '', withHover = false, to, href, onClick}) => {
-    const baseClasses = 'flex items-center justify-between py-3';
+    const baseClasses = 'flex items-center justify-between py-3 gap-4';
     const hoverClasses = withHover ? 'relative cursor-pointer before:absolute before:inset-x-[-16px] before:inset-y-[-1px] before:rounded-md before:bg-gray-50 before:opacity-0 before:transition-opacity before:will-change-[opacity] hover:z-10 hover:cursor-pointer hover:border-b-transparent hover:before:opacity-100 dark:before:bg-gray-950' : '';
     const itemClasses = cn(baseClasses, hoverClasses, className);
 

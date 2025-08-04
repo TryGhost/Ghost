@@ -35,17 +35,6 @@ describe('getCoverImage', function () {
         coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
     });
 
-    it('should return absolute image url for AMP post', function () {
-        const coverImageUrl = getCoverImage({
-            context: ['amp', 'post'],
-            post: {
-                feature_image: '/content/images/my-test-image.jpg'
-            }
-        });
-        coverImageUrl.should.not.equal('/content/images/my-test-image.jpg');
-        coverImageUrl.should.match(/\/content\/images\/my-test-image\.jpg$/);
-    });
-
     it('should return null if missing image', function () {
         const coverImageUrl = getCoverImage({
             context: ['post'],

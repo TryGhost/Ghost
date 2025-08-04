@@ -4,6 +4,7 @@ const sanitizeHtml = require('sanitize-html');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError, NotFoundError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
+const normalizeEmail = require('../utils/normalize-email');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -585,6 +586,23 @@ module.exports = class RouterController {
             });
         }
 
+        // Normalize email to prevent homograph attacks
+        let normalizedEmail;
+
+        try {
+            normalizedEmail = normalizeEmail(email);
+
+            if (normalizedEmail !== email) {
+                logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
+            }
+        } catch (err) {
+            logging.error(`Failed to normalize [${email}]: ${err.message}`);
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
         if (honeypot) {
             logging.warn('Honeypot field filled, this is likely a bot');
 
@@ -606,9 +624,9 @@ module.exports = class RouterController {
 
         try {
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, referrer);
+                await this._handleSignup(req, normalizedEmail, referrer);
             } else {
-                await this._handleSignin(req, referrer);
+                await this._handleSignin(req, normalizedEmail, referrer);
             }
 
             res.writeHead(201);
@@ -626,7 +644,7 @@ module.exports = class RouterController {
         }
     }
 
-    async _handleSignup(req, referrer = null) {
+    async _handleSignup(req, normalizedEmail, referrer = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -640,14 +658,14 @@ module.exports = class RouterController {
         }
 
         const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
-        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
         if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.blockedEmailDomain)
             });
         }
 
-        const {email, emailType} = req.body;
+        const {emailType} = req.body;
 
         const tokenData = {
             labels: req.body.labels,
@@ -657,13 +675,13 @@ module.exports = class RouterController {
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _handleSignin(req, referrer = null) {
-        const {email, emailType} = req.body;
+    async _handleSignin(req, normalizedEmail, referrer = null) {
+        const {emailType} = req.body;
 
-        const member = await this._memberRepository.get({email});
+        const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
             throw new errors.BadRequestError({
@@ -672,7 +690,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
     /**

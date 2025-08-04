@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {mockMail, assert, restore} = require('../../utils/e2e-framework-mock-manager');
-const {anyContentVersion, anyEtag, anyErrorId, stringMatching, anyISODateTime, anyUuid} = matchers;
+const {anyContentVersion, anyEtag, stringMatching, anyUuid} = matchers;
 
 describe('Sessions API', function () {
     let agent;
@@ -10,7 +10,7 @@ describe('Sessions API', function () {
         await fixtureManager.init();
     });
 
-    it('can create session (log in)', async function () {
+    it('can create session (log in) and access user data', async function () {
         const owner = await fixtureManager.get('users', 0);
         await agent
             .post('session/')
@@ -28,25 +28,13 @@ describe('Sessions API', function () {
                     stringMatching(/^ghost-admin-api-session=/)
                 ]
             });
-    });
 
-    it('can read session now the owner is logged in', async function () {
         await agent
-            .get('session/')
-            .expectStatus(200)
-            .matchBodySnapshot({
-                // id is 1, but should be anyObjectID :(
-                last_seen: anyISODateTime,
-                created_at: anyISODateTime,
-                updated_at: anyISODateTime
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+            .get('/users/me/')
+            .expectStatus(200);
     });
 
-    it('can delete session (log out)', async function () {
+    it('can delete session (log out) and requests will fail', async function () {
         await agent
             .delete('session/')
             .expectStatus(204)
@@ -58,21 +46,10 @@ describe('Sessions API', function () {
                     stringMatching(/^ghost-admin-api-session=/)
                 ]
             });
-    });
 
-    it('errors when reading session again now owner is not logged in', async function () {
         await agent
-            .get('session/')
-            .expectStatus(403)
-            .matchBodySnapshot({
-                errors: [{
-                    id: anyErrorId
-                }]
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            });
+            .get('/users/me/')
+            .expectStatus(403);
     });
 
     describe('Staff 2FA', function () {

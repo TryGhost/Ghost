@@ -141,11 +141,6 @@ const officialThemes = [{
 }];
 
 const zapierTemplates = [{
-    ghostImage: 'assets/img/logos/orb-black-1.png',
-    appImage: 'assets/img/twitter.svg',
-    title: 'Share new posts to Twitter',
-    url: 'https://zapier.com/webintent/create-zap?template=50909'
-}, {
     ghostImage: 'assets/img/logos/orb-black-2.png',
     appImage: 'assets/img/slackicon.png',
     title: 'Share scheduled posts with your team in Slack',

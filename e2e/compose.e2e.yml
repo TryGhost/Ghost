@@ -1,0 +1,27 @@
+services:
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ghost_testing
+      MYSQL_USER: ghost
+      MYSQL_PASSWORD: ghost
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  tinybird-local:
+    image: tinybirdco/tinybird-local:latest
+    ports:
+      - "7181:7181"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7181/"]
+      interval: 2s
+      timeout: 5s
+      retries: 5
+      start_period: 30s

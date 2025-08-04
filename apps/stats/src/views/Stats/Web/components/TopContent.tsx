@@ -1,4 +1,4 @@
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Tabs, TabsList, TabsTrigger, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {CONTENT_TYPES, ContentType, getContentDescription, getContentTitle} from '@src/utils/content-helpers';
 import {getAudienceQueryParam} from '../../components/AudienceSelect';
 import {getClickHandler} from '@src/utils/url-helpers';
@@ -86,9 +86,10 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
 
 interface TopContentProps {
     range: number;
+    totalVisitors: number;
 }
 
-const TopContent: React.FC<TopContentProps> = ({range}) => {
+const TopContent: React.FC<TopContentProps> = ({range, totalVisitors}) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
@@ -128,26 +129,23 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             return null;
         }
 
-        // Calculate total visits for the filtered dataset
-        const filteredTotalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
-
         return data.map(item => ({
             pathname: item.pathname,
             title: item.title || item.pathname,
             visits: item.visits,
-            percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
+            percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0,
             post_uuid: item.post_uuid,
             post_id: item.post_id,
             post_type: item.post_type,
             url_exists: item.url_exists
         }));
-    }, [topContentData]);
+    }, [topContentData, totalVisitors]);
 
     const topContent = transformedData?.slice(0, 10) || [];
 
     return (
         <Card className='group/datalist'>
-            <div className='flex items-center justify-between p-6'>
+            <div className='flex items-center justify-between gap-6 p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
@@ -155,7 +153,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <div className='mb-4'>
+                <div className='mb-2'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>
@@ -170,12 +168,20 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                 {isLoading ?
                     <SkeletonTable className='mt-3' />
                     :
-                    <TopContentTable
-                        contentType={selectedContentType}
-                        data={topContent}
-                        range={range}
-                        tableHeader={false}
-                    />
+                    topContent.length > 0 ?
+                        <TopContentTable
+                            contentType={selectedContentType}
+                            data={topContent}
+                            range={range}
+                            tableHeader={false}
+                        />
+                        :
+                        <EmptyIndicator
+                            className='w-full py-20'
+                            title={`No visitors ${getPeriodText(range)}`}
+                        >
+                            <LucideIcon.FileText strokeWidth={1.5} />
+                        </EmptyIndicator>
                 }
             </CardContent>
 
@@ -186,7 +192,7 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
                         <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                     </SheetTrigger>
                     <SheetContent className='overflow-y-auto pt-0 sm:max-w-[600px]'>
-                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-white/60 p-6 backdrop-blur'>
+                        <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                             <SheetTitle>Top content</SheetTitle>
                             <SheetDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</SheetDescription>
                         </SheetHeader>

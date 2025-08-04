@@ -1,12 +1,12 @@
 # Admin X Settings
 
-Ghost Admin Settings in React
+Ghost Admin Settings micro-frontend.
 
-## Development
-
-### Pre-requisites
+## Pre-requisites
 
 - Run `yarn` in Ghost monorepo root
+
+## Running the app
 
 ### Running the development version
 
@@ -24,12 +24,10 @@ Follow the instructions for the top-level repo.
 1. `git clone` this repo & `cd` into it as usual
 2. Run `yarn` to install top-level dependencies.
 
-
-
 ## Test
 
-- `yarn lint` run just eslint
-- `yarn test:acceptance` runs acceptance tests
-- `yarn test:unit` runs unit tests
-- `yarn test:acceptance path/to/test` runs a specific test
-- `yarn test:acceptance:slowmo` runs acceptance tests in slow motion and headed mode, useful for debugging and developing tests
+- `yarn lint` - run just eslint
+- `yarn test:acceptance` - runs acceptance tests
+- `yarn test:unit` - runs unit tests
+- `yarn test:acceptance path/to/test` - runs a specific test
+- `yarn test:acceptance:slowmo` - runs acceptance tests in slow motion and headed mode, useful for debugging and developing tests

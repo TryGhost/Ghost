@@ -7,6 +7,9 @@ const _ = require('lodash');
 const Snippet = ghostBookshelf.Model.extend({
     tableName: 'snippets',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'snippet',
+
     formatOnWrite(attrs) {
         if (attrs.mobiledoc) {
             attrs.mobiledoc = urlUtils.mobiledocToTransformReady(attrs.mobiledoc, {cardTransformers: mobiledocLib.cards});

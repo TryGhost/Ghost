@@ -1,7 +1,6 @@
 import {StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staffToken';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../../utils/acceptance';
-import {mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('User profile', async () => {
     test('Validates basic profile fields', async ({page}) => {
@@ -9,6 +8,9 @@ test.describe('User profile', async () => {
 
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -48,7 +50,7 @@ test.describe('User profile', async () => {
         await expect(modal).toContainText('Location is too long');
 
         // Test bio validation
-        await modal.getByLabel('Bio').fill(new Array(210).join('a'));
+        await modal.getByLabel('Bio').fill(new Array(255).join('a'));
         await modal.getByRole('button', {name: 'Save'}).click();
         await expect(modal).toContainText('Bio is too long');
     });
@@ -58,6 +60,9 @@ test.describe('User profile', async () => {
 
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -130,6 +135,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -193,6 +201,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -305,6 +316,9 @@ test.describe('User profile', async () => {
 
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                 users: [{
@@ -340,6 +354,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
@@ -380,8 +397,13 @@ test.describe('User profile', async () => {
     });
 
     test('Hides donation notification option when Stripe disabled', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
         await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users}
         }});
 
@@ -408,6 +430,9 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
             editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: responseFixtures.users}
         }});
@@ -438,6 +463,7 @@ test.describe('User profile', async () => {
     });
 
     test('Supports managing staff token', async ({page}) => {
+        const admin = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'owner@test.com')!;
 
         const apiKey = {
@@ -455,6 +481,12 @@ test.describe('User profile', async () => {
 
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
+            getAdminBySlug: {method: 'GET', path: `/users/slug/${admin.slug}/?include=roles`, response: {
+                users: [admin]
+            }},
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
             browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
 
             getStaffToken: {method: 'GET', path: '/users/me/token/', response: {apiKey} satisfies StaffTokenResponseType},
@@ -513,6 +545,9 @@ test.describe('User profile', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -554,9 +589,12 @@ test.describe('User profile', async () => {
 
         test('Validates Bluesky URL', async ({page}) => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
-            
+
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -601,6 +639,9 @@ test.describe('User profile', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -645,6 +686,9 @@ test.describe('User profile', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -688,6 +732,9 @@ test.describe('User profile', async () => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -732,6 +779,9 @@ test.describe('User profile', async () => {
 
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -775,6 +825,9 @@ test.describe('User profile', async () => {
             const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
             const {lastApiRequests} = await mockApi({page, requests: {
                 ...globalDataRequests,
+                getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                    users: [userToEdit]
+                }},
                 browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
                 editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
                     users: [{
@@ -784,7 +837,7 @@ test.describe('User profile', async () => {
             }});
 
             await page.goto('/');
-            
+
             const section = page.getByTestId('users');
             const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
 

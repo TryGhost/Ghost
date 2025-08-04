@@ -23,7 +23,16 @@ function extractTags(postAttrs, tags) {
     });
 }
 
-export function getPosts({posts}, {queryParams}) {
+export function getPosts() {
+    return getPostsOrPages('posts', ...arguments);
+}
+
+export function getPages() {
+    return getPostsOrPages('pages', ...arguments);
+}
+
+export function getPostsOrPages(modelName, db, {queryParams}) {
+    const model = db[modelName];
     let {filter, page, limit} = queryParams;
 
     page = +page || 1;
@@ -32,11 +41,13 @@ export function getPosts({posts}, {queryParams}) {
     let statusFilter = extractFilterParam('status', filter);
     let authorsFilter = extractFilterParam('authors', filter);
     let visibilityFilter = extractFilterParam('visibility', filter);
+    let tags = extractFilterParam('tag', filter);
 
-    let collection = posts.all().filter((post) => {
+    let collection = model.all().filter((post) => {
         let matchesStatus = true;
         let matchesAuthors = true;
         let matchesVisibility = true;
+        let matchesTags = true;
 
         if (!isEmpty(statusFilter)) {
             matchesStatus = statusFilter.includes(post.status);
@@ -50,10 +61,20 @@ export function getPosts({posts}, {queryParams}) {
             matchesVisibility = visibilityFilter.includes(post.visibility);
         }
 
-        return matchesStatus && matchesAuthors && matchesVisibility;
+        if (!isEmpty(tags)) {
+            matchesTags = tags.some(filterTag => post.tags.models.some(tag => tag.slug === filterTag));
+        }
+
+        return matchesStatus && matchesAuthors && matchesVisibility && matchesTags;
     });
 
-    return paginateModelCollection('posts', collection, page, limit);
+    if (queryParams.order) {
+        if (queryParams.order.startsWith('name')) {
+            collection.sort((a, b) => a.title.localeCompare(b.title));
+        }
+    }
+
+    return paginateModelCollection(modelName, collection, page, limit);
 }
 
 export default function mockPosts(server) {

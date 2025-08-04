@@ -1589,3 +1589,17 @@ New form styles */
 .gh-expandable-block {
     border-bottom: 1px solid var(--grey-925);
 }
+
+.gh-post-list-feature-image {
+    background-color: var(--whitegrey-l2);
+}
+
+.gh-posts-list-item-group:hover .gh-post-list-feature-image {
+    background-color: #36373A;
+}
+
+/* .gh-post-list-feature-image-placeholder,
+.gh-post-list-feature-image-placeholder:before,
+.gh-post-list-feature-image-placeholder:after {
+    background-color: var(--whitegrey-d2);
+} */

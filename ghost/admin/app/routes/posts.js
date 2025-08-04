@@ -14,19 +14,28 @@ class PostsWithAnalytics extends InfinityModel {
     @service settings;
 
     async afterInfinityModel(posts) {
-        // Only fetch analytics for published/sent posts when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
+        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
+        if (publishedPosts.length === 0) {
             return posts;
         }
+
+        const promises = [];
         
-        const publishedPosts = posts.filter(post => ['published', 'sent'].includes(post.status));
-        if (publishedPosts.length > 0) {
+        // Fetch visitor counts if web analytics is enabled
+        if (this.settings.webAnalyticsEnabled) {
             const postUuids = publishedPosts.map(post => post.uuid);
-            await Promise.all([
-                this.postAnalytics.loadVisitorCounts(postUuids),
-                this.postAnalytics.loadMemberCounts(publishedPosts)
-            ]);
+            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
         }
+        
+        // Fetch member counts if member tracking is enabled
+        if (this.settings.membersTrackSources) {
+            promises.push(this.postAnalytics.loadMemberCounts(publishedPosts));
+        }
+
+        if (promises.length > 0) {
+            await Promise.all(promises);
+        }
+        
         return posts;
     }
 }
@@ -68,24 +77,24 @@ export default class PostsRoute extends AuthenticatedRoute {
 
     model(params) {
         // Reset analytics cache every time we load the posts index to ensure fresh data
-        if (this.feature.trafficAnalyticsAlpha && this.settings.webAnalytics) {
+        if (this.settings.webAnalyticsEnabled || this.settings.membersTrackSources) {
             this.postAnalytics.reset();
         }
-        
+
         const user = this.session.user;
         let filterParams = {tag: params.tag, visibility: params.visibility};
         let paginationParams = {
             perPageParam: 'limit',
             totalPagesParam: 'meta.pagination.pages'
         };
-        
+
         // type filters are actually mapping statuses
         assign(filterParams, this._getTypeFilters(params.type));
-        
+
         if (params.type === 'featured') {
             filterParams.featured = true;
         }
-        
+
         // authors and contributors can only view their own posts
         if (user.isAuthor) {
             filterParams.authors = user.slug;
@@ -95,9 +104,9 @@ export default class PostsRoute extends AuthenticatedRoute {
         } else if (params.author) {
             filterParams.authors = params.author;
         }
-        
+
         let perPage = this.perPage;
-        
+
         const filterStatuses = filterParams.status;
         let queryParams = {allFilter: this._filterString({...filterParams})}; // pass along the parent filter so it's easier to apply the params filter to each infinity model
         let models = {};
@@ -127,16 +136,14 @@ export default class PostsRoute extends AuthenticatedRoute {
     setupController(controller, model) {
         super.setupController(...arguments);
 
-        if (!controller._hasLoadedTags) {
-            this.store.query('tag', {limit: 'all'}).then(() => {
-                controller._hasLoadedTags = true;
-            });
-        }
-
         if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
             this.store.query('user', {limit: 'all'}).then(() => {
                 controller._hasLoadedAuthors = true;
             });
+        }
+
+        if (controller.tag && !controller.selectedTag?.slug || controller.selectedTag?.slug === '!unknown') {
+            this.store.queryRecord('tag', {slug: controller.tag});
         }
 
         if (controller.selectionList) {
@@ -156,21 +163,35 @@ export default class PostsRoute extends AuthenticatedRoute {
      * @param {Object} model - The posts model containing infinity models
      */
     async _fetchAnalyticsForPosts(model) {
-        // Only fetch analytics when feature is enabled AND web analytics is enabled
-        if (!this.feature.trafficAnalyticsAlpha || !this.settings.webAnalytics) {
+        // Early return if neither analytics feature is enabled
+        if (!this.settings.webAnalyticsEnabled && !this.settings.membersTrackSources) {
             return;
         }
-        
+
         const posts = [];
         if (model.publishedAndSentInfinityModel?.content) {
             posts.push(...model.publishedAndSentInfinityModel.content);
         }
-        if (posts.length > 0) {
+        
+        if (posts.length === 0) {
+            return;
+        }
+
+        const promises = [];
+        
+        // Fetch visitor counts if web analytics is enabled
+        if (this.settings.webAnalyticsEnabled) {
             const postUuids = posts.map(post => post.uuid);
-            await Promise.all([
-                this.postAnalytics.loadVisitorCounts(postUuids),
-                this.postAnalytics.loadMemberCounts(posts)
-            ]);
+            promises.push(this.postAnalytics.loadVisitorCounts(postUuids));
+        }
+        
+        // Fetch member counts if member tracking is enabled
+        if (this.settings.membersTrackSources) {
+            promises.push(this.postAnalytics.loadMemberCounts(posts));
+        }
+
+        if (promises.length > 0) {
+            await Promise.all(promises);
         }
     }
 

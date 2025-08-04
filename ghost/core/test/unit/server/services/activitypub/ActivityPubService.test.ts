@@ -44,7 +44,6 @@ async function getKnexInstance() {
         table.string('secret');
         table.string('integration_id');
         table.datetime('created_at');
-        table.string('created_by');
     });
 
     await knexInstance.insert({
@@ -83,7 +82,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -108,7 +107,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -129,7 +128,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -154,7 +153,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -166,7 +165,7 @@ describe('ActivityPubService', function () {
         }
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -188,7 +187,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -213,7 +212,7 @@ describe('ActivityPubService', function () {
 
         const webhooks = await knexInstance.select('*').from('webhooks');
 
-        const expectedWebhookCount = 1;
+        const expectedWebhookCount = 4;
         const expectedWebhookSecret = 'webhook_secret_baby!!';
         const expectedWebhookIntegrationId = 'integration_id';
 
@@ -227,7 +226,7 @@ describe('ActivityPubService', function () {
         await knexInstance('webhooks').update({event: 'wrong.event'}).limit(1);
 
         nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -255,7 +254,7 @@ describe('ActivityPubService', function () {
 
         const siteUrl = new URL('http://fake-site-url');
         const scope = nock(siteUrl)
-            .get('/.ghost/activitypub/site')
+            .get('/.ghost/activitypub/v1/site')
             .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
             .reply(200, {
                 webhook_secret: 'webhook_secret_baby!!'
@@ -305,6 +304,38 @@ describe('ActivityPubService', function () {
         const webhooks = await knexInstance.select('*').from('webhooks');
 
         assert.equal(webhooks.length, 0, 'There should be no webhooks');
+
+        await knexInstance.destroy();
+    });
+
+    it('Can disable the site', async function () {
+        const knexInstance = await getKnexInstance();
+        await addOwnerUser(knexInstance);
+        await addActivityPubIntegration(knexInstance);
+
+        const siteUrl = new URL('http://fake-site-url');
+        const scope = nock(siteUrl)
+            .delete('/.ghost/activitypub/v1/site')
+            .matchHeader('authorization', 'Bearer token:owner@user.com:Owner')
+            .reply(200);
+
+        const logging = console;
+        const identityTokenService = {
+            getTokenForUser(email: string, role: string) {
+                return `token:${email}:${role}`;
+            }
+        };
+
+        const service = new ActivityPubService(
+            knexInstance,
+            siteUrl,
+            logging,
+            identityTokenService as unknown as IdentityTokenService
+        );
+
+        await service.disableSite();
+
+        assert(scope.isDone(), 'Expected the ActivityPub site endpoint to be called');
 
         await knexInstance.destroy();
     });

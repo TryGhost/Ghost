@@ -6,9 +6,11 @@ const settingsCache = require('../../../core/shared/settings-cache');
 const {agentProvider, fixtureManager, mockManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {stringMatching, anyEtag, anyUuid, anyContentLength, anyContentVersion} = matchers;
 const models = require('../../../core/server/models');
+const membersService = require('../../../core/server/services/members');
 const {anyErrorId} = matchers;
 
-const CURRENT_SETTINGS_COUNT = 88;
+// Updated to reflect current total based on test output
+const CURRENT_SETTINGS_COUNT = 92;
 
 const settingsMatcher = {};
 
@@ -31,10 +33,10 @@ const matchSettingsArray = (length) => {
         settingsArray[26] = publicHashSettingMatcher;
     }
 
-    if (length > 61) {
+    if (length > 59) {
         // Added a setting that is alphabetically before 'labs'? then you need to increment this counter.
         // Item at index x is the lab settings, which changes as we add and remove features
-        settingsArray[61] = labsSettingMatcher;
+        settingsArray[59] = labsSettingMatcher;
     }
 
     return settingsArray;
@@ -342,6 +344,80 @@ describe('Settings API', function () {
                 });
 
             sinon.assert.calledOnce(loggingStub);
+        });
+
+        it('can edit Stripe settings when Stripe Connect limit is not enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: false,
+                errorIfWouldGoOverLimit: false
+            });
+
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_for_stripe',
+                secret_key: 'sk_test_123',
+                livemode: null,
+                display_name: null,
+                account_id: null
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+
+        it('cannot edit Stripe settings when Stripe Connect limit is enabled', async function () {
+            mockManager.mockLimitService('limitStripeConnect', {
+                isLimited: true,
+                errorIfWouldGoOverLimit: true
+            });
+
+            sinon.stub(membersService.stripeConnect, 'getStripeConnectTokenData').returns(Promise.resolve({
+                public_key: 'pk_test_123',
+                secret_key: 'sk_test_123',
+                livemode: false,
+                display_name: 'Test Account',
+                account_id: 'acct_test_123'
+            }));
+
+            const settingsToChange = [
+                {
+                    key: 'stripe_connect_integration_token',
+                    value: 'test_token'
+                }
+            ];
+
+            await agent.put('settings/')
+                .body({
+                    settings: settingsToChange
+                })
+                .expectStatus(403)
+                .matchBodySnapshot({
+                    errors: [
+                        {
+                            id: anyErrorId
+                        }
+                    ]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
         });
     });
 

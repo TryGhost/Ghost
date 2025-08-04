@@ -12,9 +12,7 @@ function setting(group, key, value) {
         key,
         value,
         updated_at: moment.utc().format(),
-        updated_by: 1,
-        created_at: moment.utc().format(),
-        created_by: 1
+        created_at: moment.utc().format()
     };
 }
 
@@ -96,10 +94,7 @@ export default [
 
     // ANALYTICS
     setting('email', 'outbound_link_tagging', true),
-
-    // AMP
-    setting('amp', 'amp', false),
-    setting('amp', 'amp_gtag_id', null),
+    setting('email', 'web_analytics', true),
 
     // FIRSTPROMOTER
     setting('firstpromoter', 'firstpromoter', false),

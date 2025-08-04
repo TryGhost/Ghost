@@ -193,24 +193,4 @@ describe('Session controller', function () {
             });
         });
     });
-
-    describe('#get', function () {
-        it('returns the result of User.findOne', function () {
-            const findOneReturnVal = new Promise(() => {});
-            const findOneStub = sinon.stub(models.User, 'findOne')
-                .returns(findOneReturnVal);
-
-            const result = sessionController.read({
-                options: {
-                    context: {
-                        user: 108
-                    }
-                }
-            });
-            should.equal(result, findOneReturnVal);
-            should.deepEqual(findOneStub.args[0][0], {
-                id: 108
-            });
-        });
-    });
 });

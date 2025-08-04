@@ -10,6 +10,8 @@ describe('ExternalMediaInliner', function () {
     let logging;
     let ghostLogoPng;
     let exeFile;
+    let heicFile;
+    let heifFile;
     let GIF1x1;
     let postModelStub;
     let postMetaModelStub;
@@ -20,6 +22,8 @@ describe('ExternalMediaInliner', function () {
         // use a 1x1 gif in nock responses because it's really small and easy to work with
         ghostLogoPng = fs.readFileSync(path.join(__dirname, 'fixtures', 'ghost-logo.png'));
         exeFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'fixture.exe'));
+        heicFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heic'));
+        heifFile = fs.readFileSync(path.join(__dirname, 'fixtures', 'image.heif'));
         GIF1x1 = Buffer.from('R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==', 'base64');
         logging = {
             info: sinon.stub(loggingLib, 'info'),
@@ -724,6 +728,38 @@ describe('ExternalMediaInliner', function () {
                     internal: true
                 }
             });
+        });
+    });
+
+    describe('File type conversion', function () {
+        it('Converts HEIC to JPEG', async function () {
+            const imageURL = 'https://example.com/image.heic';
+            const requestMock = nock('https://example.com')
+                .get(encodeURI('/image.heic'))
+                .reply(200, heicFile);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'image-heic.jpg');
+            assert.equal(fileData.extension, '.jpg');
+        });
+
+        it('Converts HEIF to JPEG', async function () {
+            const imageURL = 'https://example.com/image.heif';
+            const requestMock = nock('https://example.com')
+                .get(encodeURI('/image.heif'))
+                .reply(200, heifFile);
+
+            const inliner = new ExternalMediaInliner({});
+            const response = await inliner.getRemoteMedia(imageURL);
+            const fileData = await inliner.extractFileDataFromResponse(imageURL, response);
+
+            assert.ok(requestMock.isDone());
+            assert.equal(fileData.filename, 'image-heif.jpg');
+            assert.equal(fileData.extension, '.jpg');
         });
     });
 

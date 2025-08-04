@@ -40,10 +40,10 @@ const setupGhost = async (page) => {
     ]);
 
     // Add owner user data from usual fixture
-    const ownerUser = DataGenerator.Content.users.find(user => user.id === '1');
+    const ownerUser = DataGenerator.Content.users[0];
 
     if (action === actions.signin) {
-        await signInAsUserById(page, '1');
+        await signInAsUserById(page, ownerUser.id);
     } else if (action === actions.setup) {
         // Complete setup process
         await page.getByPlaceholder('The Daily Awesome').click();

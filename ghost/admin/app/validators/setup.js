@@ -7,12 +7,12 @@ export default NewUserValidator.create({
     blogTitle(model) {
         let blogTitle = model.blogTitle;
 
-        if (!validator.isLength(blogTitle || '', 1)) {
+        if (!validator.isLength(blogTitle || '', {min: 1})) {
             model.errors.add('blogTitle', 'Please enter a site title.');
             this.invalidate();
         }
 
-        if (!validator.isLength(blogTitle || '', 0, 150)) {
+        if (!validator.isLength(blogTitle || '', {max: 150})) {
             model.errors.add('blogTitle', 'Title is too long');
             this.invalidate();
         }

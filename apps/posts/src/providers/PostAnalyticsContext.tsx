@@ -3,7 +3,7 @@ import {Post as PostBase, useBrowsePosts} from '@tryghost/admin-x-framework/api/
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {STATS_RANGES} from '@src/utils/constants';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {StatsConfig} from '@tryghost/admin-x-framework';
+import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useParams} from '@tryghost/admin-x-framework';
 
@@ -41,6 +41,7 @@ type PostAnalyticsContextType = {
         title?: string;
     } | undefined;
     statsConfig: StatsConfig | undefined;
+    tinybirdToken: string | undefined;
     isLoading: boolean;
     range: number;
     audience: number;
@@ -74,6 +75,10 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const site = useBrowseSite();
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
+    
+    // Only fetch Tinybird token if stats config is present
+    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
     // Initialize with all audiences selected (binary 111 = 7)
     const [audience, setAudience] = useState(7);
@@ -86,9 +91,16 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         }
     });
 
-    const requests = [config, site, settings];
-    const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = requests.some(request => request.isLoading);
+    // Check for errors in the ghost requests
+    const ghostRequests = [config, site, settings];
+    const ghostError = ghostRequests.map(request => request.error).find(Boolean);
+    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
+    const error = ghostError || tinybirdError;
+    
+    // Check loading states
+    const isGhostLoading = ghostRequests.some(request => request.isLoading);
+    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
+    const isLoading = isGhostLoading || isTinybirdLoading;
 
     if (error) {
         throw error;
@@ -104,6 +116,7 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         data: config.data?.config,
         site: siteData,
         statsConfig: config.data?.config?.stats as StatsConfig | undefined,
+        tinybirdToken: tinybirdTokenQuery.token,
         isLoading,
         range,
         setRange,

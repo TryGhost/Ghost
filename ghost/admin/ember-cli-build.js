@@ -229,7 +229,13 @@ module.exports = function (defaults) {
                     new webpack.ProvidePlugin({
                         process: 'process/browser'
                     })
-                ]
+                ],
+                // disable verbose logging about webpack resolution mismatches
+                // - this is a known issue with mismatched versions of dependencies resulting in duplication rather than a single hoisted version
+                // - we don't plan on fixing this in the short term, so we just silence the noise
+                infrastructureLogging: {
+                    level: 'error'
+                }
             }
         },
         'ember-test-selectors': {

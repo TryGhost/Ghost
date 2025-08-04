@@ -1,7 +1,7 @@
 import hbs from 'htmlbars-inline-precompile';
 import mockPosts from '../../../mirage/config/posts';
 import mockTags from '../../../mirage/config/themes';
-import {click, findAll, render, settled} from '@ember/test-helpers';
+import {click, find, findAll, render, settled, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose, typeInSearch} from 'ember-power-select/test-support/helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -79,37 +79,113 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         expect(options[3]).to.contain.text('Tag 4');
     });
 
-    it('matches options on lowercase tag names', async function () {
+    it('uses local search if all tags have been loaded in first page', async function () {
         this.set('post', this.store.findRecord('post', 1));
         await settled();
 
         await render(hbs`<GhPsmTagsInput @post={{post}} />`);
         await clickTrigger();
+        await settled();
+
+        const requestCount = server.pretender.handledRequests.length;
+        await waitUntil(() => findAll('.ember-power-select-option').length >= 4);
+
         await typeInSearch('2');
         await settled();
-        // unsure why settled() is sometimes not catching the update
-        await timeout(100);
 
-        let options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(2);
-        expect(options[0]).to.contain.text('Add "2"...');
-        expect(options[1]).to.contain.text('Tag 2');
+        expect(server.pretender.handledRequests.length).to.equal(requestCount);
     });
 
-    it('hides create option on exact matches', async function () {
+    it('uses local search if all tags have been loaded by scrolling', async function () {
+        // create > 1 page of tags. Left-pad the names to ensure they're sorted alphabetically
+        server.db.tags.remove(); // clear existing tags that will mess with alphabetical sorting
+        server.createList('tag', 150, {name: i => `Tag ${i.toString().padStart(3, '0')}`});
+
         this.set('post', this.store.findRecord('post', 1));
         await settled();
 
         await render(hbs`<GhPsmTagsInput @post={{post}} />`);
         await clickTrigger();
-        await typeInSearch('#Tag 2');
-        await settled();
-        // unsure why settled() is sometimes not catching the update
-        await timeout(100);
+        // although we load 100 per page, we'll never have more 50 options rendered
+        // because we use vertical-collection to recycle dom elements on scroll
+        await waitUntil(() => findAll('.ember-power-select-option').length >= 50, {timeoutMessage: 'Timed out waiting for first page loaded state'});
 
-        let options = findAll('.ember-power-select-option');
-        expect(options.length).to.equal(1);
-        expect(options[0]).to.contain.text('#Tag 2');
+        // scroll to the bottom of the options to load the next page
+        const optionsContent = find('.ember-power-select-options');
+        optionsContent.scrollTo({top: optionsContent.scrollHeight});
+        await settled();
+
+        // wait for second page to be loaded
+        await waitUntil(() => server.pretender.handledRequests.some(r => r.queryParams.page === '2'));
+        optionsContent.scrollTo({top: optionsContent.scrollHeight});
+        await waitUntil(() => findAll('.ember-power-select-option').some(o => o.textContent.includes('Tag 105')), {timeoutMessage: 'Timed out waiting for second page loaded state'});
+
+        // capture current request count - we test that it doesn't change to indicate a client-side filter
+        const requestCount = server.pretender.handledRequests.length;
+        await typeInSearch('21');
+        await settled();
+
+        // wait until we're sure we've filtered
+        await waitUntil(() => findAll('.ember-power-select-option').length <= 5, {timeoutMessage: 'Timed out waiting for filtered state'});
+
+        // request count should not increase if we've used client-side filtering
+        expect(server.pretender.handledRequests.length).to.equal(requestCount);
+    });
+
+    describe('client-side search', function () {
+        it('matches options on lowercase tag names', async function () {
+            this.set('post', this.store.findRecord('post', 1));
+            await settled();
+
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+            await clickTrigger();
+            await typeInSearch('2');
+            await settled();
+            // unsure why settled() is sometimes not catching the update
+            await timeout(100);
+
+            let options = findAll('.ember-power-select-option');
+            expect(options.length).to.equal(2);
+            expect(options[0]).to.contain.text('Add "2"...');
+            expect(options[1]).to.contain.text('Tag 2');
+        });
+
+        it('hides create option on exact matches', async function () {
+            this.set('post', this.store.findRecord('post', 1));
+            await settled();
+
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+            await clickTrigger();
+            await typeInSearch('#Tag 2');
+            await settled();
+            // unsure why settled() is sometimes not catching the update
+            await timeout(100);
+
+            let options = findAll('.ember-power-select-option');
+            expect(options.length).to.equal(1);
+            expect(options[0]).to.contain.text('#Tag 2');
+        });
+
+        it('can search for tags with single quotes', async function () {
+            server.create('tag', {name: 'O\'Nolan', slug: 'quote-test'});
+
+            this.set('post', this.store.findRecord('post', 1));
+            await settled();
+
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+            await clickTrigger();
+            await typeInSearch(`O'`);
+            await settled();
+
+            let options = findAll('.ember-power-select-option');
+            expect(options.length).to.equal(2);
+            expect(options[0]).to.contain.text(`Add "O'"...`);
+            expect(options[1]).to.contain.text(`O'Nolan`);
+        });
+    });
+
+    describe('server-side search', function () {
+
     });
 
     it('highlights internal tags', async function () {

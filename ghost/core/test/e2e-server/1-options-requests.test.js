@@ -1,5 +1,5 @@
 const assert = require('assert/strict');
-const {agentProvider, matchers} = require('../utils/e2e-framework');
+const {agentProvider, matchers, cacheRules} = require('../utils/e2e-framework');
 const {anyContentVersion} = matchers;
 const config = require('../../core/shared/config');
 
@@ -114,7 +114,7 @@ describe('OPTIONS requests', function () {
                 .set('origin', null)
                 .expect(200);
 
-            assert.equal(res.headers['cache-control'], 'public, max-age=0');
+            assert.equal(res.headers['cache-control'], cacheRules.public);
             assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });
@@ -125,7 +125,7 @@ describe('OPTIONS requests', function () {
                 .set('origin', 'https://otherdomain.tld/')
                 .expect(200);
 
-            assert.equal(res.headers['cache-control'], 'public, max-age=0');
+            assert.equal(res.headers['cache-control'], cacheRules.public);
             assert.equal(res.headers.vary, 'Origin, Accept-Encoding');
             assert.equal(res.headers.allow, 'POST,GET,HEAD');
         });

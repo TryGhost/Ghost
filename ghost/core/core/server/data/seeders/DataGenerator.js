@@ -88,6 +88,15 @@ class DataGenerator {
     async clearData(transaction) {
         const tables = this.tableList.map(t => t.name).reverse();
 
+        const ownerUser = await transaction('roles_users')
+            .join('roles', 'roles.id', 'roles_users.role_id')
+            .where('roles.name', 'Owner')
+            .first();
+
+        if (!ownerUser) {
+            this.logger.warn('Owner user not found, selective user clearing will not be possible');
+        }
+
         // TODO: Remove this once we import posts_meta
         tables.unshift('posts_meta');
 
@@ -96,10 +105,10 @@ class DataGenerator {
             this.logger.debug(`Clearing table ${table}`);
 
             if (table === 'roles_users') {
-                await transaction(table).del().whereNot('user_id', '1');
+                await transaction(table).del().whereNot('user_id', ownerUser?.user_id || null);
             } else if (table === 'users') {
                 // Avoid deleting the admin user
-                await transaction(table).del().whereNot('id', '1');
+                await transaction(table).del().whereNot('id', ownerUser?.user_id || null);
             } else {
                 await transaction(table).truncate();
             }

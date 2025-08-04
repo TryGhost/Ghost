@@ -17,5 +17,9 @@
             "enabled": true
         },
         "transports": ["file"]
+    },
+    "explore": {
+        "update_url": "https://explore.ghost.org/api/update",
+        "testimonials_url": "https://explore.ghost.org/api/testimonials"
     }
 }

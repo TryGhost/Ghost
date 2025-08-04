@@ -1,5 +1,6 @@
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {currentURL, find, visit} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {click, currentURL, find, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {enableMembers} from '../helpers/members';
 import {expect} from 'chai';
@@ -9,13 +10,23 @@ import {setupMirage} from 'ember-cli-mirage/test-support';
 describe('Acceptance: Onboarding', function () {
     const hooks = setupApplicationTest();
     setupMirage(hooks);
+    
+    // Helper selectors for better readability
+    const checklist = () => find('[data-test-dashboard="onboarding-checklist"]');
+    const skipOnboarding = '#ob-skip';
 
     beforeEach(async function () {
+        mockAnalyticsApps();
+
         this.server.loadFixtures('configs');
         this.server.loadFixtures('settings');
         this.server.loadFixtures('themes');
 
         enableMembers(this.server);
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     describe('checklist (owner)', function () {
@@ -26,40 +37,38 @@ describe('Acceptance: Onboarding', function () {
         });
 
         it('dashboard does not show checklist by default', async function () {
-            await visit('/dashboard');
-            expect(currentURL()).to.equal('/dashboard');
+            await visit('/analytics');
+            expect(currentURL()).to.equal('/analytics');
 
             // onboarding isn't shown
-            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.not.exist;
-
-            // other default dashboard elements are visible
-            expect(find('[data-test-dashboard="header"]'), 'header').to.exist;
-            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.exist;
+            expect(checklist()).to.not.exist;
         });
 
         it('dashboard shows the checklist after accessing setup/done', async function () {
             await visit('/setup/done');
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
 
             // main onboarding list is visible
-            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.exist;
-
-            // other default dashboard elements get hidden
-            expect(find('[data-test-dashboard="header"]'), 'header').to.not.exist;
-            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.not.exist;
+            expect(checklist()).to.exist;
         });
 
         it('checklist is shown when members disabled', async function () {
             this.server.db.settings.update({membersSignupAccess: 'none'});
             await visit('/setup/done');
-            await visit('/dashboard');
+            await visit('/analytics');
 
             // onboarding is't shown
-            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.exist;
+            expect(checklist()).to.exist;
+        });
 
-            // other default dashboard elements are not visible
-            expect(find('[data-test-dashboard="header"]'), 'header').to.not.exist;
-            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.not.exist;
+        it('checklist is hidden when completed', async function () {
+            await visit('/setup/done');
+            await visit('/analytics');
+
+            expect(checklist()).to.exist;
+
+            await click(skipOnboarding);
+            expect(checklist()).to.not.exist;
         });
     });
 
@@ -70,16 +79,12 @@ describe('Acceptance: Onboarding', function () {
             await authenticateSession();
         });
 
-        it('dashboard doesn\'t show the checklist', async function () {
-            await visit('/dashboard');
-            expect(currentURL()).to.equal('/dashboard');
+        it('analytics doesn\'t show the checklist', async function () {
+            await visit('/analytics');
+            expect(currentURL()).to.equal('/analytics');
 
             // onboarding isn't shown
-            expect(find('[data-test-dashboard="onboarding-checklist"]'), 'checklist').to.not.exist;
-
-            // other default dashboard elements are visible
-            expect(find('[data-test-dashboard="header"]'), 'header').to.exist;
-            expect(find('[data-test-dashboard="attribution"]'), 'attribution section').to.exist;
+            expect(checklist()).to.not.exist;
         });
     });
 

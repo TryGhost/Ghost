@@ -1,6 +1,6 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/Sources';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, HTable, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, Separator, formatNumber} from '@tryghost/shade';
 import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
@@ -41,12 +41,12 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                         </CardTitle>
                     </CardHeader>
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                        navigate(`/analytics/beta/${postId}/web`);
+                        navigate(`/analytics/${postId}/web`);
                     }}>View more</Button>
                 </div>
                 <CardContent>
                     <div>
-                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0'>
+                        <KpiCardHeader className='group relative flex grow flex-row items-start justify-between gap-5 border-none px-0 pt-0' data-testid='unique-visitors'>
                             <div className='flex grow flex-col gap-1.5 border-none pb-0'>
                                 <KpiCardHeaderLabel color='hsl(var(--chart-blue))'>
                             Unique visitors
@@ -93,9 +93,13 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                                     totalVisitors={totalSourcesVisits}
                                 />
                                 :
-                                <div className='py-10 text-center text-sm text-muted-foreground'>
-                                    No data available.
-                                </div>
+                                <EmptyIndicator
+                                    className='h-full py-10'
+                                    description='Once someone visits this post, sources will show here'
+                                    title={`No visitors since you published this post`}
+                                >
+                                    <LucideIcon.Globe strokeWidth={1.5} />
+                                </EmptyIndicator>
                             }
                         </div>
                     }

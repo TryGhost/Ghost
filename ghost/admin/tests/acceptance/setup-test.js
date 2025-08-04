@@ -1,6 +1,7 @@
 import {Response} from 'miragejs';
+import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {beforeEach, describe, it} from 'mocha';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -10,6 +11,46 @@ import {visit} from '../helpers/visit';
 describe('Acceptance: Setup', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
+
+    beforeEach(function () {
+        mockAnalyticsApps();
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
+    });
+
+    // Helper function to setup the setup flow
+    async function setupSetupFlow(server, {fillForm = true} = {}) {
+        await invalidateSession();
+        server.loadFixtures('roles');
+        
+        // Ensure fixtures are loaded
+        if (!server.schema.configs.all().length) {
+            server.loadFixtures('configs');
+        }
+        if (!server.schema.settings.all().length) {
+            server.loadFixtures('settings');
+        }
+        
+        // mimick a new blog
+        server.get('/authentication/setup/', function () {
+            return {
+                setup: [
+                    {status: false}
+                ]
+            };
+        });
+        
+        await visit('/setup');
+        
+        if (fillForm) {
+            await fillIn('[data-test-email-input]', 'test@example.com');
+            await fillIn('[data-test-name-input]', 'Test User');
+            await fillIn('[data-test-password-input]', 'thisissupersafe');
+            await fillIn('[data-test-blog-title-input]', 'Blog Title');
+        }
+    }
 
     it('redirects if already authenticated', async function () {
         let role = this.server.create('role', {name: 'Author'});
@@ -50,10 +91,7 @@ describe('Acceptance: Setup', function () {
         });
 
         it('has a successful happy path', async function () {
-            await invalidateSession();
-            this.server.loadFixtures('roles');
-
-            await visit('/setup');
+            await setupSetupFlow(this.server, {fillForm: false});
 
             // email field is focused by default
             // NOTE: $('x').is(':focus') doesn't work in phantomjs CLI runner
@@ -84,7 +122,7 @@ describe('Acceptance: Setup', function () {
 
             // it redirects to the dashboard
             expect(currentURL(), 'url after submitting account details')
-                .to.equal('/dashboard');
+                .to.equal('/analytics');
         });
 
         it('handles validation errors in setup', async function () {
@@ -184,7 +222,7 @@ describe('Acceptance: Setup', function () {
 
         it('transitions to dashboard', async function () {
             await visit('/?firstStart=true');
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
     });
 });

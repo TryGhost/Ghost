@@ -3,6 +3,7 @@ import {inject as service} from '@ember/service';
 
 export default class Stats extends AdminXComponent {
     @service upgradeStatus;
+    @service onboarding;
 
     additionalProps = () => {
         return {
@@ -14,7 +15,7 @@ export default class Stats extends AdminXComponent {
                     emailTrackClicks: this.settings.emailTrackClicks,
                     membersTrackSources: this.settings.membersTrackSources,
                     outboundLinkTagging: this.settings.outboundLinkTagging,
-                    webAnalytics: this.feature.trafficAnalytics && (this.settings.webAnalytics ?? false)
+                    webAnalytics: this.settings.webAnalyticsEnabled // use the computed setting
                 }
             }
         };

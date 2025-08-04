@@ -138,26 +138,12 @@ module.exports = function (Bookshelf) {
 
         /**
          * Adding resources implies setting these properties on the server side
-         * - set `created_by` based on the context
-         * - set `updated_by` based on the context
          * - the bookshelf `timestamps` plugin sets `created_at` and `updated_at`
          *   - if plugin is disabled (e.g. import) we have a fallback condition
          *
          * Exceptions: internal context or importing
          */
         onCreating: function onCreating(model, attr, options) {
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                if (!options.importing || (options.importing && !this.get('created_by'))) {
-                    this.set('created_by', String(this.contextUser(options)));
-                }
-            }
-
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
-                if (!options.importing) {
-                    this.set('updated_by', String(this.contextUser(options)));
-                }
-            }
-
             if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                 if (!model.get('created_at')) {
                     model.set('created_at', new Date());
@@ -199,9 +185,7 @@ module.exports = function (Bookshelf) {
 
         /**
          * Changing resources implies setting these properties on the server side
-         * - set `updated_by` based on the context
          * - ensure `created_at` never changes
-         * - ensure `created_by` never changes
          * - the bookshelf `timestamps` plugin sets `updated_at` automatically
          *
          * Exceptions:
@@ -216,22 +200,10 @@ module.exports = function (Bookshelf) {
                 model.changed = _.omit(model.changed, this.relationships);
             }
 
-            if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'updated_by')) {
-                if (!options.importing && !options.migrating) {
-                    this.set('updated_by', String(this.contextUser(options)));
-                }
-            }
-
             if (options && options.context && !options.context.internal && !options.importing) {
                 if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_at')) {
                     if (model.hasDateChanged('created_at', {beforeWrite: true})) {
                         model.set('created_at', this.previous('created_at'));
-                    }
-                }
-
-                if (Object.prototype.hasOwnProperty.call(schema.tables[this.tableName], 'created_by')) {
-                    if (model.hasChanged('created_by')) {
-                        model.set('created_by', String(this.previous('created_by')));
                     }
                 }
             }
