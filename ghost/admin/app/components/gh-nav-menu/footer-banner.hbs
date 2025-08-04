@@ -13,7 +13,7 @@
     {{#let (get this.whatsNew.entries "0") as |entry|}}
     <div class="gh-sidebar-banner gh-whatsnew-toast">
         <button class="gh-sidebar-banner-close" type="button" {{on "click" this.markSeen}}>&#xd7;</button>
-        <a class="gh-sidebar-banner-container" href={{entry.url}} target="_blank" rel="noopener noreferrer" {{on "click" (fn this.markSeen)}}>
+        <a class="gh-sidebar-banner-container" href={{entry.url}} target="_blank" rel="noopener noreferrer" {{on "click" this.markSeen}}>
             <div class="gh-sidebar-banner-head">
                 {{svg-jar "sparkle-fill" class="gh-sidebar-banner-icon gh-whatsnew-banner-icon"}}
                 <span class="gh-sidebar-banner-subhead">What’s new?</span>
