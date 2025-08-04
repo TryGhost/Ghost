@@ -26,7 +26,7 @@ function getPaginatedUrl(page, data, absolute) {
         const segments = baseUrl.split('/');
         
         // Encode each segment to handle accented characters and spaces
-        const encodedSegments = segments.map(segment => {
+        const encodedSegments = segments.map((segment) => {
             // Don't encode empty segments
             if (!segment) {
                 return segment;

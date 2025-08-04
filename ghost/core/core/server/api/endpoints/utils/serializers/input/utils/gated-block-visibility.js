@@ -106,7 +106,7 @@ function applyVisibilityToMatchingCards(node, gatedBlock) {
 
     // Recursively process children
     if (node.children && Array.isArray(node.children)) {
-        node.children.forEach(child => {
+        node.children.forEach((child) => {
             applyVisibilityToMatchingCards(child, gatedBlock);
         });
     }

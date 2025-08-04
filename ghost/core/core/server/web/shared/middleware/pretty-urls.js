@@ -17,5 +17,6 @@ module.exports = [
         }
     }),
     require('./redirect-amp-urls'),
-    require('./uncapitalise')
+    require('./uncapitalise'),
+    require('./normalize-urls')
 ];
