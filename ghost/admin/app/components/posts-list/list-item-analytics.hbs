@@ -265,7 +265,7 @@
                         <div class="gh-post-list-analytics-metric" data-test-analytics-sent>
                             {{svg-jar "analytics-sent" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
-                                {{format-number @post.email.emailCount}}
+                                {{abbreviate-number @post.email.emailCount}}
                             </span>
                         </div>
                     </LinkTo>
