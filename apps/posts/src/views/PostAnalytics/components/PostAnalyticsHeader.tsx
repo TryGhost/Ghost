@@ -184,9 +184,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </H1>
                                 {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
-                                        {isEmailOnly(post as Post) && `Sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
-                                        {isPublishedOnly(post as Post) && `Published on your site on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
-                                        {isPublishedAndEmailed(post as Post) && `Published and sent on ${moment.utc(post.published_at).format('D MMM YYYY')} at ${moment.utc(post.published_at).format('HH:mm')}`}
+                                        {isEmailOnly(post as Post) && `Sent on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
+                                        {isPublishedOnly(post as Post) && `Published on your site on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
+                                        {isPublishedAndEmailed(post as Post) && `Published and sent on ${moment(post.published_at).format('D MMM YYYY')} at ${moment(post.published_at).format('HH:mm')}`}
                                     </div>
                                 )}
                             </div>
