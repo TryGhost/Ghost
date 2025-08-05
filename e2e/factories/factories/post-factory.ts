@@ -71,7 +71,7 @@ export class PostFactory extends Factory<PostOptions, PostResult> {
 
     build(options: PostOptions = {}): PostResult {
         const now = new Date();
-        const title = options.title || faker.lorem.sentence();
+        const title = options.title || faker.lorem.sentences();
         const content = faker.lorem.paragraphs(3);
 
         // Generate mobiledoc format
