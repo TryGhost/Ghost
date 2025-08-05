@@ -1080,7 +1080,7 @@ describe('Acceptance: Posts / Pages', function () {
                 
                 // Verify sent column appears with proper formatting
                 expect(find('[data-test-analytics-sent]'), 'sent column').to.exist;
-                expect(find('[data-test-analytics-sent] .gh-content-email-stats-value').textContent.trim()).to.equal('15,000');
+                expect(find('[data-test-analytics-sent] .gh-content-email-stats-value').textContent.trim()).to.equal('15k');
                 expect(find('[data-test-analytics-opens]'), 'opens column when disabled').to.not.exist;
                 expect(find('[data-test-analytics-clicks]'), 'clicks column when disabled').to.not.exist;
             });
