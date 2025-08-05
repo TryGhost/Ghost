@@ -165,6 +165,84 @@ describe('{{#get}} helper', function () {
         });
     });
 
+    describe('pages', function () {
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {}}};
+
+            sinon.stub(api, 'pagesPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({pages: [{
+                        id: '1',
+                        title: 'Test Page',
+                        slug: 'test-page',
+                        show_title_and_feature_image: false
+                    }], meta: meta})
+                };
+            });
+        });
+
+        it('browse pages preserves show_title_and_feature_image property', function (done) {
+            get.call(
+                {},
+                'pages',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('pages');
+                fn.firstCall.args[0].pages.should.be.an.Array().with.lengthOf(1);
+                
+                const page = fn.firstCall.args[0].pages[0];
+                // The property should be preserved and accessible
+                page.should.have.property('show_title_and_feature_image', false);
+                
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
+    describe('posts', function () {
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            locals = {root: {_locals: {}}};
+
+            sinon.stub(api, 'postsPublic').get(() => {
+                return {
+                    browse: sinon.stub().resolves({posts: [{
+                        id: '1',
+                        title: 'Test Post',
+                        slug: 'test-post',
+                        show_title_and_feature_image: true
+                    }], meta: meta})
+                };
+            });
+        });
+
+        it('browse posts preserves show_title_and_feature_image property', function (done) {
+            get.call(
+                {},
+                'posts',
+                {hash: {}, data: locals, fn: fn, inverse: inverse}
+            ).then(function () {
+                fn.called.should.be.true();
+                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+                fn.firstCall.args[0].posts.should.be.an.Array().with.lengthOf(1);
+                
+                const post = fn.firstCall.args[0].posts[0];
+                // The property should be preserved and accessible
+                post.should.have.property('show_title_and_feature_image', true);
+                
+                inverse.called.should.be.false();
+
+                done();
+            }).catch(done);
+        });
+    });
+
     describe('general error handling', function () {
         it('should return an error for an unknown resource', function (done) {
             get.call(
