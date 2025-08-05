@@ -530,6 +530,59 @@ describe('Unit: models/user', function () {
                         .should.be.aboveOrEqual(0, 'contains correct error message');
                 });
         });
+
+        it('should clear ownerIdCache after successful transfer', function () {
+            const loggedInUser = testUtils.context.owner;
+            const userToChange = testUtils.context.admin;
+
+            const userToChangeJSON = Object.assign({status: 'active'}, testUtils.permissions.admin.user);
+            const loggedInContext = {
+                toJSON: sinon.stub().returns(testUtils.permissions.owner.user),
+                roles: sinon.stub().returns({
+                    updatePivot: sinon.stub().resolves()
+                })
+            };
+            const userToChangeContext = {
+                toJSON: sinon.stub().returns(userToChangeJSON),
+                roles: sinon.stub().returns({
+                    updatePivot: sinon.stub().resolves()
+                }),
+                id: userToChange.context.user
+            };
+
+            models.User
+                .findOne
+                .withArgs({id: loggedInUser.context.user}, {withRelated: ['roles']})
+                .resolves(loggedInContext);
+
+            models.User
+                .findOne
+                .withArgs({id: userToChange.context.user}, {withRelated: ['roles']})
+                .resolves(userToChangeContext);
+
+            models.User.ownerIdCache.set('old-owner-id');
+            should.equal(models.User.ownerIdCache.get(), 'old-owner-id');
+
+            const clearSpy = sinon.spy(models.User.ownerIdCache, 'clear');
+
+            const mockCollection = {
+                query: sinon.stub().returnsThis(),
+                fetch: sinon.stub().resolves({
+                    models: [loggedInContext, userToChangeContext]
+                })
+            };
+
+            sinon.stub(models.Users, 'forge').returns(mockCollection);
+
+            return models.User.transferOwnership({id: userToChange.context.user}, loggedInUser)
+                .then(() => {
+                    clearSpy.calledOnce.should.be.true();
+                    should.equal(models.User.ownerIdCache.get(), null);
+                })
+                .finally(() => {
+                    clearSpy.restore();
+                });
+        });
     });
 
     describe('getEmailAlertUsers', function () {
@@ -576,6 +629,99 @@ describe('Unit: models/user', function () {
             return models.User.isSetup()
                 .then((result) => {
                     result.should.be.false();
+                });
+        });
+    });
+
+    describe('ownerIdCache', function () {
+        it('should return null initially', function () {
+            should.equal(models.User.ownerIdCache.get(), null);
+        });
+
+        it('should store and retrieve values', function () {
+            models.User.ownerIdCache.set('abc123');
+
+            should.equal(models.User.ownerIdCache.get(), 'abc123');
+        });
+
+        it('should clear stored values', function () {
+            models.User.ownerIdCache.set('abc123');
+            models.User.ownerIdCache.clear();
+
+            should.equal(models.User.ownerIdCache.get(), null);
+        });
+    });
+
+    describe('getOwnerId', function () {
+        beforeEach(function () {
+            models.User.ownerIdCache.clear();
+        });
+
+        afterEach(function () {
+            models.User.ownerIdCache.clear();
+        });
+
+        it('should return cached owner id if available', function () {
+            models.User.ownerIdCache.set('abc123');
+
+            sinon.stub(models.User, 'getOwnerUser');
+
+            return models.User.getOwnerId()
+                .then((ownerId) => {
+                    should.equal(ownerId, 'abc123');
+                    models.User.getOwnerUser.called.should.be.false();
+                });
+        });
+
+        it('should fetch owner and cache the id if not cached', function () {
+            const mockOwner = {
+                id: 'abc123'
+            };
+
+            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
+
+            return models.User.getOwnerId()
+                .then((ownerId) => {
+                    should.equal(ownerId, mockOwner.id);
+                    models.User.getOwnerUser.calledOnce.should.be.true();
+                    should.equal(models.User.ownerIdCache.get(), mockOwner.id);
+                });
+        });
+
+        it('should use cached value on subsequent calls', function () {
+            const mockOwner = {
+                id: 'abc123'
+            };
+
+            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
+
+            return models.User.getOwnerId()
+                .then((ownerId) => {
+                    should.equal(ownerId, mockOwner.id);
+                    models.User.getOwnerUser.calledOnce.should.be.true();
+
+                    return models.User.getOwnerId();
+                })
+                .then((ownerId) => {
+                    should.equal(ownerId, mockOwner.id);
+                    models.User.getOwnerUser.calledOnce.should.be.true();
+                });
+        });
+
+        it('should pass options to getOwnerUser', function () {
+            const mockOwner = {
+                id: 'abc123'
+            };
+            const options = {
+                transacting: true
+            };
+
+            sinon.stub(models.User, 'getOwnerUser').resolves(mockOwner);
+
+            return models.User.getOwnerId(options)
+                .then(() => {
+                    models.User.getOwnerUser.calledOnce.should.be.true();
+                    models.User.getOwnerUser.calledWith(options).should.be.true();
                 });
         });
     });

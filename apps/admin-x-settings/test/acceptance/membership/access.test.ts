@@ -1,6 +1,5 @@
-import {chooseOptionInSelect, getOptionsFromSelect, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {chooseOptionInSelect, getOptionsFromSelect, globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 import {expect, test} from '@playwright/test';
-import {globalDataRequests} from '../../utils/acceptance';
 
 test.describe('Access settings', async () => {
     test('Supports editing access', async ({page}) => {

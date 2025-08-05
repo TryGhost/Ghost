@@ -1,5 +1,5 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -12,6 +12,8 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
     const handleError = useHandleError();
+    const [isCheckingLimit, setIsCheckingLimit] = useState(true);
+    const [limitError, setLimitError] = useState<HostLimitError | null>(null);
 
     const {data: members} = useBrowseMembers({
         searchParams: {filter: 'newsletters.status:active+email_disabled:0', limit: '1', page: '1', include: 'newsletters,labels'}
@@ -49,21 +51,39 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const limiter = useLimiter();
 
     useEffect(() => {
-        limiter?.errorIfWouldGoOverLimit('newsletters').catch((error) => {
-            if (error instanceof HostLimitError) {
-                NiceModal.show(LimitModal, {
-                    prompt: error.message || `Your current plan doesn't support more newsletters.`,
-                    onOk: () => updateRoute({route: '/pro', isExternal: true})
-                });
-                modal.remove();
-                updateRoute('newsletters');
-            } else {
-                throw error;
-            }
-        });
-    }, [limiter, modal, updateRoute]);
+        if (!limiter) {
+            setIsCheckingLimit(false);
+            return;
+        }
+
+        limiter.errorIfWouldGoOverLimit('newsletters')
+            .catch((error) => {
+                if (error instanceof HostLimitError) {
+                    setLimitError(error);
+                } else {
+                    throw error;
+                }
+            }).finally(() => {
+                setIsCheckingLimit(false);
+            });
+    }, [limiter]);
 
     const subscriberCount = members?.meta?.pagination.total;
+
+    useEffect(() => {
+        if (limitError) {
+            NiceModal.show(LimitModal, {
+                prompt: limitError.message || `Your current plan doesn't support more newsletters.`,
+                onOk: () => updateRoute({route: '/pro', isExternal: true})
+            });
+            modal.remove();
+            updateRoute('newsletters');
+        }
+    }, [limitError, modal, updateRoute]);
+
+    if (isCheckingLimit || limitError) {
+        return null;
+    }
 
     return <Modal
         afterClose={() => {

@@ -47,20 +47,6 @@ export default class Analytics extends AuthenticatedRoute {
         if (user.isContributor && !post.isDraft) {
             return this.replaceWith(returnRoute);
         }
-
-        if (this.routeName === 'posts.analytics.posts-x') {
-            // This is based on the logic for the dashboard
-            if (this.session.user.isContributor) {
-                return this.transitionTo('posts');
-            } else if (!this.session.user.isAdmin) {
-                return this.transitionTo('site');
-            }
-
-            // This ensures that we don't load this page if the stats config is not set
-            if (!(this.config.stats && this.feature.trafficAnalytics)) {
-                return this.transitionTo('home');
-            }
-        }
     }
 
     serialize(model) {

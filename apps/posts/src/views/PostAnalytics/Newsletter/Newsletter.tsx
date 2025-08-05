@@ -83,7 +83,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
         if (!isPostLoading && !showNewsletterSection) {
-            navigate(`/analytics/beta/${postId}`);
+            navigate(`/analytics/${postId}`);
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
@@ -454,7 +454,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             {title}
                                                                         </a>
                                                                         {edited && (
-                                                                            <span className='text-xs text-gray-500'>(edited)</span>
+                                                                            <span className='ml-1 text-gray-500'>(edited)</span>
                                                                         )}
                                                                     </>
                                                                 )}

@@ -1,5 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
+const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
 
 /**
@@ -53,7 +54,8 @@ describe('PostsStatsService', function () {
             feature_image: details.feature_image || null,
             published_at: details.published_at || now,
             uuid: details.uuid || null,
-            newsletter_id: details.newsletter_id || null
+            newsletter_id: details.newsletter_id || null,
+            type: details.type || 'post'
         };
         await db('posts').insert(data);
         return data;
@@ -80,7 +82,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt,
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss'),
             source: 'member'
         });
     }
@@ -99,7 +101,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
 
         await db('members_paid_subscription_events').insert({
@@ -107,7 +109,7 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             subscription_id: subscriptionId,
             mrr_delta: mrr,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
     }
 
@@ -154,7 +156,7 @@ describe('PostsStatsService', function () {
             id: clickEventId,
             member_id: memberId,
             redirect_id: redirectId,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
     }
 
@@ -192,6 +194,7 @@ describe('PostsStatsService', function () {
             table.dateTime('published_at');
             table.string('uuid').unique();
             table.string('newsletter_id');
+            table.string('type').defaultTo('post');
         });
 
         await db.schema.createTable('members_created_events', function (table) {
@@ -415,8 +418,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Only post1 should be returned since post2 has no events in the date range
@@ -426,8 +430,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Both posts should be returned
@@ -583,8 +588,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have the result for referrer_past
@@ -594,8 +600,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have results for both referrers
@@ -1376,6 +1383,208 @@ describe('PostsStatsService', function () {
             
             // Verify the exact format matches expected pattern
             assert.equal(authorsString, 'Alice Johnson, Bob Wilson, Carol Smith', 'Authors should be formatted as "Alice Johnson, Bob Wilson, Carol Smith"');
+        });
+
+        it('filters out pages when no Tinybird client exists (fallback)', async function () {
+            service = new PostsStatsService({knex: db}); // No Tinybird client
+            
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create user
+            await _createUser('author1', 'Test Author');
+            
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+            
+            // Create pages (type = 'page')
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-17'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 10
+            });
+            
+            // Should only return posts, not pages
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
+            
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+        });
+
+        it('filters out pages when no views data from Tinybird', async function () {
+            const mockTinybirdClient = {
+                fetch: () => Promise.resolve([]) // No views data
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+            
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create user
+            await _createUser('author1', 'Test Author');
+            
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+            
+            // Create pages (type = 'page')
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-17'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 10
+            });
+            
+            // Should only return posts, not pages
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 2, 'Should return only 2 posts, not pages');
+            
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+        });
+
+        it('filters out pages when backfilling additional posts', async function () {
+            const mockTinybirdClient = {
+                fetch: () => Promise.resolve([
+                    {post_uuid: 'post-uuid1', visits: 1000} // Only one post has views
+                ])
+            };
+            service = new PostsStatsService({knex: db, tinybirdClient: mockTinybirdClient});
+            
+            // Create posts and pages
+            await db('posts').truncate();
+            await db('users').truncate();
+            await db('posts_authors').truncate();
+            
+            // Create user
+            await _createUser('author1', 'Test Author');
+            
+            // Create posts (type = 'post')
+            await _createPostWithDetails('post1', 'Test Post 1', 'published', {
+                uuid: 'post-uuid1',
+                published_at: new Date('2025-01-15'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post2', 'Test Post 2', 'published', {
+                uuid: 'post-uuid2',
+                published_at: new Date('2025-01-16'),
+                type: 'post'
+            });
+            await _createPostWithDetails('post3', 'Test Post 3', 'published', {
+                uuid: 'post-uuid3',
+                published_at: new Date('2025-01-17'),
+                type: 'post'
+            });
+            
+            // Create pages (type = 'page') - these should be newer but still excluded
+            await _createPostWithDetails('page1', 'Test Page 1', 'published', {
+                uuid: 'page-uuid1',
+                published_at: new Date('2025-01-18'),
+                type: 'page'
+            });
+            await _createPostWithDetails('page2', 'Test Page 2', 'published', {
+                uuid: 'page-uuid2',
+                published_at: new Date('2025-01-19'),
+                type: 'page'
+            });
+
+            // Assign authors
+            await _createPostAuthor('post1', 'author1', 0);
+            await _createPostAuthor('post2', 'author1', 0);
+            await _createPostAuthor('post3', 'author1', 0);
+            await _createPostAuthor('page1', 'author1', 0);
+            await _createPostAuthor('page2', 'author1', 0);
+
+            const result = await service.getTopPostsViews({
+                date_from: '2025-01-01',
+                date_to: '2025-01-31',
+                timezone: 'UTC',
+                limit: 5 // Request 5 items to trigger backfilling
+            });
+            
+            // Should return only posts, not pages, even when backfilling
+            assert.ok(result.data, 'Result should have a data property');
+            assert.equal(result.data.length, 3, 'Should return only 3 posts, not pages');
+            
+            // Verify all returned items are posts
+            result.data.forEach((item) => {
+                assert.ok(['post1', 'post2', 'post3'].includes(item.post_id), `Should only return posts, but got ${item.post_id}`);
+                assert.ok(['Test Post 1', 'Test Post 2', 'Test Post 3'].includes(item.title), `Should only return post titles, but got ${item.title}`);
+            });
+            
+            // Verify the first post has views data from Tinybird and others have 0 views
+            const post1Result = result.data.find(p => p.post_id === 'post1');
+            assert.ok(post1Result, 'Should find post1 in results');
+            assert.equal(post1Result.views, 1000, 'Post1 should have 1000 views from Tinybird');
+            
+            // Other posts should have 0 views (backfilled)
+            const otherPosts = result.data.filter(p => p.post_id !== 'post1');
+            otherPosts.forEach((post) => {
+                assert.equal(post.views, 0, `Backfilled post ${post.post_id} should have 0 views`);
+            });
         });
     });
 });

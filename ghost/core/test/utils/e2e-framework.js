@@ -25,6 +25,7 @@ const crypto = require('crypto');
 const assert = require('assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
+const cacheRules = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./configUtils');
 const urlServiceUtils = require('./url-service-utils');
@@ -528,7 +529,7 @@ module.exports = {
         anyLocationFor: (resource) => {
             return stringMatching(new RegExp(`https?://.*?/${resource}/[a-f0-9]{24}/`));
         },
-        anyGhostAgent: stringMatching(/Ghost\/\d+\.\d+\.\d+(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s\(https:\/\/github.com\/TryGhost\/Ghost\)/),
+        anyGhostAgent: stringMatching(/Ghost\/\d+\.\d+(?:-([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?\s\(https:\/\/github.com\/TryGhost\/Ghost\)/),
         // @NOTE: hack here! it's due to https://github.com/TryGhost/Toolbox/issues/341
         //        this matcher should be removed once the issue is solved - routing is redesigned
         //        An ideal solution would be removal of this matcher altogether.
@@ -545,5 +546,6 @@ module.exports = {
     configUtils: require('./configUtils'),
     dbUtils: require('./db-utils'),
     urlUtils: require('./urlUtils'),
-    resetRateLimits
+    resetRateLimits,
+    cacheRules
 };

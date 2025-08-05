@@ -16,8 +16,22 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 }
             }, options: {useActivityPub: true}});
 
@@ -56,12 +70,26 @@ test.describe('My Profile', async () => {
             const {lastApiRequests} = await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 deletePost: {
                     method: 'DELETE',
-                    path: `/post/${postToDeleteId}`,
+                    path: `/v1/post/${postToDeleteId}`,
                     response: {}
                 }
             }, options: {useActivityPub: true}});
@@ -113,12 +141,26 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 getMyProfileLiked: {
                     method: 'GET',
-                    path: '/posts/me/liked',
+                    path: '/v1/posts/me/liked',
                     response: myLikedPosts
                 }
             }, options: {useActivityPub: true}});
@@ -161,12 +203,26 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 getMyProfileFollowers: {
                     method: 'GET',
-                    path: '/account/me/follows/followers',
+                    path: '/v1/account/me/follows/followers',
                     response: myFollowers
                 }
             }, options: {useActivityPub: true}});
@@ -221,12 +277,26 @@ test.describe('My Profile', async () => {
             await mockApi({page, requests: {
                 getMyProfile: {
                     method: 'GET',
-                    path: '/posts/me',
+                    path: '/v1/posts/me',
                     response: myPosts
+                },
+                getMyAccount: {
+                    method: 'GET',
+                    path: '/v1/account/me',
+                    response: {
+                        id: 'alice',
+                        handle: '@alice@fake.host',
+                        name: 'Alice',
+                        url: 'https://fake.host/@alice',
+                        avatarUrl: 'https://fake.host/avatars/alice.jpg',
+                        followingCount: 5,
+                        followerCount: 10,
+                        likedCount: 3
+                    }
                 },
                 getMyProfileFollowing: {
                     method: 'GET',
-                    path: '/account/me/follows/following',
+                    path: '/v1/account/me/follows/following',
                     response: myFollowing
                 }
             }, options: {useActivityPub: true}});

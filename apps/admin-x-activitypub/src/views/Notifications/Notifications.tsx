@@ -1,9 +1,9 @@
 import React, {useEffect, useRef} from 'react';
+import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 
-import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-
 import APAvatar from '@components/global/APAvatar';
+import Error from '@components/layout/Error';
 import FeedItemStats from '@components/feed/FeedItemStats';
 import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
@@ -11,8 +11,9 @@ import Separator from '@components/global/Separator';
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {Notification} from '@src/api/activitypub';
+import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
+import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -191,7 +192,7 @@ const Notifications: React.FC = () => {
 
     const maxAvatars = 5;
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
+    const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
@@ -257,6 +258,10 @@ const Notifications: React.FC = () => {
         }
     };
 
+    if (error && isApiError(error)) {
+        return <Error statusCode={error.statusCode}/>;
+    }
+
     return (
         <Layout>
             <div className='z-0 flex w-full flex-col items-center'>
@@ -271,7 +276,7 @@ const Notifications: React.FC = () => {
                 {
                     (notificationGroups.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col max-md:mt-5'>
                                 {notificationGroups.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
@@ -396,6 +401,13 @@ const Notifications: React.FC = () => {
                                                                     content={group.post?.content || ''}
                                                                     stripTags={['a']}
                                                                 />
+                                                                {group.post && group.post.attachments && group.post.attachments.length > 0 && (
+                                                                    <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
+                                                                        {renderFeedAttachment(
+                                                                            {...group.post, type: 'Note', attachment: group.post.attachments}
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )

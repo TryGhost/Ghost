@@ -13,7 +13,7 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/feed/reader',
+                path: '/v1/feed/reader',
                 response: inboxFixture
             }
         }, options: {useActivityPub: true}});
@@ -45,12 +45,12 @@ test.describe('Inbox', async () => {
         await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/feed/reader',
+                path: '/v1/feed/reader',
                 response: inboxFixture
             },
             getPost: {
                 method: 'GET',
-                path: `/replies/${encodeURIComponent(postFixture.id)}`,
+                path: `/v1/replies/${encodeURIComponent(postFixture.id)}`,
                 response: {
                     ...postFixture,
                     // TODO: Add metadata to the post fixture
@@ -110,12 +110,12 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/feed/reader',
+                path: '/v1/feed/reader',
                 response: inboxFixture
             },
             likePost: {
                 method: 'POST',
-                path: `/actions/like/${encodeURIComponent(secondPostFixture.id)}`,
+                path: `/v1/actions/like/${encodeURIComponent(secondPostFixture.id)}`,
                 response: {}
             }
         }, options: {useActivityPub: true}});
@@ -156,12 +156,12 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/feed/reader',
+                path: '/v1/feed/reader',
                 response: inboxFixture
             },
             getPost: {
                 method: 'GET',
-                path: `/post/${encodeURIComponent(secondPostFixture.id)}`,
+                path: `/v1/post/${encodeURIComponent(secondPostFixture.id)}`,
                 response: {
                     ...secondPostFixture,
                     metadata: {
@@ -171,7 +171,7 @@ test.describe('Inbox', async () => {
             },
             getThread: {
                 method: 'GET',
-                path: `/thread/${encodeURIComponent(secondPostFixture.id)}`,
+                path: `/v1/thread/${encodeURIComponent(secondPostFixture.id)}`,
                 response: {
                     posts: [
                         {
@@ -187,7 +187,7 @@ test.describe('Inbox', async () => {
             },
             replyToPost: {
                 method: 'POST',
-                path: `/actions/reply/${encodeURIComponent(secondPostFixture.id)}`,
+                path: `/v1/actions/reply/${encodeURIComponent(secondPostFixture.id)}`,
                 response: {
                     id: 'new-reply-id',
                     type: 'Note',
@@ -245,12 +245,12 @@ test.describe('Inbox', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             getInbox: {
                 method: 'GET',
-                path: '/feed/reader',
+                path: '/v1/feed/reader',
                 response: inboxFixture
             },
             repostPost: {
                 method: 'POST',
-                path: `/actions/repost/${encodeURIComponent(secondPostFixture.id)}`,
+                path: `/v1/actions/repost/${encodeURIComponent(secondPostFixture.id)}`,
                 response: {}
             }
         }, options: {useActivityPub: true}});

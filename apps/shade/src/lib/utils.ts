@@ -160,21 +160,50 @@ export const formatQueryDate = (date: Moment) => {
 
 // Format date for UI, result is in the formate of `12 Jun 2025`
 export const formatDisplayDate = (dateString: string): string => {
-    const date = new Date(dateString);
-    const today = new Date();
-    const isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
-    const isCurrentYear = date.getUTCFullYear() === today.getUTCFullYear();
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const day = date.getUTCDate();
-    const month = months[date.getUTCMonth()];
-    const year = date.getUTCFullYear();
-
-    if (isToday) {
-        return `${day} ${month}`;
+    // If the date is a Date object, convert it to a string
+    // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+    if (dateString instanceof Date) {
+        dateString = dateString.toISOString();
+    }
+    // Fallback to empty string if dateString is an unexpected type. Better to fallback to empty string than to crash the app
+    if (!dateString || dateString.length === 0 || typeof dateString !== 'string') {
+        return '';
     }
 
-    return isCurrentYear ? `${day} ${month}` : `${day} ${month} ${year}`;
+    // Check if this is a datetime string (contains time) or just a date
+    const hasTime = dateString.includes(':');
+    
+    const date = new Date(dateString);
+    const today = new Date();
+    
+    let day, month, year, isToday, isCurrentYear;
+    
+    if (hasTime && !dateString.includes('T') && !dateString.includes('Z')) {
+        // This is a localized datetime string like "2025-07-29 19:00:00"
+        // Use local date methods to avoid timezone conversion
+        day = date.getDate();
+        month = date.getMonth();
+        year = date.getFullYear();
+        isToday = date.toDateString() === today.toDateString();
+        isCurrentYear = year === today.getFullYear();
+    } else {
+        // This is either a date-only string or an ISO format with timezone
+        // Use UTC methods as before
+        day = date.getUTCDate();
+        month = date.getUTCMonth();
+        year = date.getUTCFullYear();
+        isToday = date.toISOString().slice(0, 10) === today.toISOString().slice(0, 10);
+        isCurrentYear = year === today.getUTCFullYear();
+    }
+
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthName = months[month];
+
+    if (isToday) {
+        return `${day} ${monthName}`;
+    }
+
+    return isCurrentYear ? `${day} ${monthName}` : `${day} ${monthName} ${year}`;
 };
 
 // Helper function to format timestamp
@@ -235,14 +264,27 @@ export function abbreviateNumber(number: number) {
         return formatNumber(num);
     }
 
-    // For numbers >= 1000, show as x.yk format
-    const abbreviated = num / 1000;
-    const rounded = Math.round(abbreviated * 10) / 10; // Round to 1 decimal place
+    if (num < 1000000) {
+        // For thousands: round to nearest 100 for 10.3k, nearest 1000 for 101k
+        const roundTo = num < 100000 ? 100 : 1000;
 
-    // Remove .0 if it's a whole number
-    const formatted = rounded % 1 === 0 ? rounded.toString() : rounded.toFixed(1);
+        const rounded = Math.round(num / roundTo) * roundTo;
+        const abbreviated = rounded / 1000;
 
-    return `${formatted}k`;
+        if (abbreviated === 1000) {
+            return '1M';
+        }
+
+        const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+        return `${formatted}k`;
+    }
+
+    // For millions: round to nearest 100,000 for 1.1M
+    const roundTo = 100000;
+    const rounded = Math.round(num / roundTo) * roundTo;
+    const abbreviated = rounded / 1000000;
+    const formatted = abbreviated % 1 === 0 ? abbreviated.toString() : abbreviated.toFixed(1);
+    return `${formatted}M`;
 }
 
 // Format time duration
