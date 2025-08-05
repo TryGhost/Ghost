@@ -5,7 +5,7 @@ export interface PersistenceAdapter {
 
     // Core operations
     insert<T>(entityType: string, data: T): Promise<T>;
-    findById<T>(entityType: string, id: string): Promise<T | null>;
+    find<T>(entityType: string, id: string): Promise<T | null>;
     findMany<T>(entityType: string, query?: Record<string, unknown>): Promise<T[]>;
     update<T>(entityType: string, id: string, data: Partial<T>): Promise<T>;
     delete(entityType: string, id: string): Promise<void>;

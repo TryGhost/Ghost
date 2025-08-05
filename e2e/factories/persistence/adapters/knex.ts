@@ -28,7 +28,12 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
             .where(primaryKey, id)
             .update(data);
 
-        const updated = await this.findById<T>(entityType, id);
+        return this.verifyUpdate(entityType, id);
+    }
+
+    private async verifyUpdate<T>(entityType: string, id: string): Promise<T> {
+        const updated = await this.find<T>(entityType, id);
+
         if (!updated) {
             throw new Error(`Entity not found after update: ${entityType}/${id}`);
         }
@@ -58,10 +63,11 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
             .del();
     }
 
-    async findById<T>(entityType: string, id: string): Promise<T | null> {
+    async find<T>(entityType: string, id: string): Promise<T | null> {
         const {tableName, primaryKey = 'id'} = this.registry.getMetadata(entityType);
 
-        const result = await this.db(tableName)
+        const result = await this
+            .db(tableName)
             .where(primaryKey, id)
             .first();
 

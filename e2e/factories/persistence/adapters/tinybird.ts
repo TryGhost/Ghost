@@ -126,14 +126,12 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     async findById<T>(_entityType: string, _id: string): Promise<T | null> {
         void _entityType;
         void _id;
-        // Tinybird doesn't support individual event retrieval in the same way
-        throw new Error('FindById not supported for Tinybird events');
+        throw new Error('Find by id is not supported for this endpoint.');
     }
 
     async findMany<T>(_entityType: string, _query?: Record<string, unknown>): Promise<T[]> {
         void _entityType;
         void _query;
-        // Tinybird queries would use their SQL API, not implemented for now
-        throw new Error('FindMany not supported for Tinybird events');
+        throw new Error('Find by id is not supported for this endpoint.');
     }
 }
