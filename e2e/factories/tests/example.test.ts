@@ -22,13 +22,7 @@ test.describe('Data Factory Examples', () => {
             uuid: 'post with analytics'
         });
 
-        const hit = await factories.pageHitFactory.create({
-            siteUuid: 'test-uuid',
-            post_uuid: post.uuid,
-            member_status: 'free',
-            pathname: `/posts/${post.slug}`
-        });
-
+        const hit = await factories.pageHitFactory.create({post_uuid: post.uuid});
         expect(hit.payload.post_uuid).toBe('post with analytics');
     });
 

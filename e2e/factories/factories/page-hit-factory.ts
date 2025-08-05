@@ -55,7 +55,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
 
     build(options?: PageHitOptions): PageHitResult {
         const timestamp = options?.timestamp || new Date();
-        const pathname = options?.pathname || '/';
+        const pathname = options?.pathname || '/path/test';
 
         // Generate new session_id if not provided
         const sessionId = options?.session_id || faker.datatype.uuid();
