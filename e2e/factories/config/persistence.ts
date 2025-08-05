@@ -15,7 +15,7 @@ export interface TinybirdConfig {
 
 export function tinybirdConfig() {
     return {
-        host: process.env.TINYBIRD_HOST || 'http://localhost:7181/v0/events',
+        host: process.env.TINYBIRD_HOST || 'http://localhost:7181',
         token: process.env.TINYBIRD_TOKEN || 'test-token'
     };
 }

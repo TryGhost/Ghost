@@ -18,8 +18,8 @@ export const test = base.extend<{
     stats: Record<string, number>
 }>({
     factories: async ({}, use) => {
-        await factoryManager.setup();
         await use(factoryManager.factories);
+        await factoryManager.cleanup();
     },
 
     factoryManager: async ({}, use) => {
@@ -32,7 +32,7 @@ test.beforeAll(async () => {
 });
 
 test.afterAll(async () => {
-    await factoryManager.cleanup();
+    await factoryManager.destroy();
 });
 
 // Re-export expect for convenience

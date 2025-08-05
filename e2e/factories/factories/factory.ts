@@ -4,48 +4,26 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
     abstract name: string;
     abstract entityType: string;
 
-    private persistence?: PersistenceAdapter;
+    private readonly persistence?: PersistenceAdapter;
     private trackingEnabled = true;
     protected createdEntities = new Map<string, TResult>();
 
     constructor(adapter?: PersistenceAdapter) {
-        if (adapter) {
-            this.setPersistence(adapter);
-        }
-    }
-
-    async setup(): Promise<void> {}
-
-    async destroy(): Promise<void> {}
-
-    /**
-     * Build an object without persisting it
-     */
-    abstract build(options?: TOptions): TResult | Promise<TResult>;
-
-    /**
-     * Inject persistence adapter
-     */
-    setPersistence(adapter: PersistenceAdapter): void {
         this.persistence = adapter;
     }
 
-    /**
-     * Control entity tracking for cleanup
-     */
-    setTracking(enabled: boolean): void {
-        this.trackingEnabled = enabled;
-    }
+    public async setup(): Promise<void> {}
+
+    public async destroy(): Promise<void> {}
+
+    public abstract build(options?: TOptions): TResult | Promise<TResult>;
 
     async create(options?: TOptions): Promise<TResult> {
         if (!this.persistence) {
-            throw new Error(`No persistence adapter configured for ${this.name} factory`);
+            throw new Error(`No persistence adapter configured for ${this.name} factory.`);
         }
 
-        // Build the entity
-        const entity = await Promise.resolve(this.build(options));
-
-        // Persist using the adapter
+        const entity = await this.build(options);
         const persisted = await this.persistence.insert(this.entityType, entity);
 
         if (this.trackingEnabled) {
@@ -67,8 +45,11 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         await this.persistence.deleteMany(this.entityType, ids);
         this.createdEntities.clear();
 
-        // Call factory-specific cleanup
         await this.destroy();
+    }
+
+    set tracking(enabled: boolean) {
+        this.trackingEnabled = enabled;
     }
 
     /**

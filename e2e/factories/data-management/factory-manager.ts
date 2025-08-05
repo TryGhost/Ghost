@@ -8,7 +8,7 @@ export class FactoryManager {
         this.factories = fact;
     }
 
-    async setup(): Promise<void> {
+    async setup() {
         const adapters = this.persistenceAdapters;
         await Promise.all(Array.from(adapters).map(adapter => adapter.connect()));
 
@@ -19,10 +19,12 @@ export class FactoryManager {
         await Promise.all(setupPromises);
     }
 
-    async cleanup(): Promise<void> {
+    async cleanup() {
         const cleanupPromises = this.factoryList.map(factory => factory.cleanup());
         await Promise.all(cleanupPromises);
+    }
 
+    async destroy() {
         const adapters = this.persistenceAdapters;
         await Promise.all(Array.from(adapters).map(adapter => adapter.disconnect()));
     }

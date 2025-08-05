@@ -24,7 +24,6 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
             throw new Error(`No endpoint configured for entity type: ${entityType}`);
         }
 
-        // For Tinybird, we send to the events API
         const url = `${this.config.host}${endpoint}`;
 
         try {
@@ -50,12 +49,8 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
 
             return data;
         } catch (error) {
-            // Log the error for debugging
             // eslint-disable-next-line no-console
             console.warn('Tinybird error:', error instanceof Error ? error.message : String(error));
-
-            // For e2e tests, we should actually fail if Tinybird is not available
-            // This ensures tests are meaningful
             throw error;
         }
     }
@@ -70,7 +65,6 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     async delete(entityType: string, id: string): Promise<void> {
         const {primaryKey = 'session_id'} = this.registry.getMetadata(entityType);
 
-        // Use Tinybird SQL endpoint to delete
         const sqlUrl = `${this.config.host}/v0/sql`;
         const query = `DELETE FROM ${entityType} WHERE ${primaryKey} = '${id}'`;
 
@@ -89,8 +83,6 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
                 throw new Error(`Failed to delete event: ${response.status} - ${text}`);
             }
         } catch (error) {
-            // For e2e tests, we should actually fail if Tinybird is not available
-            // This ensures tests are meaningful
             throw error;
         }
     }
@@ -126,8 +118,6 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
                     throw new Error(`Failed to delete events: ${response.status} - ${text}`);
                 }
             } catch (error) {
-                // For e2e tests, we should actually fail if Tinybird is not available
-                // This ensures tests are meaningful
                 throw error;
             }
         }

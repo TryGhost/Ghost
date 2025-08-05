@@ -26,7 +26,7 @@ function createDatabasePersistence() {
 function createApiPersistence() {
     const registry = new EntityRegistry<TinyBirdApiMetadata>();
     registry.register('analytics_events', {
-        endpoint: '?name=analytics_events',
+        endpoint: '/v0/events?name=analytics_events',
         primaryKey: 'session_id'
     });
 
