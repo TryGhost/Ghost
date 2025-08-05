@@ -14,7 +14,7 @@
     "Confirm your subscription to {siteTitle}": "Confirmez votre abonnement à {siteTitle}",
     "Device:": "Appareil:",
     "Email": "E-mail",
-    "For security verification, enter the code below to sign in to {siteTitle}:": "Pour des raisons de sécurité, entrez le code ci-dessous pour vous connecter à {siteTitle} :",
+    "For security verification, enter the code below to sign in to {siteTitle}:": "Pour des raisons de sécurité, veuillez saisir le code ci-dessous pour vous connecter à {siteTitle} :",
     "For your security, the link will expire in 24 hours time.": "Pour des raisons de sécurité, le lien expirera dans 24 heures.",
     "free": "gratuit",
     "Here's your code to login to {siteTitle}": "Voici votre code pour vous connecter à {siteTitle}",
@@ -58,15 +58,14 @@
     "View in browser": "Voir dans le navigateur",
     "Welcome back to {siteTitle}!": "Quel plaisir de vous revoir sur {siteTitle} !",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Quel plaisir de vous revoir ! Utilisez ce lien pour vous connecter en toute sécurité à votre compte {siteTitle} :",
-
     "When:": "Quand :",
     "Where:": "Où :",
-    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Vous recevez ceci parce que vous êtes un·e <strong>abonné·e %%{status}%%</strong> de {site}.",
+    "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Vous recevez ceci parce que vous êtes un(e) <strong>abonné(e) %%{status}%%</strong> de {site}.",
     "You can also copy & paste this URL into your browser:": "Vous pouvez aussi copier-coller cette URL dans votre navigateur :",
     "You can unsubscribe from these notifications at {profileUrl}.": "Vous pouvez vous désabonner de ces notifications à {profileUrl}.",
     "You just tried to access your account from a new device.": "Vous venez de tenter d'accéder à votre compte depuis un nouvel appareil.",
-    "You will not be signed up, and no account will be created for you.": "Vous ne serez pas inscrit-e et aucun compte ne sera créé pour vous.",
-    "You will not be subscribed.": "Vous ne serez pas abonné-e.",
+    "You will not be signed up, and no account will be created for you.": "Vous ne serez pas inscrit(e) et aucun compte ne sera créé pour vous.",
+    "You will not be subscribed.": "Vous ne serez pas abonné(e).",
     "You're one tap away from subscribing to {siteTitle} — please confirm your email address with this link:": "Plus qu’une étape pour vous abonner à {siteTitle} — confirmez votre adresse e-mail avec ce lien :",
     "You're one tap away from subscribing to {siteTitle}!": "Plus qu’une étape pour vous abonner à {siteTitle} !",
     "Your free trial ends on {date}, at which time you will be charged the regular price. You can always cancel before then.": "Votre essai gratuit se termine le {date}, après quoi le prix normal vous sera facturé. Vous pouvez toujours annuler avant cette date.",
@@ -76,4 +75,3 @@
     "Your subscription will renew on {date}.": "Votre abonnement sera renouvelé le {date}.",
     "Your verification code for {siteTitle}": "Votre code de vérification pour {siteTitle}"
 }
-
