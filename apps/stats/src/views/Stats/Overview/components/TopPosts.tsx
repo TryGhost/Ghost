@@ -180,7 +180,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                                 return (
                                                                     <>
                                                                         <LucideIcon.Send className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
-                                                                        {formatNumber(post.sent_count || 0)}
+                                                                        {abbreviateNumber(post.sent_count || 0)}
                                                                     </>
                                                                 );
                                                             }
