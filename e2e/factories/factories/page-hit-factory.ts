@@ -1,9 +1,9 @@
 import {Factory} from './factory';
 import {faker} from '@faker-js/faker';
-import {generateUuid} from '../utils/utils';
+import {PersistenceAdapter} from '../persistence';
 
-// Tinybird Page Hit Options
 export interface PageHitOptions {
+    siteUuid?: string;
     timestamp?: Date;
     session_id?: string;
     post_uuid?: string;
@@ -16,7 +16,6 @@ export interface PageHitOptions {
     location?: string;
 }
 
-// Tinybird Page Hit Result
 export interface PageHitResult {
     timestamp: string;
     action: 'page_hit';
@@ -41,31 +40,25 @@ export interface PageHitResult {
 
 export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
     name = 'pageHit';
-    entityType = 'analytics_events'; // Maps to Tinybird datasource
+    entityType = 'analytics_events';
     private createdSessionIds = new Set<string>();
     private eventCount = 0;
 
-    constructor(
-        private siteUuid: string
-    ) {
-        super();
+    constructor(adapter?: PersistenceAdapter) {
+        super(adapter);
     }
 
     async destroy(): Promise<void> {
-        // Clear tracked sessions
         this.createdSessionIds.clear();
         this.eventCount = 0;
     }
 
-    /**
-     * Build a page hit event without sending it
-     */
     build(options?: PageHitOptions): PageHitResult {
         const timestamp = options?.timestamp || new Date();
         const pathname = options?.pathname || '/';
 
         // Generate new session_id if not provided
-        const sessionId = options?.session_id || generateUuid();
+        const sessionId = options?.session_id || faker.datatype.uuid();
 
         // Build the event
         const event: PageHitResult = {
@@ -74,7 +67,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
             version: '1',
             session_id: sessionId,
             payload: {
-                site_uuid: this.siteUuid,
+                site_uuid: options?.siteUuid || 'site-uuid',
                 member_uuid: options?.member_uuid || 'undefined',
                 member_status: options?.member_status || 'undefined',
                 post_uuid: options?.post_uuid || 'undefined',
@@ -108,7 +101,6 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
      * Override to track sessions for custom cleanup
      */
     async create(options?: PageHitOptions): Promise<PageHitResult> {
-        // Use base class create which will call our build() and use persistence
         const event = await super.create(options);
 
         // Track the session for our custom session-based cleanup
@@ -162,7 +154,7 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
      * Create a new session and return its ID for reuse
      */
     createNewSession(): string {
-        const sessionId = generateUuid();
+        const sessionId = faker.datatype.uuid();
         this.createdSessionIds.add(sessionId);
         return sessionId;
     }

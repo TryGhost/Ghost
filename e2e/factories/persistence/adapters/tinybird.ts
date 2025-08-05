@@ -14,6 +14,10 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
         this.httpClient = httpClient ?? new FetchHttpClient();
     }
 
+    async connect(): Promise<void> {}
+
+    async disconnect(): Promise<void> {}
+
     async insert<T>(entityType: string, data: T): Promise<T> {
         const {endpoint} = this.registry.getMetadata(entityType);
         if (!endpoint) {
@@ -37,6 +41,11 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
             if (!response.ok) {
                 const text = await response.text();
                 throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
+            } else {
+                const text = await response.text();
+                if (!text.includes('"quarantined_rows":0')) {
+                    throw new Error(`Tinybird request failed: ${response.status} - ${text}`);
+                }
             }
 
             return data;

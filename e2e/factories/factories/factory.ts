@@ -2,27 +2,21 @@ import type {PersistenceAdapter} from '../persistence/adapter';
 
 export abstract class Factory<TOptions = unknown, TResult = unknown> {
     abstract name: string;
-    abstract entityType: string; // Used for persistence routing
+    abstract entityType: string;
 
     private persistence?: PersistenceAdapter;
     private trackingEnabled = true;
     protected createdEntities = new Map<string, TResult>();
 
-    /**
-     * Set up any necessary resources (database connections, etc.)
-     * Override this method if your factory needs initialization
-     */
-    async setup(): Promise<void> {
-        // Default implementation - no setup needed
+    constructor(adapter?: PersistenceAdapter) {
+        if (adapter) {
+            this.setPersistence(adapter);
+        }
     }
 
-    /**
-     * Factory-specific cleanup (override if needed)
-     * Called after entities are cleaned up
-     */
-    async destroy(): Promise<void> {
-        // Default implementation - no cleanup needed
-    }
+    async setup(): Promise<void> {}
+
+    async destroy(): Promise<void> {}
 
     /**
      * Build an object without persisting it
@@ -43,9 +37,6 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         this.trackingEnabled = enabled;
     }
 
-    /**
-     * Build and persist an object
-     */
     async create(options?: TOptions): Promise<TResult> {
         if (!this.persistence) {
             throw new Error(`No persistence adapter configured for ${this.name} factory`);
@@ -57,7 +48,6 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         // Persist using the adapter
         const persisted = await this.persistence.insert(this.entityType, entity);
 
-        // Track for cleanup if enabled
         if (this.trackingEnabled) {
             const id = this.extractId(persisted);
             if (id) {
@@ -68,9 +58,6 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         return persisted;
     }
 
-    /**
-     * Clean up all created entities
-     */
     async cleanup(): Promise<void> {
         if (!this.persistence || this.createdEntities.size === 0) {
             return;
@@ -93,9 +80,6 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         return typeof id === 'string' ? id : undefined;
     }
 
-    /**
-     * Get all created entities
-     */
     getCreatedEntities(): TResult[] {
         return Array.from(this.createdEntities.values());
     }

@@ -1,8 +1,7 @@
 import {Factory} from './factory';
 import {faker} from '@faker-js/faker';
-import {generateId, generateUuid, generateSlug} from '../utils/utils';
+import {generateId, generateSlug} from '../fixtures/utils';
 
-// Ghost Post Options based on the Ghost schema
 export interface PostOptions {
     id?: string;
     uuid?: string;
@@ -66,16 +65,9 @@ export type PostResult = PostOptions & {
     featured: boolean;
 };
 
-/**
- * Simple factory for creating Ghost posts.
- */
 export class PostFactory extends Factory<PostOptions, PostResult> {
     name = 'post';
     entityType = 'posts'; // Maps to 'posts' table
-
-    constructor() {
-        super();
-    }
 
     build(options: PostOptions = {}): PostResult {
         const now = new Date();
@@ -95,7 +87,7 @@ export class PostFactory extends Factory<PostOptions, PostResult> {
         // Create defaults object
         const defaults = {
             id: generateId(),
-            uuid: generateUuid(),
+            uuid: faker.datatype.uuid(),
             title: title,
             slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
             mobiledoc: JSON.stringify(mobiledoc),

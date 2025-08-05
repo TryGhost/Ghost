@@ -1,4 +1,9 @@
 export interface PersistenceAdapter {
+    // Lifecycle methods
+    connect(): Promise<void>;
+    disconnect(): Promise<void>;
+
+    // Core operations
     insert<T>(entityType: string, data: T): Promise<T>;
     findById<T>(entityType: string, id: string): Promise<T | null>;
     findMany<T>(entityType: string, query?: Record<string, unknown>): Promise<T[]>;
@@ -6,3 +11,4 @@ export interface PersistenceAdapter {
     delete(entityType: string, id: string): Promise<void>;
     deleteMany(entityType: string, ids: string[]): Promise<void>;
 }
+

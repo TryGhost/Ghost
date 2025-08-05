@@ -1,6 +1,3 @@
-/**
- * Simple Ghost configuration from environment variables.
- */
 export function ghostConfig() {
     return {
         host: process.env.GHOST_DB_HOST || 'localhost',

@@ -1,10 +1,3 @@
-/*
-export interface EntityMetadata {
-    tableName?: string; // For database adapters
-    endpoint?: string; // For API adapters
-    primaryKey?: string; // Default: 'id'
-}*/
-
 export interface DatabaseMetadata {
     tableName: string;
     primaryKey?: string;
@@ -20,6 +13,7 @@ export interface TinyBirdApiMetadata extends APIMetadata {
 
 export class EntityRegistry<M> {
     protected metadata = new Map<string, M>();
+
     register(entityType: string, metadata: M): void {
         this.metadata.set(entityType, metadata);
     }

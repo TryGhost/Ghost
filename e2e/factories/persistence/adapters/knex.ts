@@ -5,6 +5,14 @@ import type {DatabaseMetadata, EntityRegistry} from '../entity-registry';
 export class KnexPersistenceAdapter implements PersistenceAdapter {
     constructor(private db: Knex, private registry: EntityRegistry<DatabaseMetadata>) {}
 
+    async connect(): Promise<void> {
+        await this.db.raw('SELECT 1');
+    }
+
+    async disconnect(): Promise<void> {
+        await this.db.destroy();
+    }
+
     async insert<T>(entityType: string, data: T): Promise<T> {
         const {tableName} = this.registry.getMetadata(entityType);
 

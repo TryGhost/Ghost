@@ -1,9 +1,6 @@
 import knex, {Knex} from 'knex';
 import {ghostConfig} from '../config/persistence';
 
-/**
- * Simple database connection for Ghost.
- */
 export function createDatabase(): Knex {
     return knex({
         client: 'mysql2',

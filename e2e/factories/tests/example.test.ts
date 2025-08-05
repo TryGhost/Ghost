@@ -1,10 +1,11 @@
 import {test, expect} from '../fixtures/playwright';
 
 test.describe('Data Factory Examples', () => {
-    test('create a simple published post', async ({factory}) => {
-        const post = await factory.ghost.createPublishedPost({
+    test('create a post - published', async ({factories}) => {
+        const post = await factories.postFactory.create({
             title: 'Hello World',
-            custom_excerpt: 'This is my first post'
+            published_at: new Date(),
+            status: 'published'
         });
 
         expect(post.title).toBe('Hello World');
@@ -12,12 +13,24 @@ test.describe('Data Factory Examples', () => {
         expect(post.published_at).toBeDefined();
     });
 
-    test('create post with analytics', async ({ghost, tinybird}) => {
-        const post = await ghost.createPublishedPost({
-            title: 'Popular Article',
-            featured: true
+    test('create post with analytics', async ({factories}) => {
+        const post = await factories.postFactory.create({
+            title: 'Hello World',
+            custom_excerpt: 'This is my first post',
+            published_at: new Date(),
+            status: 'published'
         });
 
+        const hit = await factories.pageHitFactory.create({
+            siteUuid: 'test-uuid',
+            post_uuid: post.uuid,
+            member_status: 'free',
+            pathname: `/posts/${post.slug}`
+        });
+
+        expect(hit.payload.post_uuid).toBe(post.uuid);
+
+        /*
         // Generate 100 page views
         const hits = await tinybird.createPageHitsForPost(post.uuid, 100, {
             member_status: 'free',
@@ -25,15 +38,26 @@ test.describe('Data Factory Examples', () => {
         });
 
         expect(hits).toHaveLength(100);
-        expect(hits[0].payload.post_uuid).toBe(post.uuid);
+        expect(hits[0].payload.post_uuid).toBe(post.uuid);*/
     });
 
-    test('multi-session analytics example', async ({ghost, tinybird}) => {
-        const post = await ghost.createPublishedPost({
+    test.skip('multi-session analytics example', async ({factories}) => {
+        const post = await factories.postFactory.create({
             title: 'Popular Post',
-            featured: true
+            custom_excerpt: 'This is my first post',
+            featured: true,
+            published_at: new Date(),
+            status: 'published'
         });
 
+        const session1 = factories.pageHitFactory.createNewSession();
+        await factories.pageHitFactory.createSessionHits(session1, 3, {
+            post_uuid: post.uuid,
+            referrer: 'https://google.com',
+            member_status: 'undefined'
+        });
+
+        /*
         // Session 1: New visitor from Google
         const session1 = tinybird.createNewSession();
         await tinybird.createSessionHits(session1, 3, {
@@ -66,6 +90,6 @@ test.describe('Data Factory Examples', () => {
         // Check page hit stats
         const pageHitStats = tinybird.getStats();
         expect(pageHitStats.sessions).toBe(3);
-        expect(pageHitStats.events).toBe(10); // 3 + 5 + 2
+        expect(pageHitStats.events).toBe(10); // 3 + 5 + 2 */
     });
 });

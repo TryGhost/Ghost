@@ -1,37 +1,38 @@
 import {test as base} from '@playwright/test';
-import {DataFactory} from '../data-management/data-factory';
-import {GhostPlugin} from '../plugins/ghost-plugin';
-import {TinybirdPlugin} from '../plugins/tinybird/tinybird-plugin';
+
+import {FactoryManager} from '../data-management/factory-manager';
+import {factories, FactoryList} from '../data-management/factory-list';
+
+const factoryManager = new FactoryManager(factories);
 
 /**
  * Extended Playwright test context with data factory integration.
- * Provides automatic cleanup through a single factory instance.
+ * Provides automatic cleanup.
  *
  * Usage:
- * - test({factory}) - Full factory access
- * - test({ghost, tinybird}) - Direct plugin access
- * - test({ghost}) - Just Ghost plugin
- * - test({tinybird}) - Just Tinybird plugin
+ * - test({factories}) - Full factory access
  */
 export const test = base.extend<{
-    factory: DataFactory;
-    ghost: GhostPlugin;
-    tinybird: TinybirdPlugin;
+    factories: FactoryList;
+    factoryManager: FactoryManager;
+    stats: Record<string, number>
 }>({
-    factory: async ({}, use) => {
-        const factory = new DataFactory();
-        await factory.initialize();
-        await use(factory);
-        await factory.cleanup();
+    factories: async ({}, use) => {
+        await factoryManager.setup();
+        await use(factoryManager.factories);
     },
 
-    ghost: async ({factory}, use) => {
-        await use(factory.ghost);
-    },
-
-    tinybird: async ({factory}, use) => {
-        await use(factory.tinybird);
+    factoryManager: async ({}, use) => {
+        await use(factoryManager);
     }
+});
+
+test.beforeAll(async () => {
+    await factoryManager.setup();
+});
+
+test.afterAll(async () => {
+    await factoryManager.cleanup();
 });
 
 // Re-export expect for convenience
