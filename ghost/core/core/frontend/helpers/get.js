@@ -299,7 +299,22 @@ module.exports = async function get(resource, options) {
 
         // prepare data properties for use with handlebars
         if (response[resource] && response[resource].length) {
-            response[resource].forEach(prepareContextResource);
+            // Special handling for pages and posts to preserve show_title_and_feature_image
+            if (resource === 'pages' || resource === 'posts') {
+                response[resource].forEach((item) => {
+                    // Save the property value before prepareContextResource deletes it
+                    const showTitleAndFeatureImage = item.show_title_and_feature_image;
+                    
+                    prepareContextResource(item);
+                    
+                    // Restore it so it's accessible in templates as {{show_title_and_feature_image}}
+                    if (showTitleAndFeatureImage !== undefined) {
+                        item.show_title_and_feature_image = showTitleAndFeatureImage;
+                    }
+                });
+            } else {
+                response[resource].forEach(prepareContextResource);
+            }
         }
 
         // used for logging details of slow requests
