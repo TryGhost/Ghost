@@ -1,5 +1,5 @@
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { parseReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrer } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -161,13 +161,16 @@ export class GhostStats {
         const navigator = this.browser.getNavigator();
         const location = this.browser.getLocation();
 
+        const referrerData = parseReferrer(location?.href);
+        referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
+
         // Wait a bit for SPA routers
         this.browser.setTimeout(() => {
             this.trackEvent('page_hit', {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                parsedReferrer: parseReferrer(location?.href), // this sends an object with source, medium, and url
+                parsedReferrer: referrerData,
                 pathname: location?.pathname,
                 href: location?.href,
             });
@@ -207,6 +210,11 @@ export class GhostStats {
     init() {
         // Skip in test environments
         if (this.isTestEnv) {
+            return false;
+        }
+
+        // Skip if page is loaded in an iframe (admin preview, embeds, etc.)
+        if (this.browser.window && this.browser.window.self !== this.browser.window.top) {
             return false;
         }
 
