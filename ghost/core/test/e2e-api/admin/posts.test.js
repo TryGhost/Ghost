@@ -664,4 +664,73 @@ describe('Posts API', function () {
                 });
         });
     });
+
+    describe('With integration auth', function () {
+        it('can create and update a post with revisions', async function () {
+            // Use Zapier integration to test integration auth scenario
+            await agent.useZapierAdminAPIKey();
+
+            const lexical = createLexical('This is content for revision testing.');
+            const postData = {
+                title: 'Integration Auth Test Post',
+                status: 'published',
+                lexical: lexical,
+                mobiledoc: null
+            };
+
+            // Create post using integration auth - this should trigger the revision creation
+            // with author fallback to owner user when contextUser returns integration context
+            const {body} = await agent
+                .post('/posts/?formats=lexical')
+                .body({posts: [postData]})
+                .expectStatus(201);
+
+            const [postResponse] = body.posts;
+            postResponse.title.should.equal('Integration Auth Test Post');
+            postResponse.status.should.equal('published');
+            postResponse.lexical.should.equal(lexical);
+
+            // Verify the post revision was created with owner user as author
+            const ownerUser = await models.User.getOwnerUser();
+            const postRevisions = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .fetchAll();
+
+            postRevisions.length.should.equal(1);
+            const revision = postRevisions.at(0);
+            revision.get('lexical').should.equal(lexical);
+            revision.get('author_id').should.equal(ownerUser.get('id'));
+
+            // Update the post to ensure revision creation works properly
+            const updatedLexical = createLexical('Updated content for revision testing.');
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=lexical&save_revision=true`)
+                .body({posts: [{
+                    ...postResponse,
+                    lexical: updatedLexical
+                }]})
+                .expectStatus(200);
+
+            // Verify updated revision also has owner user as author
+            const updatedRevisions = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .orderBy('created_at_ts', 'desc')
+                .fetchAll();
+
+            updatedRevisions.length.should.equal(2);
+            const latestRevision = updatedRevisions.at(0);
+            latestRevision.get('lexical').should.equal(updatedLexical);
+            latestRevision.get('author_id').should.equal(ownerUser.get('id'));
+
+            // Verify the post was updated successfully
+            await agent
+                .get(`/posts/${postResponse.id}/?formats=lexical`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {
+                        lexical: updatedLexical
+                    })]
+                });
+        });
+    });
 });
