@@ -7,7 +7,7 @@ const verifyEmailTemplate = require('./emails/verify-email');
 const MagicLink = require('../lib/magic-link/MagicLink');
 const sentry = require('../../../shared/sentry');
 
-const EMAIL_KEYS = ['members_support_address'];
+const EMAIL_KEYS = ['members_support_address', 'members_transactional_address'];
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
