@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import Select, {SelectOption, SelectProps} from './Select';
 import TextField from './TextField';
 
@@ -33,20 +33,14 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     ...restProps
 }) => {
     const {...selectProps} = restProps as Record<string, unknown>;
-    const [isOtherSelected, setIsOtherSelected] = useState(false);
-    const [validationError, setValidationError] = useState<string | null>(null);
-
-    // Check if the current value is in the predefined options
-    const isCustomValue = selectedValue &&
+    
+    // Check if the current value is a custom value (not in predefined options)
+    const isInitiallyCustomValue = selectedValue &&
         !options.some(opt => opt.value === selectedValue) &&
         selectedValue !== otherOption.value;
 
-    // Initialize state based on current value
-    useEffect(() => {
-        if (isCustomValue) {
-            setIsOtherSelected(true);
-        }
-    }, [isCustomValue]);
+    const [isOtherSelected, setIsOtherSelected] = useState(isInitiallyCustomValue);
+    const [validationError, setValidationError] = useState<string | null>(null);
 
     const handleSelectChange = (option: SelectOption | null) => {
         if (!option) {
@@ -97,8 +91,13 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
         return hasOtherOption ? options : [...options, otherOption];
     }, [options, otherOption]);
 
+    // Check if current value is custom (for determining display mode)
+    const isCurrentlyCustomValue = selectedValue &&
+        !options.some(opt => opt.value === selectedValue) &&
+        selectedValue !== otherOption.value;
+    
     // Determine if we're in custom input mode
-    const showCustomInput = isOtherSelected || isCustomValue;
+    const showCustomInput = isOtherSelected || isCurrentlyCustomValue;
 
     // Prepare common props
     const hasError = error || !!validationError;
