@@ -96,7 +96,7 @@ const controller = {
             if (frame.user) {
                 email = frame.user.get('email');
             } else {
-                email = await models.User.getOwnerUser().get('email');
+                email = (await models.User.getOwnerUser()).get('email');
             }
 
             return importer.importFromFile(frame.file, {
