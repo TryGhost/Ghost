@@ -218,7 +218,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     onClick={toggleExpand}
                                 >{isExpanded ? 'Show less' : 'Show all'}</Button>}
                             </div>)}
-                            <Tabs className='mt-5' defaultValue='posts' variant='underline'>
+                            <Tabs key={params.handle || account?.handle || 'current-user'} className='mt-5' defaultValue='posts' variant='underline'>
                                 <TabsList>
                                     <TabsTrigger value="posts">Posts</TabsTrigger>
                                     {!params.handle && <TabsTrigger value="likes">
