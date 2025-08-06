@@ -8,7 +8,8 @@ import {
     type Notification,
     type Post,
     type ReplyChainResponse,
-    type SearchResults
+    type SearchResults,
+    isApiError
 } from '../api/activitypub';
 import {Activity, ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {
@@ -45,6 +46,20 @@ function createActivityPubAPI(handle: string, siteUrl: string) {
         new URL('/ghost/api/admin/identities/', window.location.origin),
         handle
     );
+}
+
+function renderRateLimitError(
+    title = 'Rate limit exceeded',
+    description = 'You\'ve made too many requests. Please try again later.'
+) {
+    toast.error(title, {description});
+}
+
+function renderBlockedError(
+    title = 'Action failed',
+    description = 'This user has restricted who can interact with their account.'
+) {
+    toast.error(title, {description});
 }
 
 const QUERY_KEYS = {
@@ -559,9 +574,11 @@ export function useLikeMutationForUser(handle: string) {
             updateNotificationsLikedCache(queryClient, handle, id, false);
 
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
+            }
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
             }
         }
     });
@@ -581,6 +598,11 @@ export function useUnlikeMutationForUser(handle: string) {
             updateLikeCache(queryClient, handle, id, false);
             updateLikeCacheOnce(queryClient, id, false);
             updateNotificationsLikedCache(queryClient, handle, id, false);
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -600,7 +622,7 @@ export function useBlockDomainMutationForUser(handle: string) {
                 return;
             }
             queryClient.setQueryData(
-                QUERY_KEYS.account(handle),
+                QUERY_KEYS.account(data.handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -613,6 +635,11 @@ export function useBlockDomainMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -632,7 +659,7 @@ export function useUnblockDomainMutationForUser(handle: string) {
                 return;
             }
             queryClient.setQueryData(
-                QUERY_KEYS.account(handle),
+                QUERY_KEYS.account(data.handle),
                 (currentAccount?: Account) => {
                     if (!currentAccount) {
                         return currentAccount;
@@ -643,6 +670,11 @@ export function useUnblockDomainMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -674,6 +706,11 @@ export function useBlockMutationForUser(handle: string) {
             );
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.feed});
             queryClient.invalidateQueries({queryKey: QUERY_KEYS.inbox});
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -701,6 +738,11 @@ export function useUnblockMutationForUser(handle: string) {
                     };
                 }
             );
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -806,9 +848,10 @@ export function useRepostMutationForUser(handle: string) {
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
+            }
+            if (error.statusCode === 429) {
+                renderRateLimitError();
             }
         }
     });
@@ -828,6 +871,11 @@ export function useDerepostMutationForUser(handle: string) {
             updateRepostCache(queryClient, handle, id, false);
             updateRepostCacheOnce(queryClient, id, false);
             updateNotificationsRepostCache(queryClient, handle, id, false);
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
         }
     });
 }
@@ -945,9 +993,41 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 };
             });
 
-            // Invalidate the follows query cache for the account performing the unfollow
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            const followingHandle = handle === 'index' ? 'me' : handle;
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
+            const existingData = queryClient.getQueryData(accountFollowsQueryKey);
+            
+            // Update the following list cache if it exists, otherwise invalidate
+            if (existingData) {
+                queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
+                    pages: Array<{
+                        accounts: Array<{
+                            id: string;
+                            name: string;
+                            handle: string;
+                            avatarUrl: string;
+                            blockedByMe: boolean;
+                            domainBlockedByMe: boolean;
+                            isFollowing: boolean;
+                        }>;
+                    }>;
+                }) => {
+                    if (!oldData?.pages) {
+                        return oldData;
+                    }
+
+                    return {
+                        ...oldData,
+                        pages: oldData.pages.map(page => ({
+                            ...page,
+                            accounts: page.accounts.filter(account => account.handle !== fullHandle)
+                        }))
+                    };
+                });
+            } else {
+                // Cache doesn't exist, invalidate to fetch fresh data when needed
+                queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            }
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1010,7 +1090,12 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
 
             onSuccess();
         },
-        onError
+        onError: (error: {message: string, statusCode: number}) => {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+            onError();
+        }
     });
 }
 
@@ -1056,12 +1141,55 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
 
             const profileFollowersQueryKey = QUERY_KEYS.accountFollows(fullHandle, 'followers');
 
-            // Invalidate the follows query cache for the account performing the follow
-            // because we cannot directly add to it due to potentially incompatible data
-            // shapes
-            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(handle, 'following');
+            const followingHandle = handle === 'index' ? 'me' : handle;
+            const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
+            const existingData = queryClient.getQueryData(accountFollowsQueryKey);
+            
+            // Update the following list cache if it exists, otherwise invalidate
+            if (existingData) {
+                queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
+                    pages: Array<{
+                        accounts: Array<{
+                            id: string;
+                            name: string;
+                            handle: string;
+                            avatarUrl: string;
+                            blockedByMe: boolean;
+                            domainBlockedByMe: boolean;
+                            isFollowing: boolean;
+                        }>;
+                    }>;
+                }) => {
+                    if (!oldData?.pages?.[0]) {
+                        return oldData;
+                    }
 
-            queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+                    const followedAccount = queryClient.getQueryData<Account>(QUERY_KEYS.account(fullHandle === 'me' ? 'index' : fullHandle));
+                    if (!followedAccount) {
+                        return oldData;
+                    }
+
+                    const newFollowing = {
+                        id: followedAccount.id,
+                        name: followedAccount.name,
+                        handle: followedAccount.handle,
+                        avatarUrl: followedAccount.avatarUrl,
+                        blockedByMe: followedAccount.blockedByMe,
+                        domainBlockedByMe: followedAccount.domainBlockedByMe,
+                        isFollowing: true
+                    };
+
+                    return {
+                        ...oldData,
+                        pages: [{
+                            ...oldData.pages[0],
+                            accounts: [newFollowing, ...oldData.pages[0].accounts]
+                        }, ...oldData.pages.slice(1)]
+                    };
+                });
+            } else {
+                queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
+            }
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1176,10 +1304,12 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
         onError(error: {message: string, statusCode: number}) {
             onError();
 
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+
             if (error.statusCode === 403) {
-                toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
             }
         }
     });
@@ -1368,10 +1498,13 @@ export function useReplyMutationForUser(handle: string, actorProps?: ActorProper
             // in the thread as this is handled locally in the ArticleModal component
 
             if (error.statusCode === 403) {
-                return toast.error('Action failed', {
-                    description: 'This user has restricted who can interact with their account.'
-                });
+                renderBlockedError();
             }
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+
             toast.error('An error occurred while sending your reply.');
         }
     });
@@ -1419,13 +1552,17 @@ export function useNoteMutationForUser(handle: string, actorProps?: ActorPropert
             updateActivityInPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '', () => activity);
             updateActivityInPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '', () => activity);
         },
-        onError(error, _variables, context) {
+        onError(error: {message: string, statusCode: number}, _variables, context) {
             // eslint-disable-next-line no-console
             console.error(error);
 
             removeActivityFromPaginatedCollection(queryClient, queryKeyFeed, 'posts', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyOutbox, 'data', context?.id ?? '');
             removeActivityFromPaginatedCollection(queryClient, queryKeyPostsByAccount, 'posts', context?.id ?? '');
+
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
 
             toast.error('An error occurred while posting your note.');
         }
@@ -1444,13 +1581,24 @@ export function useAccountForUser(handle: string, profileHandle: string) {
 }
 
 export function useAccountFollowsForUser(profileHandle: string, type: AccountFollowsType) {
+    const queryClient = useQueryClient();
+    
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.accountFollows(profileHandle, type),
         async queryFn({pageParam}: {pageParam?: string}) {
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI('index', siteUrl);
 
-            return api.getAccountFollows(profileHandle, type, pageParam);
+            const response = await api.getAccountFollows(profileHandle, type, pageParam);
+            
+            // Cache individual account data for follow mutations
+            if (response.accounts) {
+                response.accounts.forEach((account) => {
+                    queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+                });
+            }
+            
+            return response;
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
@@ -1965,7 +2113,18 @@ export function useReplyChainForUser(handle: string, postApId: string | null) {
             }
             const siteUrl = await getSiteUrl();
             const api = createActivityPubAPI(handle, siteUrl);
-            return api.getReplies(postApId);
+            try {
+                return await api.getReplies(postApId);
+            } catch (error: unknown) {
+                // If it's a post from a remote profile and we don't have it in our database,
+                // getReplies will return a 404. Calling the post API will populate the post
+                // in our database from the network, then we can recall getReplies to load the post.
+                if (isApiError(error) && error.statusCode === 404) {
+                    await api.getPost(postApId);
+                    return await api.getReplies(postApId);
+                }
+                throw error;
+            }
         }
     });
 
@@ -2280,7 +2439,7 @@ function useFilteredAccountsFromJSON(options: {
     }, [followingIds, blockedAccountIds, blockedDomains, excludeFollowing, excludeCurrentUser, currentUser]);
 
     const isLoading = isLoadingFollowing || isLoadingBlockedAccounts || isLoadingBlockedDomains || isLoadingCurrentUser;
-    
+
     // Track if we have finished loading all following data
     const isFollowingDataComplete = !isLoadingFollowing && !hasNextPage;
 
@@ -2301,6 +2460,11 @@ export function useExploreProfilesForUser(handle: string) {
     const fetchExploreProfilesFromJSON = useCallback(async () => {
         const accounts = await fetchAndFilterAccounts();
 
+        // Cache account data for follow mutations
+        accounts.forEach((account: Account) => {
+            queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+        });
+
         const results = {
             uncategorized: {
                 categoryName: 'Recommended',
@@ -2312,7 +2476,7 @@ export function useExploreProfilesForUser(handle: string) {
             results,
             nextPage: undefined
         };
-    }, [fetchAndFilterAccounts]);
+    }, [fetchAndFilterAccounts, queryClient]);
 
     const exploreProfilesQuery = useInfiniteQuery({
         queryKey,
@@ -2380,6 +2544,13 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
             const randomAccounts = accounts
                 .sort(() => Math.random() - 0.5)
                 .slice(0, limit);
+
+            // Cache account data for follow mutations
+            if (randomAccounts.length > 0) {
+                randomAccounts.forEach((account: Account) => {
+                    queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
+                });
+            }
 
             return randomAccounts.length > 0 ? randomAccounts : null;
         },

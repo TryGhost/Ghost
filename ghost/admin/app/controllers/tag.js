@@ -45,10 +45,12 @@ export default class TagController extends Controller {
             if (tag.get('errors').length !== 0) {
                 return;
             }
+            const wasNew = tag.isNew;
             yield tag.save();
 
-            this.tagsManager.tagsScreenInfinityModel?.pushObjects([tag]);
-
+            if (wasNew) {
+                this.tagsManager.tagsScreenInfinityModel?.pushObjects([tag]);
+            }
             // replace 'new' route with 'tag' route
             this.replaceRoute('tag', tag);
 

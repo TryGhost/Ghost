@@ -15,6 +15,7 @@ let request;
 let eventsTriggered;
 
 const TABLE_ALLOWLIST_LENGTH = 20;
+const LEGACY_HARDCODED_USER_ID = '1';
 
 describe('DB API', function () {
     before(async function () {
@@ -260,6 +261,66 @@ describe('DB API', function () {
             .expect(200);
 
         usersResponse.body.users.should.have.length(3);
+    });
+
+    it('Can import a JSON database exported from Ghost 5.x', async function () {
+        await request.delete(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect(204);
+
+        // preventively remove default "fixture" user
+        const fixtureUserResponse = await request.get(localUtils.API.getApiQuery('users/slug/fixture/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private);
+
+        if (fixtureUserResponse.body.users) {
+            await request.delete(localUtils.API.getApiQuery(`users/${fixtureUserResponse.body.users[0].id}`))
+                .set('Origin', config.get('url'))
+                .set('Accept', 'application/json');
+        }
+
+        const res = await request.post(localUtils.API.getApiQuery('db/'))
+            .set('Origin', config.get('url'))
+            .set('Accept', 'application/json')
+            .expect('Content-Type', /json/)
+            .attach('importfile', path.join(__dirname, '/../../../utils/fixtures/export/v5_export.json'))
+            .expect(200);
+
+        const jsonResponse = res.body;
+        should.exist(jsonResponse.db);
+        should.exist(jsonResponse.problems);
+
+        // 2 expected problems:
+        // - Theme not imported
+        // - Duplicate free product not imported
+        jsonResponse.problems.should.have.length(2);
+
+        const res2 = await request.get(localUtils.API.getApiQuery('posts/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        res2.body.posts.should.have.length(1);
+
+        // Ensure the author is not imported with the legacy hardcoded user id
+        res2.body.posts[0].authors[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        res2.body.posts[0].primary_author.id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+
+        const usersResponse = await request.get(localUtils.API.getApiQuery('users/'))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        usersResponse.body.users.should.have.length(3);
+
+        // Ensure user is not imported with the legacy hardcoded user id
+        usersResponse.body.users[0].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        usersResponse.body.users[1].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
+        usersResponse.body.users[2].id.should.not.equal(LEGACY_HARDCODED_USER_ID);
     });
 
     it('Can import a JSON database with products', async function () {

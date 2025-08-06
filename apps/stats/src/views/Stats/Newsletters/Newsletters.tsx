@@ -73,7 +73,7 @@ const NewsletterTableRows: React.FC<{
                                 <div className='group/link inline-flex items-center gap-2'>
                                     {post.post_id ?
                                         <Button className='h-auto whitespace-normal p-0 text-left hover:!underline' title="View post analytics" variant='link' onClick={() => {
-                                            navigate(`/posts/analytics/beta/${post.post_id}/`, {crossApp: true});
+                                            navigate(`/posts/analytics/${post.post_id}/`, {crossApp: true});
                                         }}>
                                             {post.post_title}
                                         </Button>
@@ -85,7 +85,7 @@ const NewsletterTableRows: React.FC<{
                                 </div>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(new Date(post.send_date))}
+                                {formatDisplayDate(post.send_date)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
@@ -250,7 +250,7 @@ const Newsletters: React.FC = () => {
     // and to calculate averages - using the same data source as the table for consistency
     const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
-        'date desc',
+        'date asc',
         selectedNewsletterId || undefined,
         shouldFetchStats || false
     );

@@ -22,8 +22,7 @@ const BarTooltipContent = ({active, payload}: BarTooltipProps) => {
     }
 
     const currentItem = payload[0].payload;
-    const sendDate = typeof currentItem.send_date === 'string' ?
-        new Date(currentItem.send_date) : currentItem.send_date;
+    const sendDate = currentItem.send_date;
 
     return (
         <div className="min-w-[220px] max-w-[240px] rounded-lg border bg-background px-3 py-2 shadow-lg">
@@ -319,7 +318,7 @@ const NewsletterKPIs: React.FC<{
                                             }}
                                             onClick={(e) => {
                                                 if (e.activePayload && e.activePayload![0].payload.post_id) {
-                                                    navigate(`/posts/analytics/beta/${e.activePayload![0].payload.post_id}`, {crossApp: true});
+                                                    navigate(`/posts/analytics/${e.activePayload![0].payload.post_id}`, {crossApp: true});
                                                 }
                                             }}
                                             onMouseLeave={() => setIsHoveringClickable(false)}
