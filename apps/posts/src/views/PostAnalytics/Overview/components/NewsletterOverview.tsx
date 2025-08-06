@@ -184,7 +184,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     </DataListBody>
                                 </DataList>
                                 :
-                                <div className='text-center text-gray-700 py-20 text-sm'>
+                                <div className='py-20 text-center text-sm text-gray-700'>
                                     You have no links in your post.
                                 </div>
                             }
