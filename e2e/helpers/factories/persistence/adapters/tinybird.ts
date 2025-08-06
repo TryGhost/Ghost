@@ -30,8 +30,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
             const response = await this.httpClient.fetch(url, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${this.config.token}`,
+                    ...this.defaultApiHeader,
                     'x-site-uuid': (data as Record<string, unknown> & {payload?: {site_uuid?: string}}).payload?.site_uuid || ''
                 },
                 body: JSON.stringify(data)
@@ -71,10 +70,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
         try {
             const response = await this.httpClient.fetch(sqlUrl, {
                 method: 'POST',
-                headers: {
-                    Authorization: `Bearer ${this.config.token}`,
-                    'Content-Type': 'application/json'
-                },
+                headers: this.defaultApiHeader,
                 body: JSON.stringify({q: query})
             });
 
@@ -94,7 +90,6 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
 
         const {primaryKey = 'session_id'} = this.registry.getMetadata(entityType);
 
-        // Delete in batches using SQL endpoint
         const batchSize = 100;
         for (let i = 0; i < ids.length; i += batchSize) {
             const batch = ids.slice(i, i + batchSize);
@@ -106,10 +101,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
             try {
                 const response = await this.httpClient.fetch(sqlUrl, {
                     method: 'POST',
-                    headers: {
-                        Authorization: `Bearer ${this.config.token}`,
-                        'Content-Type': 'application/json'
-                    },
+                    headers: this.defaultApiHeader,
                     body: JSON.stringify({q: query})
                 });
 
@@ -123,15 +115,25 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
         }
     }
 
-    async findById<T>(_entityType: string, _id: string): Promise<T | null> {
-        void _entityType;
-        void _id;
+    async find<T>(entityType: string, id: string): Promise<T | null> {
+        void entityType;
+        void id;
         throw new Error('Find by id is not supported for this endpoint.');
     }
 
-    async findMany<T>(_entityType: string, _query?: Record<string, unknown>): Promise<T[]> {
-        void _entityType;
-        void _query;
+    async findById<T>(entityType: string, id: string): Promise<T | null> {
+        void entityType;
+        void id;
         throw new Error('Find by id is not supported for this endpoint.');
+    }
+
+    async findMany<T>(entityType: string, query?: Record<string, unknown>): Promise<T[]> {
+        void entityType;
+        void query;
+        throw new Error('Find by id is not supported for this endpoint.');
+    }
+
+    private get defaultApiHeader() {
+        return {Authorization: `Bearer ${this.config.token}`, 'Content-Type': 'application/json'};
     }
 }

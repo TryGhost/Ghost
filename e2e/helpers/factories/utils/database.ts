@@ -1,11 +1,11 @@
 import knex, {Knex} from 'knex';
-import {ghostConfig} from '../config/persistence';
+import {config} from '../../../config/config';
 
 export function createDatabase(): Knex {
     return knex({
         client: 'mysql2',
         connection: {
-            ...ghostConfig(),
+            ...config.ghostDb,
             charset: 'utf8mb4'
         },
         pool: {min: 0, max: 5}

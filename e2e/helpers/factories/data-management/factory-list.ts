@@ -7,7 +7,7 @@ import {
     TinybirdPersistenceAdapter
 } from '../persistence';
 
-import {tinybirdConfig} from '../config/persistence';
+import {config as appConfig} from '../../../config/config';
 import {PageHitFactory, PostFactory} from '../factories';
 
 export interface FactoryList {
@@ -30,7 +30,7 @@ function createApiPersistence() {
         primaryKey: 'session_id'
     });
 
-    return new TinybirdPersistenceAdapter(tinybirdConfig(), registry);
+    return new TinybirdPersistenceAdapter(appConfig.tinyBird, registry);
 }
 
 export function createFactories(): FactoryList {
