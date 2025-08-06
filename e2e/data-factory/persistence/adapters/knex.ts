@@ -11,8 +11,21 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
     
     async insert<T>(entityType: string, data: T): Promise<T> {
         // entityType is the table name for Knex
-        const [result] = await this.db(entityType).insert(data).returning('*');
-        return result as T;
+        await this.db(entityType).insert(data);
+        
+        // MySQL doesn't support returning(), so we need to fetch the inserted record
+        // Assuming the data has an 'id' field
+        const id = (data as {id?: string}).id;
+        if (!id) {
+            throw new Error('Cannot insert without an id field');
+        }
+        
+        const inserted = await this.findById<T>(entityType, id);
+        if (!inserted) {
+            throw new Error(`Entity not found after insert: ${entityType}/${id}`);
+        }
+        
+        return inserted;
     }
     
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
