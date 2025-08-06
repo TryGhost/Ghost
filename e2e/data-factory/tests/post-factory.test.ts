@@ -5,7 +5,7 @@ import {KnexPersistenceAdapter} from '../persistence/adapters/knex';
 
 // Database configuration - uses Ghost's development database
 const dbConfig = {
-    client: process.env.database__client || 'mysql2',
+    client: process.env.database__client || 'mysql',
     connection: {
         host: process.env.database__connection__host || '127.0.0.1',
         user: process.env.database__connection__user || 'root',
