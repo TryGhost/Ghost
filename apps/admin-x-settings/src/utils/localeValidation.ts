@@ -12,17 +12,51 @@ export const validateLocale = (value: string): string | null => {
         return errorMessage;
     }
 
-    // Grandfathered irregular tags (exact matches, case insensitive)
+    /**
+     * Grandfathered tags from BCP 47 (RFC 5646)
+     * Source: IANA Language Subtag Registry
+     * https://www.iana.org/assignments/language-subtag-registry/language-subtag-registry
+     * 
+     * These 26 legacy tags from RFC 3066 don't follow current BCP 47 syntax
+     * but must be accepted for backward compatibility. They're a fixed list
+     * from the IANA registry - no additions or removals allowed.
+     * 
+     * Most have modern replacements (e.g., "i-klingon" → "tlh") but the old
+     * forms remain valid for existing content.
+     */
+    
+    // Irregular grandfathered tags - don't match standard syntax
     const grandfatheredIrregular = [
-        'en-gb-oed', 'i-ami', 'i-bnn', 'i-default', 'i-enochian', 'i-hak',
-        'i-klingon', 'i-lux', 'i-mingo', 'i-navajo', 'i-pwn', 'i-tao',
-        'i-tay', 'i-tsu', 'sgn-be-fr', 'sgn-be-nl', 'sgn-ch-de'
+        'en-gb-oed', // Oxford English Dictionary spelling
+        'i-ami', // Amis (Austronesian language of Taiwan)
+        'i-bnn', // Bunun (Austronesian language of Taiwan)
+        'i-default', // Default/fallback language for i18n
+        'i-enochian', // Enochian (mystical/artificial language)
+        'i-hak', // Hakka Chinese
+        'i-klingon', // Klingon (Star Trek) - now use "tlh"
+        'i-lux', // Luxembourgish - now use "lb"
+        'i-mingo', // Mingo (Native American language)
+        'i-navajo', // Navajo - now use "nv"
+        'i-pwn', // Paiwan (Austronesian language of Taiwan)
+        'i-tao', // Tao/Yami (Austronesian language of Taiwan)
+        'i-tay', // Tayal (Austronesian language of Taiwan)
+        'i-tsu', // Tsou (Austronesian language of Taiwan)
+        'sgn-be-fr', // Belgian-French Sign Language
+        'sgn-be-nl', // Belgian-Flemish Sign Language
+        'sgn-ch-de' // Swiss German Sign Language
     ];
     
-    // Grandfathered regular tags (exact matches, case insensitive)
+    // Regular grandfathered tags - valid syntax but non-registry subtags
     const grandfatheredRegular = [
-        'art-lojban', 'cel-gaulish', 'no-bok', 'no-nyn', 'zh-guoyu',
-        'zh-hakka', 'zh-min', 'zh-min-nan', 'zh-xiang'
+        'art-lojban', // Lojban constructed language - now use "jbo"
+        'cel-gaulish', // Gaulish (ancient Celtic language)
+        'no-bok', // Norwegian Bokmål - now use "nb"
+        'no-nyn', // Norwegian Nynorsk - now use "nn"
+        'zh-guoyu', // Mandarin Chinese, Guoyu romanization
+        'zh-hakka', // Hakka Chinese - now use "hak"
+        'zh-min', // Min Chinese (broad group)
+        'zh-min-nan', // Southern Min Chinese (Taiwanese/Hokkien) - now use "nan"
+        'zh-xiang' // Xiang/Hunanese Chinese - now use "hsn"
     ];
     
     // Check grandfathered tags
