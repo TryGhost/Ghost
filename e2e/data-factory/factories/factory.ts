@@ -1,6 +1,6 @@
 import type {PersistenceAdapter} from '../persistence/adapter';
 
-export abstract class Factory<TOptions = any, TResult = TOptions> {
+export abstract class Factory<TOptions extends Record<string, unknown> = Record<string, unknown>, TResult = TOptions> {
     abstract name: string;
     abstract entityType: string;
     
