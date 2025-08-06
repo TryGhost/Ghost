@@ -39,6 +39,7 @@ const _ = require('lodash');
  * @property {string|null} twitter_title - Twitter card title
  * @property {string|null} twitter_description - Twitter card description
  * @property {string|null} members_support_address - Support email for members
+ * @property {string|null} members_transactional_address - Transactional email address for members (signup, signin, etc.)
  * @property {boolean|null} members_enabled - Whether members feature is enabled
  * @property {boolean|null} allow_self_signup - Whether self signup is allowed
  * @property {boolean|null} members_invite_only - Whether membership is invite only
