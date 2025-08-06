@@ -24,6 +24,6 @@ export abstract class Factory<TOptions extends Record<string, unknown> = Record<
             throw new Error('Cannot create without a persistence adapter. Use build() for in-memory objects.');
         }
         const data = this.build(options);
-        return this.adapter.create(this.entityType, data) as Promise<TResult>;
+        return this.adapter.insert(this.entityType, data) as Promise<TResult>;
     }
 }
