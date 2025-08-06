@@ -1,9 +1,13 @@
-import type {Knex} from 'knex';
+import knex, {Knex} from 'knex';
 import type {PersistenceAdapter} from '../adapter';
 import type {DatabaseMetadata, EntityRegistry} from '../entity-registry';
 
 export class KnexPersistenceAdapter implements PersistenceAdapter {
-    constructor(private db: Knex, private registry: EntityRegistry<DatabaseMetadata>) {}
+    private readonly db: Knex;
+
+    constructor(config: Knex.Config, private registry: EntityRegistry<DatabaseMetadata>) {
+        this.db = knex(config);
+    }
 
     async connect(): Promise<void> {
         await this.db.raw('SELECT 1');

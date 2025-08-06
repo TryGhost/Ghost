@@ -1,6 +1,6 @@
 import type {PersistenceAdapter} from '../adapter';
 import type {EntityRegistry, TinyBirdApiMetadata} from '../entity-registry';
-import {FetchHttpClient, HttpClient} from '../../utils/http-client';
+import {HttpClient} from '../../utils/http-client';
 
 export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     private httpClient: HttpClient;
@@ -8,9 +8,9 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     constructor(
         private config: { readonly host: string, readonly token: string },
         private registry: EntityRegistry<TinyBirdApiMetadata>,
-        httpClient?: HttpClient
+        httpClient: HttpClient
     ) {
-        this.httpClient = httpClient ?? new FetchHttpClient();
+        this.httpClient = httpClient;
     }
 
     async connect(): Promise<void> {}

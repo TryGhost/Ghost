@@ -1,5 +1,3 @@
-import {createDatabase} from '../utils/database';
-
 import {
     EntityRegistry,
     DatabaseMetadata,
@@ -8,8 +6,9 @@ import {
     TinybirdPersistenceAdapter
 } from '../persistence';
 
-import {config as appConfig} from '../../../config/config';
+import {config, config as appConfig} from '../../../config/config';
 import {PageHitFactory, PostFactory} from '../factory';
+import {FetchHttpClient} from '../utils/http-client';
 
 export interface FactoryList {
     postFactory: PostFactory,
@@ -17,11 +16,17 @@ export interface FactoryList {
 }
 
 function createDatabasePersistence() {
-    const db = createDatabase();
     const registry = new EntityRegistry<DatabaseMetadata>();
     registry.register('posts', {tableName: 'posts'});
 
-    return new KnexPersistenceAdapter(db, registry);
+    return new KnexPersistenceAdapter({
+        client: 'mysql2',
+        connection: {
+            ...config.ghostDb,
+            charset: 'utf8mb4'
+        },
+        pool: {min: 0, max: 5}
+    }, registry);
 }
 
 function createApiPersistence() {
@@ -31,7 +36,7 @@ function createApiPersistence() {
         primaryKey: 'session_id'
     });
 
-    return new TinybirdPersistenceAdapter(appConfig.tinyBird, registry);
+    return new TinybirdPersistenceAdapter(appConfig.tinyBird, registry, new FetchHttpClient());
 }
 
 export function createFactories(): FactoryList {
