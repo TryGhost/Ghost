@@ -15,12 +15,12 @@ interface NewsletterOverviewProps {
 const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
-    const isSmallViewport = () => Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 600;
-    const [isMobile, setIsMobile] = useState(() => isSmallViewport());
+    const getIsSmallViewport = () => Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 600;
+    const [isSmallViewport, setIsSmallViewport] = useState(() => getIsSmallViewport());
 
     useEffect(() => {
         const handleResize = () => {
-            setIsMobile(isSmallViewport());
+            setIsSmallViewport(getIsSmallViewport());
         };
 
         window.addEventListener('resize', handleResize);
@@ -77,7 +77,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
-    const fullWidth = !isMobile && (post.email_only || !isWebShown);
+    const fullWidth = !isSmallViewport && (post.email_only || !isWebShown);
 
     return (
         <Card className={`group/datalist overflow-hidden ${fullWidth && 'col-span-2'}`}>
@@ -147,7 +147,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         {!fullWidth && <Separator />}
                         <div className={fullWidth ? '' : 'pt-3'}>
                             <div className={`flex items-center justify-between gap-3 ${fullWidth ? 'pb-3' : 'py-3'}`}>
-                                <span className='text-muted-foreground font-medium'>Top clicked links in this email</span>
+                                <span className='font-medium text-muted-foreground'>Top clicked links in this email</span>
                                 <HTable>Members</HTable>
                             </div>
 
@@ -164,7 +164,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                                     }} />
                                                     <DataListItemContent>
                                                         <div className="flex items-center space-x-2 overflow-hidden">
-                                                            <LucideIcon.Link className='text-muted-foreground shrink-0' size={16} strokeWidth={1.5} />
+                                                            <LucideIcon.Link className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />
                                                             <a className="block truncate font-medium hover:underline"
                                                                 href={link.link.to}
                                                                 rel="noreferrer"
@@ -184,7 +184,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     </DataListBody>
                                 </DataList>
                                 :
-                                <div className='text-gray-700 py-20 text-center text-sm'>
+                                <div className='text-center text-gray-700 py-20 text-sm'>
                                     You have no links in your post.
                                 </div>
                             }
