@@ -342,7 +342,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
-            topRightContent={<></>}
+            topRightContent={<></>} // override the default "×" icon.
             width={canAccessSettings(currentUser) ? 600 : 'full'}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
