@@ -73,12 +73,16 @@ const publishedPost = await postFactory.create({
 ### Running Tests
 
 ```bash
-# From Ghost root
-cd e2e && yarn build                        # Build TypeScript
-node data-factory/test/post-factory.test.js # Run test
+# From e2e directory
+yarn test:factory
 
-# Or in one command
-cd e2e && yarn build && node data-factory/test/post-factory.test.js
+# This will:
+# 1. Build the TypeScript files
+# 2. Run Playwright tests in the data-factory directory
+
+# Or manually:
+yarn build
+yarn playwright test data-factory
 ```
 
 ## Development

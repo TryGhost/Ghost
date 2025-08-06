@@ -12,6 +12,7 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:factory": "yarn build && playwright test data-factory",
     "test:types": "tsc --noEmit",
     "lint": "eslint helpers --ext .ts --cache"
   },
