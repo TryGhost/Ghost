@@ -77,7 +77,6 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
         }
     } satisfies ChartConfig;
 
-    
     const fullWidth = !isMobile && (post.email_only || !isWebShown);
 
     return (
@@ -165,7 +164,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                                     }} />
                                                     <DataListItemContent>
                                                         <div className="flex items-center space-x-2 overflow-hidden">
-                                                            <LucideIcon.Link className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />
+                                                            <LucideIcon.Link className='text-muted-foreground shrink-0' size={16} strokeWidth={1.5} />
                                                             <a className="block truncate font-medium hover:underline"
                                                                 href={link.link.to}
                                                                 rel="noreferrer"
@@ -185,7 +184,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                                     </DataListBody>
                                 </DataList>
                                 :
-                                <div className='py-20 text-center text-sm text-gray-700'>
+                                <div className='text-gray-700 py-20 text-center text-sm'>
                                     You have no links in your post.
                                 </div>
                             }
