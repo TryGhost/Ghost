@@ -1,7 +1,7 @@
 import {test as base} from '@playwright/test';
 
-import {FactoryManager} from '../data-management/factory-manager';
-import {factories, FactoryList} from '../data-management/factory-list';
+import {FactoryManager} from './data-management/factory-manager';
+import {factories, FactoryList} from './data-management/factory-list';
 
 const factoryManager = new FactoryManager(factories);
 

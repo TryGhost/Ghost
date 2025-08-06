@@ -1,45 +1,9 @@
 import {Factory} from './factory';
 import {faker} from '@faker-js/faker';
 import {PersistenceAdapter} from '../persistence';
-
-export interface PageHitOptions {
-    siteUuid?: string;
-    timestamp?: Date;
-    session_id?: string;
-    post_uuid?: string;
-    member_uuid?: string;
-    member_status?: 'free' | 'paid' | 'comped' | 'undefined';
-    pathname?: string;
-    referrer?: string;
-    user_agent?: string;
-    locale?: string;
-    location?: string;
-}
-
-export interface PageHitResult {
-    timestamp: string;
-    action: 'page_hit';
-    version: '1';
-    session_id: string;
-    payload: {
-        site_uuid: string;
-        member_uuid: string;
-        member_status: string;
-        post_uuid: string;
-        pathname: string;
-        referrer: string;
-        'user-agent': string;
-        locale: string;
-        location: string;
-        href: string;
-        meta: {
-            referrerSource?: string;
-        };
-    };
-}
+import {PageHitOptions, PageHitResult} from './types';
 
 export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
-    name = 'pageHit';
     entityType = 'analytics_events';
     private createdSessionIds = new Set<string>();
     private eventCount = 0;
@@ -57,7 +21,6 @@ export class PageHitFactory extends Factory<PageHitOptions, PageHitResult> {
         const timestamp = options?.timestamp || new Date();
         const pathname = options?.pathname || '/path/test';
 
-        // Generate new session_id if not provided
         const sessionId = options?.session_id || faker.datatype.uuid();
 
         // Build the event

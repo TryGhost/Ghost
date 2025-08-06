@@ -1,15 +1,18 @@
 import type {PersistenceAdapter} from '../persistence/adapter';
 
 export abstract class Factory<TOptions = unknown, TResult = unknown> {
-    abstract name: string;
-    abstract entityType: string;
-
     private readonly persistence?: PersistenceAdapter;
+
     private trackingEnabled = true;
+    readonly abstract entityType: string;
     protected createdEntities = new Map<string, TResult>();
 
     constructor(adapter?: PersistenceAdapter) {
         this.persistence = adapter;
+    }
+
+    get name(): string {
+        return this.constructor.name;
     }
 
     public async setup(): Promise<void> {}
@@ -52,9 +55,6 @@ export abstract class Factory<TOptions = unknown, TResult = unknown> {
         this.trackingEnabled = enabled;
     }
 
-    /**
-     * Extract ID from entity (override if needed)
-     */
     protected extractId(entity: TResult): string | undefined {
         const e = entity as Record<string, unknown>;
         const id = e.id || e.uuid;

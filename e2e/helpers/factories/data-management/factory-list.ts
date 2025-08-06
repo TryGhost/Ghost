@@ -1,4 +1,5 @@
 import {createDatabase} from '../utils/database';
+
 import {
     EntityRegistry,
     DatabaseMetadata,
@@ -8,7 +9,7 @@ import {
 } from '../persistence';
 
 import {config as appConfig} from '../../../config/config';
-import {PageHitFactory, PostFactory} from '../factories';
+import {PageHitFactory, PostFactory} from '../factory';
 
 export interface FactoryList {
     postFactory: PostFactory,

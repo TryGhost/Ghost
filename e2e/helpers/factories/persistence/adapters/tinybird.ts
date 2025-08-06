@@ -1,13 +1,12 @@
 import type {PersistenceAdapter} from '../adapter';
 import type {EntityRegistry, TinyBirdApiMetadata} from '../entity-registry';
-import type {TinybirdConfig} from '../../config/persistence';
 import {FetchHttpClient, HttpClient} from '../../utils/http-client';
 
 export class TinybirdPersistenceAdapter implements PersistenceAdapter {
     private httpClient: HttpClient;
 
     constructor(
-        private config: TinybirdConfig,
+        private config: { readonly host: string, readonly token: string },
         private registry: EntityRegistry<TinyBirdApiMetadata>,
         httpClient?: HttpClient
     ) {

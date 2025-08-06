@@ -1,4 +1,4 @@
-import {test, expect} from '../fixtures/playwright';
+import {test, expect} from '../test-fixtures';
 
 test.describe('Data Factory Examples', () => {
     test('create post', async ({factories}) => {

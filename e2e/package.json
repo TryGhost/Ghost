@@ -14,7 +14,7 @@
     "test": "npx playwright test --project=e2e",
     "test:factory": "npx playwright test --project=factories",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers factories --ext .ts --cache"
+    "lint": "eslint helpers --ext .ts --cache"
   },
   "files": [
     "build"
