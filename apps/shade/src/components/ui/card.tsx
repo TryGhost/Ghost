@@ -205,7 +205,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                         <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
                     }
                     {diffTooltip &&
-                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 -translate-y-full rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
+                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
                             {diffTooltip}
                         </div>
                     }
