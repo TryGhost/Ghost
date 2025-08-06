@@ -1,12 +1,10 @@
 import {config as appConfig} from '../../../config/config';
-import {FetchHttpClient} from '../utils/http-client';
 
 export async function isTinybirdAvailable(): Promise<boolean> {
     try {
         const config = appConfig.tinyBird;
-        const httpClient = new FetchHttpClient();
 
-        const response = await httpClient.fetch(`${config.host}/v0/pipes`, {
+        const response = await fetch(`${config.host}/v0/pipes`, {
             method: 'GET',
             headers: {
                 Authorization: `Bearer ${config.token}`

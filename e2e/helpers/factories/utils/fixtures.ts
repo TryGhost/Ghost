@@ -1,4 +1,4 @@
-export function generateId(): string {
+export function generateDateBasedId(): string {
     return Date.now().toString(16) + Math.random().toString(16).substring(2, 10);
 }
 

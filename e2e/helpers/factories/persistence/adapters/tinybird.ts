@@ -1,17 +1,11 @@
 import type {PersistenceAdapter} from '../adapter';
 import type {EntityRegistry, TinyBirdApiMetadata} from '../entity-registry';
-import {HttpClient} from '../../utils/http-client';
 
 export class TinybirdPersistenceAdapter implements PersistenceAdapter {
-    private httpClient: HttpClient;
-
     constructor(
         private config: { readonly host: string, readonly token: string },
-        private registry: EntityRegistry<TinyBirdApiMetadata>,
-        httpClient: HttpClient
-    ) {
-        this.httpClient = httpClient;
-    }
+        private registry: EntityRegistry<TinyBirdApiMetadata>
+    ) {}
 
     async connect(): Promise<void> {}
 
@@ -26,7 +20,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
         const url = `${this.config.host}${endpoint}`;
 
         try {
-            const response = await this.httpClient.fetch(url, {
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: {
                     ...this.defaultApiHeader,
@@ -67,7 +61,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
         const query = `DELETE FROM ${entityType} WHERE ${primaryKey} = '${id}'`;
 
         try {
-            const response = await this.httpClient.fetch(sqlUrl, {
+            const response = await fetch(sqlUrl, {
                 method: 'POST',
                 headers: this.defaultApiHeader,
                 body: JSON.stringify({q: query})
@@ -98,7 +92,7 @@ export class TinybirdPersistenceAdapter implements PersistenceAdapter {
             const query = `DELETE FROM ${entityType} WHERE ${primaryKey} IN (${idList})`;
 
             try {
-                const response = await this.httpClient.fetch(sqlUrl, {
+                const response = await fetch(sqlUrl, {
                     method: 'POST',
                     headers: this.defaultApiHeader,
                     body: JSON.stringify({q: query})

@@ -1,16 +1,13 @@
 import {test as base} from '@playwright/test';
 
 import {FactoryManager} from './data-management/factory-manager';
-import {factories, FactoryList} from './data-management/factory-list';
+import {createFactories, FactoryList} from './data-management/factory-list';
 
-const factoryManager = new FactoryManager(factories);
+const factoryManager = new FactoryManager(createFactories());
 
 /**
- * Extended Playwright test context with data factory integration.
- * Provides automatic cleanup.
- *
- * Usage:
- * - test({factories}) - Full factory access
+ * Extended Playwright test context with data factory integration and automatic cleanup, with manager.
+ * Usage: test.describe('test example', async (factories) => { ... }
  */
 export const test = base.extend<{
     factories: FactoryList;

@@ -8,7 +8,6 @@ import {
 
 import {config, config as appConfig} from '../../../config/config';
 import {PageHitFactory, PostFactory} from '../factory';
-import {FetchHttpClient} from '../utils/http-client';
 
 export interface FactoryList {
     postFactory: PostFactory,
@@ -36,7 +35,7 @@ function createApiPersistence() {
         primaryKey: 'session_id'
     });
 
-    return new TinybirdPersistenceAdapter(appConfig.tinyBird, registry, new FetchHttpClient());
+    return new TinybirdPersistenceAdapter(appConfig.tinyBird, registry);
 }
 
 export function createFactories(): FactoryList {
@@ -48,5 +47,3 @@ export function createFactories(): FactoryList {
         pageHitFactory: new PageHitFactory(apiPersistence)
     } as const;
 }
-
-export const factories = createFactories();
