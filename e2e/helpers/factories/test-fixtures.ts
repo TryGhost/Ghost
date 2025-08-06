@@ -12,7 +12,6 @@ const factoryManager = new FactoryManager(createFactories());
 export const test = base.extend<{
     factories: FactoryList;
     factoryManager: FactoryManager;
-    stats: Record<string, number>
 }>({
     factories: async ({}, use) => {
         await use(factoryManager.factories);
