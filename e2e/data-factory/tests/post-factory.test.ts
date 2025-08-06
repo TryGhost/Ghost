@@ -1,7 +1,7 @@
 import {test, expect} from '@playwright/test';
 import knex, {Knex} from 'knex';
-import {PostFactory} from './factories/posts/post-factory';
-import {KnexPersistenceAdapter} from './persistence/adapters/knex';
+import {PostFactory} from '../factories/posts/post-factory';
+import {KnexPersistenceAdapter} from '../persistence/adapters/knex';
 
 // Database configuration - uses Ghost's development database
 const dbConfig = {
