@@ -1,2 +1,2 @@
-export {test, expect} from './fixtures/playwright';
+export {test, expect} from './test-fixtures';
 
