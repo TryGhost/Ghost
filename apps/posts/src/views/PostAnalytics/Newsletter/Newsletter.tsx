@@ -454,7 +454,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                                                             {title}
                                                                         </a>
                                                                         {edited && (
-                                                                            <span className='text-xs text-gray-500'>(edited)</span>
+                                                                            <span className='ml-1 text-gray-500'>(edited)</span>
                                                                         )}
                                                                     </>
                                                                 )}

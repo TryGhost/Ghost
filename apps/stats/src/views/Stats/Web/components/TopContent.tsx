@@ -86,9 +86,10 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
 
 interface TopContentProps {
     range: number;
+    totalVisitors: number;
 }
 
-const TopContent: React.FC<TopContentProps> = ({range}) => {
+const TopContent: React.FC<TopContentProps> = ({range, totalVisitors}) => {
     const {audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const [selectedContentType, setSelectedContentType] = useState<ContentType>(CONTENT_TYPES.POSTS_AND_PAGES);
@@ -128,20 +129,17 @@ const TopContent: React.FC<TopContentProps> = ({range}) => {
             return null;
         }
 
-        // Calculate total visits for the filtered dataset
-        const filteredTotalVisits = data.reduce((sum, item) => sum + Number(item.visits), 0);
-
         return data.map(item => ({
             pathname: item.pathname,
             title: item.title || item.pathname,
             visits: item.visits,
-            percentage: filteredTotalVisits > 0 ? (Number(item.visits) / filteredTotalVisits) : 0,
+            percentage: totalVisitors > 0 ? (Number(item.visits) / totalVisitors) : 0,
             post_uuid: item.post_uuid,
             post_id: item.post_id,
             post_type: item.post_type,
             url_exists: item.url_exists
         }));
-    }, [topContentData]);
+    }, [topContentData, totalVisitors]);
 
     const topContent = transformedData?.slice(0, 10) || [];
 

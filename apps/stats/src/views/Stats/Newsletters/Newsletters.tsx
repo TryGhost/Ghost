@@ -85,7 +85,7 @@ const NewsletterTableRows: React.FC<{
                                 </div>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm">
-                                {formatDisplayDate(new Date(post.send_date))}
+                                {formatDisplayDate(post.send_date)}
                             </TableCell>
                             <TableCell className='text-right font-mono text-sm'>
                                 {formatNumber(post.sent_to)}
@@ -250,7 +250,7 @@ const Newsletters: React.FC = () => {
     // and to calculate averages - using the same data source as the table for consistency
     const {data: newsletterStatsData, isLoading: isNewsletterStatsLoading, isClicksLoading} = useNewsletterStatsWithRangeSplit(
         range,
-        'date desc',
+        'date asc',
         selectedNewsletterId || undefined,
         shouldFetchStats || false
     );

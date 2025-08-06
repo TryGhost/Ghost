@@ -221,7 +221,7 @@ const Overview: React.FC = () => {
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
                         title='Understanding analytics in Ghost'
-                        url='https://ghost.org/help/post-analytics/'>
+                        url='https://ghost.org/help/native-analytics'>
                         <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.ChartColumnIncreasing className='text-[#00BBA7]' size={20} strokeWidth={1.5} />
                         </div>

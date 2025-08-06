@@ -234,7 +234,7 @@ const GrowthKPIs: React.FC<{
                 const todayData = subscriptionData.find(item => item.date === today);
 
                 return [{
-                    date: formatDisplayDateWithRange(new Date(today), range),
+                    date: formatDisplayDateWithRange(today, range),
                     new: todayData?.signups || 0,
                     cancelled: -(todayData?.cancellations || 0) // Negative for the stacked bar chart
                 }];
@@ -270,10 +270,8 @@ const GrowthKPIs: React.FC<{
             const filledData = fillMissingDataPoints(combinedData, range);
 
             return filledData.map((item) => {
-                const date = new Date(item.date);
-
                 return {
-                    date: formatDisplayDateWithRange(date, range),
+                    date: formatDisplayDateWithRange(item.date, range),
                     new: item.signups || 0,
                     cancelled: -(item.cancellations || 0) // Negative for the stacked bar chart
                 };
@@ -290,7 +288,7 @@ const GrowthKPIs: React.FC<{
                 const todayData = allChartData.find(item => item.date === today);
 
                 return [{
-                    date: formatDisplayDateWithRange(new Date(today), range),
+                    date: formatDisplayDateWithRange(today, range),
                     new: todayData?.paid_subscribed || 0,
                     cancelled: -(todayData?.paid_canceled || 0) // Negative for the stacked bar chart
                 }];
@@ -299,10 +297,8 @@ const GrowthKPIs: React.FC<{
             const sanitizedData = sanitizeChartData(allChartData, range, 'paid', 'exact');
 
             return sanitizedData.map((item) => {
-                const date = new Date(item.date);
-
                 return {
-                    date: formatDisplayDateWithRange(date, range),
+                    date: formatDisplayDateWithRange(item.date, range),
                     new: item.paid_subscribed || 0,
                     cancelled: -(item.paid_canceled || 0) // Negative for the stacked bar chart
                 };

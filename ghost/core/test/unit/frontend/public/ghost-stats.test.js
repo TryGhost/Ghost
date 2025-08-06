@@ -481,6 +481,39 @@ describe('ghost-stats.js', function () {
             mockWindow.Cypress = undefined;
         });
 
+        it('should skip initialization when in an iframe', function () {
+            // Configure with valid settings
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            // Simulate being in an iframe (window.self !== window.top)
+            const originalSelf = mockWindow.self;
+            const originalTop = mockWindow.top;
+            mockWindow.self = mockWindow;
+            mockWindow.top = {different: 'window'}; // Different from self
+            
+            expect(ghostStats.init()).to.be.false;
+            expect(mockWindow.Tinybird).to.not.exist;
+            
+            // Restore original values
+            mockWindow.self = originalSelf;
+            mockWindow.top = originalTop;
+        });
+
+        it('should initialize when NOT in an iframe', function () {
+            // Configure with valid settings
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            
+            // Simulate NOT being in an iframe (window.self === window.top)
+            mockWindow.self = mockWindow;
+            mockWindow.top = mockWindow; // Same as self
+            
+            expect(ghostStats.init()).to.be.true;
+            expect(mockWindow.Tinybird).to.exist;
+            expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
+        });
+
         it('should handle missing configuration gracefully', function () {
             expect(ghostStats.init()).to.be.false;
         });
@@ -512,6 +545,50 @@ describe('ghost-stats.js', function () {
 
             const uuid = ghostStats.generateUUID();
             expect(uuid).to.match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/);
+        });
+    });
+
+    describe('GhostStats Referrer Parsing', function () {
+        beforeEach(function () {
+            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
+            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
+            mockDocument.currentScript.attributes = [
+                {name: 'tb_site_uuid', value: 'test-site-uuid'}
+            ];
+            ghostStats.initConfig();
+        });
+
+        it('should parse query string referrer parameters', function () {
+            mockDocument.referrer = '';
+            mockWindow.location.href = 'https://example.com/test?ref=ghost-newsletter&utm_source=twitter&utm_medium=social';
+            
+            ghostStats.trackPageHit();
+            
+            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
+            timeoutCallback();
+            
+            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
+            const innerPayload = JSON.parse(payload.payload);
+            
+            expect(innerPayload.parsedReferrer.source).to.equal('ghost-newsletter');
+            expect(innerPayload.parsedReferrer.medium).to.equal('social');
+        });
+
+        it('should preserve document referrer when getReferrer returns null', function () {
+            // Test the fix where referrerData.url is preserved when getReferrer returns null
+            mockDocument.referrer = 'https://example.com/internal-page';
+            mockWindow.location.href = 'https://example.com/test';
+            
+            ghostStats.trackPageHit();
+            
+            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
+            timeoutCallback();
+            
+            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
+            const innerPayload = JSON.parse(payload.payload);
+            
+            // Should preserve the original referrer URL even if it's from the same domain
+            expect(innerPayload.parsedReferrer.url).to.equal('https://example.com/internal-page');
         });
     });
 });

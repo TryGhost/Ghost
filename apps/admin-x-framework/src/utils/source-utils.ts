@@ -202,6 +202,11 @@ export const getFaviconDomain = (source: string | number | undefined, siteUrl?: 
     if (!source || typeof source !== 'string') {
         return {domain: null, isDirectTraffic: false};
     }
+    
+    // Handle 'Direct' source explicitly
+    if (source === 'Direct') {
+        return {domain: null, isDirectTraffic: true};
+    }
 
     // Extract site domain for comparison
     const siteDomain = siteUrl ? extractDomain(siteUrl) : null;

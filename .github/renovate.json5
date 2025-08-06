@@ -98,6 +98,12 @@
                 "/^css/"
             ],
             "enabled": false
+        },
+
+        // Disable automerge for all packages during code freeze
+        {
+            "matchPackageNames": ["*"],
+            "automerge": false
         }
     ]
 }

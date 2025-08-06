@@ -6,7 +6,7 @@ const FeedbackBox: React.FC = () => {
     const navigate = useNavigate();
 
     function showFeedbackReply() {
-        const targetPostId = 'https://activitypub.ghost.org/.ghost/activitypub/note/84eb47c6-4e5d-4d1a-bb6e-089a5890cc2';
+        const targetPostId = 'https://activitypub.ghost.org/.ghost/activitypub/note/6d6d7f57-b656-4caa-ba9e-efa1d9a4b3fb';
         navigate(`/notes/${encodeURIComponent(targetPostId)}`);
     }
 

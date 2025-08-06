@@ -11,16 +11,24 @@ export interface UseTinybirdTokenOptions {
     enabled?: boolean;
 }
 
+// Track if we've already logged the warning to avoid spamming the console
+let hasLoggedConfigWarning = false;
+
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
     const {enabled = true} = options;
     const tinybirdQuery = getTinybirdToken({enabled});
 
     const apiToken = tinybirdQuery.data?.tinybird?.token;
     
-    // If we have a successful response but invalid token, create a validation error
-    let error = tinybirdQuery.error as Error | null;
-    if (!tinybirdQuery.error && tinybirdQuery.data && (!apiToken || typeof apiToken !== 'string')) {
-        error = new Error('Invalid token received from API: token must be a non-empty string');
+    // Only treat actual API errors as errors, not null/undefined tokens
+    // A null token just means Tinybird is not configured, which is valid
+    const error = tinybirdQuery.error as Error | null;
+    
+    // Log a warning ONCE if we got a response but no valid token (likely misconfiguration)
+    if (!tinybirdQuery.isLoading && enabled && tinybirdQuery.data && !apiToken && !hasLoggedConfigWarning) {
+        // eslint-disable-next-line no-console
+        console.warn('Tinybird analytics: No valid token received. Check your Tinybird configuration (workspaceId and adminToken must be non-empty strings).');
+        hasLoggedConfigWarning = true;
     }
     
     return {

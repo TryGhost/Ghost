@@ -46,10 +46,16 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const [audience, setAudience] = useState(7);
     const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
-    // Only include tinybirdTokenQuery in requests if stats config is present
-    const requests = hasStatsConfig ? [config, settings, site, tinybirdTokenQuery] : [config, settings, site];
-    const error = requests.map(request => request.error).find(Boolean);
-    const isLoading = requests.some(request => request.isLoading);
+    // Check for errors in the main requests
+    const ghostRequests = [config, settings, site];
+    const ghostError = ghostRequests.map(request => request.error).find(Boolean);
+    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
+    const error = ghostError || tinybirdError;
+    
+    // Check loading states
+    const isGhostLoading = ghostRequests.some(request => request.isLoading);
+    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
+    const isLoading = isGhostLoading || isTinybirdLoading;
 
     if (error) {
         throw error;
