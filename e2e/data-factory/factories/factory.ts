@@ -1,0 +1,29 @@
+import type {PersistenceAdapter} from '../persistence/adapter';
+
+export abstract class Factory<TOptions = any, TResult = TOptions> {
+    abstract name: string;
+    abstract entityType: string;
+    
+    protected adapter?: PersistenceAdapter;
+
+    setAdapter(adapter: PersistenceAdapter): void {
+        this.adapter = adapter;
+    }
+
+    /**
+     * Build an entity in memory without persisting it
+     * This method should be implemented by subclasses to generate dynamic data
+     */
+    abstract build(options?: Partial<TOptions>): TResult;
+
+    /**
+     * Build and persist an entity to the database
+     */
+    async create(options?: Partial<TOptions>): Promise<TResult> {
+        if (!this.adapter) {
+            throw new Error('Cannot create without a persistence adapter. Use build() for in-memory objects.');
+        }
+        const data = this.build(options);
+        return this.adapter.create(this.entityType, data) as Promise<TResult>;
+    }
+}
