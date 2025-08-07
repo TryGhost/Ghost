@@ -870,10 +870,24 @@ class EmailRenderer {
      * @param {object} postModel
      * @returns
      */
-    #getEmailPreheader(postModel, segment, html) {
+    #getEmailPreheader(postModel, segment, html, newsletter = null) {
         let plaintext = postModel.get('plaintext');
         let customExcerpt = postModel.get('custom_excerpt');
-        if (customExcerpt) {
+        
+        // If we have a custom excerpt and the newsletter is configured to show excerpts,
+        // we should avoid duplication by not using the custom excerpt in the preheader
+        if (customExcerpt && newsletter && newsletter.get('show_excerpt')) {
+            // Use a fallback to avoid showing the same text in both preheader and email body
+            if (plaintext) {
+                if (segment === 'status:free') {
+                    plaintext = htmlToPlaintext.email(html);
+                }
+                return this.#truncateToSentence(plaintext, 500);
+            } else {
+                return `${postModel.get('title')} – `;
+            }
+        } else if (customExcerpt) {
+            // Use custom excerpt when newsletter doesn't show excerpts in body
             return customExcerpt;
         } else {
             if (plaintext) {
@@ -883,11 +897,45 @@ class EmailRenderer {
                 if (segment === 'status:free') {
                     plaintext = htmlToPlaintext.email(html);
                 }
-                return plaintext.substring(0, 500);
+                return this.#truncateToSentence(plaintext, 500);
             } else {
                 return `${postModel.get('title')} – `;
             }
         }
+    }
+
+    /**
+     * Truncate text to a complete sentence or word boundary, avoiding mid-sentence cuts
+     * @param {string} text - Text to truncate
+     * @param {number} maxLength - Maximum character length
+     * @returns {string} Truncated text
+     */
+    #truncateToSentence(text, maxLength) {
+        if (!text || text.length <= maxLength) {
+            return text ?? '';
+        }
+
+        // First try to find the last sentence ending before maxLength
+        const truncated = text.substring(0, maxLength);
+        const lastSentenceEnd = Math.max(
+            truncated.lastIndexOf('.'),
+            truncated.lastIndexOf('!'),
+            truncated.lastIndexOf('?')
+        );
+
+        if (lastSentenceEnd > maxLength * 0.5) {
+            // If we found a sentence ending in the latter half, use it
+            return text.substring(0, lastSentenceEnd + 1).trim();
+        }
+
+        // Otherwise, try to break at a word boundary
+        const lastSpaceIndex = truncated.lastIndexOf(' ');
+        if (lastSpaceIndex > maxLength * 0.7) {
+            return text.substring(0, lastSpaceIndex).trim() + '…';
+        }
+
+        // Fallback to character truncation if no good break point found
+        return truncated.trim() + '…';
     }
 
     truncateText(text, maxLength) {
@@ -1233,7 +1281,7 @@ class EmailRenderer {
                         image: this.#settingsCache.get('icon')
                     }, true) : null
             },
-            preheader: this.#getEmailPreheader(post, segment, html),
+            preheader: this.#getEmailPreheader(post, segment, html, newsletter),
             html,
 
             post: {
