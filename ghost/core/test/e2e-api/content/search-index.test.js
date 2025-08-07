@@ -50,8 +50,7 @@ describe('Search Index Content API', function () {
                 .matchBodySnapshot({
                     authors: new Array(2)
                         .fill({
-                            // TODO: change this to anyObjectId in 6.x
-                            id: anyString
+                            id: anyObjectId
                         })
                 });
         });

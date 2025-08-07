@@ -254,14 +254,14 @@ exports[`Search Index API fetchUsers should return a list of users 1: [body] 1`]
 Object {
   "users": Array [
     Object {
-      "id": Any<String>,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Joe Bloggs",
       "profile_image": "https://example.com/super_photo.jpg",
       "slug": "joe-bloggs",
       "url": "http://127.0.0.1:2369/author/joe-bloggs/",
     },
     Object {
-      "id": Any<String>,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "name": "Ghost",
       "profile_image": "https://static.ghost.org/v4.0.0/images/ghost-user.png",
       "slug": "ghost",

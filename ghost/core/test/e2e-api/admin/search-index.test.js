@@ -87,8 +87,7 @@ describe('Search Index API', function () {
                 })
                 .matchBodySnapshot({
                     users: new Array(2).fill({
-                        // TODO: change this to anyObjectId in 6.x
-                        id: anyString
+                        id: anyObjectId
                     })
                 });
         });
