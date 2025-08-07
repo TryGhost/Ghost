@@ -2,9 +2,8 @@ import FeedItem from '@src/components/feed/FeedItem';
 import Layout from '@src/components/layout';
 import Reader from './Reader';
 import {Activity} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LucideIcon, Separator} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, LoadingIndicator, LucideIcon, Separator} from '@tryghost/shade';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
 import {isPendingActivity} from '@src/utils/pending-activity';
 import {useEffect, useRef, useState} from 'react';
 import {useNavigate, useNavigationStack, useParams} from '@tryghost/admin-x-framework';
@@ -75,11 +74,12 @@ const InboxList:React.FC<InboxListProps> = ({
                             <div className='mx-auto flex min-h-[calc(100dvh_-_117px)] items-start gap-11'>
                                 <div className='flex w-full min-w-0 flex-col items-center'>
                                     <div className='flex w-full min-w-0 flex-col items-start'>
-                                        <ul className='mx-auto flex w-full flex-col'>
+                                        <ul className='mx-auto flex w-full flex-col' data-testid='inbox-list'>
                                             {activities.map((activity, index) => (
                                                 <li
                                                 // eslint-disable-next-line react/no-array-index-key
                                                     key={`${activity.id}-${activity.type}-${index}`} // We are using index here as activity.id is cannot be guaranteed to be unique at the moment
+                                                    data-testid='inbox-item'
                                                     data-test-view-article
                                                 >
                                                     <FeedItem
@@ -89,14 +89,12 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         isLoading={isLoading}
                                                         isPending={isPendingActivity(activity.id)}
                                                         layout={'inbox'}
+                                                        likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
                                                         type={activity.type}
                                                         onClick={() => {
-                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}`);
-                                                        }}
-                                                        onCommentClick={() => {
-                                                            navigate(`/inbox/${encodeURIComponent(activity.id)}?focusReply=true`);
+                                                            navigate(`/reader/${encodeURIComponent(activity.id)}`);
                                                         }}
                                                     />
                                                     {index < activities.length - 1 && (
@@ -142,7 +140,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox');
+                            navigate('/reader');
                         }
                     }
                     setIsReaderOpen(open);
@@ -157,7 +155,7 @@ const InboxList:React.FC<InboxListProps> = ({
                         if (canGoBack) {
                             goBack();
                         } else {
-                            navigate('/inbox');
+                            navigate('/reader');
                         }
                     }} />}
                 </DialogContent>

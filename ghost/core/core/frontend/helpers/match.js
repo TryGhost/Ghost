@@ -57,6 +57,15 @@ const handleMatch = (data, operator, value) => {
     case '<=':
         result = data <= value;
         break;
+    case '~':
+        result = _.isString(data) && _.isString(value) && data.includes(value);
+        break;
+    case '~^':
+        result = _.isString(data) && _.isString(value) && data.startsWith(value);
+        break;
+    case '~$':
+        result = _.isString(data) && _.isString(value) && data.endsWith(value);
+        break;
     default:
         result = data === value;
     }

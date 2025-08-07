@@ -12,7 +12,7 @@ describe('Middleware Execution', function () {
         loadMemberSessionMiddlewareSpy = sinon.spy(membersService.middleware, 'loadMemberSession');
 
         // Ensure we do a forced start so that spy is in place when the server starts
-        await testUtils.startGhost({forceStart: true});
+        await testUtils.startGhost();
 
         request = supertest.agent(configUtils.config.get('url'));
     });

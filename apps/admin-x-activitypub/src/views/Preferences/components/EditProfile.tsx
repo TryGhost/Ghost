@@ -1,14 +1,19 @@
 import React, {ChangeEvent, useEffect, useRef, useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LucideIcon, Textarea} from '@tryghost/shade';
+import {Button, DialogClose, DialogFooter, Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage, Input, LoadingIndicator, LucideIcon, Textarea} from '@tryghost/shade';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE, SQUARE_IMAGE_ERROR_MESSAGE, isSquareImage} from '@utils/image';
-import {LoadingIndicator, showToast} from '@tryghost/admin-x-design-system';
+import {toast} from 'sonner';
 import {uploadFile} from '@hooks/use-activity-pub-queries';
 import {useForm} from 'react-hook-form';
-import {useNavigate} from '@tryghost/admin-x-framework';
 import {useUpdateAccountMutationForUser} from '@hooks/use-activity-pub-queries';
 import {z} from 'zod';
 import {zodResolver} from '@hookform/resolvers/zod';
+
+const decodeHTMLEntities = (text: string): string => {
+    const textarea = document.createElement('textarea');
+    textarea.innerHTML = text;
+    return textarea.value;
+};
 
 const FormSchema = z.object({
     profileImage: z.string().optional(),
@@ -52,7 +57,6 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     const [handleDomain, setHandleDomain] = useState<string>('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const {mutate: updateAccount} = useUpdateAccountMutationForUser(account?.handle || '');
-    const navigate = useNavigate();
 
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
@@ -61,7 +65,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             coverImage: account.bannerImageUrl || '',
             name: account.name,
             handle: '',
-            bio: account.bio
+            bio: account.bio ? decodeHTMLEntities(account.bio) : ''
         }
     });
 
@@ -105,10 +109,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     // Use the default error message
                 }
             }
-            showToast({
-                message: errorMessage,
-                type: 'error'
-            });
+            toast.error(errorMessage);
         } finally {
             setIsProfileImageUploading(false);
         }
@@ -121,20 +122,14 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             const file = files[0];
 
             if (file.size > MAX_FILE_SIZE) {
-                showToast({
-                    message: FILE_SIZE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(FILE_SIZE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
 
             const isSquare = await isSquareImage(file);
             if (!isSquare) {
-                showToast({
-                    message: SQUARE_IMAGE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(SQUARE_IMAGE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
@@ -174,10 +169,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     // Use the default error message
                 }
             }
-            showToast({
-                message: errorMessage,
-                type: 'error'
-            });
+            toast.error(errorMessage);
         } finally {
             setIsCoverImageUploading(false);
         }
@@ -190,10 +182,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             const file = files[0];
 
             if (file.size > MAX_FILE_SIZE) {
-                showToast({
-                    message: FILE_SIZE_ERROR_MESSAGE,
-                    type: 'error'
-                });
+                toast.error(FILE_SIZE_ERROR_MESSAGE);
                 e.target.value = '';
                 return;
             }
@@ -209,16 +198,16 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
     function onSubmit(data: z.infer<typeof FormSchema>) {
         setIsSubmitting(true);
 
+        const decodedBio = account.bio ? decodeHTMLEntities(account.bio) : '';
         if (
             data.name === account.name &&
             data.handle === account.handle.split('@')[1] &&
-            data.bio === account.bio &&
+            data.bio === decodedBio &&
             data.profileImage === account.avatarUrl &&
             data.coverImage === account.bannerImageUrl
         ) {
             setIsSubmitting(false);
             setIsEditingProfile(false);
-            navigate('/profile');
 
             return;
         }
@@ -226,14 +215,13 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
         updateAccount({
             name: data.name || account.name,
             username: data.handle || account.handle,
-            bio: data.bio || '',
+            bio: data.bio ?? '',
             avatarUrl: data.profileImage || '',
             bannerImageUrl: data.coverImage || ''
         }, {
             onSettled() {
                 setIsSubmitting(false);
                 setIsEditingProfile(false);
-                navigate('/profile');
             }
         });
     }
@@ -252,7 +240,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
             >
 
                 <div className='relative mb-2'>
-                    <div className='group relative flex h-[180px] cursor-pointer items-center justify-center bg-gray-100' onClick={triggerCoverImageInput}>
+                    <div className='group relative flex h-[180px] cursor-pointer items-center justify-center bg-gray-100 dark:bg-gray-950' onClick={triggerCoverImageInput}>
                         {coverImagePreview ?
                             <>
                                 <img className={`size-full object-cover ${isCoverImageUploading && 'opacity-10'}`} src={coverImagePreview} />
@@ -261,7 +249,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                         <LoadingIndicator size='md' />
                                     </div>
                                 }
-                                <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100' onClick={(e) => {
+                                <Button className='absolute right-3 top-3 size-8 bg-black/60 opacity-0 hover:bg-black/80 group-hover:opacity-100 dark:text-white' onClick={(e) => {
                                     e.stopPropagation();
                                     setCoverImagePreview(null);
                                     form.setValue('coverImage', '');
@@ -270,7 +258,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                             <Button className='pointer-events-none absolute bottom-3 right-3 bg-gray-250 group-hover:bg-gray-300' variant='secondary'>Upload cover image</Button>
                         }
                     </div>
-                    <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100' onClick={triggerProfileImageInput}>
+                    <div className='group absolute -bottom-10 left-4 flex size-20 cursor-pointer items-center justify-center rounded-full border-2 border-white bg-gray-100 dark:border-[#101114] dark:bg-gray-950' onClick={triggerProfileImageInput}>
                         {profileImagePreview ?
                             <>
                                 <img className={`size-full rounded-full object-cover ${isProfileImageUploading && 'opacity-10'}`} src={profileImagePreview} />
@@ -279,7 +267,7 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                                         <LoadingIndicator size='md' />
                                     </div>
                                 }
-                                <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100' onClick={(e) => {
+                                <Button className='absolute -right-2 -top-2 h-8 w-10 rounded-full bg-black/80 opacity-0 hover:bg-black/90 group-hover:opacity-100 dark:text-white' onClick={(e) => {
                                     e.stopPropagation();
                                     setProfileImagePreview(null);
                                     form.setValue('profileImage', '');
@@ -348,11 +336,12 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                     name="handle"
                     render={({field}) => (
                         <FormItem>
+                            <FormLabel>Handle</FormLabel>
                             <FormControl>
-                                <div className='relative flex items-center justify-stretch gap-1 rounded-md bg-gray-150 px-3 dark:bg-gray-900'>
+                                <div className='relative flex items-center justify-stretch gap-1 rounded-md border border-transparent bg-gray-150 px-3 transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] focus-within:outline-none dark:bg-gray-900'>
                                     <LucideIcon.AtSign className='w-4 min-w-4 text-gray-700' size={16} />
                                     <Input className='w-auto grow !border-none bg-transparent px-0 !shadow-none !outline-none' placeholder="index" {...field} />
-                                    <span className='max-w-[260px] truncate whitespace-nowrap text-right text-gray-700' title={`@${handleDomain}`}>@{handleDomain}</span>
+                                    <span className='max-w-[200px] truncate whitespace-nowrap text-right text-gray-700 max-sm:hidden' title={`@${handleDomain}`}>@{handleDomain}</span>
                                 </div>
                             </FormControl>
                             {!hasHandleError && (
@@ -377,8 +366,8 @@ const EditProfile: React.FC<EditProfileProps> = ({account, setIsEditingProfile})
                         </FormItem>
                     )}
                 />
-                <DialogFooter>
-                    <DialogClose>
+                <DialogFooter className='max-sm:gap-2'>
+                    <DialogClose asChild>
                         <Button variant='outline'>Cancel</Button>
                     </DialogClose>
                     <Button disabled={isSubmitting || isProfileImageUploading || isCoverImageUploading} type="submit">Save</Button>

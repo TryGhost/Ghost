@@ -1,6 +1,5 @@
 import NewsletterPreviewContent from './NewsletterPreviewContent';
 import React from 'react';
-import useFeatureFlag from '../../../../hooks/useFeatureFlag';
 import {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {renderReplyToEmail, renderSenderEmail} from '../../../../utils/newsletterEmails';
@@ -8,7 +7,6 @@ import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import {useGlobalData} from '../../../providers/GlobalDataProvider';
 
 const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => {
-    const hasEmailCustomization = useFeatureFlag('emailCustomization');
     const {currentUser, settings, siteData, config} = useGlobalData();
     const [title, icon, commentsEnabled, supportEmailAddress, defaultEmailAddress] = getSettingValues<string>(settings, ['title', 'icon', 'comments_enabled', 'support_email_address', 'default_email_address']);
 
@@ -33,15 +31,11 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return value;
         }
 
-        if (value === 'dark') {
-            return '#15212a';
-        }
-
         return '#ffffff';
     };
 
-    const headerColor = () => {
-        const value = newsletter.header_color;
+    const headerBackgroundColor = () => {
+        const value = newsletter.header_background_color;
 
         if (!value || value === 'transparent') {
             return 'transparent';
@@ -56,26 +50,6 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return 'transparent';
     };
 
-    const borderColor = () => {
-        const value = newsletter.border_color;
-
-        const validHex = /#([0-9a-f]{3}){1,2}$/i;
-
-        if (validHex.test(value || '')) {
-            return value;
-        }
-
-        if (value === 'auto') {
-            return textColorForBackgroundColor(backgroundColor()).hex();
-        }
-
-        if (value === 'accent') {
-            return siteData.accent_color;
-        }
-
-        return null;
-    };
-
     const buttonColor = () => {
         const value = newsletter.button_color;
 
@@ -85,16 +59,23 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
             return value;
         }
 
-        if (value === 'accent') {
-            return siteData.accent_color;
-        }
-
         if (value === null) {
             const bg = backgroundColor();
             return textColorForBackgroundColor(bg).hex();
         }
 
-        return null;
+        return siteData.accent_color;
+    };
+
+    const buttonTextColor = () => {
+        const buttonStyle = newsletter.button_style;
+        const calcButtonColor = buttonColor();
+
+        if (calcButtonColor && buttonStyle === 'fill') {
+            return textColorForBackgroundColor(calcButtonColor).hex();
+        }
+
+        return undefined;
     };
 
     const linkColor = () => {
@@ -113,10 +94,27 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         return textColorForBackgroundColor(backgroundColor()).hex();
     };
 
-    const secondaryBorderColor = textColorForBackgroundColor(backgroundColor()).alpha(0.12).toString();
+    const postTitleColor = () => {
+        const value = newsletter.post_title_color;
 
-    const titleColor = () => {
-        const value = newsletter.title_color;
+        const validHex = /#([0-9a-f]{3}){1,2}$/i;
+
+        if (validHex.test(value || '')) {
+            return value;
+        }
+
+        if (value === 'accent') {
+            return siteData.accent_color;
+        }
+
+        const headerBgColor = headerBackgroundColor();
+        const bgColor = headerBgColor === 'transparent' ? backgroundColor() : headerBgColor;
+
+        return textColorForBackgroundColor(bgColor).hex();
+    };
+
+    const sectionTitleColor = () => {
+        const value = newsletter.section_title_color;
 
         const validHex = /#([0-9a-f]{3}){1,2}$/i;
 
@@ -150,34 +148,49 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
     const textColor = textColorForBackgroundColor(backgroundColor()).hex();
     const secondaryTextColor = textColorForBackgroundColor(backgroundColor()).alpha(0.5).toString();
 
-    const headerTextColor = headerColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerColor()).hex();
-    const secondaryHeaderTextColor = headerColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerColor()).alpha(0.5).toString();
+    const headerTextColor = headerBackgroundColor() === 'transparent' ? textColor : textColorForBackgroundColor(headerBackgroundColor()).hex();
+    const secondaryHeaderTextColor = headerBackgroundColor() === 'transparent' ? secondaryTextColor : textColorForBackgroundColor(headerBackgroundColor()).alpha(0.5).toString();
 
-    const colors = hasEmailCustomization ? {
+    type Colors = {
+        backgroundColor?: string;
+        headerBackgroundColor?: string;
+        postTitleColor?: string;
+        sectionTitleColor?: string;
+        buttonColor?: string;
+        buttonTextColor?: string;
+        linkColor?: string;
+        dividerColor?: string;
+        textColor?: string;
+        secondaryTextColor?: string;
+        headerTextColor?: string;
+        secondaryHeaderTextColor?: string;
+    }
+
+    const colors: Colors = {
         backgroundColor: backgroundColor(),
-        headerColor: headerColor(),
-        borderColor: borderColor() || undefined,
-        secondaryBorderColor,
-        titleColor: titleColor() || undefined,
+        headerBackgroundColor: headerBackgroundColor(),
+        postTitleColor: postTitleColor() || undefined,
+        sectionTitleColor: sectionTitleColor() || undefined,
         buttonColor: buttonColor() || undefined,
+        buttonTextColor: buttonTextColor() || undefined,
         linkColor: linkColor() || undefined,
         dividerColor: dividerColor() || undefined,
         textColor,
         secondaryTextColor,
         headerTextColor,
         secondaryHeaderTextColor
-    } : {};
+    };
 
     return <NewsletterPreviewContent
         accentColor={siteData.accent_color}
         authorPlaceholder={currentUser.name || currentUser.email}
         backgroundColor={colors.backgroundColor || '#ffffff'}
         bodyFontCategory={newsletter.body_font_category}
-        buttonCorners={newsletter.button_corners || 'squircle'}
+        buttonCorners={newsletter.button_corners || 'rounded'}
         buttonStyle={newsletter.button_style || 'fill'}
         dividerStyle={newsletter.divider_style || 'solid'}
         footerContent={newsletter.footer_content}
-        headerColor={colors.headerColor || headerColor()}
+        headerBackgroundColor={colors.headerBackgroundColor || 'transparent'}
         headerIcon={newsletter.show_header_icon ? icon : undefined}
         headerImage={newsletter.header_image}
         headerSubtitle={headerSubtitle}
@@ -198,7 +211,7 @@ const NewsletterPreview: React.FC<{newsletter: Newsletter}> = ({newsletter}) => 
         siteTitle={title}
         titleAlignment={newsletter.title_alignment}
         titleFontCategory={newsletter.title_font_category}
-        titleFontWeight={newsletter.title_font_weight}
+        titleFontWeight={newsletter.title_font_weight || 'bold'}
         {...colors}
     />;
 };

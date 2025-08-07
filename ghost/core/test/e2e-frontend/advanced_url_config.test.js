@@ -1,10 +1,8 @@
-const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const testUtils = require('../utils');
 const configUtils = require('../utils/configUtils');
 const urlUtils = require('../utils/urlUtils');
-const settings = require('../../core/shared/settings-cache');
 const {mockManager} = require('../utils/e2e-framework');
 
 let request;
@@ -25,7 +23,7 @@ describe('Advanced URL Configurations', function () {
             urlUtils.stubUrlUtilsFromConfig();
             mockManager.mockMail();
 
-            await testUtils.startGhost({forceStart: true});
+            await testUtils.startGhost();
 
             request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
         });
@@ -76,17 +74,6 @@ describe('Advanced URL Configurations', function () {
                 .expect(404);
         });
 
-        it('/blog/welcome/amp/ should 200 if amp is enabled', async function () {
-            sinon.stub(settings, 'get').callsFake(function (key, ...rest) {
-                if (key === 'amp') {
-                    return true;
-                }
-                return settings.get.wrappedMethod.call(settings, key, ...rest);
-            });
-            await request.get('/blog/welcome/amp/')
-                .expect(200);
-        });
-
         it('/blog/welcome/amp/ should 301', async function () {
             await request.get('/blog/welcome/amp/')
                 .expect(301);
@@ -95,6 +82,21 @@ describe('Advanced URL Configurations', function () {
         it('/welcome/amp/ should 404', async function () {
             await request.get('/welcome/amp/')
                 .expect(404);
+        });
+
+        describe('Preview routes', function () {
+            before(async function () {
+                // NOTE: ideally we'd only insert the single draft post we want to test here
+                // but we don't have a way to do that just now and are already planning to
+                // replace the fixture system
+                await testUtils.fixtures.insertPostsAndTags();
+            });
+
+            it('should not cache preview routes', async function () {
+                await request.get('/blog/p/d52c42ae-2755-455c-80ec-70b2ec55c903/')
+                    .expect(200)
+                    .expect('Cache-Control', testUtils.cacheRules.noCache);
+            });
         });
     });
 });

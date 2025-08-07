@@ -2,28 +2,37 @@ import GhostLogo from '../assets/images/orb-pink.png';
 import React, {useEffect, useRef} from 'react';
 import clsx from 'clsx';
 import {Button, Icon, SettingNavItem, SettingNavItemProps, SettingNavSection, TextField, useFocusContext} from '@tryghost/admin-x-design-system';
-import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
+
 import {checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+
+import {searchKeywords as advancedSearchKeywords} from './settings/advanced/AdvancedSettings';
 import {searchKeywords as emailSearchKeywords} from './settings/email/EmailSettings';
 import {searchKeywords as generalSearchKeywords} from './settings/general/GeneralSettings';
 import {searchKeywords as growthSearchKeywords} from './settings/growth/GrowthSettings';
 import {searchKeywords as membershipSearchKeywords} from './settings/membership/MembershipSettings';
 import {searchKeywords as siteSearchKeywords} from './settings/site/SiteSettings';
+
 import {useGlobalData} from './providers/GlobalDataProvider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext, useScrollSectionNav} from '../hooks/useScrollSection';
 import {useSearch} from './providers/SettingsAppProvider';
 
-const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent'> & {keywords: string[]}> = ({keywords, navid, ...props}) => {
+const NavItem: React.FC<Omit<SettingNavItemProps, 'isVisible' | 'isCurrent' | 'navid'> & {keywords: string[]; navid: string | string[]}> = ({keywords, navid, ...props}) => {
     const {ref, props: scrollProps} = useScrollSectionNav(navid);
     const {currentSection} = useScrollSectionContext();
     const {checkVisible} = useSearch();
 
+    // Convert navid to array if it's a string
+    const navids = Array.isArray(navid) ? navid : [navid];
+
+    // Check if any of the navids match the current section
+    const isCurrent = navids.includes(currentSection || '');
+
     return <SettingNavItem
         ref={ref}
-        isCurrent={currentSection === navid}
+        isCurrent={isCurrent}
         isVisible={checkVisible(keywords)}
-        navid={navid}
+        navid={Array.isArray(navid) ? navid[0] : navid} // Use first navid for backward compatibility
         {...scrollProps}
         {...props}
     />;
@@ -97,7 +106,7 @@ const Sidebar: React.FC = () => {
     }, [filter]);
 
     const {settings, config} = useGlobalData();
-    const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [string];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
 
     const handleSectionClick = (e?: React.MouseEvent<HTMLAnchorElement>) => {
@@ -153,18 +162,20 @@ const Sidebar: React.FC = () => {
                     </div>
                 </div>
                 }
+
+                {/* General settings */}
                 <SettingNavSection isVisible={checkVisible(Object.values(generalSearchKeywords).flat())} title="General settings">
                     <NavItem icon='textfield' keywords={generalSearchKeywords.titleAndDescription} navid='general' title="Title & description" onClick={handleSectionClick} />
                     <NavItem icon='world-clock' keywords={generalSearchKeywords.timeZone} navid='timezone' title="Timezone" onClick={handleSectionClick} />
                     <NavItem icon='language' keywords={generalSearchKeywords.publicationLanguage} navid='publication-language' title="Publication language" onClick={handleSectionClick} />
+                    <NavItem icon='user-pen' keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
                     <NavItem icon='layer' keywords={generalSearchKeywords.metadata} navid='metadata' title="Meta data" onClick={handleSectionClick} />
-                    <NavItem icon='twitter-x' keywords={generalSearchKeywords.twitter} navid='twitter' title="X card" onClick={handleSectionClick} />
-                    <NavItem icon='facebook' keywords={generalSearchKeywords.facebook} navid='facebook' title="Facebook card" onClick={handleSectionClick} />
                     <NavItem icon='like' keywords={generalSearchKeywords.socialAccounts} navid='social-accounts' title="Social accounts" onClick={handleSectionClick} />
+                    <NavItem icon='baseline-chart' keywords={generalSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
                     <NavItem icon='lock-locked' keywords={generalSearchKeywords.lockSite} navid='locksite' title="Make this site private" onClick={handleSectionClick} />
-                    <NavItem icon='user-page' keywords={generalSearchKeywords.users} navid='staff' title="Staff" onClick={handleSectionClick} />
                 </SettingNavSection>
 
+                {/* Site settings */}
                 <SettingNavSection isVisible={checkVisible(Object.values(siteSearchKeywords).flat())} title="Site">
                     <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
                     <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
@@ -172,35 +183,27 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
                 </SettingNavSection>
 
-                <SettingNavSection isVisible={checkVisible(Object.values(membershipSearchKeywords).flat())} title="Membership">
-                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Portal settings" onClick={handleSectionClick} />
-                    <NavItem icon='key' keywords={membershipSearchKeywords.access} navid='members' title="Access" onClick={handleSectionClick} />
+                {/* Membership settings */}
+                <SettingNavSection isVisible={checkVisible([...Object.values(membershipSearchKeywords).flat(), ...emailSearchKeywords.newslettersNavMenu])} title="Membership">
+                    <NavItem icon='key' keywords={membershipSearchKeywords.access} navid={['members', 'spam-filters']} title="Access" onClick={handleSectionClick} />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                    <NavItem icon='baseline-chart' keywords={membershipSearchKeywords.analytics} navid='analytics' title="Analytics" onClick={handleSectionClick} />
+                    <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
+                    {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
+                    <NavItem icon='email' keywords={emailSearchKeywords.newslettersNavMenu} navid={['enable-newsletters', 'default-recipients', 'newsletters', 'mailgun']} title="Newsletters" onClick={handleSectionClick} />
                 </SettingNavSection>
 
+                {/* Growth */}
                 <SettingNavSection isVisible={checkVisible(Object.values(growthSearchKeywords).flat())} title="Growth">
+                    <NavItem icon='ap-network' keywords={growthSearchKeywords.network} navid='network' title="Network" onClick={handleSectionClick} />
+                    <NavItem icon='globe-simple' keywords={growthSearchKeywords.explore} navid='explore' title="Ghost Explore" onClick={handleSectionClick} />
                     <NavItem icon='heart' keywords={growthSearchKeywords.recommendations} navid='recommendations' title="Recommendations" onClick={handleSectionClick} />
-                    <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Embeddable signup form" onClick={handleSectionClick} />
+                    <NavItem icon='emailfield' keywords={growthSearchKeywords.embedSignupForm} navid='embed-signup-form' title="Signup forms" onClick={handleSectionClick} />
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
-                    {hasStripeEnabled && <NavItem icon='piggybank' keywords={growthSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
-                </SettingNavSection>
-
-                <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
-                    <NavItem icon='email-check' keywords={emailSearchKeywords.enableNewsletters} navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
-                    {newslettersEnabled !== 'disabled' && (
-                        <>
-                            <NavItem icon='recepients' keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
-                            <NavItem icon='email' keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
-                            {!config.mailgunIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.mailgun} navid='mailgun' title="Mailgun settings" onClick={handleSectionClick} />}
-                        </>
-                    )}
                 </SettingNavSection>
 
                 <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
                     <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                     <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
-                    <NavItem icon='block' keywords={advancedSearchKeywords.spamFilters} navid='spam-filters' title="Spam filters" onClick={handleSectionClick} />
                     <NavItem icon='brackets' keywords={advancedSearchKeywords.codeInjection} navid='code-injection' title="Code injection" onClick={handleSectionClick} />
                     <NavItem icon='labs-flask' keywords={advancedSearchKeywords.labs} navid='labs' title="Labs" onClick={handleSectionClick} />
                     <NavItem icon='time-back' keywords={advancedSearchKeywords.history} navid='history' title="History" onClick={handleSectionClick} />

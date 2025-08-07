@@ -15,7 +15,14 @@ class EmailServiceWrapper {
             return;
         }
 
-        const {EmailService, EmailController, EmailRenderer, SendingService, BatchSendingService, EmailSegmenter, MailgunEmailProvider} = require('@tryghost/email-service');
+        const EmailService = require('./EmailService');
+        const EmailController = require('./EmailController');
+        const EmailRenderer = require('./EmailRenderer');
+        const SendingService = require('./SendingService');
+        const BatchSendingService = require('./BatchSendingService');
+        const EmailSegmenter = require('./EmailSegmenter');
+        const MailgunEmailProvider = require('./MailgunEmailProvider');
+
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
         const MailgunClient = require('../lib/MailgunClient');
         const configService = require('../../../shared/config');
@@ -52,7 +59,7 @@ class EmailServiceWrapper {
             config: configService, settings: settingsCache
         });
         const i18nLanguage = labs.isSet('i18n') ? settingsCache.get('locale') || 'en' : 'en';
-        const i18n = i18nLib(i18nLanguage, 'newsletter');
+        const i18n = i18nLib(i18nLanguage, 'ghost');
 
         events.on('settings.labs.edited', () => {
             if (labs.isSet('i18n')) {

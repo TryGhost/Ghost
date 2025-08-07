@@ -5,6 +5,7 @@ import {Response} from 'miragejs';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
 import {blur, click, currentRouteName, currentURL, fillIn, find, findAll, triggerEvent, typeIn, waitFor} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {datepickerSelect} from 'ember-power-datepicker/test-support';
 import {editorSelector, pasteInEditor, titleSelector} from '../helpers/editor';
 import {enableLabsFlag} from '../helpers/labs-flag';
@@ -22,7 +23,12 @@ describe('Acceptance: Editor', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
+        mockAnalyticsApps();
         this.server.loadFixtures('configs');
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -614,7 +620,7 @@ describe('Acceptance: Editor', function () {
             expect(
                 find('[data-test-breadcrumb]').getAttribute('href'),
                 'breadcrumb link'
-            ).to.equal(`/ghost/posts/analytics/${post.id}`);
+            ).to.equal(`#posts-x`);
         });
 
         it('does not render analytics breadcrumb for a new post', async function () {

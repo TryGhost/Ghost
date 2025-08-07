@@ -7,14 +7,14 @@ import {useGlobalData} from '../../../providers/GlobalDataProvider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tanstack/react-query';
 
-const FeatureToggle: React.FC<{ flag: string; label?: string; }> = ({label, flag}) => {
+const FeatureToggle: React.FC<{ flag: string; label?: string; disabled?: boolean }> = ({label, flag, disabled}) => {
     const {settings} = useGlobalData();
     const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
     const {mutateAsync: editSettings} = useEditSettings();
     const client = useQueryClient();
     const handleError = useHandleError();
 
-    return <Toggle checked={labs[flag]} label={label} labelClasses='sr-only' name={`feature-${flag}`} onChange={async () => {
+    return <Toggle checked={labs[flag]} disabled={disabled} label={label} labelClasses='sr-only' name={`feature-${flag}`} onChange={async () => {
         const newValue = !labs[flag];
         try {
             await editSettings([{

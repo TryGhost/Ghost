@@ -1,0 +1,266 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search Index Content API fetchAuthors should return a list of authors 1: [body] 1`] = `
+Object {
+  "authors": Array [
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "profile_image": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "profile_image": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index Content API fetchAuthors should return a list of authors 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "370",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index Content API fetchPosts should return a list of posts 1: [body] 1`] = `
+Object {
+  "posts": Array [
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "excerpt": Any<String>,
+      "id": Any<String>,
+      "slug": Any<String>,
+      "title": Any<String>,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000\\\\\\+\\\\d\\{2\\}:\\\\d\\{2\\}/,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index Content API fetchPosts should return a list of posts 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "4387",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index Content API fetchTags does not return internal tags 1: [body] 1`] = `
+Object {
+  "tags": Array [
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index Content API fetchTags does not return internal tags 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "693",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index Content API fetchTags should return a list of tags 1: [body] 1`] = `
+Object {
+  "tags": Array [
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index Content API fetchTags should return a list of tags 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "*",
+  "cache-control": "public, max-age=0",
+  "content-length": "693",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

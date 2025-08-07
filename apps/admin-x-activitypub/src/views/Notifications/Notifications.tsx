@@ -1,18 +1,19 @@
 import React, {useEffect, useRef} from 'react';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
-
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {LoadingIndicator} from '@tryghost/admin-x-design-system';
+import {Button, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 
 import APAvatar from '@components/global/APAvatar';
+import Error from '@components/layout/Error';
+import FeedItemStats from '@components/feed/FeedItemStats';
 import NotificationItem from './components/NotificationItem';
 import Separator from '@components/global/Separator';
 
 import Layout from '@components/layout';
 import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
-import {Notification} from '@src/api/activitypub';
-import {handleProfileClickRR} from '@utils/handle-profile-click';
+import {Notification, isApiError} from '@src/api/activitypub';
+import {handleProfileClick} from '@utils/handle-profile-click';
+import {renderFeedAttachment} from '@components/feed/FeedItem';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
@@ -100,7 +101,7 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                 className={actorClass}
                 onClick={(e) => {
                     e?.stopPropagation();
-                    handleProfileClickRR(firstActor.handle, navigate);
+                    handleProfileClick(firstActor.handle, navigate);
                 }}
             >
                 {firstActor.name}
@@ -118,16 +119,59 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
         return <>{actorText} reposted your {group.post?.type === 'article' ? 'post' : 'note'}</>;
     case 'reply':
         if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} replied to your {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
+            return actorText;
         }
         break;
     case 'mention':
-        if (group.inReplyTo && typeof group.inReplyTo !== 'string') {
-            return <>{actorText} mentioned you in a {group.inReplyTo?.type === 'article' ? 'post' : 'note'}</>;
-        }
+        return actorText;
     }
 
     return <></>;
+};
+
+const ProfileLinkedContent: React.FC<{
+    content: string;
+    className?: string;
+    stripTags?: string[];
+}> = ({content, className, stripTags = []}) => {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const element = contentRef.current;
+        if (!element) {
+            return;
+        }
+
+        const handleProfileLinkClick = (e: Event) => {
+            const target = (e as MouseEvent).target as HTMLElement;
+            const link = target.closest('a[data-profile]');
+
+            if (link) {
+                const handle = link.getAttribute('data-profile')?.trim();
+                const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
+
+                if (isValidHandle && handle) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleProfileClick(handle, navigate);
+                }
+            }
+        };
+
+        element.addEventListener('click', handleProfileLinkClick);
+        return () => {
+            element.removeEventListener('click', handleProfileLinkClick);
+        };
+    }, [navigate, content]);
+
+    return (
+        <div
+            dangerouslySetInnerHTML={{__html: stripHtml(content || '', stripTags)}}
+            ref={contentRef}
+            className={className}
+        />
+    );
 };
 
 const Notifications: React.FC = () => {
@@ -141,9 +185,14 @@ const Notifications: React.FC = () => {
         }));
     };
 
+    const handleLikeClick = () => {
+        // Do API req or smth
+        // Don't need to know about setting timeouts or anything like that
+    };
+
     const maxAvatars = 5;
 
-    const {data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
+    const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = useNotificationsForUser('index');
 
     const notificationGroups = (
         data?.pages.flatMap((page) => {
@@ -181,33 +230,37 @@ const Notifications: React.FC = () => {
         switch (group.type) {
         case 'like':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'reply':
             if (group.post && group.inReplyTo) {
-                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
+                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'repost':
             if (group.post) {
-                navigate(`/${group.post.type === 'article' ? 'inbox' : 'feed'}/${encodeURIComponent(group.post.id)}`);
+                navigate(`/${group.post.type === 'article' ? 'reader' : 'notes'}/${encodeURIComponent(group.post.id)}`);
             }
             break;
         case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
             } else {
-                handleProfileClickRR(group.actors[0].handle, navigate);
+                handleProfileClick(group.actors[0].handle, navigate);
             }
             break;
         case 'mention':
-            if (group.post && group.inReplyTo) {
-                navigate(`/feed/${encodeURIComponent(group.post.id)}`);
+            if (group.post) {
+                navigate(`/notes/${encodeURIComponent(group.post.id)}`);
             }
             break;
         }
     };
+
+    if (error && isApiError(error)) {
+        return <Error statusCode={error.statusCode}/>;
+    }
 
     return (
         <Layout>
@@ -223,7 +276,7 @@ const Notifications: React.FC = () => {
                 {
                     (notificationGroups.length > 0) && (
                         <>
-                            <div className='my-8 flex w-full max-w-[620px] flex-col'>
+                            <div className='my-8 flex w-full max-w-[620px] flex-col max-md:mt-5'>
                                 {notificationGroups.map((group, index) => (
                                     <React.Fragment key={group.id || `${group.type}_${index}`}>
                                         <NotificationItem
@@ -294,7 +347,7 @@ const Notifications: React.FC = () => {
                                                                         className='flex items-center break-anywhere hover:opacity-80'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
-                                                                            handleProfileClickRR(actor.handle, navigate);
+                                                                            handleProfileClick(actor.handle, navigate);
                                                                         }}
                                                                     >
                                                                         <APAvatar author={{
@@ -332,7 +385,7 @@ const Notifications: React.FC = () => {
                                                     }
                                                 </div>
                                                 {(
-                                                    ((group.type === 'reply' || group.type === 'mention') && group.inReplyTo) ||
+                                                    ((group.type === 'reply' && group.inReplyTo) || group.type === 'mention') ||
                                                     (group.type === 'like' && !group.post?.name && group.post?.content) ||
                                                     (group.type === 'repost' && !group.post?.name && group.post?.content)
                                                 ) && (
@@ -343,13 +396,46 @@ const Notifications: React.FC = () => {
                                                         /> :
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-925/30 group-hover:dark:bg-black/40'>
-                                                                <div
-                                                                    dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}}
+                                                                <ProfileLinkedContent
                                                                     className='ap-note-content text-pretty'
+                                                                    content={group.post?.content || ''}
+                                                                    stripTags={['a']}
                                                                 />
+                                                                {group.post && group.post.attachments && group.post.attachments.length > 0 && (
+                                                                    <div className='notification-attachments mb-1 [&_.attachment-gallery]:flex [&_.attachment-gallery]:flex-wrap [&_img]:aspect-square [&_img]:max-w-[calc(20%-6.4px)]'>
+                                                                        {renderFeedAttachment(
+                                                                            {...group.post, type: 'Note', attachment: group.post.attachments}
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </>
                                                     )
+                                                )}
+                                                {((group.type === 'reply' && group.post) || group.type === 'mention') && (
+                                                    <div className="mt-1.5">
+                                                        <FeedItemStats
+                                                            actor={{
+                                                                ...group.actors[0],
+                                                                icon: {
+                                                                    url: group.actors[0].avatarUrl || ''
+                                                                },
+                                                                id: group.actors[0].url,
+                                                                preferredUsername: group.actors[0].handle?.replace(/^@([^@]+)@.*$/, '$1') || 'unknown'
+                                                            }}
+                                                            buttonClassName='hover:bg-gray-200'
+                                                            commentCount={group.post.replyCount || 0}
+                                                            layout="notification"
+                                                            likeCount={group.post.likeCount || 0}
+                                                            object={{
+                                                                ...group.post,
+                                                                liked: group.post.likedByMe,
+                                                                reposted: group.post.repostedByMe
+                                                            }}
+                                                            repostCount={group.post.repostCount || 0}
+                                                            onLikeClick={handleLikeClick}
+                                                        />
+                                                    </div>
                                                 )}
                                             </NotificationItem.Content>
                                         </NotificationItem>

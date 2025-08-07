@@ -13,6 +13,7 @@ export default class PublishModalComponent extends Component {
 
     @service store;
     @service router;
+    @service feature;
 
     @tracked emailErrorMessage = this.args.data.publishOptions.post.didEmailFail ? (this.args.data.publishOptions.post.email.error ?? 'Unknown error') : undefined;
     @tracked isConfirming = false;
@@ -81,7 +82,7 @@ export default class PublishModalComponent extends Component {
             }
             if (this.args.data.publishOptions.post.displayName !== 'page') {
                 if (this.args.data.publishOptions.post.hasEmail) {
-                    this.router.transitionTo('posts.analytics', this.args.data.publishOptions.post.id);
+                    this.router.transitionTo('posts-x', this.args.data.publishOptions.post.id);
                 } else {
                     this.router.transitionTo('posts');
                 }

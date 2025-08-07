@@ -3,5 +3,6 @@ const urlUtils = require('../../../shared/url-utils');
 const config = require('../../../shared/config');
 const SettingsHelpers = require('./SettingsHelpers');
 const labs = require('../../../shared/labs');
+const limitService = require('../limits');
 
-module.exports = new SettingsHelpers({settingsCache, urlUtils, config, labs});
+module.exports = new SettingsHelpers({settingsCache, urlUtils, config, labs, limitService});

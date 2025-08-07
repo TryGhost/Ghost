@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const urlUtils = require('../../../../core/shared/url-utils');
 const urlService = require('../../../../core/server/services/url');
@@ -6,9 +5,12 @@ const getUrl = require('../../../../core/frontend/meta/url');
 const testUtils = require('../../../utils');
 
 describe('getUrl', function () {
+    let urlServiceGetUrlByResourceIdStub;
+    let urlUtilsUrlForStub;
+
     beforeEach(function () {
-        sinon.stub(urlService, 'getUrlByResourceId');
-        sinon.stub(urlUtils, 'urlFor');
+        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+        urlUtilsUrlForStub = sinon.stub(urlUtils, 'urlFor');
     });
 
     afterEach(function () {
@@ -18,7 +20,7 @@ describe('getUrl', function () {
     it('should return url for a post', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
-        urlService.getUrlByResourceId.withArgs(post.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: undefined, withSubdirectory: true})
             .returns('post url');
 
         getUrl(post).should.eql('post url');
@@ -27,12 +29,12 @@ describe('getUrl', function () {
     describe('preview url: drafts/scheduled posts', function () {
         it('relative', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
-            urlService.getUrlByResourceId.withArgs(post.id).returns('/404/');
-            urlUtils.urlFor.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('relative');
+            urlServiceGetUrlByResourceIdStub.withArgs(post.id).returns('/404/');
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined).returns('relative');
             let url = getUrl(post);
 
-            urlService.getUrlByResourceId.calledOnce.should.be.true();
-            urlUtils.urlFor.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined)
+            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, undefined)
                 .calledOnce.should.be.true();
 
             url.should.eql('relative');
@@ -40,12 +42,12 @@ describe('getUrl', function () {
 
         it('absolute', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({status: 'draft'});
-            urlService.getUrlByResourceId.withArgs(post.id).returns('/404/');
-            urlUtils.urlFor.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true).returns('absolute');
+            urlServiceGetUrlByResourceIdStub.withArgs(post.id).returns('/404/');
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true).returns('absolute');
             let url = getUrl(post, true);
 
-            urlService.getUrlByResourceId.calledOnce.should.be.true();
-            urlUtils.urlFor.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true)
+            urlServiceGetUrlByResourceIdStub.calledOnce.should.be.true();
+            urlUtilsUrlForStub.withArgs({relativeUrl: '/p/' + post.uuid + '/'}, null, true)
                 .calledOnce.should.be.true();
 
             url.should.eql('absolute');
@@ -55,18 +57,10 @@ describe('getUrl', function () {
     it('should return absolute url for a post', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
-        urlService.getUrlByResourceId.withArgs(post.id, {absolute: true, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(post.id, {absolute: true, withSubdirectory: true})
             .returns('absolute post url');
 
         getUrl(post, true).should.eql('absolute post url');
-    });
-
-    it('should return absolute url for a post and remove /amp/ in url', function () {
-        const data = {relativeUrl: '/*/amp/'};
-
-        urlUtils.urlFor.withArgs(data, {}, true).returns('absolute/*/amp/');
-        getUrl(data, true).should.eql('absolute/*/');
-        urlService.getUrlByResourceId.called.should.be.false();
     });
 
     it('should return url for a tag', function () {
@@ -77,7 +71,7 @@ describe('getUrl', function () {
         //        the tag object contains a `parent` attribute. the tag model contains a `parent_id` attr.
         tag.parent = null;
 
-        urlService.getUrlByResourceId.withArgs(tag.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(tag.id, {absolute: undefined, withSubdirectory: true})
             .returns('tag url');
 
         getUrl(tag).should.eql('tag url');
@@ -86,7 +80,7 @@ describe('getUrl', function () {
     it('should return url for a author', function () {
         const author = testUtils.DataGenerator.forKnex.createUser();
 
-        urlService.getUrlByResourceId.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         getUrl(author).should.eql('author url');
@@ -95,7 +89,7 @@ describe('getUrl', function () {
     it('should return absolute url for a author', function () {
         const author = testUtils.DataGenerator.forKnex.createUser();
 
-        urlService.getUrlByResourceId.withArgs(author.id, {absolute: true, withSubdirectory: true})
+        urlServiceGetUrlByResourceIdStub.withArgs(author.id, {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
         getUrl(author, true).should.eql('absolute author url');
@@ -109,7 +103,7 @@ describe('getUrl', function () {
             current: true
         };
 
-        urlUtils.urlFor.withArgs('nav', {nav: data}, undefined)
+        urlUtilsUrlForStub.withArgs('nav', {nav: data}, undefined)
             .returns('nav url');
 
         getUrl(data).should.equal('nav url');
@@ -123,17 +117,9 @@ describe('getUrl', function () {
             current: true
         };
 
-        urlUtils.urlFor.withArgs('nav', {nav: data}, true)
+        urlUtilsUrlForStub.withArgs('nav', {nav: data}, true)
             .returns('absolute nav url');
 
         getUrl(data, true).should.equal('absolute nav url');
-    });
-
-    it('should return `relativeUrl` and remove /amp/ in url', function () {
-        const data = {relativeUrl: '/*/amp/'};
-
-        urlUtils.urlFor.withArgs(data, {}, undefined).returns(data.relativeUrl);
-        getUrl(data).should.eql('/*/');
-        urlService.getUrlByResourceId.called.should.be.false();
     });
 });

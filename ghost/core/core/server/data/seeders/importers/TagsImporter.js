@@ -21,7 +21,7 @@ class TagsImporter extends TableImporter {
     }
 
     generate() {
-        let name = `${faker.color.human()} ${faker.name.jobType()}`;
+        let name = `${faker.color.human()} ${faker.name.jobType()} ${faker.random.numeric(3)}`;
         name = `${name[0].toUpperCase()}${name.slice(1)}`;
         const threeYearsAgo = new Date();
         threeYearsAgo.setFullYear(threeYearsAgo.getFullYear() - 3);
@@ -30,10 +30,9 @@ class TagsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             name: name,
-            slug: `${slugify(name)}-${faker.random.numeric(3)}`,
+            slug: slugify(name),
             description: faker.lorem.sentence(),
-            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo)),
-            created_by: this.users[faker.datatype.number(this.users.length - 1)].id
+            created_at: dateToDatabaseString(faker.date.between(threeYearsAgo, twoYearsAgo))
         };
     }
 }

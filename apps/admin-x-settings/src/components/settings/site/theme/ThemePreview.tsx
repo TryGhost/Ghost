@@ -1,6 +1,5 @@
-import NiceModal from '@ebay/nice-modal-react';
 import React, {useState} from 'react';
-import {Breadcrumbs, Button, ButtonGroup, ConfirmationModal, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
+import {Breadcrumbs, Button, ButtonGroup, DesktopChrome, MobileChrome, PageHeader, Select, SelectOption} from '@tryghost/admin-x-design-system';
 import {OfficialTheme, ThemeVariant} from '../../../providers/SettingsAppProvider';
 import {Theme, isDefaultOrLegacyTheme} from '@tryghost/admin-x-framework/api/themes';
 
@@ -71,26 +70,8 @@ const ThemePreview: React.FC<{
     }
 
     const handleInstall = () => {
-        if (installedTheme && !isDefaultOrLegacyTheme(selectedTheme)) {
-            NiceModal.show(ConfirmationModal, {
-                title: 'Overwrite theme',
-                prompt: (
-                    <>
-                        This will overwrite your existing version of {selectedTheme.name}{installedTheme?.active ? ', which is your active theme' : ''}. All custom changes will be lost.
-                    </>
-                ),
-                okLabel: 'Overwrite',
-                okRunningLabel: 'Installing...',
-                cancelLabel: 'Cancel',
-                okColor: 'red',
-                onOk: async (confirmModal) => {
-                    await onInstall?.();
-                    confirmModal?.remove();
-                }
-            });
-        } else {
-            onInstall?.();
-        }
+        // The parent component handles all limit checks and confirmation modals
+        onInstall?.();
     };
 
     const left =

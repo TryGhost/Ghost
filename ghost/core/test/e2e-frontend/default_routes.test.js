@@ -164,14 +164,14 @@ describe('Default Frontend routing', function () {
             before(async function () {
                 configUtils.set('admin:redirects', false);
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
             after(async function () {
                 await configUtils.restore();
 
-                await testUtils.startGhost({forceStart: true});
+                await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
@@ -185,62 +185,8 @@ describe('Default Frontend routing', function () {
     });
 
     describe('AMP post', function () {
-        describe('AMP Enabled', function () {
-            beforeEach(function () {
-                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-                    if (key === 'amp' && !options) {
-                        return true;
-                    }
-                    return origCache.get(key, options);
-                });
-            });
-            it('should respond with html for valid url', async function () {
-                await request.get('/welcome/amp/')
-                    .expect('Content-Type', /html/)
-                    .expect('Cache-Control', testUtils.cacheRules.public)
-                    .expect(200)
-                    .expect(assertCorrectFrontendHeaders)
-                    .expect((res) => {
-                        const $ = cheerio.load(res.text);
-
-                        $('.post-title').text().should.equal('Start here for a quick overview of everything you need to know');
-
-                        $('.content .post').length.should.equal(1);
-                        $('.powered').text().should.equal(' Published with Ghost');
-                        $('body.amp-template').length.should.equal(1);
-                        $('article.post').length.should.equal(1);
-
-                        $('style[amp-custom]').length.should.equal(1);
-
-                        // This asserts we should have some content (and not [object Promise] !)
-                        $('.post-content p').length.should.be.greaterThan(0);
-
-                        res.text.should.containEql(':root {--ghost-accent-color: #FF1A75;}');
-                        res.text.should.not.containEql('__GHOST_URL__');
-                    });
-            });
-
-            it('should not work with date permalinks', async function () {
-                // get today's date
-                const date = moment().format('YYYY/MM/DD');
-
-                await request.get('/' + date + '/welcome/amp/')
-                    .expect('Cache-Control', testUtils.cacheRules.noCache)
-                    .expect(404)
-                    .expect(/Page not found/)
-                    .expect(assertCorrectFrontendHeaders);
-            });
-        });
-
+        // AMP is no longer supported as of v6.0, so we only check the case in which it's disabled
         describe('AMP Disabled', function () {
-            beforeEach(function () {
-                sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
-                    if (key === 'amp' && !options) {
-                        return false;
-                    }
-                    return origCache.get(key, options);
-                });
-            });
             it('/amp/ should redirect to regular post, including any query params', async function () {
                 await request.get('/welcome/amp/?q=a')
                     .expect('Location', '/welcome/?q=a')

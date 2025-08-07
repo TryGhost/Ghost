@@ -1,4 +1,3 @@
-const fs = require('fs');
 const path = require('path');
 const util = require('util');
 const exec = util.promisify(require('child_process').exec);
@@ -7,36 +6,12 @@ const debug = require('debug')('ghost:dev');
 const chalk = require('chalk');
 const concurrently = require('concurrently');
 
-// check we're running on Node 18 and above
-debug('checking node version');
-const nodeVersion = parseInt(process.versions.node.split('.')[0]);
-if (nodeVersion < 18) {
-    console.error('`yarn dev` requires Node v18 or above. Please upgrade your version of Node.');
-    process.exit(1);
-}
-debug('node version check passed');
 
 debug('loading config');
 const config = require('../../ghost/core/core/shared/config/loader').loadNconf({
     customConfigPath: path.join(__dirname, '../../ghost/core')
 });
 debug('config loaded');
-
-debug('loading ts packages');
-const tsPackages = fs.readdirSync(path.resolve(__dirname, '../../ghost'), {withFileTypes: true})
-    .filter(dirent => dirent.isDirectory())
-    .map(dirent => dirent.name)
-    .filter(packageFolder => {
-        try {
-            const packageJson = require(path.resolve(__dirname, `../../ghost/${packageFolder}/package.json`));
-            return packageJson.scripts?.['build:ts'];
-        } catch (err) {
-            return false;
-        }
-    })
-    .map(packageFolder => `ghost/${packageFolder}`)
-    .join(',');
-debug('ts packages loaded');
 
 debug('loading live reload base url');
 const liveReloadBaseUrl = config.getSubdir() || '/ghost/';
@@ -103,7 +78,6 @@ let commands = [];
 
 const COMMAND_GHOST = {
     name: 'ghost',
-    // Note: if this isn't working for you, please use Node 18 and above
     command: 'nx run ghost:dev',
     prefixColor: 'blue',
     env: {
@@ -126,13 +100,6 @@ const COMMAND_BROWSERTESTS = {
     env: {}
 };
 
-const COMMAND_TYPESCRIPT = {
-    name: 'ts',
-    command: `while [ 1 ]; do nx watch --projects=${tsPackages} -- nx run \\$NX_PROJECT_NAME:build:ts; done`,
-    prefixColor: 'cyan',
-    env: {}
-};
-
 const adminXApps = '@tryghost/admin-x-settings,@tryghost/admin-x-activitypub,@tryghost/posts,@tryghost/stats';
 
 const COMMANDS_ADMINX = [{
@@ -148,13 +115,13 @@ const COMMANDS_ADMINX = [{
 }];
 
 if (GHOST_APP_FLAGS.includes('ghost')) {
-    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT];
+    commands = [COMMAND_GHOST];
 } else if (GHOST_APP_FLAGS.includes('admin')) {
     commands = [COMMAND_ADMIN, ...COMMANDS_ADMINX];
 } else if (GHOST_APP_FLAGS.includes('browser-tests')) {
     commands = [COMMAND_BROWSERTESTS];
 } else {
-    commands = [COMMAND_GHOST, COMMAND_TYPESCRIPT, COMMAND_ADMIN, ...COMMANDS_ADMINX];
+    commands = [COMMAND_GHOST, COMMAND_ADMIN, ...COMMANDS_ADMINX];
 }
 
 if (GHOST_APP_FLAGS.includes('portal') || GHOST_APP_FLAGS.includes('all')) {
