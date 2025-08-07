@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId, anyString} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTime, anyObjectId} = matchers;
 const assert = require('node:assert');
 
 describe('Search Index API', function () {

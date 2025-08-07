@@ -3,7 +3,7 @@ const assert = require('assert/strict');
 const models = require('../../../core/server/models');
 const context = require('../../utils/fixtures/context');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyISODateTimeWithTZ, anyObjectId, anyString} = matchers;
+const {anyContentVersion, anyEtag, anyISODateTimeWithTZ, anyObjectId} = matchers;
 
 describe('Search Index Content API', function () {
     let agent;
