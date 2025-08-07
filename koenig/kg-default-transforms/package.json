@@ -31,7 +31,7 @@
     "mocha": "11.7.1",
     "sinon": "21.0.0",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.9.2"
   },
   "dependencies": {
     "@lexical/list": "0.13.1",
