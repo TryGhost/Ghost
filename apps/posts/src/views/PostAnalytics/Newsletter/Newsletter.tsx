@@ -1,6 +1,6 @@
 // import AudienceSelect from './components/AudienceSelect';
 import Feedback from './components/Feedback';
-import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardMoreButton, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
@@ -281,11 +281,15 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             :
                             <CardContent className='p-0'>
                                 <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
-                                    <KpiCard className='group relative grow p-3 md:px-6 md:py-5'>
-                                        <Button className='absolute right-6 translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                    <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
+                                        <KpiCardMoreButton onClick={() => {
                                             navigate(`/members?filterParam=emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
-                                        }}>View members &rarr;</Button>
-                                        <KpiCardLabel>
+                                        }}>
+                                            View members &rarr;
+                                        </KpiCardMoreButton>
+                                        <KpiCardLabel onClick={() => {
+                                            navigate(`/members?filterParam=emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                        }}>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple !text-sm opacity-50 lg:text-base'></div>
                                     Sent
                                         </KpiCardLabel>
@@ -295,13 +299,17 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
 
                                     {emailTrackOpensEnabled &&
-                                        <KpiCard className='group relative grow p-3 md:px-6 md:py-5'>
-                                            <Button className='absolute right-6 translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                        <KpiCard className='p-3 md:px-6 md:py-5'>
+                                            <KpiCardMoreButton onClick={() => {
                                                 navigate(`/members?filterParam=opened_emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
-                                            }}>View members &rarr;</Button>
-                                            <KpiCardLabel>
+                                            }}>
+                                                View members &rarr;
+                                            </KpiCardMoreButton>
+                                            <KpiCardLabel onClick={() => {
+                                                navigate(`/members?filterParam=opened_emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                            }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue !text-sm opacity-50 lg:text-base'></div>
-                                        Opened
+                                                Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
                                                 <KpiCardValue className='text-xl leading-none sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.opened)}</KpiCardValue>
@@ -310,13 +318,17 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     }
 
                                     {emailTrackClicksEnabled &&
-                                        <KpiCard className='group relative grow  p-3 md:px-6 md:py-5'>
-                                            <Button className='absolute right-6 translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                        <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
+                                            <KpiCardMoreButton onClick={() => {
                                                 navigate(`/members?filterParam=clicked_links.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
-                                            }}>View members &rarr;</Button>
-                                            <KpiCardLabel>
+                                            }}>
+                                                View members &rarr;
+                                            </KpiCardMoreButton>
+                                            <KpiCardLabel onClick={() => {
+                                                navigate(`/members?filterParam=clicked_links.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                            }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal !text-sm opacity-50 lg:text-base'></div>
-                                        Clicked
+                                                Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>
                                                 <KpiCardValue className='text-xl leading-none sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.clicked)}</KpiCardValue>
