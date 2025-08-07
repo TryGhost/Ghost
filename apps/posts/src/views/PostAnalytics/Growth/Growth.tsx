@@ -3,10 +3,10 @@ import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import React from 'react';
-import {Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardHeader, CardTitle, LucideIcon, Separator, Skeleton, SkeletonTable, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 import {useGlobalData} from '@src/providers/PostAnalyticsContext';
-import {useParams} from '@tryghost/admin-x-framework';
+import {useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {usePostReferrers} from '@src/hooks/usePostReferrers';
 
 export const centsToDollars = (value : number) => {
@@ -20,6 +20,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {postId} = useParams();
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {appSettings} = useAppContext();
+    const navigate = useNavigate();
 
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;
@@ -71,7 +72,10 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                             </CardHeader>
                             <CardContent className='p-0'>
                                 <div className='flex flex-col md:grid md:grid-cols-3 md:items-stretch'>
-                                    <KpiCard className='grow'>
+                                    <KpiCard className='group relative grow'>
+                                        <Button className='absolute right-6 translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                            navigate(`/members?filterParam=signup:[${postId}]`, {crossApp: true});
+                                        }}>View members &rarr;</Button>
                                         <KpiCardLabel>
                                             <LucideIcon.User strokeWidth={1.5} />
                                             Free members
@@ -82,7 +86,10 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     </KpiCard>
                                     {appSettings?.paidMembersEnabled &&
                                     <>
-                                        <KpiCard className='grow'>
+                                        <KpiCard className='group relative grow'>
+                                            <Button className='absolute right-6 translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                                navigate(`/members?filterParam=conversion:[${postId}]`, {crossApp: true});
+                                            }}>View members &rarr;</Button>
                                             <KpiCardLabel>
                                                 <LucideIcon.WalletCards strokeWidth={1.5} />
                                             Paid members
