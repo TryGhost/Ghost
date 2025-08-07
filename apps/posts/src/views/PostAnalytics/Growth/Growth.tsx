@@ -74,12 +74,14 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 <div className='flex flex-col md:grid md:grid-cols-3 md:items-stretch'>
                                     <KpiCard className='grow'>
                                         <KpiCardMoreButton onClick={() => {
-                                            navigate(`/members?filterParam=signup:'${postId}'%2Bconversion:-'${postId}'`, {crossApp: true});
+                                            const filterParam = encodeURIComponent(`signup:'${postId}'+conversion:-'${postId}'`);
+                                            navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
                                         }}>
                                             View members &rarr;
                                         </KpiCardMoreButton>
                                         <KpiCardLabel onClick={() => {
-                                            navigate(`/members?filterParam=signup:'${postId}'%2Bconversion:-'${postId}'`, {crossApp: true});
+                                            const filterParam = encodeURIComponent(`signup:'${postId}'+conversion:-'${postId}'`);
+                                            navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
                                         }}>
                                             <LucideIcon.User strokeWidth={1.5} />
                                             Free members
@@ -92,12 +94,14 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <>
                                         <KpiCard className='grow'>
                                             <KpiCardMoreButton onClick={() => {
-                                                navigate(`/members?filterParam=conversion:'${postId}'`, {crossApp: true});
+                                                const filterParam = encodeURIComponent(`conversion:'${postId}'`);
+                                                navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                navigate(`/members?filterParam=conversion:'${postId}'`, {crossApp: true});
+                                                const filterParam = encodeURIComponent(`conversion:'${postId}'`);
+                                                navigate(`/members?filterParam=${filterParam}`, {crossApp: true});
                                             }}>
                                                 <LucideIcon.WalletCards strokeWidth={1.5} />
                                                 Paid members

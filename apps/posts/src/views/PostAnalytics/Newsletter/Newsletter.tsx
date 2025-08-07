@@ -283,12 +283,20 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
                                     <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
                                         <KpiCardMoreButton onClick={() => {
-                                            navigate(`/members?filterParam=emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                            const params = new URLSearchParams({
+                                                filterParam: `emails.post_id:${postId}`,
+                                                postAnalytics: postId
+                                            });
+                                            navigate(`/members?${params.toString()}`, {crossApp: true});
                                         }}>
                                             View members &rarr;
                                         </KpiCardMoreButton>
                                         <KpiCardLabel onClick={() => {
-                                            navigate(`/members?filterParam=emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                            const params = new URLSearchParams({
+                                                filterParam: `emails.post_id:${postId}`,
+                                                postAnalytics: postId
+                                            });
+                                            navigate(`/members?${params.toString()}`, {crossApp: true});
                                         }}>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple !text-sm opacity-50 lg:text-base'></div>
                                     Sent
@@ -301,12 +309,20 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     {emailTrackOpensEnabled &&
                                         <KpiCard className='p-3 md:px-6 md:py-5'>
                                             <KpiCardMoreButton onClick={() => {
-                                                navigate(`/members?filterParam=opened_emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                                const params = new URLSearchParams({
+                                                    filterParam: `opened_emails.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                navigate(`/members?filterParam=opened_emails.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                                const params = new URLSearchParams({
+                                                    filterParam: `opened_emails.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue !text-sm opacity-50 lg:text-base'></div>
                                                 Opened
@@ -320,12 +336,20 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                     {emailTrackClicksEnabled &&
                                         <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
                                             <KpiCardMoreButton onClick={() => {
-                                                navigate(`/members?filterParam=clicked_links.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                                const params = new URLSearchParams({
+                                                    filterParam: `clicked_links.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                navigate(`/members?filterParam=clicked_links.post_id:${postId}&postAnalytics=${postId}`, {crossApp: true});
+                                                const params = new URLSearchParams({
+                                                    filterParam: `clicked_links.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
                                             }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal !text-sm opacity-50 lg:text-base'></div>
                                                 Clicked
