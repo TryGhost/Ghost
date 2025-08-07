@@ -92,12 +92,12 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                     <>
                                         <KpiCard className='grow'>
                                             <KpiCardMoreButton onClick={() => {
-                                                navigate(`/members?filterParam=conversion:[${postId}]`, {crossApp: true});
+                                                navigate(`/members?filterParam=conversion:'${postId}'`, {crossApp: true});
                                             }}>
                                                 View members &rarr;
                                             </KpiCardMoreButton>
                                             <KpiCardLabel onClick={() => {
-                                                navigate(`/members?filterParam=conversion:[${postId}]`, {crossApp: true});
+                                                navigate(`/members?filterParam=conversion:'${postId}'`, {crossApp: true});
                                             }}>
                                                 <LucideIcon.WalletCards strokeWidth={1.5} />
                                                 Paid members
