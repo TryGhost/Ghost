@@ -8,9 +8,9 @@ const Error = ({statusCode}: {statusCode?: number}) => {
     const routeError = useRouteError();
     const navigate = useNavigate();
 
-    const toDashboard = (e: React.MouseEvent<HTMLElement>) => {
+    const toAnalytics = (e: React.MouseEvent<HTMLElement>) => {
         e.preventDefault();
-        navigate('/dashboard', {crossApp: true});
+        navigate('/analytics', {crossApp: true});
     };
 
     if (routeError) {
@@ -56,7 +56,7 @@ const Error = ({statusCode}: {statusCode?: number}) => {
             <div className="admin-x-error max-w-xl">
                 <h1>Loading interrupted</h1>
                 <p>They say life is a series of trials and tribulations. This moment right here? It&apos;s a tribulation. Our app was supposed to load, and yet here we are. Loadless. Click back to the dashboard to try again.</p>
-                <a className='cursor-pointer text-green' onClick={toDashboard}>&larr; Back to the dashboard</a>
+                <a className='cursor-pointer text-green' onClick={toAnalytics}>&larr; Back to the homepage</a>
             </div>
         </div>
     );
