@@ -130,10 +130,10 @@ describe('Advanced URL Configurations', function () {
                     .expect('Location', 'http://localhost:9999/blog/ghost/');
             });
 
-            it('/blog/ghost/api/settings/site/ should redirect to external admin API route', async function () {
-                await request.get('/blog/ghost/api/settings/site/')
+            it('/blog/ghost/api/admin/site/ should redirect to external admin API route', async function () {
+                await request.get('/blog/ghost/api/admin/site/')
                     .expect(301)
-                    .expect('Location', 'http://localhost:9999/blog/ghost/api/settings/site/');
+                    .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/site/');
             });
         });
     });
