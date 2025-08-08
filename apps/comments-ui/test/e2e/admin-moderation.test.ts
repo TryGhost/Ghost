@@ -44,11 +44,11 @@ test.describe('Admin moderation', async () => {
         });
     }
 
-    test('skips rendering the auth frame with no comments', async ({page}) => {
+    test('renders the auth frame when there are no comments', async ({page}) => {
         await initializeTest(page);
 
         const iframeElement = page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(0);
+        await expect(iframeElement).toHaveCount(1);
     });
 
     test('renders the auth frame when there are comments', async ({page}) => {
@@ -276,6 +276,14 @@ test.describe('Admin moderation', async () => {
         await expect(replyToHide).not.toContainText('Hidden for members');
     });
 
+    test('can see hidden comments if you are an admin', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>', status: 'hidden'});
+        const {frame} = await initializeTest(page);
+        const comments = await frame.getByTestId('comment-component');
+        await expect(comments).toHaveCount(1);
+        await expect(comments.nth(0)).toContainText('Hidden for members');
+    });
+    
     test('updates in-reply-to snippets when hiding', async ({page}) => {
         mockedApi.addComment({
             id: '1',
