@@ -1,18 +1,8 @@
-import {Locator, Page} from '@playwright/test';
+import {Page} from '@playwright/test';
+import {BasePage} from '../BasePage';
 
-export default class PublicPage {
-    protected pageUrl:string;
-    private readonly page: Page;
-    public readonly body: Locator;
-
+export default class PublicPage extends BasePage{
     constructor(page: Page) {
-        this.page = page;
-        this.pageUrl = '/';
-        this.body = page.locator('body');
-    }
-
-    async goto(url = null) {
-        const urlToVisit = url || this.pageUrl;
-        await this.page.goto(urlToVisit);
+        super(page, '/');
     }
 }
