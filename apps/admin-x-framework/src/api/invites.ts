@@ -1,4 +1,5 @@
-import {Meta, createMutation, createQuery} from '../utils/api/hooks';
+import { InfiniteData } from '@tanstack/react-query';
+import {Meta, createMutation, createInfiniteQuery} from '../utils/api/hooks';
 
 export interface UserInvite {
     created_at: string;
@@ -18,10 +19,26 @@ export interface InvitesResponseType {
 
 const dataType = 'InvitesResponseType';
 
-export const useBrowseInvites = createQuery<InvitesResponseType>({
+export const useBrowseInvites = createInfiniteQuery<InvitesResponseType & {isEnd: boolean}>({
     dataType,
     path: '/invites/',
-    permissions: ['Owner', 'Administrator']
+    permissions: ['Owner', 'Administrator'],
+    defaultSearchParams: {limit: '100', include: 'roles'},
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<InvitesResponseType>;
+        const invites = pages.flatMap(page => page.invites);
+        const meta = pages[pages.length - 1].meta;
+
+        return {
+            invites,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const useAddInvite = createMutation<InvitesResponseType, {email: string, roleId: string}>({
