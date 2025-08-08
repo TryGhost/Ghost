@@ -1,6 +1,7 @@
 const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 
 const utils = require('../../../../../core/server/data/migrations/utils');
 
@@ -699,6 +700,171 @@ describe('migrations/utils/settings', function () {
             should.equal(allSettingsAtStart.length, 0, 'No settings in place at the start');
             should.equal(allSettingsAfterUp.length, 0, 'No settings were removed');
             should.equal(allSettingsAfterDown.length, 0, 'No settings were restored');
+        });
+    });
+});
+
+async function setupNullableTestDb() {
+    const knex = Knex({
+        client: 'sqlite3',
+        connection: {
+            filename: ':memory:'
+        },
+        useNullAsDefault: true
+    });
+
+    // Create test table with mixed nullable/not-nullable columns
+    await knex.raw(`
+        CREATE TABLE test_nullable_migration (
+            id INTEGER PRIMARY KEY,
+            nullable_col TEXT NULL,
+            not_nullable_col TEXT NOT NULL,
+            mixed_col TEXT NOT NULL
+        );
+    `);
+
+    // Insert test data
+    await knex('test_nullable_migration').insert({
+        id: 1,
+        nullable_col: 'test',
+        not_nullable_col: 'required',
+        mixed_col: 'data'
+    });
+
+    return knex;
+}
+
+// Helper function to check column nullable status for SQLite
+async function checkColumnNullable(table, column, knex) {
+    const response = await knex.raw(`PRAGMA table_info(??)`, [table]);
+    const columnInfo = response.find(col => col.name === column);
+    return columnInfo ? columnInfo.notnull === 0 : null;
+}
+
+describe('migrations/utils/schema nullable functions', function () {
+    describe('createSetNullableMigration', function () {
+        it('Sets a not-nullable column to nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createSetNullableMigration('test_nullable_migration', 'not_nullable_col');
+
+            should.ok(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
+
+            // Verify initial state - column should be not nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableInitial, false, 'Column should initially be not nullable');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            // Verify column is now nullable
+            const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableAfter, true, 'Column should be nullable after up migration');
+
+            // Test down migration
+            await runDownMigration();
+            const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNullableAfterDown, false, 'Column should be not nullable after down migration');
+
+            await knex.destroy();
+        });
+
+        it('Skips setting nullable when column is already nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createSetNullableMigration('test_nullable_migration', 'nullable_col');
+
+            // Verify initial state - column should already be nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+
+            // Spy on logging to verify skip message
+            const logSpy = sinon.spy(logging, 'warn');
+
+            try {
+                const runDownMigration = await runUpMigration(knex, migration);
+
+                should.ok(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+
+                // Column should still be nullable
+                const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+                should.equal(isNullableAfter, true, 'Column should still be nullable');
+
+                await runDownMigration();
+            } finally {
+                logSpy.restore();
+
+                await knex.destroy();
+            }
+        });
+    });
+
+    describe('createDropNullableMigration', function () {
+        it('Drops nullable from a nullable column', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createDropNullableMigration('test_nullable_migration', 'nullable_col');
+
+            should.ok(migration.config.transaction, 'createDropNullableMigration creates a transactional migration');
+
+            // Verify initial state - column should be nullable
+            const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+
+            const runDownMigration = await runUpMigration(knex, migration);
+
+            // Verify column is now not nullable
+            const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNotNullableAfter, false, 'Column should be not nullable after up migration');
+
+            // Test down migration (should set back to nullable)
+            await runDownMigration();
+            const isNullableAfterDown = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            should.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
+
+            await knex.destroy();
+        });
+
+        it('Skips dropping nullable when column is already not nullable', async function () {
+            const knex = await setupNullableTestDb();
+
+            const migration = utils.createDropNullableMigration('test_nullable_migration', 'not_nullable_col');
+
+            // Verify initial state - column should already be not nullable
+            const isNotNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+            should.equal(isNotNullableInitial, false, 'Column should initially be not nullable');
+
+            // Spy on logging to verify skip message
+            const logSpy = sinon.spy(require('@tryghost/logging'), 'warn');
+
+            try {
+                const runDownMigration = await runUpMigration(knex, migration);
+
+                should.ok(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+
+                // Column should still be not nullable
+                const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+                should.equal(isNotNullableAfter, false, 'Column should still be not nullable');
+
+                await runDownMigration();
+            } finally {
+                logSpy.restore();
+
+                await knex.destroy();
+            }
+        });
+    });
+
+    describe('helper functions', function () {
+        it('Nullable status detection works correctly', async function () {
+            const knex = await setupNullableTestDb();
+
+            const nullableResult = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
+            const notNullableResult = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
+
+            should.equal(nullableResult, true, 'Should identify nullable column correctly');
+            should.equal(notNullableResult, false, 'Should identify not nullable column correctly');
+
+            await knex.destroy();
         });
     });
 });
