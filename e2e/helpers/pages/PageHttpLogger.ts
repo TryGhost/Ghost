@@ -1,7 +1,7 @@
 import {Page, Response, Request} from '@playwright/test';
 import {ConsoleMessage} from 'playwright-core';
 
-export class PageErrorLogger {
+export class PageNetworkLogger {
     private page: Page;
 
     constructor(page: Page) {
