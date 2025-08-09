@@ -83,7 +83,7 @@ async function signin({data, api, state}) {
 
     try {
         const integrityToken = await api.member.getIntegrityToken();
-        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken});
+        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken, locale: state.locale});
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -105,7 +105,7 @@ async function signup({data, state, api}) {
 
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data});
+            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, locale: state.locale});
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -511,6 +511,7 @@ async function oneClickSubscribe({data: {siteUrl}, state}) {
         email: member.email,
         autoRedirect: false,
         integrityToken,
+        locale: state.locale,
         customUrlHistory: state.site.outbound_link_tagging ? [
             {
                 time: Date.now(),
