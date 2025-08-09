@@ -1,6 +1,6 @@
 // import AudienceSelect from './components/AudienceSelect';
 import Feedback from './components/Feedback';
-import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/KpiCard';
+import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardMoreButton, KpiCardValue} from '../components/KpiCard';
 import PostAnalyticsContent from '../components/PostAnalyticsContent';
 import PostAnalyticsHeader from '../components/PostAnalyticsHeader';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, Input, LucideIcon, Separator, SimplePagination, SimplePaginationNavigation, SimplePaginationNextButton, SimplePaginationPreviousButton, SkeletonTable, formatNumber, formatPercentage, useSimplePagination} from '@tryghost/shade';
@@ -281,41 +281,81 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                             :
                             <CardContent className='p-0'>
                                 <div className={`grid ${chartHeaderClass} items-stretch border-b`}>
-                                    <KpiCard className='relative grow p-3 md:p-6'>
-                                        {/* <FunnelArrow /> */}
-                                        <KpiCardLabel>
+                                    <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
+                                        <KpiCardMoreButton onClick={() => {
+                                            const params = new URLSearchParams({
+                                                filterParam: `emails.post_id:${postId}`,
+                                                postAnalytics: postId
+                                            });
+                                            navigate(`/members?${params.toString()}`, {crossApp: true});
+                                        }}>
+                                            View members &rarr;
+                                        </KpiCardMoreButton>
+                                        <KpiCardLabel onClick={() => {
+                                            const params = new URLSearchParams({
+                                                filterParam: `emails.post_id:${postId}`,
+                                                postAnalytics: postId
+                                            });
+                                            navigate(`/members?${params.toString()}`, {crossApp: true});
+                                        }}>
                                             <div className='ml-0.5 size-[9px] rounded-full bg-chart-purple !text-sm opacity-50 lg:text-base'></div>
-                                            {/* <LucideIcon.Send strokeWidth={1.5} /> */}
                                     Sent
                                         </KpiCardLabel>
                                         <KpiCardContent>
-                                            <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.sent)}</KpiCardValue>
+                                            <KpiCardValue className='text-xl leading-none sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.sent)}</KpiCardValue>
                                         </KpiCardContent>
                                     </KpiCard>
 
                                     {emailTrackOpensEnabled &&
-                                        <KpiCard className='relative grow p-3 md:p-6'>
-                                            {/* <FunnelArrow /> */}
-                                            <KpiCardLabel>
+                                        <KpiCard className='p-3 md:px-6 md:py-5'>
+                                            <KpiCardMoreButton onClick={() => {
+                                                const params = new URLSearchParams({
+                                                    filterParam: `opened_emails.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            }}>
+                                                View members &rarr;
+                                            </KpiCardMoreButton>
+                                            <KpiCardLabel onClick={() => {
+                                                const params = new URLSearchParams({
+                                                    filterParam: `opened_emails.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-blue !text-sm opacity-50 lg:text-base'></div>
-                                                {/* <LucideIcon.Eye strokeWidth={1.5} /> */}
-                                        Opened
+                                                Opened
                                             </KpiCardLabel>
                                             <KpiCardContent>
-                                                <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.opened)}</KpiCardValue>
+                                                <KpiCardValue className='text-xl leading-none sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.opened)}</KpiCardValue>
                                             </KpiCardContent>
                                         </KpiCard>
                                     }
 
                                     {emailTrackClicksEnabled &&
-                                        <KpiCard className='relative grow p-3 md:p-6'>
-                                            <KpiCardLabel>
+                                        <KpiCard className='group relative isolate grow p-3 md:px-6 md:py-5'>
+                                            <KpiCardMoreButton onClick={() => {
+                                                const params = new URLSearchParams({
+                                                    filterParam: `clicked_links.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            }}>
+                                                View members &rarr;
+                                            </KpiCardMoreButton>
+                                            <KpiCardLabel onClick={() => {
+                                                const params = new URLSearchParams({
+                                                    filterParam: `clicked_links.post_id:${postId}`,
+                                                    postAnalytics: postId
+                                                });
+                                                navigate(`/members?${params.toString()}`, {crossApp: true});
+                                            }}>
                                                 <div className='ml-0.5 size-[9px] rounded-full bg-chart-teal !text-sm opacity-50 lg:text-base'></div>
-                                                {/* <LucideIcon.MousePointer strokeWidth={1.5} /> */}
-                                        Clicked
+                                                Clicked
                                             </KpiCardLabel>
                                             <KpiCardContent>
-                                                <KpiCardValue className='text-xl sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.clicked)}</KpiCardValue>
+                                                <KpiCardValue className='text-xl leading-none sm:text-2xl md:text-[2.6rem]'>{formatNumber(stats.clicked)}</KpiCardValue>
                                             </KpiCardContent>
                                         </KpiCard>
                                     }
