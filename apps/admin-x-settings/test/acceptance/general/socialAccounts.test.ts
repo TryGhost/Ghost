@@ -1,3 +1,4 @@
+import {FB_ERRORS} from '../../../src/utils/socialUrls/facebook';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, testUrlValidation, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
@@ -6,7 +7,7 @@ test.describe('Social account settings', async () => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
             editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
-                {key: 'facebook', value: 'fb'},
+                {key: 'facebook', value: 'fb123'},
                 {key: 'twitter', value: '@tw'}
             ])}
         }});
@@ -19,18 +20,18 @@ test.describe('Social account settings', async () => {
         await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/ghost');
         await expect(section.getByLabel('URL of your X profile')).toHaveValue('https://x.com/ghost');
 
-        await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb');
+        await section.getByLabel(`URL of your publication's Facebook Page`).fill('https://www.facebook.com/fb123');
         await section.getByLabel('URL of your X profile').fill('https://x.com/tw');
 
         await section.getByRole('button', {name: 'Save'}).click();
 
         // Check updated values in input fields
-        await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/fb');
+        await expect(section.getByLabel(`URL of your publication's Facebook Page`)).toHaveValue('https://www.facebook.com/fb123');
         await expect(section.getByLabel('URL of your X profile')).toHaveValue('https://x.com/tw');
 
         expect(lastApiRequests.editSettings?.body).toEqual({
             settings: [
-                {key: 'facebook', value: 'fb'},
+                {key: 'facebook', value: 'fb123'},
                 {key: 'twitter', value: '@tw'}
             ]
         });
@@ -63,26 +64,22 @@ test.describe('Social account settings', async () => {
 
         await testUrlValidation(
             facebookInput,
-            'ab99',
-            'https://www.facebook.com/ab99'
+            'fb123',
+            'https://www.facebook.com/fb123'
         );
 
         await testUrlValidation(
             facebookInput,
-            'page/ab99',
-            'https://www.facebook.com/page/ab99'
-        );
-
-        await testUrlValidation(
-            facebookInput,
-            'page/*(&*(%%))',
-            'https://www.facebook.com/page/*(&*(%%))'
+            'page/fb123',
+            '',
+            FB_ERRORS.INVALID_USERNAME
         );
 
         await testUrlValidation(
             facebookInput,
             'facebook.com/pages/some-facebook-page/857469375913?ref=ts',
-            'https://www.facebook.com/pages/some-facebook-page/857469375913?ref=ts'
+            '',
+            FB_ERRORS.INVALID_URL
         );
 
         await testUrlValidation(
@@ -95,14 +92,21 @@ test.describe('Social account settings', async () => {
             facebookInput,
             'http://github.com/username',
             '',
-            'The URL must be in a format like https://www.facebook.com/yourPage'
+            FB_ERRORS.INVALID_URL
+        );
+
+        await testUrlValidation(
+            facebookInput,
+            'page/*(&*(%%))',
+            '',
+            FB_ERRORS.INVALID_USERNAME
         );
 
         await testUrlValidation(
             facebookInput,
             'http://github.com/pages/username',
             '',
-            'The URL must be in a format like https://www.facebook.com/yourPage'
+            FB_ERRORS.INVALID_URL
         );
 
         const twitterInput = section.getByLabel('URL of your X profile');
