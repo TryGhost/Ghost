@@ -127,3 +127,65 @@ export function mapPostToActivity(post: Post): Activity {
         to: ''
     };
 }
+
+export function mapActivityToPost(activity: Activity): Post {
+    const object = activity.object;
+    const actor = activity.actor;
+    const attributedTo = object.attributedTo;
+
+    return {
+        id: object.id,
+        type: object.type === 'Article' ? PostType.Article : PostType.Note,
+        title: object.name || '',
+        excerpt: object.preview?.content || '',
+        summary: object.summary || null,
+        content: object.content || '',
+        url: object.url || '',
+        featureImageUrl: object.image || null,
+        publishedAt: new Date(object.published || '').toISOString(),
+        likeCount: 0,
+        likedByMe: object.liked || false,
+        replyCount: object.replyCount || 0,
+        readingTimeMinutes: 0,
+        attachments: object.attachment || [],
+        author: {
+            id: attributedTo.id,
+            handle: getAccountHandle(
+                new URL(attributedTo.id).host,
+                attributedTo.preferredUsername
+            ),
+            name: attributedTo.name || '',
+            url: attributedTo.id,
+            avatarUrl: attributedTo.icon?.url || '',
+            followedByMe: attributedTo.followedByMe || false
+        },
+        authoredByMe: object.authored || false,
+        repostCount: object.repostCount || 0,
+        repostedByMe: object.reposted || false,
+        repostedBy:
+            activity.type === 'Announce'
+                ? {
+                    id: actor.id,
+                    handle: getAccountHandle(
+                        new URL(actor.id).host,
+                        actor.preferredUsername
+                    ),
+                    name: actor.name || '',
+                    url: actor.id,
+                    avatarUrl: actor.icon?.url || '',
+                    followedByMe: actor.followedByMe || false
+                }
+                : null
+    };
+}
+
+/**
+ * Compute the handle for an account from the provided host and username
+ *
+ * @param host Host of the site the account belongs to
+ * @param username Username of the account
+ */
+export function getAccountHandle(host?: string, username?: string) {
+    return `@${username || 'unknown'}@${host?.replace(/^www\./, '') || 'unknown'}`;
+}
+
