@@ -803,7 +803,7 @@ jobs:
     name: E2E tests
     env:
       CI: true
-      database__client: mysql
+      database__client: mysql2
       database__connection__host: localhost
       database__connection__port: 3306
       database__connection__user: ghost
