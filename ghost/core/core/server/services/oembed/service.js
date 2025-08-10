@@ -19,7 +19,13 @@ const twitter = new Twitter({
     }
 });
 
+const Amazon = require('./AmazonOEmbedProvider');
+const amazon = new Amazon({
+    config: {}
+});
+
 oembed.registerProvider(nft);
 oembed.registerProvider(twitter);
+oembed.registerProvider(amazon);
 
 module.exports = oembed;
