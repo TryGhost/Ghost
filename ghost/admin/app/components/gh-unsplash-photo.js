@@ -48,10 +48,6 @@ export default class GhUnsplashPhoto extends Component {
         this.height = this.width * this.args.photo.ratio;
     }
 
-    get isTouchDevice() {
-        return window.matchMedia('(pointer: coarse)').matches;
-    }
-
     @action
     select(event) {
         event.preventDefault();
@@ -62,13 +58,16 @@ export default class GhUnsplashPhoto extends Component {
     @action
     zoom(event) {
         const {target} = event;
-        const isOverlayButtonClick = GhUnsplashPhoto.OVERLAY_BUTTON_SELECTORS.some(selector => target.closest(selector));                           
+        const isOverlayButtonClick = GhUnsplashPhoto.OVERLAY_BUTTON_SELECTORS.some(selector => target.closest(selector));
+        const isMobileViewport = window.matchMedia('(max-width: 540px)').matches;
+        const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
+        const shouldNotZoom = isMobileViewport || isTouchDevice;
 
-        if (this.isTouchDevice && isOverlayButtonClick) {
+        if (shouldNotZoom && isOverlayButtonClick) {
             return;
         }
 
-        if (this.isTouchDevice) {
+        if (shouldNotZoom) {
             event.stopPropagation();
             event.preventDefault();
             return;
