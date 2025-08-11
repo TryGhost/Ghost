@@ -45,6 +45,7 @@ module.exports = {
                 }
 
                 this.packageConfig[`adminXActivitypubCustomUrl`] = 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js';
+                this.packageConfig[`adminXActivitypubRemoteConfigUrl`] = '/.ghost/activitypub/stable/client-config';
             }
 
             return this.packageConfig;
