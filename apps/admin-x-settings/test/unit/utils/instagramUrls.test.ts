@@ -13,6 +13,7 @@ describe('Instagram URL validation', () => {
         assert.equal(validateInstagramUrl('instagram.com/john_smith_123'), 'https://www.instagram.com/john_smith_123');
         assert.equal(validateInstagramUrl('@johnsmith'), 'https://www.instagram.com/johnsmith');
         assert.equal(validateInstagramUrl('johnsmith'), 'https://www.instagram.com/johnsmith');
+        assert.equal(validateInstagramUrl('john_smith_'), 'https://www.instagram.com/john_smith_');
     });
 
     it('should reject URLs from other domains', () => {
