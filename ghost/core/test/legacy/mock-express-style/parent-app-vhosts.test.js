@@ -17,7 +17,7 @@ describe('Integration - Web - vhosts', function () {
 
     after(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         sinon.restore();
     });
 
@@ -37,7 +37,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -144,7 +144,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -296,7 +296,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
