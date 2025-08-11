@@ -18,7 +18,7 @@ describe('api/endpoints/content/posts', function () {
 
     afterEach(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
     });
 
     const validKey = localUtils.getValidKey();
