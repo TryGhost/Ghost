@@ -52,6 +52,11 @@ export class LoginPage extends BasePage {
   private loginButton = this.page.locator('[data-testid="login-button"]');
   private errorMessage = this.page.locator('[data-testid="login-error"]');
 
+  constructor(page: Page) {
+      super(page);
+      this.pageUrl = '/login';
+  }
+  
   async login(email: string, password: string) {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
