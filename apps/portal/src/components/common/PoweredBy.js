@@ -10,7 +10,7 @@ export default class PoweredBy extends React.Component {
         // want it to be translated
         /* eslint-disable i18next/no-literal-string */
         return (
-            <a href='https://ghost.org' target='_blank' rel='noopener noreferrer'>
+            <a href='https://ghost.org' target='_blank' rel='noopener noreferrer' data-test-powered-by>
                 <GhostLogo />
                 Powered by Ghost
             </a>
