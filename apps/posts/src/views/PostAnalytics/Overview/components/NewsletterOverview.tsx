@@ -15,11 +15,12 @@ interface NewsletterOverviewProps {
 const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewsletterStatsLoading, isWebShown}) => {
     const {postId} = useParams();
     const navigate = useNavigate();
-    const getIsSmallViewport = () => Math.max(document.documentElement.clientWidth || 0, window.innerWidth || 0) < 600;
+    const getIsSmallViewport = () => window.matchMedia('(max-width: 600px)').matches;
     const [isSmallViewport, setIsSmallViewport] = useState(() => getIsSmallViewport());
 
     useEffect(() => {
         const handleResize = () => {
+            console.log('vp: ' + getIsSmallViewport());
             setIsSmallViewport(getIsSmallViewport());
         };
 
