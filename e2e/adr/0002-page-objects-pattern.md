@@ -74,18 +74,20 @@ export class LoginPage extends BasePage {
 }
 
 // In test file
-test('user sees error with invalid credentials', async ({ page }) => {
-  // Arrange
-  const loginPage = new LoginPage(page);
+test.describe('Login', () => {
+    test('invalid credentials', async ({page}) => {
+        // Arrange
+        const loginPage = new LoginPage(page);
 
-  // Act
-  await loginPage.goto();
-  await loginPage.login('invalid@email.com', 'wrongpassword');
-  const errorElement = await loginPage.waitForErrorMessage();
+        // Act
+        await loginPage.goto();
+        await loginPage.login('invalid@email.com', 'wrongpassword');
+        const errorElement = await loginPage.waitForErrorMessage();
 
-  // Assert
-  await expect(errorElement).toHaveText('Invalid credentials');
-});
+        // Assert
+        await expect(errorElement).toHaveText('Invalid credentials');
+    });
+}
 ```
 
 ## References
