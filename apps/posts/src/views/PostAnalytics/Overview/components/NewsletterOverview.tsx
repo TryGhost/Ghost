@@ -20,7 +20,6 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
 
     useEffect(() => {
         const handleResize = () => {
-            console.log('vp: ' + getIsSmallViewport());
             setIsSmallViewport(getIsSmallViewport());
         };
 
