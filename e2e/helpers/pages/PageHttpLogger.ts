@@ -21,16 +21,16 @@ export class PageHttpLogger {
 
     private onResponse = (response: Response) => {
         if (response.status() >= 400) {
-            this.logError(`HTTP ERROR: ${response.status()} ${response.url()}`);
+            this.logError(`ERROR - HTTP: ${response.status()} ${response.url()}`);
         }
     };
 
     private onRequestFailed = (request: Request) => {
-        this.logError(`NETWORK FAILURE: ${request.method()} ${request.url()} - ${request.failure()?.errorText}`);
+        this.logError(`ERROR - NETWORK: ${request.method()} ${request.url()} - ${request.failure()?.errorText}`);
     };
 
     private onPageError = (error: Error) => {
-        this.logError(`JS ERROR: ${error.message}`);
+        this.logError(`ERROR - JS: ${error.message}`);
     };
 
     private logError = (message: string) => {
