@@ -3,6 +3,7 @@ import {Locator, Page} from '@playwright/test';
 
 export class BasePage {
     private logger?: PageHttpLogger;
+    private readonly debugLogs = process.env.E2E_DEBUG_LOGS;
 
     protected pageUrl: string = '';
     protected readonly page: Page;
@@ -25,7 +26,7 @@ export class BasePage {
     }
 
     private isDebugEnabled(): boolean {
-        const value = process.env.E2E_DEBUG_LOGS;
-        return value === 'true' || value === '1';
+        const logsEnvValue = this.debugLogs;
+        return logsEnvValue === 'true' || logsEnvValue === '1';
     }
 }
