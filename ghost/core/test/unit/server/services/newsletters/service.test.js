@@ -81,6 +81,10 @@ describe('NewslettersService', function () {
         mockManager.restore();
     });
 
+    after(async function () {
+        await urlUtils.restore();
+    });
+
     describe('read', function () {
         let findOneStub;
         beforeEach(function () {
