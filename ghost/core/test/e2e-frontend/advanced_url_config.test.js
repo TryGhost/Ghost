@@ -30,7 +30,7 @@ describe('Advanced URL Configurations', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             mockManager.restore();
         });
 
@@ -102,7 +102,6 @@ describe('Advanced URL Configurations', function () {
 
     describe('Subdirectory config: /ghost/ redirects with separate admin', function () {
         before(async function () {
-            await urlUtils.restore();
             configUtils.set('url', 'http://localhost/blog/');
             configUtils.set('admin:redirects', true);
             configUtils.set('admin:url', 'http://admin.localhost/');
@@ -112,6 +111,7 @@ describe('Advanced URL Configurations', function () {
         });
 
         after(async function () {
+            await urlUtils.restore();
             await configUtils.restore();
             await testUtils.startGhost();
             request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
