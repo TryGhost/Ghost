@@ -980,7 +980,7 @@ jobs:
       - name: Latest v5 Release
         run: |
           DIR=$(mktemp -d)
-          ghost install v5 local -d $DIR
+          ghost install v5 --local -d $DIR
           ghost update -d $DIR --archive $(pwd)/ghost/core/ghost.tgz
 
       - name: Print debug logs
