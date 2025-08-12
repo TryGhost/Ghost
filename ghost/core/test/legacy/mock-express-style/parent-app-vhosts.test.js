@@ -202,6 +202,7 @@ describe('Integration - Web - vhosts', function () {
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
@@ -216,6 +217,7 @@ describe('Integration - Web - vhosts', function () {
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
                     response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
