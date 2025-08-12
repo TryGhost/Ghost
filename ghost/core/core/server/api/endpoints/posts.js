@@ -267,7 +267,7 @@ const controller = {
     bulkDestroy: {
         statusCode: 200,
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         options: [
             'filter'
@@ -276,6 +276,18 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
+            const postsToDelete = await models.Post.findAll({
+                filter: frame.options.filter,
+                status: 'all'
+            });
+
+            const allDraft = postsToDelete.every((post) => {
+                return post.get('status') === 'draft';
+            });
+            if (!allDraft) {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+
             return await postsService.bulkDestroy(frame.options);
         }
     },
@@ -283,7 +295,7 @@ const controller = {
     destroy: {
         statusCode: 204,
         headers: {
-            cacheInvalidate: true
+            cacheInvalidate: false
         },
         options: [
             'include',
@@ -302,7 +314,16 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
+        async query(frame) {
+            const post = await models.Post.findOne({
+                id: frame.options.id,
+                status: 'all'
+            }, {require: false});
+
+            if (post && post.get('status') !== 'draft') {
+                frame.setHeader('X-Cache-Invalidate', '/*');
+            }
+
             return models.Post.destroy({...frame.options, require: true});
         }
     },
