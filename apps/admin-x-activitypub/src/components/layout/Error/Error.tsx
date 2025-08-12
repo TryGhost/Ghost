@@ -4,7 +4,7 @@ import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyVie
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useRouteError} from 'react-router';
 
-const Error = ({statusCode}: {statusCode?: number}) => {
+const Error = ({statusCode, errorCode}: {statusCode?: number, errorCode?: string}) => {
     const routeError = useRouteError();
     const navigate = useNavigate();
 
@@ -39,6 +39,21 @@ const Error = ({statusCode}: {statusCode?: number}) => {
     }
 
     if (statusCode === 403) {
+        // API-related 403 errors (ROLE_MISSING, SITE_MISSING) indicate misconfiguration
+        if (errorCode === 'ROLE_MISSING' || errorCode === 'SITE_MISSING') {
+            return (
+                <EmptyViewIndicator className='mt-[50vh] -translate-y-1/2'>
+                    <EmptyViewIcon><LucideIcon.Settings /></EmptyViewIcon>
+                    <H4 className='-mb-4'>Site not configured correctly</H4>
+                    <div>This feature can&apos;t be used because the site isn&apos;t set up correctly. If you manage this site, check your settings or server logs, or contact support.</div>
+                    <Button asChild>
+                        <a href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a>
+                    </Button>
+                </EmptyViewIndicator>
+            );
+        }
+
+        // Infrastructure-level 403 errors (account suspended)
         return (
             <EmptyViewIndicator className='mt-[50vh] -translate-y-1/2'>
                 <EmptyViewIcon><LucideIcon.Ban /></EmptyViewIcon>

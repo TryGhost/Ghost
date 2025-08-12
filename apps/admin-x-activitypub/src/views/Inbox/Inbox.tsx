@@ -12,7 +12,7 @@ const Inbox: React.FC = () => {
     const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
 
     if (error && isApiError(error)) {
-        return <Error statusCode={error.statusCode}/>;
+        return <Error errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
     return <InboxList
