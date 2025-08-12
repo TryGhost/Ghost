@@ -209,7 +209,7 @@ describe('Default Frontend routing', function () {
             });
 
             it('/ghost/api/settings/site/ should NOT redirect', async function () {
-                await request.get('/ghost/')
+                await request.get('/ghost/api/settings/site/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(assertCorrectFrontendHeaders);
