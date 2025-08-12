@@ -98,50 +98,47 @@ describe('Advanced URL Configurations', function () {
                     .expect('Cache-Control', testUtils.cacheRules.noCache);
             });
         });
+    });
 
-        describe('/ghost/ redirects with separate admin', function () {
-            before(async function () {
-                // TODO: fix urlUtils.restore to be async and await configUtils.restore
-                urlUtils.restore(); // this also restores configUtils so needs to happen first
-                await configUtils.restore(); // urlUtils.restore() doesn't await configUtils.restore() despite it being a Promise
-                configUtils.set('url', 'http://localhost/blog/');
-                configUtils.set('admin:redirects', true);
-                configUtils.set('admin:url', 'http://localhost:9999/');
-                urlUtils.stubUrlUtilsFromConfig();
-                await testUtils.startGhost();
-                request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
-            });
+    describe('Subdirectory config: /ghost/ redirects with separate admin', function () {
+        before(async function () {
+            await urlUtils.restore();
+            configUtils.set('url', 'http://localhost/blog/');
+            configUtils.set('admin:redirects', true);
+            configUtils.set('admin:url', 'http://localhost:9999/');
+            urlUtils.stubUrlUtilsFromConfig();
+            await testUtils.startGhost();
+            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+        });
 
-            after(async function () {
-                await configUtils.restore();
-                await testUtils.startGhost();
-                request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
-            });
+        after(async function () {
+            await configUtils.restore();
+            await testUtils.startGhost();
+            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+        });
 
-            it('/blog/ghost should redirect to external admin SPA', async function () {
-                await request.get('/blog/ghost')
-                    .expect(301)
-                    .expect('Location', 'http://localhost:9999/blog/ghost/');
-            });
+        it('/blog/ghost should redirect to external admin SPA', async function () {
+            await request.get('/blog/ghost')
+                .expect(301)
+                .expect('Location', 'http://localhost:9999/blog/ghost/');
+        });
 
-            it('/blog/ghost/ should redirect to external admin SPA', async function () {
-                await request.get('/blog/ghost/')
-                    .expect(301)
-                    .expect('Location', 'http://localhost:9999/blog/ghost/');
-            });
+        it('/blog/ghost/ should redirect to external admin SPA', async function () {
+            await request.get('/blog/ghost/')
+                .expect(301)
+                .expect('Location', 'http://localhost:9999/blog/ghost/');
+        });
 
-            it('/blog/ghost/api/admin/posts/ should redirect to external admin API route', async function () {
-                await request.get('/blog/ghost/api/admin/posts/')
-                    .expect(301)
-                    .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/posts/');
-            });
+        it('/blog/ghost/api/admin/posts/ should redirect to external admin API route', async function () {
+            await request.get('/blog/ghost/api/admin/posts/')
+                .expect(301)
+                .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/posts/');
+        });
 
-            // NOTE: this uses middleware.publicAdminApi which has an explicit redirect outside of normal vhost setup
-            it('/blog/ghost/api/admin/site/ should redirect to external admin API route', async function () {
-                await request.get('/blog/ghost/api/admin/site/')
-                    .expect(301)
-                    .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/site/');
-            });
+        it('/blog/ghost/api/admin/site/ should redirect to external admin API route', async function () {
+            await request.get('/blog/ghost/api/admin/site/')
+                .expect(301)
+                .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/site/');
         });
     });
 });

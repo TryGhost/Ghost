@@ -246,9 +246,16 @@ describe('Default Frontend routing', function () {
                     .expect(assertCorrectFrontendHeaders);
             });
 
-            it('/ghost/api/settings/site/ should redirect to external admin API route', async function () {
-                await request.get('/ghost/api/settings/site/')
-                    .expect('Location', 'http://localhost:9999/ghost/api/settings/site/')
+            it('/ghost/api/admin/site/ (known path) should redirect to external admin API route', async function () {
+                await request.get('/ghost/api/admin/site/')
+                    .expect('Location', 'http://localhost:9999/ghost/api/admin/site/')
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+
+            it('/ghost/api/new-endpoint/ (unknown path) should redirect to external admin API route', async function () {
+                await request.get('/ghost/api/new-endpoint/')
+                    .expect('Location', 'http://localhost:9999/ghost/api/new-endpoint/')
                     .expect(301)
                     .expect(assertCorrectFrontendHeaders);
             });
