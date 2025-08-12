@@ -105,7 +105,7 @@ describe('Advanced URL Configurations', function () {
             await urlUtils.restore();
             configUtils.set('url', 'http://localhost/blog/');
             configUtils.set('admin:redirects', true);
-            configUtils.set('admin:url', 'http://localhost:9999/');
+            configUtils.set('admin:url', 'http://admin.localhost/');
             urlUtils.stubUrlUtilsFromConfig();
             await testUtils.startGhost();
             request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
@@ -120,25 +120,25 @@ describe('Advanced URL Configurations', function () {
         it('/blog/ghost should redirect to external admin SPA', async function () {
             await request.get('/blog/ghost')
                 .expect(301)
-                .expect('Location', 'http://localhost:9999/blog/ghost/');
+                .expect('Location', 'http://admin.localhost/blog/ghost/');
         });
 
         it('/blog/ghost/ should redirect to external admin SPA', async function () {
             await request.get('/blog/ghost/')
                 .expect(301)
-                .expect('Location', 'http://localhost:9999/blog/ghost/');
+                .expect('Location', 'http://admin.localhost/blog/ghost/');
         });
 
         it('/blog/ghost/api/admin/posts/ should redirect to external admin API route', async function () {
             await request.get('/blog/ghost/api/admin/posts/')
                 .expect(301)
-                .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/posts/');
+                .expect('Location', 'http://admin.localhost/blog/ghost/api/admin/posts/');
         });
 
         it('/blog/ghost/api/admin/site/ should redirect to external admin API route', async function () {
             await request.get('/blog/ghost/api/admin/site/')
                 .expect(301)
-                .expect('Location', 'http://localhost:9999/blog/ghost/api/admin/site/');
+                .expect('Location', 'http://admin.localhost/blog/ghost/api/admin/site/');
         });
     });
 });
