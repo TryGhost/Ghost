@@ -5,7 +5,7 @@ Proposed
 
 ## Context
 
-Our Plawright tests currently interact directly with page elements using raw selectors and actions scattered throughout test files. This approach leads to several issues:
+Our Playwright tests currently interact directly with page elements using raw selectors and actions scattered throughout test files. This approach leads to several issues:
 
 - **Code duplication**: The same selectors and interactions are repeated across multiple tests
 - **Maintenance burden**: When UI changes, we need to update selectors in many places
@@ -20,10 +20,12 @@ The Page Objects pattern was originally described by [Martin Fowler](https://mar
 
 We will adopt the Page Objects pattern for organizing E2E tests. Every page or major UI component should have a corresponding page object class that:
 
-1. **Encapsulates selectors**: All element selectors are defined in one place
+1. **Encapsulates locators**: All element selectors are defined in one place
 2. **Provides semantic methods**: Expose high-level actions like `login()`, `createPost()`, `navigateToSettings()`
 3. **Abstracts implementation details**: Tests interact with business concepts, not DOM elements
 4. **Centralizes page-specific logic**: Complex interactions and waits are handled within page objects
+5. **Assertions live in test files**: Page Objects may include readiness guards (e.g., locator.waitFor({state: 'visible'})) before actions, business assertions (expect(...)) should be in tests
+6. **Expose semantic locators, hide selectors**: Page Objects should surface public readonly Locators for tests to assert on, while keeping selector strings and construction internal
 
 ## Guidelines
 
@@ -37,7 +39,10 @@ Following both [Fowler's original principles](https://martinfowler.com/bliki/Pag
 - ✅ **Chain related actions** in fluent interfaces where it makes sense
 - ✅ **Keep assertions in test files** - page objects should return data/elements, tests should assert
 - ✅ **Handle concurrency issues** within page objects (async operations, loading states)
-- 🚫 **Avoid exposing raw selectors** - "If you have WebDriver APIs in your test methods, You're Doing It Wrong" - Simon Stewart
+- ✅ **Expose Locators (read-only), not raw selector strings.** You can tests assert against public locators (since Playwright encourages it, with helpers on assertion) - "If you have WebDriver APIs in your test methods, You're Doing It Wrong" - Simon Stewart
+- ✅ **Keep locator construction private**
+- ✅ **Selector priority: Prefer getByRole / getByLabel / data-testid over CSS or XPath.** Add data-testid attributes where needed for stability
+- ✅ **Use guards, not assertions, in POM**: prefer locator.waitFor({state:'visible'})
 - 🚫 **Don't include expectations/assertions** in page object methods (following Fowler's recommendation)
 - 🚫 **Don't make page objects too granular** - focus on user workflows, not individual elements
 - 📁 **Organize in `/e2e/helpers/pages/` directory** with clear naming conventions
@@ -47,10 +52,10 @@ Following both [Fowler's original principles](https://martinfowler.com/bliki/Pag
 ```ts
 // e2e/helpers/pages/admin/LoginPage.ts
 export class LoginPage extends BasePage {
-  private emailInput = this.page.locator('[data-testid="email-input"]');
-  private passwordInput = this.page.locator('[data-testid="password-input"]');
-  private loginButton = this.page.locator('[data-testid="login-button"]');
-  private errorMessage = this.page.locator('[data-testid="login-error"]');
+  public readonly emailInput = this.page.locator('[data-testid="email-input"]');
+  public readonly passwordInput = this.page.locator('[data-testid="password-input"]');
+  public readonly loginButton = this.page.locator('[data-testid="login-button"]');
+  public readonly errorMessage = this.page.locator('[data-testid="login-error"]');
 
   constructor(page: Page) {
       super(page);
@@ -82,10 +87,10 @@ test.describe('Login', () => {
         // Act
         await loginPage.goto();
         await loginPage.login('invalid@email.com', 'wrongpassword');
-        const errorElement = await loginPage.waitForErrorMessage();
+        const errorMessage = await loginPage.waitForErrorMessage();
 
         // Assert
-        await expect(errorElement).toHaveText('Invalid credentials');
+        await expect(errorMessage).toHaveText('Invalid credentials');
     });
 }
 ```
