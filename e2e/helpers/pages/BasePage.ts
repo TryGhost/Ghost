@@ -9,7 +9,7 @@ export class BasePage {
     protected readonly page: Page;
     public readonly body: Locator;
 
-    constructor(page: Page, pageUrl: string) {
+    constructor(page: Page, pageUrl: string = '') {
         this.page = page;
         this.pageUrl = pageUrl;
         this.body = page.locator('body');

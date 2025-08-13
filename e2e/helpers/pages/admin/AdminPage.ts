@@ -3,7 +3,7 @@ import {Page} from '@playwright/test';
 
 class AdminPage extends BasePage {
     constructor(page: Page) {
-        super(page, '/ghost/#/analytics');
+        super(page, '/ghost');
     }
 }
 

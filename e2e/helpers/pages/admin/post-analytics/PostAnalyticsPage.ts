@@ -2,7 +2,7 @@ import {Locator, Page} from '@playwright/test';
 import AdminPage from '../AdminPage';
 
 class GrowthSection extends AdminPage {
-    private section: Locator;
+    private readonly section: Locator;
     private readonly viewMoreButton: Locator;
 
     constructor(page: Page) {
