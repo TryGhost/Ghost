@@ -91,13 +91,8 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
         return hasOtherOption ? options : [...options, otherOption];
     }, [options, otherOption]);
 
-    // Check if current value is custom (for determining display mode)
-    const isCurrentlyCustomValue = selectedValue &&
-        !options.some(opt => opt.value === selectedValue) &&
-        selectedValue !== otherOption.value;
-    
     // Determine if we're in custom input mode
-    const showCustomInput = isOtherSelected || isCurrentlyCustomValue;
+    const showCustomInput = isOtherSelected || isInitiallyCustomValue;
 
     // Prepare common props
     const hasError = error || !!validationError;
