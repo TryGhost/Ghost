@@ -44,7 +44,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
+        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
@@ -152,7 +152,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                     <div className={metricClassName} onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
-                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
+                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground' data-testid='latest-post-visitors'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
                                                 Visitors
@@ -175,7 +175,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         )
                                     } onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
-                                    }}>
+                                    }} data-testid='latest-post-members'>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>Members</span>
