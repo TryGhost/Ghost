@@ -6,10 +6,12 @@ export class AnalyticsWebTrafficPage extends AdminPage {
     public readonly totalUniqueVisitorsTab: Locator;
     private readonly webGraph: Locator;
 
-    private readonly topContentCard: Locator;
-    private readonly postsAndPagesButton: Locator;
-    private readonly postsButton: Locator;
-    private readonly pagesButton: Locator;
+    public readonly topContentCard: Locator;
+    public readonly postsAndPagesButton: Locator;
+    public readonly postsButton: Locator;
+    public readonly pagesButton: Locator;
+
+    public readonly topSourcesCard: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -24,6 +26,8 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.postsAndPagesButton = this.topContentCard.getByRole('tab', {name: 'Posts & pages'});
         this.postsButton = this.topContentCard.getByRole('tab', {name: 'Posts', exact: true});
         this.pagesButton = this.topContentCard.getByRole('tab', {name: 'Pages', exact: true});
+
+        this.topSourcesCard = page.getByTestId('top-sources-card');
     }
 
     async totalViewsContent() {
