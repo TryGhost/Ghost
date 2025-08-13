@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
     timeout: 30 * 1000,
@@ -12,7 +15,30 @@ const config = {
         trace: 'retain-on-failure',
         browserName: 'chromium'
     },
-    testDir: './tests'
+    testDir: './tests',
+    projects: [
+        // Main tests - run after setup with authentication
+        {
+            name: 'test',
+
+            testIgnore: '**/auth.setup.ts', // Exclude setup files
+            use: {
+                baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
+                trace: 'retain-on-failure',
+                browserName: 'chromium',
+                // Use authentication state for all tests by default
+                storageState: 'playwright/.auth/user.json',
+                testDir: './tests'
+            },
+            dependencies: ['setup']
+        },
+        // Setup project - runs first
+        {
+            name: 'setup',
+            testMatch: /.*\.setup\.ts/,
+            testDir: './tests'
+        }      
+    ]
 };
 
 export default config;
