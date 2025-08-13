@@ -13,6 +13,7 @@
     "prepare": "tsc",
     "test": "playwright test",
     "test:types": "tsc --noEmit",
+    "test:setauth": "npx playwright test --project=setup",
     "lint": "eslint helpers --ext .ts --cache"
   },
   "files": [
@@ -22,7 +23,8 @@
     "@playwright/test": "1.54.1",
     "c8": "10.1.3",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "dotenv": "^16.6.1"
   },
   "dependencies": {}
 }
