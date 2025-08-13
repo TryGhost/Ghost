@@ -1,9 +1,10 @@
+import {appConfig} from '../utils/appConfig';
 import {PageHttpLogger} from './PageHttpLogger';
 import {Locator, Page} from '@playwright/test';
 
 export class BasePage {
     private logger?: PageHttpLogger;
-    private readonly debugLogs = process.env.E2E_DEBUG_LOGS;
+    private readonly debugLogs = appConfig.debugLogs;
 
     protected pageUrl: string = '';
     protected readonly page: Page;
@@ -26,7 +27,6 @@ export class BasePage {
     }
 
     private isDebugEnabled(): boolean {
-        const logsEnvValue = this.debugLogs;
-        return logsEnvValue === 'true' || logsEnvValue === '1';
+        return this.debugLogs;
     }
 }
