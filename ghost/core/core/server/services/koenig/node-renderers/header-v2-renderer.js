@@ -90,12 +90,26 @@ function emailTemplate(nodeData, options) {
         `
         <div class="kg-header-card kg-v2${hasDarkBg ? ' kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                <table role="presentation" border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
+                        <td align="center" class="kg-header-card-image" style="padding:0; mso-padding-alt:0;">
+                        <!--[if gte mso 9]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false"
+                                style="width:${nodeData.backgroundImageWidth || 600}px;height:${nodeData.backgroundImageHeight || 320}px;">
+                            <v:fill type="frame" src="${nodeData.backgroundImageSrc}" color="${nodeData.backgroundColor}" />
+                            <v:textbox inset="0,0,0,0">
+                        <![endif]-->
+                
+                        <div style="${splitImageStyle}; background-repeat:no-repeat; width:100%; max-width:${nodeData.backgroundImageWidth || 600}px; height:${nodeData.backgroundImageHeight || 320}px;"></div>
+                
+                        <!--[if gte mso 9]>
+                            </v:textbox>
+                        </v:rect>
+                        <![endif]-->
+                        </td>
                     </tr>
                 </table>
-            ` : ''}
+          ` : ''}
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
                 <tr>
                     <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
