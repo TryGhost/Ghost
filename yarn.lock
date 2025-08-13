@@ -20223,10 +20223,10 @@ human-interval@^2.0.0:
   dependencies:
     numbered "^1.1.0"
 
-human-number@2.0.4:
-  version "2.0.4"
-  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.4.tgz#345b1f5bc34a3559c04da06af5eb5588b42f2732"
-  integrity sha512-OENvA941poJU1VGR6s5Nf/GpYNPE+81lmHkIVLO9FgiyHxB+BSlVOJV3lnItk5tfHzcEbZv3kTQrzpZK0+ExRA==
+human-number@2.0.5:
+  version "2.0.5"
+  resolved "https://registry.yarnpkg.com/human-number/-/human-number-2.0.5.tgz#886da5a90c5332d3ff636ac48a1a0a1eb32a916b"
+  integrity sha512-qIlAmv3oMJnsu13tdG1P7kWSAF/pbzpDrSH63FFLfPpLNWW794NsVccXXA+sG89+D6YtzJMOFKCz7Tj3NkR4zA==
   dependencies:
     round-to "~5.0.0"
 
