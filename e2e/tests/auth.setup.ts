@@ -10,12 +10,12 @@ function authFileExists() {
     if (existsSync(authFile)) {
         try {
             const authData = JSON.parse(readFileSync(authFile, 'utf8'));
-            if (authData.cookies && authData.cookies.length > 0) {
-                console.log('✅ Valid auth file exists, skipping authentication');
+            const authDataCookiesPresent = authData.cookies && authData.cookies.length > 0;
+
+            if (authDataCookiesPresent) {
                 return true;
             }
         } catch (error) {
-            console.log('🔄 Auth file exists but is invalid, re-authenticating...');
             return false;
         }
     }

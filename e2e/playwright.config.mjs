@@ -21,7 +21,7 @@ const config = {
         {
             name: 'test',
 
-            testIgnore: '**/auth.setup.ts', // Exclude setup files
+            testIgnore: ['**/auth.setup.ts'], // Exclude setup files
             use: {
                 baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
                 trace: 'retain-on-failure',
