@@ -1,5 +1,5 @@
 import {test as setup, expect} from '@playwright/test';
-import {LoginPage} from '../helpers/pages/admin';
+import {AnalyticsOverviewPage, LoginPage} from '../helpers/pages/admin';
 import * as path from 'node:path';
 import {existsSync, readFileSync} from 'fs';
 
@@ -30,8 +30,10 @@ setup('authenticate', async ({page}) => {
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.signIn(process.env.E2E_ACCOUNT_USERNAME || '', process.env.E2E_ACCOUNT_PASSWORD || '');
-    await page.waitForURL('**/ghost/#/**');
-    console.log('After waitForURL:', page.url());
+
+    // waiting for page to be loaded, before storing the credentials
+    const analyticsPage = new AnalyticsOverviewPage(page);
+    await expect(analyticsPage.header).toBeVisible();
 
     await page.context().storageState({path: authFile});
 });
