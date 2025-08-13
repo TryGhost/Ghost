@@ -151,8 +151,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
                                     <div className={metricClassName} onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
-                                    }}>
-                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground' data-testid='latest-post-visitors'>
+                                    }} data-testid='latest-post-visitors'>
+                                        <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
                                                 Visitors
