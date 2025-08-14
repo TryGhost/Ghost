@@ -7,3 +7,4 @@ export * from './analytics/post-analytics/PostAnalyticsPage';
 export * from './analytics/post-analytics/PostAnalyticsGrowthPage';
 export * from './LoginPage';
 export * from './AdminPage';
+export * from './MembersPage';

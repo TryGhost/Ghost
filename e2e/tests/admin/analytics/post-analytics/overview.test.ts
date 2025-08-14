@@ -4,6 +4,7 @@ import {
     PostAnalyticsPage, 
     PostAnalyticsGrowthPage
 } from '../../../../helpers/pages/admin';
+import { PostAnalyticsWebTrafficPage } from '../../../../helpers/pages/admin/analytics/post-analytics/PostAnalyticsWebTrafficPage';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
     let analyticsOverviewPage: AnalyticsOverviewPage;
@@ -27,9 +28,16 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         await expect(postAnalyticsPage.growthSection.card).toContainText('0');
     });
 
+    test('empty page - overview - web performance - view more', async ({page}) => {
+        const postAnalyticsPage = new PostAnalyticsPage(page);
+        await postAnalyticsPage.growthSection.viewMoreButton.click();
+
+        const postAnalyticsWebTrafficPage = new PostAnalyticsWebTrafficPage(page);
+        await expect(postAnalyticsWebTrafficPage.body).toContainText('No sources data available');
+    });
+
     test('empty page - overview - growth - view more', async ({page}) => {
         const postAnalyticsPage = new PostAnalyticsPage(page);
-
         await postAnalyticsPage.growthSection.viewMoreButton.click();
 
         const postAnalyticsGrowthPage = new PostAnalyticsGrowthPage(page);

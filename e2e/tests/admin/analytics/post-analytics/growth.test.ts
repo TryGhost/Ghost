@@ -2,7 +2,8 @@ import {test, expect} from '@playwright/test';
 import {
     AnalyticsOverviewPage, 
     PostAnalyticsPage, 
-    PostAnalyticsGrowthPage
+    PostAnalyticsGrowthPage,
+    MembersPage
 } from '../../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Post Analytics - Growth', () => {
@@ -17,6 +18,18 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         await postAnalyticsPage.growthButton.click();
 
         postAnalyticsPageGrowthPage = new PostAnalyticsGrowthPage(page);
+    });
+
+    test('members card', async ({}) => {
+        await expect(postAnalyticsPageGrowthPage.membersCard).toContainText('Free members');
+        await expect(postAnalyticsPageGrowthPage.membersCard).toContainText('0');
+    });
+
+    test('members card - view member', async ({page}) => {
+        await postAnalyticsPageGrowthPage.viewMemberButton.click();
+
+        const membersPage = new MembersPage(page);
+        await expect(membersPage.body).toContainText('No members match');
     });
 
     test('top sources card', async ({}) => {

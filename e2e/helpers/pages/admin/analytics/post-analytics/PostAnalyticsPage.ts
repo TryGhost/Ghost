@@ -14,12 +14,16 @@ class GrowthSection extends AdminPage {
 }
 
 class WebPerformanceSection extends AdminPage {
+    public readonly card: Locator;
     public readonly uniqueVisitors: Locator;
+    public readonly viewMoreButton: Locator;
 
     constructor(page: Page) {
         super(page);
 
-        this.uniqueVisitors = this.page.getByTestId('unique-visitors');
+        this.card = this.page.getByTestId('web-performance');
+        this.uniqueVisitors = this.card.getByTestId('unique-visitors');
+        this.viewMoreButton = this.card.getByRole('button', {name: 'View more'});
     }
 }
 
