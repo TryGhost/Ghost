@@ -149,9 +149,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
-                                    <div className={metricClassName} onClick={() => {
+                                    <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
-                                    }} data-testid='latest-post-visitors'>
+                                    }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.Globe size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>
@@ -173,9 +173,9 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
                                             (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics)) && 'row-[2/3] col-[1/2]'
                                         )
-                                    } onClick={() => {
+                                    } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
-                                    }} data-testid='latest-post-members'>
+                                    }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
                                             <LucideIcon.UserPlus size={16} strokeWidth={1.25} />
                                             <span className='hidden md:!visible md:!block'>Members</span>
