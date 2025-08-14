@@ -1,12 +1,12 @@
 const hbs = require('express-hbs');
 const _ = require('lodash');
 const tpl = require('@tryghost/tpl');
+const path = require('path');
 const sentry = require('../../../shared/sentry');
 
 const config = require('../../../shared/config');
 const renderer = require('../../services/rendering');
 
-// @TODO: make this properly shared code
 const {prepareError, prepareErrorCacheControl, prepareStack} = require('@tryghost/mw-error-handler');
 
 const messages = {
@@ -36,10 +36,10 @@ const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasErro
 
 const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
     // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
+    // OR the requst path has an extension
     // Skip trying to render an HTML error, and move on to the basic error renderer
     // We do this because customised 404 templates could reference the image that's missing
-    // A better long term solution might be to do this based on extension
-    if (err.code === 'STATIC_FILE_NOT_FOUND') {
+    if (err.code === 'STATIC_FILE_NOT_FOUND' || path.extname(req.path)) {
         return next(err);
     }
 
@@ -57,7 +57,6 @@ const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
 
     // It can be that something went wrong with the theme or otherwise loading handlebars
     // This ensures that no matter what res.render will work here
-    // @TODO: split the error handler for assets, admin & theme to refactor this away
     if (_.isEmpty(req.app.engines)) {
         res._template = 'error';
         req.app.engine('hbs', createHbsEngine());
