@@ -1,5 +1,8 @@
 const moment = require('moment');
 
+// Import centralized date utilities
+const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
+
 // Source normalization mapping - consolidated from frontend apps
 const SOURCE_NORMALIZATION_MAP = new Map([
     // Social Media Consolidation
@@ -252,17 +255,15 @@ class ReferrersStatsService {
 
     /**
      * Fetch MRR sources with date range
-     * @param {string} startDate 
-     * @param {string} endDate 
+     * @param {Object} options
      * @returns {Promise<MrrCountStatDate[]>}
      **/
-    async fetchMrrSourcesWithRange(startDate, endDate) {
+    async fetchMrrSourcesWithRange(options) {
         const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
         
         // Join subscription created events with paid subscription events to get MRR changes
-        const rows = await knex('members_subscription_created_events as msce')
+        let query = knex('members_subscription_created_events as msce')
             .join('members_paid_subscription_events as mpse', function () {
                 this.on('msce.member_id', '=', 'mpse.member_id')
                     .andOn('msce.subscription_id', '=', 'mpse.subscription_id');
@@ -270,12 +271,15 @@ class ReferrersStatsService {
             .select(knex.raw(`DATE(msce.created_at) as date`))
             .select(knex.raw(`SUM(mpse.mrr_delta) as mrr`))
             .select(knex.raw(`msce.referrer_source as source`))
-            .where('msce.created_at', '>=', startDateTime)
-            .where('msce.created_at', '<=', endDateTime)
             .where('mpse.mrr_delta', '>', 0) // Only positive MRR changes (new subscriptions)
             .whereNotNull('msce.referrer_source') // Only entries with attribution
             .groupBy('date', 'msce.referrer_source')
             .orderBy('date');
+            
+        // Apply centralized date filtering
+        applyDateFilter(query, startDateTime, endDateTime, 'msce.created_at');
+        
+        const rows = await query;
 
         return rows;
     }
@@ -283,14 +287,12 @@ class ReferrersStatsService {
     /**
      * Fetch deduplicated member counts by source with date range
      * Returns both free signups (excluding those who converted) and paid conversions
-     * @param {string} startDate 
-     * @param {string} endDate 
+     * @param {Object} options
      * @returns {Promise<{source: string, signups: number, paid_conversions: number}[]>}
      **/
-    async fetchMemberCountsBySource(startDate, endDate) {
+    async fetchMemberCountsBySource(options) {
         const knex = this.knex;
-        const startDateTime = moment.utc(startDate).startOf('day').format('YYYY-MM-DD HH:mm:ss');
-        const endDateTime = moment.utc(endDate).endOf('day').format('YYYY-MM-DD HH:mm:ss');
+        const {dateFrom: startDateTime, dateTo: endDateTime} = getDateBoundaries(options);
         
         // Query 1: Free members who haven't converted to paid within the same time window
         const freeSignupsQuery = knex('members_created_events as mce')
@@ -302,18 +304,20 @@ class ReferrersStatsService {
                     .andOn('msce.created_at', '>=', knex.raw('?', [startDateTime]))
                     .andOn('msce.created_at', '<=', knex.raw('?', [endDateTime]));
             })
-            .where('mce.created_at', '>=', startDateTime)
-            .where('mce.created_at', '<=', endDateTime)
             .whereNull('msce.id')
             .groupBy('mce.referrer_source');
+            
+        // Apply date filtering to the main query
+        applyDateFilter(freeSignupsQuery, startDateTime, endDateTime, 'mce.created_at');
 
         // Query 2: Paid conversions
         const paidConversionsQuery = knex('members_subscription_created_events as msce')
             .select('msce.referrer_source as source')
             .select(knex.raw('COUNT(DISTINCT msce.member_id) as paid_conversions'))
-            .where('msce.created_at', '>=', startDateTime)
-            .where('msce.created_at', '<=', endDateTime)
             .groupBy('msce.referrer_source');
+            
+        // Apply date filtering to the paid conversions query
+        applyDateFilter(paidConversionsQuery, startDateTime, endDateTime, 'msce.created_at');
 
         // Execute both queries in parallel
         const [freeResults, paidResults] = await Promise.all([
@@ -353,17 +357,21 @@ class ReferrersStatsService {
     /**
      * Return aggregated attribution sources for a date range, grouped by source only (not by date)
      * This is used for "Top Sources" tables that need server-side sorting
-     * @param {string} startDate - Start date in YYYY-MM-DD format
-     * @param {string} endDate - End date in YYYY-MM-DD format
-     * @param {string} [orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
-     * @param {number} [limit=50] - Maximum number of sources to return
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
+     * @param {string} [options.orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
+     * @param {number} [options.limit=50] - Maximum number of sources to return
      * @returns {Promise<{data: AttributionCountStatWithMrr[], meta: {}}>}
      */
-    async getTopSourcesWithRange(startDate, endDate, orderBy = 'signups desc', limit = 50) {
+    async getTopSourcesWithRange(options = {}) {
+        const {orderBy = 'signups desc', limit = 50} = options;
+        
         // Get deduplicated member counts and MRR data in parallel
         const [memberCounts, mrrEntries] = await Promise.all([
-            this.fetchMemberCountsBySource(startDate, endDate),
-            this.fetchMrrSourcesWithRange(startDate, endDate)
+            this.fetchMemberCountsBySource(options),
+            this.fetchMrrSourcesWithRange(options) 
         ]);
 
         // Aggregate by source (not by date + source)

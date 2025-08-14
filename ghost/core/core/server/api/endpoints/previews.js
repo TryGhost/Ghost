@@ -19,6 +19,7 @@ const _addMemberContextToFrame = async (frame) => {
     // only set apiType when given a member_status to preserve backwards compatibility
     // where we used to serve "Admin API" content with no gating for all previews
     frame.apiType = 'content';
+    frame.isPreview = true;
 
     frame.original ??= {};
     frame.original.context ??= {};
