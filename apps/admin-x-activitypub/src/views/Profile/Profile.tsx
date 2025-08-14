@@ -146,7 +146,7 @@ const Profile: React.FC<ProfileProps> = ({}) => {
     }, [params.handle, refetch]);
 
     if (accountError && isApiError(accountError) && accountError.statusCode !== 404) {
-        return <Error statusCode={accountError.statusCode} />;
+        return <Error errorCode={accountError.code} statusCode={accountError.statusCode} />;
     }
 
     const customFields = Object.keys(account?.customFields || {}).map((key) => {
