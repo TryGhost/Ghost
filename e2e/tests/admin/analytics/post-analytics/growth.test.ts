@@ -19,7 +19,7 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         postAnalyticsPageGrowthPage = new PostAnalyticsGrowthPage(page);
     });
 
-    test('top sources card', async ({page}) => {
+    test('top sources card', async ({}) => {
         await expect(postAnalyticsPageGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
 });
