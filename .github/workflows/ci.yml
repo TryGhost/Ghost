@@ -5,7 +5,7 @@ on:
   push:
     branches:
       - main
-      - 'v5.*'
+      - 'v[0-9]+.*'
       - '5.x'
       - '6.x'
 
