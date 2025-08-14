@@ -2,7 +2,7 @@ import {test as setup, expect} from '@playwright/test';
 import {AnalyticsOverviewPage, LoginPage} from '../helpers/pages/admin';
 import * as path from 'node:path';
 import {existsSync, readFileSync} from 'fs';
-import { appConfig } from '../helpers/utils/appConfig';
+import { appConfig } from '../helpers/utils/app-config';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 

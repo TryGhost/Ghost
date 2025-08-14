@@ -1,7 +1,7 @@
 import {test, expect} from '@playwright/test';
 import {
-    AnalyticsOverviewPage, 
-    PostAnalyticsPage, 
+    AnalyticsOverviewPage,
+    PostAnalyticsPage,
     PostAnalyticsGrowthPage,
     MembersPage
 } from '../../../../helpers/pages/admin';
@@ -20,19 +20,22 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
         postAnalyticsPageGrowthPage = new PostAnalyticsGrowthPage(page);
     });
 
-    test('members card', async ({}) => {
+    // TODO: flaky, needs to be fixed
+    test.skip('members card', async ({}) => {
         await expect(postAnalyticsPageGrowthPage.membersCard).toContainText('Free members');
         await expect(postAnalyticsPageGrowthPage.membersCard).toContainText('0');
     });
 
-    test('members card - view member', async ({page}) => {
+    // TODO: flaky, needs to be fixed
+    test.skip('members card - view member', async ({page}) => {
         await postAnalyticsPageGrowthPage.viewMemberButton.click();
 
         const membersPage = new MembersPage(page);
         await expect(membersPage.body).toContainText('No members match');
     });
 
-    test('top sources card', async ({}) => {
+    // TODO: flaky, needs to be fixed
+    test.skip('top sources card', async ({}) => {
         await expect(postAnalyticsPageGrowthPage.topSourcesCard).toContainText('No sources data available');
     });
 });

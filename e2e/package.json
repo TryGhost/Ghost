@@ -15,7 +15,8 @@
     "test:parallel": "playwright test --workers=8",
     "test:types": "tsc --noEmit",
     "test:setauth": "npx playwright test --project=setup",
-    "lint": "eslint helpers --ext .ts --cache"
+    "lint": "eslint helpers --ext .ts --cache",
+    "setup:user": "ts-node helpers/utils/setup-user.ts"
   },
   "files": [
     "build"
@@ -27,5 +28,7 @@
     "typescript": "5.8.3",
     "dotenv": "^16.6.1"
   },
-  "dependencies": {}
+  "dependencies": {
+     "@tryghost/logging": "2.4.23"
+  }
 }

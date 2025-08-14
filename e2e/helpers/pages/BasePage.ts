@@ -1,4 +1,4 @@
-import {appConfig} from '../utils/appConfig';
+import {appConfig} from '../utils/app-config';
 import {PageHttpLogger} from './PageHttpLogger';
 import {Locator, Page} from '@playwright/test';
 
