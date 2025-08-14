@@ -17,7 +17,7 @@ describe('Integration - Web - vhosts', function () {
 
     after(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         sinon.restore();
     });
 
@@ -37,7 +37,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -144,7 +144,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -191,7 +191,7 @@ describe('Integration - Web - vhosts', function () {
                 });
         });
 
-        it('404s the api on configured url', function () {
+        it('redirects the api on configured url', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -201,11 +201,12 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
-        it('404s the api on localhost', function () {
+        it('redirects the api on localhost', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -215,7 +216,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    response.statusCode.should.eql(301);
+                    response.headers.location.should.eql(`https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
@@ -296,7 +298,7 @@ describe('Integration - Web - vhosts', function () {
 
         after(async function () {
             await configUtils.restore();
-            urlUtils.restore();
+            await urlUtils.restore();
             sinon.restore();
         });
 
@@ -305,6 +307,20 @@ describe('Integration - Web - vhosts', function () {
                 secure: false,
                 method: 'GET',
                 url: '/ghost/',
+                host: 'example.com'
+            };
+
+            return localUtils.mockExpress.invoke(app, req)
+                .then(function (response) {
+                    response.statusCode.should.eql(404);
+                });
+        });
+
+        it('404s the api on configured url', function () {
+            const req = {
+                secure: false,
+                method: 'GET',
+                url: `${ADMIN_API_URL}/site/`,
                 host: 'example.com'
             };
 

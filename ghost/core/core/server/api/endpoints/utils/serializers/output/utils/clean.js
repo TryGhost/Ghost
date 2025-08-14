@@ -82,7 +82,9 @@ const post = (attrs, frame) => {
     const fields = frame && frame.original && frame.original.query && frame.original.query.fields || null;
 
     if (localUtils.isContentAPI(frame)) {
-        delete attrs.status;
+        if (!localUtils.isPreview(frame)) {
+            delete attrs.status;
+        }
         delete attrs.email_only;
         delete attrs.newsletter;
         delete attrs.email_segment;

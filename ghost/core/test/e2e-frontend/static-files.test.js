@@ -15,11 +15,30 @@ describe('Static files', function () {
         await ghostServer.stop();
     });
 
-    it('serves unstyled 404 for non-existing resized + original files', async function () {
+    it('serves plain text 404 for non-existing resized + original files', async function () {
         const response = await frontendAgent
             .get('/content/images/size/w2000/1995/12/daniel.jpg')
-            .expect(404);
+            .expect(404)
+            .expect('Content-Type', 'text/plain; charset=utf-8');
 
-        assert.ok(response.text.includes('NotFoundError: Image not found'));
+        assert.equal(response.text, 'Image not found');
+    });
+
+    it('returns plain text 404 for non-existing asset files with extensions', async function () {
+        const response = await frontendAgent
+            .get('/assets/css/missing.css')
+            .expect(404)
+            .expect('Content-Type', 'text/plain; charset=utf-8');
+
+        assert.equal(response.text, 'File not found');
+    });
+
+    it('returns plain text 404 for non-existing arbitrary files with extensions', async function () {
+        const response = await frontendAgent
+            .get('/images/fake.png')
+            .expect(404)
+            .expect('Content-Type', 'text/plain; charset=utf-8');
+
+        assert.equal(response.text, 'File not found');
     });
 });

@@ -195,6 +195,7 @@ export interface PaginatedPostsResponse {
 export type ApiError = {
     message: string;
     statusCode: number;
+    code?: string;
 };
 
 export const isApiError = (error: unknown): error is ApiError => {
@@ -258,6 +259,10 @@ export class ActivityPubAPI {
 
                 if (errorMessage) {
                     error.message = errorMessage;
+                }
+
+                if (json.code) {
+                    error.code = json.code;
                 }
             } catch {
                 // Leave the default message

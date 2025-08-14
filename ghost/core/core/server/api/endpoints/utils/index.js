@@ -40,5 +40,14 @@ module.exports = {
      */
     isInternal: (frame) => {
         return frame.options.context && frame.options.context.internal;
+    },
+
+    /**
+     * @description Returns true if the request is a preview request.
+     * @param {import('@tryghost/api-framework').Frame} frame
+     * @returns {boolean}
+     */
+    isPreview: (frame) => {
+        return frame.isPreview === true;
     }
 };

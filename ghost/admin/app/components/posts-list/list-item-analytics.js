@@ -7,6 +7,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class PostsListItemClicks extends Component {
     @service feature;
+    @service membersUtils;
     @service session;
     @service settings;
     @service postAnalytics;

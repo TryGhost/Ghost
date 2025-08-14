@@ -1,5 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
+const moment = require('moment-timezone');
 const PostsStatsService = require('../../../../../core/server/services/stats/PostsStatsService');
 
 /**
@@ -81,7 +82,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt,
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss'),
             source: 'member'
         });
     }
@@ -100,7 +101,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
 
         await db('members_paid_subscription_events').insert({
@@ -108,7 +109,7 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             subscription_id: subscriptionId,
             mrr_delta: mrr,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
     }
 
@@ -155,7 +156,7 @@ describe('PostsStatsService', function () {
             id: clickEventId,
             member_id: memberId,
             redirect_id: redirectId,
-            created_at: createdAt
+            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
         });
     }
 
@@ -417,8 +418,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post2', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getTopPosts({
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Only post1 should be returned since post2 has no events in the date range
@@ -428,8 +430,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getTopPosts({
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Both posts should be returned
@@ -585,8 +588,9 @@ describe('PostsStatsService', function () {
             await _createFreeSignupEvent('post1', 'member_future', 'referrer_future', thirtyDaysAgo);
 
             const lastFifteenDaysResult = await service.getReferrersForPost('post1', {
-                date_from: fifteenDaysAgo,
-                date_to: new Date()
+                date_from: moment(fifteenDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have the result for referrer_past
@@ -596,8 +600,9 @@ describe('PostsStatsService', function () {
 
             // Test filtering to include both dates
             const lastThirtyDaysResult = await service.getReferrersForPost('post1', {
-                date_from: sixtyDaysAgo,
-                date_to: new Date()
+                date_from: moment(sixtyDaysAgo).format('YYYY-MM-DD'),
+                date_to: moment().format('YYYY-MM-DD'),
+                timezone: 'UTC'
             });
 
             // Make sure we have results for both referrers
