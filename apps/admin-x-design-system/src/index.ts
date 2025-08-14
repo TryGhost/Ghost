@@ -42,6 +42,8 @@ export {default as Radio} from './global/form/Radio';
 export type {RadioProps} from './global/form/Radio';
 export {default as Select} from './global/form/Select';
 export type {LoadSelectOptions, SelectOption, SelectOptionGroup, SelectProps} from './global/form/Select';
+export {default as SelectWithOther} from './global/form/SelectWithOther';
+export type {SelectWithOtherProps} from './global/form/SelectWithOther';
 export {default as TextArea} from './global/form/TextArea';
 export type {TextAreaProps} from './global/form/TextArea';
 export {default as TextField} from './global/form/TextField';
