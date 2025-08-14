@@ -6,8 +6,7 @@ on:
     branches:
       - main
       - 'v[0-9]+.*'
-      - '5.x'
-      - '6.x'
+      - '[0-9]+.x'
 
 env:
   FORCE_COLOR: 1
