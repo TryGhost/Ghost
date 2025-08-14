@@ -18,6 +18,15 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         expect(membersCount).toContain('0');
     });
 
+    test('top posts', async ({page}) => {
+        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+        await analyticsOverviewPage.goto();
+
+        await expect(analyticsOverviewPage.topPosts.post).toBeVisible();
+        await expect(analyticsOverviewPage.topPosts.post).toContainText('Unique visitors0');
+        await expect(analyticsOverviewPage.topPosts.post).toContainText('Free0');
+    });
+
     test('view more unique visitors details', async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();

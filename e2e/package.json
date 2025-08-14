@@ -12,6 +12,7 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:parallel": "playwright test --workers=8",
     "test:types": "tsc --noEmit",
     "test:setauth": "npx playwright test --project=setup",
     "lint": "eslint helpers --ext .ts --cache"

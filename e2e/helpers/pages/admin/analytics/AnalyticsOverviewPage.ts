@@ -40,13 +40,24 @@ class LatestPost extends BasePage {
     }
 }
 
+class TopPosts extends BasePage {
+    public readonly post: Locator;
+    
+    constructor(page: Page) {
+        super(page);
+        this.post = page.getByTestId('top-posts');
+    }
+}
+
 export class AnalyticsOverviewPage extends AdminPage {
     public readonly header: Locator;
     private readonly uniqueVisitorsGraph: Locator;
     private readonly uniqueVisitorsViewMoreButton: Locator;
     private readonly membersGraph: Locator;
     private readonly membersViewMoreButton: Locator;
+    
     public readonly latestPost: LatestPost;
+    public readonly topPosts: TopPosts;
 
     constructor(page: Page) {
         super(page);
@@ -60,6 +71,7 @@ export class AnalyticsOverviewPage extends AdminPage {
         this.membersViewMoreButton = this.membersGraph.getByRole('button', {name: 'View more'});
 
         this.latestPost = new LatestPost(page);
+        this.topPosts = new TopPosts(page);
     }
 
     async viewMoreUniqueVisitorDetails() {
