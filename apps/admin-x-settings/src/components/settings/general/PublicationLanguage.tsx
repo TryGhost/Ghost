@@ -1,8 +1,11 @@
 import React from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
+import i18n from '@tryghost/i18n';
 import useSettingGroup from '../../../hooks/useSettingGroup';
-import {SettingGroupContent, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {SelectWithOther, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {validateLocale} from '../../../utils/localeValidation';
+import type {SelectOption} from '@tryghost/admin-x-design-system';
 
 const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {
@@ -13,7 +16,6 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleCancel,
         updateSetting,
         errors,
-        clearError,
         handleEditingChange
     } = useSettingGroup({
         onValidate: () => {
@@ -29,8 +31,17 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [publicationLanguage] = getSettingValues(localSettings, ['locale']) as string[];
 
-    const handleLanguageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        updateSetting('locale', e.target.value);
+    const localeOptions = React.useMemo(() => {
+        const options: SelectOption[] = i18n.LOCALE_DATA.map(locale => ({
+            value: locale.code,
+            label: `${locale.label} (${locale.code})`
+        }));
+
+        return options;
+    }, []);
+
+    const handleLanguageChange = (value: string) => {
+        updateSetting('locale', value);
         if (!isEditing) {
             handleEditingChange(true);
         }
@@ -58,14 +69,19 @@ const PublicationLanguage: React.FC<{ keywords: string[] }> = ({keywords}) => {
             onSave={handleSave}
         >
             <SettingGroupContent columns={1}>
-                <TextField
+                <SelectWithOther
+                    defaultListValue="en"
                     error={!!errors.publicationLanguage}
                     hint={errors.publicationLanguage || hint}
-                    placeholder="Site language"
-                    title='Site language'
-                    value={publicationLanguage}
-                    onChange={handleLanguageChange}
-                    onKeyDown={() => clearError('password')}
+                    options={localeOptions}
+                    otherHint="Enter a custom locale code."
+                    otherPlaceholder="e.g. pt-BR, sr-Cyrl, en"
+                    selectedValue={publicationLanguage}
+                    testId="locale-select"
+                    title="Site language"
+                    validate={validateLocale}
+                    isSearchable
+                    onSelect={handleLanguageChange}
                 />
             </SettingGroupContent>
         </TopLevelGroup>

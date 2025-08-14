@@ -24,6 +24,11 @@ export default defineConfig({
         // Shim node modules utilized by the @tryghost/nql package
         external: ["fs", "path", "util"],
     },
+    build: {
+        commonjsOptions: {
+            include: [/ghost\//, /node_modules/],
+        },
+    },
     test: {
         environment: "jsdom",
         globals: true,
