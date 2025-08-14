@@ -65,6 +65,9 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+      - tinybird__workspaceId=${TINYBIRD_WORKSPACE_ID:-}
+      - tinybird__adminToken=${TINYBIRD_ADMIN_TOKEN:-}
+      - tinybird__tracker__endpoint=${TINYBIRD_TRACKER_ENDPOINT:-http://localhost/.ghost/analytics/api/v1/page_hit}
 
   admin:
     <<: *service-template
@@ -152,6 +155,27 @@ services:
         - ping
       interval: 1s
       retries: 120
+  analytics:
+    profiles: [ analytics ]
+    image: ghost/traffic-analytics:edge
+    container_name: ghost-analytics
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    environment:
+      - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
+      - PROXY_TARGET=http://tinybird:7181/v0/events
+  tinybird:
+    profiles: [ analytics ]
+    image: tinybirdco/tinybird-local:latest
+    container_name: ghost-tinybird
+    ports:
+      - "7181:7181" # API
+
   prometheus:
     profiles: [ monitoring ]
     image: prom/prometheus:v2.55.1
