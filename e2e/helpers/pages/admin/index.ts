@@ -3,6 +3,7 @@ export * from './analytics/AnalyticsLocationsPage';
 export * from './analytics/AnalyticsOverviewPage';
 export * from './analytics/AnalyticsWebTrafficPage';
 export * from './analytics/AnalyticsNewslettersPage';
-export * from './post-analytics/PostAnalyticsPage';
+export * from './analytics/post-analytics/PostAnalyticsPage';
+export * from './analytics/post-analytics/PostAnalyticsGrowthPage';
 export * from './LoginPage';
 export * from './AdminPage';

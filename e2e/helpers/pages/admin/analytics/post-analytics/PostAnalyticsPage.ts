@@ -1,19 +1,15 @@
 import {Locator, Page} from '@playwright/test';
-import {AdminPage} from '../AdminPage';
+import {AdminPage} from '../../AdminPage';
 
 class GrowthSection extends AdminPage {
-    private readonly section: Locator;
-    private readonly viewMoreButton: Locator;
+    public readonly card: Locator;
+    public readonly viewMoreButton: Locator;
 
     constructor(page: Page) {
         super(page);
 
-        this.section = this.page.getByTestId('growth');
-        this.viewMoreButton = this.section.getByRole('button', {name: 'View more'});
-    }
-
-    async viewMore() {
-        await this.viewMoreButton.click();
+        this.card = this.page.getByTestId('growth');
+        this.viewMoreButton = this.card.getByRole('button', {name: 'View more'});
     }
 }
 
@@ -28,16 +24,16 @@ class WebPerformanceSection extends AdminPage {
 }
 
 export class PostAnalyticsPage extends AdminPage {
-    private readonly overviewButton: Locator;
-    private readonly webTrafficButton: Locator;
-    private readonly growthButton: Locator;
+    public readonly overviewButton: Locator;
+    public readonly webTrafficButton: Locator;
+    public readonly growthButton: Locator;
 
-    private readonly growthSection: GrowthSection;
-    private readonly webPerformanceSection: WebPerformanceSection;
+    public readonly growthSection: GrowthSection;
+    public readonly webPerformanceSection: WebPerformanceSection;
 
     constructor(page: Page) {
         super(page);
-        this.pageUrl = '/ghost/#/analytics/beta';
+        this.pageUrl = '/ghost/#/analytics';
 
         this.overviewButton = this.page.getByRole('button', {name: 'Overview'});
         this.webTrafficButton = this.page.getByRole('button', {name: 'Web traffic'});
