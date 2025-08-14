@@ -1,5 +1,5 @@
 import {Locator, Page} from '@playwright/test';
-import AdminPage from './AdminPage';
+import {AdminPage} from './AdminPage';
 
 // TODO: Remove this when start using the verification page
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

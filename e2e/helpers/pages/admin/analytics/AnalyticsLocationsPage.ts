@@ -1,5 +1,5 @@
 import {Page, Locator} from '@playwright/test';
-import AdminPage from '../AdminPage';
+import {AdminPage} from '../AdminPage';
 
 export class AnalyticsLocationsPage extends AdminPage {
     public readonly visitorsCard: Locator;

@@ -1,5 +1,9 @@
 import {test, expect} from '@playwright/test';
-import {AnalyticsOverviewPage, AnalyticsWebTrafficPage} from '../../../helpers/pages/admin';
+import {
+    AnalyticsOverviewPage, 
+    AnalyticsWebTrafficPage,
+    AnalyticsGrowthPage
+} from '../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Analytics Overview', () => {
     test('latest post', async ({page}) => {
@@ -22,6 +26,16 @@ test.describe('Ghost Admin - Analytics Overview', () => {
 
         const analyticsWebTrafficPage = new AnalyticsWebTrafficPage(page);
         await expect(analyticsWebTrafficPage.totalUniqueVisitorsTab).toBeVisible();
+    });
+
+    test('view more members details', async ({page}) => {
+        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
+        await analyticsOverviewPage.goto();
+
+        await analyticsOverviewPage.viewMoreMembersDetails();
+
+        const analyticsGrowthPage = new AnalyticsGrowthPage(page);
+        await expect(analyticsGrowthPage.totalMembersCard).toBeVisible();
     });
 });
 

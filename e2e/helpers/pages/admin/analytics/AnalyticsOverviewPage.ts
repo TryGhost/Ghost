@@ -1,5 +1,5 @@
 import {Locator, Page} from '@playwright/test';
-import AdminPage from '../AdminPage';
+import {AdminPage} from '../AdminPage';
 import {BasePage} from '../../BasePage';
 
 class LatestPost extends BasePage {
