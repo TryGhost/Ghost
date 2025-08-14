@@ -1,4 +1,5 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
+import Button from '../Button';
 import Select, {SelectOption, SelectProps} from './Select';
 import TextField from './TextField';
 
@@ -33,14 +34,20 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     ...restProps
 }) => {
     const {...selectProps} = restProps as Record<string, unknown>;
-    
-    // Check if the current value is a custom value (not in predefined options)
-    const isInitiallyCustomValue = selectedValue &&
+    const [isOtherSelected, setIsOtherSelected] = useState(false);
+    const [validationError, setValidationError] = useState<string | null>(null);
+
+    // Check if the current value is in the predefined options
+    const isCustomValue = selectedValue &&
         !options.some(opt => opt.value === selectedValue) &&
         selectedValue !== otherOption.value;
 
-    const [isOtherSelected, setIsOtherSelected] = useState(isInitiallyCustomValue);
-    const [validationError, setValidationError] = useState<string | null>(null);
+    // Initialize state based on current value
+    useEffect(() => {
+        if (isCustomValue) {
+            setIsOtherSelected(true);
+        }
+    }, [isCustomValue]);
 
     const handleSelectChange = (option: SelectOption | null) => {
         if (!option) {
@@ -92,7 +99,7 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
     }, [options, otherOption]);
 
     // Determine if we're in custom input mode
-    const showCustomInput = isOtherSelected || isInitiallyCustomValue;
+    const showCustomInput = isOtherSelected || isCustomValue;
 
     // Prepare common props
     const hasError = error || !!validationError;
@@ -103,12 +110,27 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
 
         return (
             <div className="relative">
+                {title && (
+                    <div className="mb-1.5 flex items-center justify-between">
+                        <label className="block text-sm font-medium text-black dark:text-white" htmlFor={testId}>
+                            {title}
+                        </label>
+                        <Button
+                            className="-mr-1 text-xs font-normal"
+                            color="green"
+                            label={backToListLabel}
+                            size="sm"
+                            link
+                            onClick={handleBackToList}
+                        />
+                    </div>
+                )}
                 <TextField
                     aria-describedby={`${testId}-hint`}
                     aria-label={title}
                     data-testid={testId}
                     error={hasError}
-                    hideTitle={!title}
+                    hideTitle={true}
                     hint={customInputHint}
                     id={testId}
                     placeholder={otherPlaceholder}
@@ -116,15 +138,6 @@ const SelectWithOther: React.FC<SelectWithOtherProps> = ({
                     value={selectedValue}
                     onChange={handleTextChange}
                 />
-                <div className="mt-2">
-                    <button
-                        className="text-xs text-green-400 hover:text-green-500"
-                        type="button"
-                        onClick={handleBackToList}
-                    >
-                        {backToListLabel}
-                    </button>
-                </div>
             </div>
         );
     }
