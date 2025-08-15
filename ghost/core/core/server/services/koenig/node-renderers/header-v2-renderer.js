@@ -93,12 +93,21 @@ function emailTemplate(nodeData, options) {
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image">
+                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
                             ${labs.isSet('emailHeaderCardOutlook') ? `
                             <!--[if mso]>
+                                ${nodeData.backgroundSize === 'contain' ? `<v:rect xmlns:v="urn:schemas-microsoft-com:vml"  stroke="false"
+                                style="width:600px;height:320px;">
+                                <v:fill type="frame"
+                                        aspect="atmost"
+                                        size="225pt,120pt"
+                                        src="${nodeData.backgroundImageSrc}"
+                                        color="${nodeData.backgroundColor}" />` : `
+                                
                                 <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" 
                                 style="width:600px;height:320px;">
                                     <v:fill type="frame" aspect="atleast" src="${nodeData.backgroundImageSrc}" color="${nodeData.backgroundColor}" />
+                                    `}
                                     <v:textbox inset="0,0,0,0">
                                     </v:textbox>
                                 </v:rect>
@@ -110,14 +119,19 @@ function emailTemplate(nodeData, options) {
             ` : ''}
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
                 <tr>
+                <!--[if mso]>
+                <td class="kg-header-card-content" style="${nodeData.layout !== 'split' ? 'padding: 0;' : 'padding: 40px;'}${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                <![endif]-->
+                <!--[if !mso]><!-- -->
+                <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                <!--<![endif]-->
                 ${labs.isSet('emailHeaderCardOutlook') && nodeData.layout !== 'split' && nodeData.backgroundImageSrc ? `
                 <!--[if mso]>
                 <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
                     <v:fill src="${nodeData.backgroundImageSrc}" color="${nodeData.backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
-                    <v:textbox inset="0,24pt,0,24pt" style="mso-fit-shape-to-text:true;">
+                    <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
                 <![endif]-->
                 ` : ''}
-                    <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                                 <td align="${nodeData.alignment}">
@@ -137,13 +151,15 @@ function emailTemplate(nodeData, options) {
                                 ` : ''}
                             </tr>
                         </table>
-                    </td>
                 ${labs.isSet('emailHeaderCardOutlook') && nodeData.layout !== 'split' && nodeData.backgroundImageSrc ? `
                 <!--[if mso]>
                     </v:textbox>
                 </v:rect>
                 <![endif]-->
                 ` : ''}
+                    <!--[if mso]></td><![endif]-->
+                    <!--[if !mso]><!-- --></td><!--<![endif]-->
+
                 </tr>
             </table>
         </div>
