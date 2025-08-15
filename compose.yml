@@ -7,6 +7,7 @@ x-service-template: &service-template
     - ${SSH_AUTH_SOCK}:/ssh-agent
     - ${HOME}/.gitconfig:/root/.gitconfig:ro
     - ${HOME}/.yalc:/root/.yalc
+    - /var/run/docker.sock:/var/run/docker.sock:ro
     - node_modules_yarn_lock_hash:/home/ghost/.yarnhash:delegated
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
@@ -55,6 +56,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      tinybird-local:
+        condition: service_healthy
+        required: false
+      analytics:
+        condition: service_healthy
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -65,9 +72,10 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
-      - tinybird__workspaceId=${TINYBIRD_WORKSPACE_ID:-}
-      - tinybird__adminToken=${TINYBIRD_ADMIN_TOKEN:-}
-      - tinybird__tracker__endpoint=${TINYBIRD_TRACKER_ENDPOINT:-http://localhost/.ghost/analytics/api/v1/page_hit}
+      - TB_HOST=${TB_HOST:-http://tinybird-local:7181}
+      - TB_LOCAL_HOST=${TB_LOCAL_HOST:-tinybird-local}
+      - tinybird__stats__endpoint=http://localhost:7181
+      - tinybird__tracker__endpoint=http://localhost:3000/api/v1/page_hit
 
   admin:
     <<: *service-template
@@ -162,34 +170,37 @@ services:
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/healthz" ]
+      test: ["CMD", "curl", "-f", "http://localhost:3000" ]
       interval: 30s
       timeout: 10s
       retries: 3
     environment:
       - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
       - PROXY_TARGET=http://tinybird:7181/v0/events
-  tb-cli:
-    profiles: [ analytics ]
-    build:
-      context: .
-      dockerfile: ./.docker/tinybird/Dockerfile
-    command: [ "sh", "-c", "tb dev" ]
-    volumes:
-      - ./ghost/core/core/server/data/tinybird:/home/tinybird/:cached
-      - /var/run/docker.sock:/var/run/docker.sock
-    tty: true
-    container_name: ghost-tb-cli
-    environment:
-      - TB_HOST=http://tinybird-local:7181
-      - TB_LOCAL_HOST=tinybird-local
-    depends_on:
-      - tinybird-local
+  # tb-dev:
+  #   image: ghost-monorepo:latest
+  #   profiles: [ analytics ]
+  #   working_dir: /home/ghost/ghost/core/core/server/data/tinybird
+  #   entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+  #   command: "tb dev"
+  #   tty: true
+  #   container_name: ghost-tb-cli
+  #   environment:
+  #     - TB_HOST=http://tinybird-local:7181
+  #     - TB_LOCAL_HOST=tinybird-local
+  #   depends_on:
+  #     tinybird-local:
+  #       condition: service_healthy
   tinybird-local:
     profiles: [ analytics ]
     image: tinybirdco/tinybird-local:latest
     ports:
-      - "7181:7181" # API
+      - "7181:7181"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
+      interval: 1s
+      timeout: 5s
+      retries: 120
 
   prometheus:
     profiles: [ monitoring ]
