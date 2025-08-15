@@ -74,7 +74,7 @@ services:
       - TB_HOST=${TB_HOST:-http://tinybird-local:7181}
       - TB_LOCAL_HOST=${TB_LOCAL_HOST:-tinybird-local}
       - tinybird__stats__endpoint=http://localhost:7181
-      - tinybird__tracker__endpoint=http://localhost:3000/api/v1/page_hit
+      - tinybird__tracker__endpoint=http://localhost:2368/.ghost/analytics/api/v1/page_hit
 
   admin:
     <<: *service-template
@@ -145,6 +145,7 @@ services:
       test: mysql -uroot -proot ghost -e 'select 1'
       interval: 1s
       retries: 120
+
   redis:
     image: redis:7.0
     container_name: ghost-redis
@@ -162,24 +163,31 @@ services:
         - ping
       interval: 1s
       retries: 120
+
   analytics:
     profiles: [ analytics ]
-    image: ghost/traffic-analytics:edge
+    image: ghost/traffic-analytics:1
+    command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
     container_name: ghost-analytics
     expose:
       - "3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000" ]
-      interval: 30s
-      timeout: 10s
-      retries: 3
+      interval: 1s
+      retries: 120
     volumes:
       - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - ./ghost/core/core/server/data/tinybird/.env:/app/.env:ro
     environment:
       - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
-      - PROXY_TARGET=http://tinybird:7181/v0/events
+      - PROXY_TARGET=http://tinybird-local:7181/v0/events
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
   tb-cli:
     build:
       context: .
@@ -187,7 +195,6 @@ services:
     profiles: [ analytics ]
     working_dir: /home/tinybird
     entrypoint: [ "/home/tinybird/.docker/tb-cli/entrypoint.sh" ]
-    command: "tb dev"
     tty: true
     container_name: ghost-tb-cli
     environment:
@@ -200,6 +207,7 @@ services:
     depends_on:
       tinybird-local:
         condition: service_healthy
+
   tinybird-local:
     profiles: [ analytics ]
     image: tinybirdco/tinybird-local:latest
@@ -220,6 +228,7 @@ services:
     restart: always
     volumes:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
   grafana:
     profiles: [ monitoring ]
     image: grafana/grafana:8.5.27
@@ -234,12 +243,14 @@ services:
       - ./.docker/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
+
   pushgateway:
     profiles: [ monitoring ]
     image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
@@ -248,6 +259,7 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
     restart: always
+
 volumes:
   mysql-data: {}
   redis-data: {}

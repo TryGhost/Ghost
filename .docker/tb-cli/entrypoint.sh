@@ -47,7 +47,8 @@ if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then
     exit 1
 fi
 
-touch /home/tinybird/config/.env
+rm /home/tinybird/.env || true
+touch /home/tinybird/.env
 echo "TINYBIRD_WORKSPACE_ID=$WORKSPACE_ID" >> /home/tinybird/.env
 echo "TINYBIRD_ADMIN_TOKEN=$ADMIN_TOKEN" >> /home/tinybird/.env
 echo "TINYBIRD_TRACKER_TOKEN=$TRACKER_TOKEN" >> /home/tinybird/.env
