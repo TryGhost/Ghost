@@ -169,10 +169,25 @@ services:
     environment:
       - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
       - PROXY_TARGET=http://tinybird:7181/v0/events
-  tinybird:
+  tb-cli:
+    profiles: [ analytics ]
+    build:
+      context: .
+      dockerfile: ./.docker/tinybird/Dockerfile
+    command: [ "sh", "-c", "tb dev" ]
+    volumes:
+      - ./ghost/core/core/server/data/tinybird:/home/tinybird/:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    tty: true
+    container_name: ghost-tb-cli
+    environment:
+      - TB_HOST=http://tinybird-local:7181
+      - TB_LOCAL_HOST=tinybird-local
+    depends_on:
+      - tinybird-local
+  tinybird-local:
     profiles: [ analytics ]
     image: tinybirdco/tinybird-local:latest
-    container_name: ghost-tinybird
     ports:
       - "7181:7181" # API
 
