@@ -20,17 +20,16 @@ RUN apt-get update && \
 # Playwright Version
 # --------------------
 # Cache Optimization: Extract the playwright version from package.json
+# Playwright install is slow, so we want to only bust the cache when the version changes.
 FROM base AS playwright-version
 WORKDIR /tmp
 COPY ghost/core/package.json ./
 RUN jq -r '.devDependencies."@playwright/test"' ./package.json > playwright-version.txt
 
 # --------------------
-# Playwright
+# Development Dependencies
 # --------------------
-# Cache Optimization: Playwright install is slow. Copy the version from the previous stage.
-# This way we only bust build cache when the playwright version changes.
-FROM base AS playwright
+FROM base AS development-dependencies
 RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
     apt update && \
@@ -42,10 +41,15 @@ WORKDIR /home/ghost
 COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
 RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
 
+# Install uv and tinybird CLI
+COPY --from=ghcr.io/astral-sh/uv:0.8.11 /uv /uvx /bin/
+RUN uv tool install tinybird@0.0.1.dev285 --python 3.13 --force
+ENV PATH="/root/.local/bin:$PATH"
+
 # --------------------
 # Development Base
 # --------------------
-FROM playwright AS development-base
+FROM development-dependencies AS development-base
 WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
