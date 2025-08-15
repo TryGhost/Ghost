@@ -50,3 +50,21 @@ admin.ghost {
         reverse_proxy server:2368
     }
 }
+
+http://ghost.localhost {
+    import common_ghost_config
+}
+
+http://admin.localhost {
+    handle /ember-cli-live-reload.js {
+        reverse_proxy admin:4200
+    }
+
+    handle {
+        reverse_proxy server:2368
+    }
+}
+
+http://tinybird.localhost {
+    reverse_proxy tinybird-local:7181
+}
