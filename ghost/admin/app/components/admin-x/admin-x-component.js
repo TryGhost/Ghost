@@ -6,6 +6,7 @@ import fetchKoenigLexical from 'ghost-admin/utils/fetch-koenig-lexical';
 import ghostPaths from 'ghost-admin/utils/ghost-paths';
 import {action} from '@ember/object';
 import {camelize} from '@ember/string';
+import {fetch} from 'fetch';
 import {inject} from 'ghost-admin/decorators/inject';
 import {run} from '@ember/runloop';
 import {inject as service} from '@ember/service';
@@ -63,6 +64,19 @@ export const importComponent = async (packageName) => {
     const customUrl = config[`${configKey}CustomUrl`];
     if (customUrl) {
         url = new URL(customUrl);
+    }
+
+    const remoteConfigUrl = config[`${configKey}RemoteConfigUrl`];
+    if (remoteConfigUrl) {
+        try {
+            const remoteConfig = await fetch(remoteConfigUrl, window.location);
+            const remoteConfigJson = await remoteConfig.json();
+            if (remoteConfigJson.cdnUrl) {
+                url = new URL(remoteConfigJson.cdnUrl);
+            }
+        } catch (error) {
+            // Fallback to previous behaviour
+        }
     }
 
     if (url.protocol === 'http:') {
