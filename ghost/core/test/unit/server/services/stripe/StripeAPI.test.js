@@ -371,7 +371,7 @@ describe('StripeAPI', function () {
             should.deepEqual(result, mockSubscription);
         });
 
-        describe('createCheckoutSetupSession automatic tax flag', function () {
+        describe('createCheckoutSession automatic tax flag', function () {
             beforeEach(function () {
                 mockStripe = {
                     checkout: {
@@ -637,6 +637,37 @@ describe('StripeAPI', function () {
                 });
 
                 should.ok(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
+            });
+
+            it('createDonationCheckoutSession adds customer_update when automatic tax is enabled and customer is provided', async function () {
+                api.configure({
+                    checkoutSessionSuccessUrl: '/success',
+                    checkoutSessionCancelUrl: '/cancel',
+                    checkoutSetupSessionSuccessUrl: '/setup-success',
+                    checkoutSetupSessionCancelUrl: '/setup-cancel',
+                    secretKey: '',
+                    enableAutomaticTax: true
+                });
+
+                const mockCustomer = {
+                    id: mockCustomerId,
+                    email: mockCustomerEmail,
+                    name: mockCustomerName
+                };
+
+                await api.createDonationCheckoutSession({
+                    priceId: 'priceId',
+                    successUrl: '/success',
+                    cancelUrl: '/cancel',
+                    metadata: {},
+                    customer: mockCustomer
+                });
+
+                should.exist(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
+                should.deepEqual(
+                    mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update,
+                    {address: 'auto', name: 'auto'}
+                );
             });
 
             it('createDonationCheckoutSession adds tax_id_collection when automatic tax is enabled', async function () {
