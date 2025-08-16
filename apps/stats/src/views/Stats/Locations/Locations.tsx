@@ -244,7 +244,7 @@ const Locations:React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6'>
+                            <div className='group/datalist flex flex-col justify-between overflow-hidden border-l px-6' data-testid='visitors-card'>
                                 <DataList className='grow'>
                                     <DataListHeader className='py-4'>
                                         <DataListHead>Country</DataListHead>

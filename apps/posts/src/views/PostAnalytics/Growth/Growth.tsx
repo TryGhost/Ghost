@@ -65,7 +65,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                     </div>
                     :
                     <div className={containerClass}>
-                        <Card>
+                        <Card data-testid='members-card'>
                             <CardHeader className='hidden'>
                                 <CardTitle>Newsletters</CardTitle>
                                 <CardDescription>How did this post perform</CardDescription>
