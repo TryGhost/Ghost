@@ -26,6 +26,10 @@ set -euo pipefail
     fi
 )
 
+source /home/ghost/ghost/core/core/server/data/tinybird/.env
+export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
+export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
+
 yarn nx reset
 
 # Execute the CMD

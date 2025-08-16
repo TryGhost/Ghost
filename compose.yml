@@ -55,6 +55,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      tinybird-local:
+        condition: service_healthy
+        required: false
+      analytics:
+        condition: service_healthy
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
@@ -65,6 +71,12 @@ services:
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY:-}
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
+      - TB_HOST=${TB_HOST:-http://tinybird-local:7181}
+      - TB_LOCAL_HOST=${TB_LOCAL_HOST:-tinybird-local}
+      - url=http://ghost.localhost
+      - admin__url=http://admin.localhost
+      - tinybird__stats__endpoint=http://tinybird.localhost
+      - tinybird__tracker__endpoint=http://ghost.localhost/.ghost/analytics/api/v1/page_hit
 
   admin:
     <<: *service-template
@@ -89,6 +101,12 @@ services:
       - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
     restart: always
+    networks:
+      default:
+        aliases:
+          - ghost.localhost
+          - admin.localhost
+          - tinybird.localhost
 
   ghost:
     <<: *service-template
@@ -135,6 +153,7 @@ services:
       test: mysql -uroot -proot ghost -e 'select 1'
       interval: 1s
       retries: 120
+
   redis:
     image: redis:7.0
     container_name: ghost-redis
@@ -152,6 +171,62 @@ services:
         - ping
       interval: 1s
       retries: 120
+
+  analytics:
+    profiles: [ analytics ]
+    image: ghost/traffic-analytics:1
+    command: ["node", "--enable-source-maps", "dist/server.js"]
+    entrypoint: [ "/app/entrypoint.sh" ]
+    container_name: ghost-analytics
+    expose:
+      - "3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000" ]
+      interval: 1s
+      retries: 120
+    volumes:
+      - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - ./ghost/core/core/server/data/tinybird/.env:/app/.env:ro
+    environment:
+      - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
+      - PROXY_TARGET=http://tinybird-local:7181/v0/events
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
+  tb-cli:
+    build:
+      context: .
+      dockerfile: ./.docker/tb-cli/Dockerfile
+    profiles: [ analytics ]
+    working_dir: /home/tinybird
+    entrypoint: [ "/home/tinybird/.docker/tb-cli/entrypoint.sh" ]
+    tty: true
+    container_name: ghost-tb-cli
+    environment:
+      - TB_HOST=http://tinybird-local:7181
+      - TB_LOCAL_HOST=tinybird-local
+    volumes:
+      - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - ./.docker/tb-cli:/home/tinybird/.docker/tb-cli
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+
+  tinybird-local:
+    profiles: [ analytics ]
+    image: tinybirdco/tinybird-local:latest
+    ports:
+      - "7181:7181"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
+      interval: 1s
+      timeout: 5s
+      retries: 120
+
   prometheus:
     profiles: [ monitoring ]
     image: prom/prometheus:v2.55.1
@@ -161,6 +236,7 @@ services:
     restart: always
     volumes:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
   grafana:
     profiles: [ monitoring ]
     image: grafana/grafana:8.5.27
@@ -175,12 +251,14 @@ services:
       - ./.docker/grafana/datasources:/etc/grafana/provisioning/datasources
       - ./.docker/grafana/dashboard.yml:/etc/grafana/provisioning/dashboards/main.yaml
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
+
   pushgateway:
     profiles: [ monitoring ]
     image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
       - 9091:9091
+
   mailhog:
     image: mailhog/mailhog:latest
     container_name: ghost-mailhog
@@ -189,6 +267,7 @@ services:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
     restart: always
+
 volumes:
   mysql-data: {}
   redis-data: {}
