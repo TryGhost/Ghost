@@ -16,6 +16,7 @@ const SUPPORTED_LOCALES = [
     'eo', // Esperanto
     'es', // Spanish
     'et', // Estonian
+    'eu', // Basque
     'fa', // Persian/Farsi
     'fi', // Finnish
     'fr', // French
