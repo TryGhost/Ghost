@@ -1,4 +1,10 @@
 #!/bin/bash
+
+# Entrypoint script for the Tinybird CLI service in compose.yml
+## This script deploys the Tinybird files to Tinybird local, then retrieves important configuration values
+## and writes them to a .env file in /ghost/core/core/server/data/tinybird. This .env file is used by
+## Ghost and the Analytics service to automatically configure their connections to Tinybird Local
+
 set -euo pipefail
 
 # Build the Tinybird files

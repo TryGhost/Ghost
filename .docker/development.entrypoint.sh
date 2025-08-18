@@ -26,6 +26,7 @@ set -euo pipefail
     fi
 )
 
+# Configure Ghost to use Tinybird Local
 source /home/ghost/ghost/core/core/server/data/tinybird/.env
 export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
 export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
