@@ -1,18 +1,17 @@
 import {test, expect} from '@playwright/test';
 import {
-    AnalyticsOverviewPage, 
-    PostAnalyticsPage, 
-    PostAnalyticsGrowthPage
+    AnalyticsOverviewPage,
+    PostAnalyticsPage,
+    PostAnalyticsGrowthPage,
+    PostAnalyticsWebTrafficPage
 } from '../../../../helpers/pages/admin';
-import { PostAnalyticsWebTrafficPage } from '../../../../helpers/pages/admin/analytics/post-analytics/PostAnalyticsWebTrafficPage';
 
 test.describe('Ghost Admin - Post Analytics - Overview', () => {
-    let analyticsOverviewPage: AnalyticsOverviewPage;
-
     test.beforeEach(async ({page}) => {
-        analyticsOverviewPage = new AnalyticsOverviewPage(page);
+        const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
         await analyticsOverviewPage.latestPost.viewAnalytics();
+        await new PostAnalyticsPage(page).waitForPageLoad();
     });
 
     test('empty page with all tabs', async ({page}) => {

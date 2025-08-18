@@ -28,7 +28,8 @@ const config = {
                 browserName: 'chromium',
                 // Use authentication state for all tests by default
                 storageState: 'playwright/.auth/user.json',
-                testDir: './tests'
+                testDir: './tests',
+                viewport: {width: 1920, height: 1080}
             },
             dependencies: ['setup']
         },
@@ -37,7 +38,7 @@ const config = {
             name: 'setup',
             testMatch: /.*\.setup\.ts/,
             testDir: './tests'
-        }      
+        }
     ]
 };
 

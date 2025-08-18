@@ -42,7 +42,7 @@ class LatestPost extends BasePage {
 
 class TopPosts extends BasePage {
     public readonly post: Locator;
-    
+
     constructor(page: Page) {
         super(page);
         this.post = page.getByTestId('top-posts');
@@ -55,7 +55,7 @@ export class AnalyticsOverviewPage extends AdminPage {
     private readonly uniqueVisitorsViewMoreButton: Locator;
     private readonly membersGraph: Locator;
     private readonly membersViewMoreButton: Locator;
-    
+
     public readonly latestPost: LatestPost;
     public readonly topPosts: TopPosts;
 

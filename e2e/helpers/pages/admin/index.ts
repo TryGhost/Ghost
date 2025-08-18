@@ -5,6 +5,7 @@ export * from './analytics/AnalyticsWebTrafficPage';
 export * from './analytics/AnalyticsNewslettersPage';
 export * from './analytics/post-analytics/PostAnalyticsPage';
 export * from './analytics/post-analytics/PostAnalyticsGrowthPage';
+export * from './analytics/post-analytics/PostAnalyticsWebTrafficPage';
 export * from './LoginPage';
 export * from './AdminPage';
 export * from './MembersPage';

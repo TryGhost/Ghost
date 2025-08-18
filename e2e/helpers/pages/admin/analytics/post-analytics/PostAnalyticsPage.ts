@@ -47,6 +47,11 @@ export class PostAnalyticsPage extends AdminPage {
         this.webPerformanceSection = new WebPerformanceSection(page);
     }
 
+    async waitForPageLoad() {
+        await this.webPerformanceSection.viewMoreButton.waitFor({state: 'visible'});
+        await this.growthSection.viewMoreButton.waitFor({state: 'visible'});
+    }
+
     async overview() {
         await this.overviewButton.click();
     };
@@ -56,6 +61,7 @@ export class PostAnalyticsPage extends AdminPage {
     }
 
     async growth() {
+        await this.growthButton.waitFor({state: 'visible'});
         await this.growthButton.click();
     }
 }
