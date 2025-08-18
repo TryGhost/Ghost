@@ -8,7 +8,7 @@ import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
 
-export const APP_ROUTE_PREFIX = '/posts';
+export const APP_ROUTE_PREFIX = '/';
 
 // Wrap components with feature flag protection where needed
 //  e.g.
@@ -23,7 +23,7 @@ export const routes: RouteObject[] = [
             {
 
                 // Post Analytics
-                path: 'analytics/:postId',
+                path: 'posts/analytics/:postId',
                 element: (
                     <PostAnalyticsProvider>
                         <PostAnalytics />

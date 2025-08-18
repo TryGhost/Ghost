@@ -83,7 +83,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     useEffect(() => {
         // Redirect to overview if the post wasn't sent as a newsletter
         if (!isPostLoading && !showNewsletterSection) {
-            navigate(`/analytics/${postId}`);
+            navigate(`/posts/analytics/${postId}`);
         }
     }, [navigate, postId, isPostLoading, showNewsletterSection]);
 
