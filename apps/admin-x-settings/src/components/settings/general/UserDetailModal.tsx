@@ -1,7 +1,7 @@
 import EmailNotificationsTab from './users/EmailNotificationsTab';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ProfileTab from './users/ProfileTab';
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import SocialLinksTab from './users/SocialLinksTab';
 import clsx from 'clsx';
 import usePinturaEditor from '../../../hooks/usePinturaEditor';
@@ -12,7 +12,7 @@ import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, MenuIte
 import {ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/useLimiter';
 import {RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
+import {User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
 import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateMastodonUrl, validateThreadsUrl, validateTikTokUrl, validateTwitterUrl, validateYouTubeUrl} from '../../../utils/socialUrls/index';
@@ -36,11 +36,12 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         return valid ? '' : 'Enter a valid email address';
     },
     url: ({url}) => {
-        const valid = !url || validator.isURL(url);
+        // require_tld is automatically true in validator 8+, we set it false here for our default localhost setup
+        const valid = !url || validator.isURL(url, {require_tld: false});
         return valid ? '' : 'Enter a valid URL';
     },
     bio: ({bio}) => {
-        const valid = !bio || bio.length <= 200;
+        const valid = !bio || bio.length <= 250;
         return valid ? '' : 'Bio is too long';
     },
     location: ({location}) => {
@@ -400,7 +401,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
-    
+
     const [selectedTab, setSelectedTab] = useState<string>('profile');
 
     return (
@@ -423,7 +424,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         >
             <div>
                 <div className={`relative ${canAccessSettings(currentUser) ? '-mx-8 -mt-8 rounded-t' : '-mx-10 -mt-10'}`}>
-                    <div className={`flex flex-wrap items-end justify-between gap-8 p-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`} 
+                    <div className={`flex flex-wrap items-end justify-between gap-8 p-8 ${formState.cover_image ? 'bg-cover bg-center' : ''} ${!canAccessSettings(currentUser) && 'min-h-[30vmin]'}`}
                         style={{
                             backgroundImage: formState.cover_image ? `url(${formState.cover_image})` : 'none'
                         }}>
@@ -554,15 +555,19 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
 };
 
 const UserDetailModal: React.FC<RoutingModalProps> = ({params}) => {
-    const {users, hasNextPage, fetchNextPage} = useStaffUsers();
     const {currentUser} = useGlobalData();
-    const user = currentUser.slug === params?.slug ? currentUser : users.find(({slug}) => slug === params?.slug);
 
-    useEffect(() => {
-        if (!user && hasNextPage) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, hasNextPage, user]);
+    // Skip API call if it's the current user (we already have their data)
+    const isCurrentUser = currentUser.slug === params?.slug;
+
+    // Fetch user by slug if it's not the current user
+    const {data: fetchedUserData} = useGetUserBySlug(
+        params?.slug || '',
+        {enabled: !isCurrentUser && !!params?.slug}
+    );
+
+    // Use current user data or fetched user data
+    const user = isCurrentUser ? currentUser : fetchedUserData?.users?.[0];
 
     if (user) {
         return <UserDetailModalContent user={user} />;

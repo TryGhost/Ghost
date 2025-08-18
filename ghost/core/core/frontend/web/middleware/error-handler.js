@@ -1,6 +1,8 @@
 const hbs = require('express-hbs');
 const _ = require('lodash');
+const path = require('path');
 const tpl = require('@tryghost/tpl');
+const errors = require('@tryghost/errors');
 const sentry = require('../../../shared/sentry');
 
 const config = require('../../../shared/config');
@@ -12,7 +14,9 @@ const {prepareError, prepareErrorCacheControl, prepareStack} = require('@tryghos
 const messages = {
     oopsErrorTemplateHasError: 'Oops, seems there is an error in the error template.',
     encounteredError: 'Encountered the error: ',
-    whilstTryingToRender: 'whilst trying to render an error page for the error: '
+    whilstTryingToRender: 'whilst trying to render an error page for the error: ',
+    notFound: 'File not found',
+    unexpectedError: 'An unexpected error occurred'
 };
 
 const escapeExpression = hbs.Utils.escapeExpression;
@@ -34,13 +38,47 @@ const errorFallbackMessage = err => `<h1>${tpl(messages.oopsErrorTemplateHasErro
      <br ><p>${tpl(messages.whilstTryingToRender)}</p>
      ${err.statusCode} <pre>${escapeExpression(err.message || err)}</pre>`;
 
+// eslint-disable-next-line no-unused-vars
 const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
-    // If the error code is explicitly set to STATIC_FILE_NOT_FOUND,
-    // Skip trying to render an HTML error, and move on to the basic error renderer
-    // We do this because customised 404 templates could reference the image that's missing
-    // A better long term solution might be to do this based on extension
-    if (err.code === 'STATIC_FILE_NOT_FOUND') {
-        return next(err);
+    // Return a plain text response for static files. We do this because:
+    // 1. Customised 404 templates could reference the missing asset causing recursion
+    // 2. Static files should return plain errors, not HTML pages
+    // 3. The theme engine might not be initialized on first request after boot
+    const hasExtension = Boolean(path.extname(req.path));
+    const isStaticFile = (hasExtension || err.code === 'STATIC_FILE_NOT_FOUND');
+    if (isStaticFile) {
+        // Convert non-Ghost errors for static files into proper Ghost errors
+        if (!errors.utils.isGhostError(err)) {
+            // Convert Express static errors to Ghost errors based on status code
+            if (err.statusCode === 404) {
+                err = new errors.NotFoundError({
+                    message: tpl(messages.notFound),
+                    code: 'STATIC_FILE_NOT_FOUND',
+                    property: err.path
+                });
+            } else if (err.statusCode === 400) {
+                err = new errors.BadRequestError({err: err});
+            } else if (err.statusCode === 403) {
+                err = new errors.NoPermissionError({err: err});
+            } else if (err.name === 'RangeNotSatisfiableError') {
+                err = new errors.RangeNotSatisfiableError({err});
+            } else if (err.statusCode) {
+                err = new errors.InternalServerError({err: err});
+            }
+        } else if (err.statusCode === 404 && err.code !== 'STATIC_FILE_NOT_FOUND') {
+            // Override the message for 404s that were already converted to NotFoundError
+            // by prepareError middleware
+            err.message = tpl(messages.notFound);
+            err.code = 'STATIC_FILE_NOT_FOUND';
+        }
+
+        const message = err.message || tpl(messages.unexpectedError);
+        const statusCode = err.statusCode || 500;
+
+        // Send a simple plain text error response
+        res.status(statusCode);
+        res.type('text/plain');
+        return res.send(message);
     }
 
     // Renderer begin

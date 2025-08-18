@@ -1,3 +1,4 @@
+require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 

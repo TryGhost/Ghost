@@ -1,8 +1,10 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class ExploreController extends Controller {
+    @inject config;
     @service explore;
     @service router;
 
@@ -23,7 +25,7 @@ export default class ExploreController extends Controller {
             this.explore.sendRouteUpdate({path: '/explore'});
             this.router.transitionTo('/explore');
         } else {
-            this.router.transitionTo('/dashboard');
+            this.router.transitionTo('/stats-x');
         }
     }
 

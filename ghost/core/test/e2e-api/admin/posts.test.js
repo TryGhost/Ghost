@@ -88,7 +88,6 @@ describe('Posts API', function () {
     let agent;
 
     before(async function () {
-        mockManager.mockLabsEnabled('collectionsCard', true);
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -360,50 +359,6 @@ describe('Posts API', function () {
                 });
         });
 
-        it('Clears all page html fields when creating published post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const post = {
-                title: 'Page reset test',
-                lexical: createLexical('Testing page.html reset when creating post'),
-                status: 'published'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-creation empty page count');
-        });
-
-        it('Does not clear page html fields when creating draft post', async function () {
-            const post = {
-                title: 'Page reset test',
-                lexical: createLexical('Testing page.html reset when creating post'),
-                status: 'draft'
-            };
-
-            await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [post]})
-                .expectStatus(201);
-
-            // no pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(0, 'post-creation empty page count');
-        });
-
         it('invalidates preview cache when updating a draft post', async function () {
             const post = {
                 title: 'Cache invalidation test',
@@ -465,7 +420,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // mobiledoc revisions are created
@@ -519,7 +474,7 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag,
-                    'x-cache-invalidate': anyString
+                    'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
             // post revisions are created
@@ -539,37 +494,6 @@ describe('Posts API', function () {
                 .fetchAll();
 
             mobiledocRevisions.length.should.equal(0);
-        });
-
-        it('Clears all page html fields when publishing a post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const {body: postBody} = await agent
-                .post('/posts/?source=html&formats=mobiledoc,lexical,html')
-                .body({posts: [{
-                    title: 'Page reset test',
-                    lexical: createLexical('Testing page.html reset when updating post'),
-                    status: 'draft'
-                }]})
-                .expectStatus(201);
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .put(`/posts/${postResponse.id}/?source=html&formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, postResponse, {status: 'published'})]})
-                .expectStatus(200);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-update empty page count');
         });
 
         describe('Access', function () {
@@ -614,7 +538,7 @@ describe('Posts API', function () {
                         .matchHeaderSnapshot({
                             'content-version': anyContentVersion,
                             etag: anyEtag,
-                            'x-cache-invalidate': anyString
+                            'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                         })
                         .matchBodySnapshot({
                             posts: [Object.assign({}, matchPostShallowIncludes, {
@@ -656,31 +580,6 @@ describe('Posts API', function () {
                         id: anyErrorId
                     }]
                 });
-        });
-
-        it('Clears all page html fields when deleting a published post', async function () {
-            const totalPageCount = await models.Post.where({type: 'page'}).count();
-            should.exist(totalPageCount, 'total page count');
-
-            // sanity check for pages with no html
-            const sanityCheckEmptyPageCount = await models.Post.where({html: 'null', type: 'page'}).count();
-            should.exist(sanityCheckEmptyPageCount);
-            sanityCheckEmptyPageCount.should.equal(0, 'initial empty page count');
-
-            const {body: postBody} = await agent
-                .get('/posts/?limit=1&filter=status:published')
-                .expectStatus(200);
-
-            const [postResponse] = postBody.posts;
-
-            await agent
-                .delete(`/posts/${postResponse.id}/`)
-                .expectStatus(204);
-
-            // all pages have html cleared
-            const emptyPageCount = await models.Post.where({html: null, type: 'page'}).count();
-            should.exist(emptyPageCount);
-            emptyPageCount.should.equal(totalPageCount, 'post-deletion empty page count');
         });
     });
 
@@ -762,6 +661,75 @@ describe('Posts API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
+                });
+        });
+    });
+
+    describe('With integration auth', function () {
+        it('can create and update a post with revisions', async function () {
+            // Use Zapier integration to test integration auth scenario
+            await agent.useZapierAdminAPIKey();
+
+            const lexical = createLexical('This is content for revision testing.');
+            const postData = {
+                title: 'Integration Auth Test Post',
+                status: 'published',
+                lexical: lexical,
+                mobiledoc: null
+            };
+
+            // Create post using integration auth - this should trigger the revision creation
+            // with author fallback to owner user when contextUser returns integration context
+            const {body} = await agent
+                .post('/posts/?formats=lexical')
+                .body({posts: [postData]})
+                .expectStatus(201);
+
+            const [postResponse] = body.posts;
+            postResponse.title.should.equal('Integration Auth Test Post');
+            postResponse.status.should.equal('published');
+            postResponse.lexical.should.equal(lexical);
+
+            // Verify the post revision was created with owner user as author
+            const ownerUser = await models.User.getOwnerUser();
+            const postRevisions = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .fetchAll();
+
+            postRevisions.length.should.equal(1);
+            const revision = postRevisions.at(0);
+            revision.get('lexical').should.equal(lexical);
+            revision.get('author_id').should.equal(ownerUser.get('id'));
+
+            // Update the post to ensure revision creation works properly
+            const updatedLexical = createLexical('Updated content for revision testing.');
+            await agent
+                .put(`/posts/${postResponse.id}/?formats=lexical&save_revision=true`)
+                .body({posts: [{
+                    ...postResponse,
+                    lexical: updatedLexical
+                }]})
+                .expectStatus(200);
+
+            // Verify updated revision also has owner user as author
+            const updatedRevisions = await models.PostRevision
+                .where('post_id', postResponse.id)
+                .orderBy('created_at_ts', 'desc')
+                .fetchAll();
+
+            updatedRevisions.length.should.equal(2);
+            const latestRevision = updatedRevisions.at(0);
+            latestRevision.get('lexical').should.equal(updatedLexical);
+            latestRevision.get('author_id').should.equal(ownerUser.get('id'));
+
+            // Verify the post was updated successfully
+            await agent
+                .get(`/posts/${postResponse.id}/?formats=lexical`)
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    posts: [Object.assign({}, matchPostShallowIncludes, {
+                        lexical: updatedLexical
+                    })]
                 });
         });
     });

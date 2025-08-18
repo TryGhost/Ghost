@@ -1,4 +1,4 @@
-<section class="gh-canvas {{if (feature "audienceFeedback") "feature-audienceFeedback"}} {{if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics")) "feature-trafficAnalytics"}}" {{did-insert this.loadData}}>
+<section class="gh-canvas {{if (feature "audienceFeedback") "feature-audienceFeedback"}}" {{did-insert this.loadData}}>
     <GhCanvasHeader class="gh-canvas-header gh-post-analytics-header">
         <div class="flex flex-column flex-grow-1">
             <div class="gh-canvas-breadcrumb">
@@ -265,23 +265,5 @@
                 </div>
             {{/if}}
         </div>
-
-        {{#if (and (gh-user-can-admin this.session.user) this.config.stats (feature "trafficAnalytics"))}}
-            <div class="gh-post-analytics-sidebar">
-                <div class="gh-post-analytics-sidebar-item active">
-                    {{svg-jar "stats-overview" title="Overview"}} Overview
-                </div>
-                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.web-stats" @model={{this.post.id}}>
-                    {{svg-jar "stats-web" title="Web stats"}} Web
-                </LinkTo>
-                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.newsletter-stats" @model={{this.post.id}}>
-                    {{svg-jar "stats-newsletter" title="Newsletter stats"}} Newsletter
-                </LinkTo>
-                <LinkTo class="gh-post-analytics-sidebar-item" @route="posts.analytics.growth-stats" @model={{this.post.id}}>
-                    {{svg-jar "stats-growth" title="Growth stats"}} Growth
-                </LinkTo>
-            </div>
-        {{/if}}
-
     </div>
 </section>

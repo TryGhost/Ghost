@@ -1,6 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {Button, LucideIcon, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
-import {Icon} from '@tryghost/admin-x-design-system';
+import {Button, Icon, LucideIcon, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade';
 
 export const FONT_SIZES = ['1.5rem', '1.6rem', '1.7rem', '1.8rem', '2rem'] as const;
 export type FontSize = typeof FONT_SIZES[number];
@@ -66,7 +65,7 @@ export const useCustomizerSettings = () => {
 
     const [currentFontSizeIndex, setCurrentFontSizeIndex] = useState(() => {
         const saved = localStorage.getItem(STORAGE_KEYS.FONT_SIZE);
-        return saved ? parseInt(saved) : 1;
+        return saved ? parseInt(saved) : 2;
     });
 
     const [fontStyle, setFontStyle] = useState<FontStyle>(() => {
@@ -95,7 +94,7 @@ export const useCustomizerSettings = () => {
         setCurrentFontSizeIndex(prevIndex => Math.max(prevIndex - 1, 0));
     };
 
-    const resetFontSize = () => setCurrentFontSizeIndex(1);
+    const resetFontSize = () => setCurrentFontSizeIndex(2);
 
     return {
         backgroundColor,
@@ -162,7 +161,7 @@ const CustomizerView: React.FC<CustomizerViewProps> = ({
     <Popover modal={false} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
             <Button className={`size-9 rounded-full ${COLOR_OPTIONS[backgroundColor].button}`} variant='ghost'>
-                <Icon name='typography' />
+                <Icon.Typography className='!size-[18px]' />
             </Button>
         </PopoverTrigger>
         <PopoverContent align='end' className='w-[224px]' onCloseAutoFocus={e => e.preventDefault()} onOpenAutoFocus={e => e.preventDefault()}>

@@ -2,13 +2,13 @@ name: 'Close stale issues and PRs'
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 * * * *'
+    - cron: '0 6 * * *'
 jobs:
   stale:
     if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v8
+      - uses: actions/stale@v9
         with:
           stale-issue-message: |
             Our bot has automatically marked this issue as stale because there has not been any activity here in some time.

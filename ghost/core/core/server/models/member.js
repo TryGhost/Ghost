@@ -6,6 +6,9 @@ const config = require('../../shared/config');
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
+    actionsCollectCRUD: true,
+    actionsResourceType: 'member',
+
     defaults() {
         return {
             status: 'free',

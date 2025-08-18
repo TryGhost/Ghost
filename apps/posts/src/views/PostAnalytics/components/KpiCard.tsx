@@ -1,13 +1,5 @@
 import React from 'react';
-import {cn} from '@tryghost/shade';
-
-export const KpiCardIcon: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
-    return (
-        <div className={cn('flex size-11 rounded-full items-center justify-center bg-muted text-black mt-0.5 [&_svg]:size-5', className)} {...props}>
-            {children}
-        </div>
-    );
-};
+import {Button, cn} from '@tryghost/shade';
 
 export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
@@ -19,7 +11,11 @@ export const KpiCardContent: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
 export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('text-sm text-gray-800 font-medium', className)} {...props}>
+        <div className={
+            cn('[&_svg]:size-4 flex items-center gap-1.5 text-base h-[22px] font-medium transition-all',
+                className,
+                props.onClick && 'hover:cursor-pointer hover:text-black'
+            )} {...props}>
             {children}
         </div>
     );
@@ -27,15 +23,31 @@ export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
 
 export const KpiCardValue: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('text-[23px] mt-0.5 tracking-tighter leading-none font-semibold', className)} {...props}>
+        <div className={cn('text-[26px] mt-0.5 tracking-tighter leading-none text-foreground font-semibold', className)} {...props}>
             {children}
         </div>
     );
 };
 
+export const KpiCardMoreButton: React.FC<React.ComponentProps<typeof Button>> = ({children, className, ...props}) => {
+    return (
+        <Button className={cn('absolute right-4 top-4 z-50 hidden translate-x-10 text-black opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 md:!visible md:!block', className)} size='sm' variant='outline' {...props}>
+            {children}
+        </Button>
+    );
+};
+
 const KpiCard: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, className, ...props}) => {
     return (
-        <div className={cn('flex items-start gap-3 rounded-md border p-4', className)} {...props}>
+        <div
+            className={
+                cn(
+                    'group relative isolate flex flex-col border-r border-border last:border-none items-start gap-2 px-6 py-5 transition-all text-muted-foreground',
+                    props.onClick ? 'hover:bg-accent/50 hover:text-foreground cursor-pointer' : 'cursor-auto',
+                    className
+                )}
+            {...props}
+        >
             {children}
         </div>
     );

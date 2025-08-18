@@ -1,9 +1,10 @@
 import ActorList from './components/ActorList';
+import Error from '@components/layout/Error';
 import Likes from './components/Likes';
 import Posts from './components/Posts';
 import ProfilePage from './components/ProfilePage';
-import React from 'react';
-import {Activity} from '@src/api/activitypub';
+import React, {useEffect} from 'react';
+import {Activity, isApiError} from '@src/api/activitypub';
 import {useAccountFollowsForUser, useAccountForUser, usePostsByAccount, usePostsLikedByAccount} from '@hooks/use-activity-pub-queries';
 import {useParams} from '@tryghost/admin-x-framework';
 
@@ -138,7 +139,15 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
 const Profile: React.FC<ProfileProps> = ({}) => {
     const params = useParams();
 
-    const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', (params.handle || 'me'));
+    const {data: account, isLoading: isLoadingAccount, error: accountError, refetch} = useAccountForUser('index', (params.handle || 'me'));
+
+    useEffect(() => {
+        refetch();
+    }, [params.handle, refetch]);
+
+    if (accountError && isApiError(accountError) && accountError.statusCode !== 404) {
+        return <Error errorCode={accountError.code} statusCode={accountError.statusCode} />;
+    }
 
     const customFields = Object.keys(account?.customFields || {}).map((key) => {
         return {

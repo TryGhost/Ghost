@@ -14,7 +14,12 @@ class RolesUsersImporter extends TableImporter {
      * Ignore overriden quantity for 1:1 relationship
      */
     async import() {
-        const users = await this.transaction.select('id').from('users').whereNot('id', 1);
+        const ownerUser = await this.transaction('roles_users')
+            .join('roles', 'roles.id', 'roles_users.role_id')
+            .where('roles.name', 'Owner')
+            .first();
+
+        const users = await this.transaction.select('id').from('users').whereNot('id', ownerUser?.user_id || null);
         this.roles = await this.transaction.select('id', 'name').from('roles');
 
         await this.importForEach(users, 1);

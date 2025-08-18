@@ -1,0 +1,285 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Search Index API fetchPages should return a list of pages 1: [body] 1`] = `
+Object {
+  "pages": Array [
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index API fetchPages should return a list of pages 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "926",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index API fetchPosts should return a list of posts 1: [body] 1`] = `
+Object {
+  "posts": Array [
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "status": Any<String>,
+      "title": Any<String>,
+      "url": Any<String>,
+      "visibility": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index API fetchPosts should return a list of posts 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "106403",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index API fetchPosts should return a list of posts 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "2313",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index API fetchTags should return a list of tags 1: [body] 1`] = `
+Object {
+  "tags": Array [
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index API fetchTags should return a list of tags 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "693",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index API fetchTags should return a list of tags 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "693",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Search Index API fetchUsers should return a list of users 1: [body] 1`] = `
+Object {
+  "users": Array [
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "profile_image": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+    Object {
+      "id": Any<String>,
+      "name": Any<String>,
+      "profile_image": Any<String>,
+      "slug": Any<String>,
+      "url": Any<String>,
+    },
+  ],
+}
+`;
+
+exports[`Search Index API fetchUsers should return a list of users 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "368",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;

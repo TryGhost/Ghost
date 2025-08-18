@@ -29,6 +29,7 @@ class ContentStatsService {
      * @param {string} [options.date_to] - End date in YYYY-MM-DD format
      * @param {string} [options.timezone] - Timezone for the query
      * @param {string} [options.member_status] - Member status filter (defaults to 'all')
+     * @param {string} [options.post_type] - Post type filter ('post' or 'page')
      * @param {string} [options.tb_version] - Tinybird version for API URL
      * @returns {Promise<Object>} The enriched top pages data
      */
@@ -47,7 +48,7 @@ class ContentStatsService {
             }
 
             // Step 2: Enrich the data with titles
-            const enrichedData = await this.enrichTopContentData(rawData);
+            const enrichedData = await this.enrichTopContentData(rawData, options.post_type);
 
             return {data: enrichedData};
         } catch (error) {
@@ -69,6 +70,7 @@ class ContentStatsService {
             dateTo: options.date_to,
             timezone: options.timezone,
             memberStatus: options.member_status,
+            postType: options.post_type,
             tbVersion: options.tb_version
         };
 
@@ -92,21 +94,30 @@ class ContentStatsService {
     /**
      * Lookup post titles in the database
      * @param {Array<string>} uuids - Post UUIDs to look up
+     * @param {string} [postType] - Optional post type filter ('post' or 'page')
      * @returns {Promise<Object>} Map of UUID to title
      */
-    async lookupPostTitles(uuids) {
+    async lookupPostTitles(uuids, postType = null) {
         if (!uuids.length) {
             return {};
         }
 
-        const posts = await this.knex.select('uuid', 'title', 'id')
+        let query = this.knex.select('uuid', 'title', 'id', 'type')
             .from('posts')
             .whereIn('uuid', uuids);
+
+        // Apply post type filter if specified
+        if (postType) {
+            query = query.where('type', postType);
+        }
+
+        const posts = await query;
 
         return posts.reduce((map, post) => {
             map[post.uuid] = {
                 title: post.title,
-                id: post.id
+                id: post.id,
+                type: post.type
             };
             return map;
         }, {});
@@ -149,27 +160,47 @@ class ContentStatsService {
     }
 
     /**
-     * Enrich top pages data with titles
+     * Enrich top pages data with titles and URL existence validation
      * @param {Array<TopContentDataItem>} data - Raw page data
+     * @param {string} [postType] - Optional post type filter ('post' or 'page')
      * @returns {Promise<Array<TopContentDataItem>>} Enriched page data
      */
-    async enrichTopContentData(data) {
+    async enrichTopContentData(data, postType = null) {
         if (!data || !data.length) {
             return [];
         }
 
         // Extract post UUIDs and lookup titles
         const postUuids = this.extractPostUuids(data);
-        const titleMap = await this.lookupPostTitles(postUuids);
+        const titleMap = await this.lookupPostTitles(postUuids, postType);
 
         // Enrich the data with post titles or UrlService lookups
-        return Promise.all(data.map(async (item) => {
+        const enrichedData = await Promise.all(data.map(async (item) => {
+            // Check URL existence using the URL service
+            let urlExists = false;
+            
+            if (this.urlService && item.pathname) {
+                try {
+                    // Check if URL service is ready
+                    if (this.urlService.hasFinished && this.urlService.hasFinished()) {
+                        const resource = this.urlService.getResource(item.pathname);
+                        urlExists = !!resource; // Convert to boolean
+                    }
+                    // If URL service isn't ready, we default to true (clickable)
+                } catch (error) {
+                    // If there's an error checking the URL service, default to true
+                    urlExists = true;
+                }
+            }
+
             // Check if post_uuid is available directly
             if (item.post_uuid && titleMap[item.post_uuid]) {
                 return {
                     ...item,
                     title: titleMap[item.post_uuid].title,
-                    post_id: titleMap[item.post_uuid].id
+                    post_id: titleMap[item.post_uuid].id,
+                    post_type: titleMap[item.post_uuid].type,
+                    url_exists: urlExists
                 };
             }
 
@@ -179,17 +210,36 @@ class ContentStatsService {
                 return {
                     ...item,
                     title: resourceInfo.title,
-                    resourceType: resourceInfo.resourceType
+                    resourceType: resourceInfo.resourceType,
+                    post_type: null,
+                    url_exists: urlExists
                 };
             }
 
             // Otherwise fallback to pathname (removing leading/trailing slashes)
-            const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Home';
+            const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Homepage';
             return {
                 ...item,
-                title: formattedPath
+                title: formattedPath,
+                post_type: null,
+                url_exists: urlExists
             };
         }));
+
+        // Filter by post type if specified and the item has post_type information
+        if (postType) {
+            return enrichedData.filter((item) => {
+                // Include items that have matching post_type
+                if (item.post_type) {
+                    return item.post_type === postType;
+                }
+                // For items without post_type (like homepage, tags, etc.), 
+                // include them only if we're not filtering specifically for posts
+                return postType !== 'post';
+            });
+        }
+
+        return enrichedData;
     }
 }
 

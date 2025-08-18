@@ -20,7 +20,7 @@
         </LinkTo>
     {{else}}
         <LinkTo @route="tag" @model={{@tag}} class="gh-list-data gh-tag-list-posts-count gh-list-cellwidth-10" title="Edit tag">
-            <span class="nowrap f8 midlightgrey">{{gh-pluralize @tag.count.posts "post"}}</span>
+            <span class="nowrap f8 midlightgrey" data-test-tag-count>0 posts</span>
         </LinkTo>
     {{/if}}
 

@@ -16,6 +16,7 @@ const SUPPORTED_LOCALES = [
     'eo', // Esperanto
     'es', // Spanish
     'et', // Estonian
+    'eu', // Basque
     'fa', // Persian/Farsi
     'fi', // Finnish
     'fr', // French
@@ -86,17 +87,14 @@ function generateResources(locales, ns) {
 
 /**
  * @param {string} [lng]
- * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'|'newsletter'} ns
+ * @param {'ghost'|'portal'|'test'|'signup-form'|'comments'|'search'} ns
  */
 module.exports = (lng = 'en', ns = 'portal') => {
     const i18nextInstance = i18next.createInstance();
-    let interpolation = {};
-    if (ns === 'newsletter') {
-        interpolation = {
-            prefix: '{',
-            suffix: '}'
-        };
-    }
+    const interpolation = {
+        prefix: '{',
+        suffix: '}'
+    };
 
     let resources = generateResources(SUPPORTED_LOCALES, ns);
     i18nextInstance.init({

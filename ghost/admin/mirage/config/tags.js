@@ -1,6 +1,6 @@
 import {dasherize} from '@ember/string';
+import {extractFilterParam, paginateModelCollection} from '../utils';
 import {isBlank} from '@ember/utils';
-import {paginatedResponse} from '../utils';
 
 export default function mockTags(server) {
     server.post('/tags/', function ({tags}) {
@@ -19,7 +19,18 @@ export default function mockTags(server) {
         return tags.findBy({slug});
     });
 
-    server.get('/tags/', paginatedResponse('tags'));
+    server.get('/tags/', function ({tags}, {queryParams}) {
+        const {filter, page = 1, limit = 15} = queryParams;
+        const tagsName = extractFilterParam('tags.name', filter);
+
+        let collection = tags.all();
+
+        if (tagsName) {
+            collection = collection.filter(tag => tag.name.toLowerCase().includes(tagsName.toLowerCase()));
+        }
+
+        return paginateModelCollection('tags', collection, page, limit);
+    });
     server.get('/tags/:id/');
     server.put('/tags/:id/');
     server.del('/tags/:id/');

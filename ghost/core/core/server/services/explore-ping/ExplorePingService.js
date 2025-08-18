@@ -1,7 +1,7 @@
 module.exports = class ExplorePingService {
     /**
      * @param {object} deps
-     * @param {{getPublic: () => import('../../../shared/settings-cache/CacheManager').PublicSettingsCache}} deps.settingsCache
+     * @param {{get: (string) => string}} deps.settingsCache
      * @param {object} deps.config
      * @param {object} deps.labs
      * @param {object} deps.logging
@@ -14,6 +14,7 @@ module.exports = class ExplorePingService {
      * }}} deps.posts
      * @param {{stats: {
      *   getTotalMembers: () => Promise<number>
+     *   getMRRHistory: () => Promise<number>
      * }}} deps.members
      */
     constructor({settingsCache, config, labs, logging, ghostVersion, request, posts, members}) {
@@ -28,44 +29,52 @@ module.exports = class ExplorePingService {
     }
 
     async constructPayload() {
-        /* eslint-disable camelcase */
-        const {title, description, icon, locale, accent_color, twitter, facebook} = this.settingsCache.getPublic();
+        const payload = {
+            ghost: this.ghostVersion.full,
+            site_uuid: this.settingsCache.get('site_uuid'),
+            url: this.config.get('url'),
+            theme: this.settingsCache.get('active_theme'),
+            facebook: this.settingsCache.get('facebook'),
+            twitter: this.settingsCache.get('twitter')
+        };
 
-        // Get post statistics
-        const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
-            this.posts.stats.getTotalPostsPublished(),
-            this.posts.stats.getMostRecentlyPublishedPostDate(),
-            this.posts.stats.getFirstPublishedPostDate()
-        ]);
-
-        // Get member statistics with error handling
-        let totalMembers = null;
         try {
-            totalMembers = await this.members.stats.getTotalMembers();
+            const [totalPosts, lastPublishedAt, firstPublishedAt] = await Promise.all([
+                this.posts.stats.getTotalPostsPublished(),
+                this.posts.stats.getMostRecentlyPublishedPostDate(),
+                this.posts.stats.getFirstPublishedPostDate()
+            ]);
+
+            payload.posts_total = totalPosts;
+            payload.posts_last = lastPublishedAt ? lastPublishedAt.toISOString() : null;
+            payload.posts_first = firstPublishedAt ? firstPublishedAt.toISOString() : null;
         } catch (err) {
-            this.logging.warn('Failed to fetch member statistics', {
+            this.logging.warn('Failed to fetch post statistics', {
                 error: err.message,
                 context: 'explore-ping-service'
             });
-            // Continue without member statistics
+            payload.posts_total = null;
+            payload.posts_last = null;
+            payload.posts_first = null;
         }
 
-        return {
-            ghost: this.ghostVersion.full,
-            url: this.config.get('url'),
-            title,
-            description,
-            icon,
-            locale,
-            accent_color,
-            twitter,
-            facebook,
-            posts_first: firstPublishedAt ? firstPublishedAt.toISOString() : null,
-            posts_last: lastPublishedAt ? lastPublishedAt.toISOString() : null,
-            posts_total: totalPosts,
-            members_total: totalMembers
-        };
-        /* eslint-enable camelcase */
+        if (this.settingsCache.get('explore_ping_growth')) {
+            try {
+                const totalMembers = await this.members.stats.getTotalMembers();
+                const mrr = await this.members.stats.getMRRHistory();
+                payload.members_total = totalMembers;
+                payload.mrr = mrr;
+            } catch (err) {
+                this.logging.warn('Failed to fetch member statistics', {
+                    error: err.message,
+                    context: 'explore-ping-service'
+                });
+                payload.members_total = null;
+                payload.mrr = null;
+            }
+        }
+
+        return payload;
     }
 
     async makeRequest(exploreUrl, payload) {
@@ -94,9 +103,14 @@ module.exports = class ExplorePingService {
             return;
         }
 
-        const exploreUrl = this.config.get('explore:url');
+        const exploreUrl = this.config.get('explore:update_url');
         if (!exploreUrl) {
             this.logging.warn('Explore URL not set');
+            return;
+        }
+
+        if (!this.settingsCache.get('explore_ping')) {
+            this.logging.info('Explore ping disabled');
             return;
         }
 

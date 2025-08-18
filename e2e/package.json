@@ -1,0 +1,28 @@
+{
+  "name": "@tryghost/e2e",
+  "version": "0.0.0",
+  "repository": "https://github.com/TryGhost/Ghost/tree/main/e2e",
+  "author": "Ghost Foundation",
+  "private": true,
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "dev": "tsc --watch --preserveWatchOutput --sourceMap",
+    "build": "yarn build:ts",
+    "build:ts": "tsc",
+    "prepare": "tsc",
+    "test": "playwright test",
+    "test:types": "tsc --noEmit",
+    "lint": "eslint helpers --ext .ts --cache"
+  },
+  "files": [
+    "build"
+  ],
+  "devDependencies": {
+    "@playwright/test": "1.54.1",
+    "c8": "10.1.3",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
+  },
+  "dependencies": {}
+}

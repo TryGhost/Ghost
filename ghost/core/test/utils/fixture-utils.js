@@ -149,6 +149,7 @@ const fixtures = {
 
     insertGatedPosts: async function insertGatedPosts() {
         const owner = await models.User.getOwnerUser(context.internal);
+        const tier = await models.Product.findOne({slug: 'silver'}, context.internal);
 
         const gatedPosts = [{
             id: '618ba1ffbe2896088840a6ef',
@@ -159,6 +160,17 @@ const fixtures = {
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
             mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             visibility: 'paid',
+            authors: [owner.toJSON()]
+        }, {
+            id: '618ba1ffbe2896088840a6ff',
+            title: 'This has a tiered paywall',
+            slug: 'paywall-tiered',
+            lexical: '',
+            status: 'draft',
+            uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c906',
+            visibility: 'tiers',
+            tiers: [tier.toJSON()],
+            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             authors: [owner.toJSON()]
         }];
 
@@ -247,17 +259,26 @@ const fixtures = {
         return models.User.add(user, context.internal);
     },
 
-    overrideOwnerUser: function overrideOwnerUser(slug) {
-        return models.User.getOwnerUser(context.internal)
-            .then(function (ownerUser) {
-                const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
+    overrideOwnerUser: async function overrideOwnerUser(slug) {
+        const ownerUser = await models.User.getOwnerUser({...context.internal, withRelated: ['apiKeys']});
 
-                if (slug) {
-                    user.slug = slug;
-                }
+        const user = DataGenerator.forKnex.createUser(DataGenerator.Content.users[0]);
 
-                return models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
-            });
+        if (slug) {
+            user.slug = slug;
+        }
+
+        await models.User.edit(user, _.merge({id: ownerUser.id}, context.internal));
+
+        // Check if user already has an API key using the related data we already fetched
+        const existingApiKeys = ownerUser.related('apiKeys');
+        if (existingApiKeys.length === 0) {
+            const userApiKey = {...DataGenerator.forKnex.user_api_keys[0], user_id: ownerUser.id};
+            // Only insert a new API key if one doesn't exist
+            await models.ApiKey.add(userApiKey, context.internal);
+        }
+
+        return ownerUser;
     },
 
     changeOwnerUserStatus: function changeOwnerUserStatus(options) {
@@ -290,7 +311,7 @@ const fixtures = {
         let roles = await models.Role.fetchAll();
         roles = roles.toJSON();
 
-        return Promise.all(usersWithoutOwner.map((user) => {
+        const users = await Promise.all(usersWithoutOwner.map((user) => {
             let userRolesRelations = _.filter(DataGenerator.forKnex.roles_users, {user_id: user.id});
 
             userRolesRelations = _.map(userRolesRelations, function (userRolesRelation) {
@@ -301,6 +322,14 @@ const fixtures = {
 
             return models.User.add(user, context.internal);
         }));
+
+        // // Add API key for each user
+        await Promise.all(users.map((user) => {
+            const userApiKey = _.find(DataGenerator.forKnex.user_api_keys, {user_id: user.id});
+            return models.ApiKey.add(userApiKey, context.internal);
+        }));
+
+        return users;
     },
 
     createInactiveUser() {
@@ -518,7 +547,7 @@ const fixtures = {
 
     insertExtraTiers: async function insertExtraTiers() {
         const extraTier = DataGenerator.forKnex.createProduct({});
-        const extraTier2 = DataGenerator.forKnex.createProduct({slug: 'silver', name: 'Silver'});
+        const extraTier2 = DataGenerator.forKnex.createProduct({id: '6834edbcd2e19501e29e9537', slug: 'silver', name: 'Silver'});
         await models.Product.add(extraTier, context.internal);
         await models.Product.add(extraTier2, context.internal);
     },

@@ -389,6 +389,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     color: var(--middarkgrey);
 }
 
+.gh-nav-list .gh-icon-ap-network {
+    width: 18px;
+    height: 18px;
+}
+
 /* Global search
 /* ---------------------------------------------------------- */
 
@@ -546,6 +551,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     opacity: 1;
 }
 
+.gh-nav-list a:hover .gh-nav-member-count {
+    background: color-mod(var(--mainmenu-color-active-bg) l(-5%));
+}
+
 /* Icons */
 .gh-nav-list svg {
     margin-right: 11px;
@@ -679,7 +688,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     padding: 2px 7px;
     margin: 0;
     right: 10px;
-    top: 5px;
+    top: 7px;
     background: var(--mainmenu-color-active-bg);
     color: var(--middarkgrey);
     border-radius: 999px;
@@ -687,6 +696,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     font-size: 1.3rem;
     min-width: 23px;
     text-align: center;
+}
+
+.gh-nav-list-ap .active .gh-nav-member-count {
+    display: none;
 }
 
 .gh-nav-main {
@@ -1171,9 +1184,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     max-width: var(--main-layout-content-maxwidth);
 }
 
-.gh-nav-hidden + .gh-main .gh-canvas {
-    padding-left: 80px;
-    padding-right: 80px;
+@media (min-width: 800px) {
+    .gh-nav-hidden + .gh-main .gh-canvas {
+        padding-left: 80px;
+        padding-right: 80px;
+    }
 }
 
 .gh-canvas.gh-canvas-sticky {
@@ -2346,13 +2361,13 @@ section.gh-ds h2 {
     top: 4px;
     right: 8px;
     padding: 5px;
-    color: #ddd;
+    color: var(--midlightgrey);
     font-size: 2.2rem;
     line-height: 1;
 }
 
 .gh-sidebar-banner-close:hover {
-    color: #15171A;
+    color: var(--midgrey);
 }
 
 .gh-sidebar-banner a > strong {

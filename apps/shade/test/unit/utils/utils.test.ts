@@ -10,6 +10,7 @@ import {
     formatPercentage
 } from '@/lib/utils';
 import moment from 'moment-timezone';
+import {vi} from 'vitest';
 
 describe('utils', function () {
     describe('cn function', function () {
@@ -33,24 +34,30 @@ describe('utils', function () {
     });
 
     describe('debounce function', function () {
-        it('delays function execution', function (done) {
-            let counter = 0;
-            const increment = () => {
-                counter += 1;
-            };
-            
-            const debouncedIncrement = debounce(increment, 100);
-            
-            debouncedIncrement();
-            assert.equal(counter, 0, 'Function should not be called immediately');
-            
-            setTimeout(() => {
-                assert.equal(counter, 1, 'Function should be called after the delay');
-                done();
-            }, 150);
+        beforeEach(function () {
+            vi.useFakeTimers();
         });
 
-        it('only calls the function once if called multiple times within the wait period', function (done) {
+        afterEach(function () {
+            vi.restoreAllMocks();
+        });
+
+        it('delays function execution', function () {
+            let counter = 0;
+            const increment = () => {
+                counter += 1;
+            };
+            
+            const debouncedIncrement = debounce(increment, 100);
+            
+            debouncedIncrement();
+            assert.equal(counter, 0, 'Function should not be called immediately');
+            
+            vi.advanceTimersByTime(150);
+            assert.equal(counter, 1, 'Function should be called after the delay');
+        });
+
+        it('only calls the function once if called multiple times within the wait period', function () {
             let counter = 0;
             const increment = () => {
                 counter += 1;
@@ -64,10 +71,8 @@ describe('utils', function () {
             
             assert.equal(counter, 0, 'Function should not be called immediately');
             
-            setTimeout(() => {
-                assert.equal(counter, 1, 'Function should only be called once');
-                done();
-            }, 150);
+            vi.advanceTimersByTime(150);
+            assert.equal(counter, 1, 'Function should only be called once');
         });
 
         it('calls the function immediately if immediate is true', function () {
@@ -119,6 +124,34 @@ describe('utils', function () {
     });
 
     describe('formatDisplayDate function', function () {
+        it('returns an empty string if the date string is an empty string', function () {
+            const formatted = formatDisplayDate('');
+            assert.equal(formatted, '');
+        });
+
+        it('returns an empty string if the date string is an invalid type', function () {
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(123);
+            assert.equal(formatted, '');
+        });
+
+        it('does not throw an error if the date string is a Date object', function () {
+            const date = new Date('2023-04-15');
+            // @ts-expect-error This should error if dateString is not a string, but for some reason Typescript isn't catching this
+            const formatted = formatDisplayDate(date);
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles a date string with time but without a timezone', function () {
+            const formatted = formatDisplayDate('2023-04-15 12:00:00');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
+        it('handles an ISO8601 date string', function () {
+            const formatted = formatDisplayDate('2023-04-15T12:00:00Z');
+            assert.equal(formatted, '15 Apr 2023');
+        });
+
         it('formats a date string to display format', function () {
             // Using a predefined date for testing, bypassing the current date check
             // Test different year formatting without mocking Date

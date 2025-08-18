@@ -27,7 +27,6 @@ module.exports = function previewController(req, res, next) {
         .read(params)
         .then(function then(result) {
             const post = result[res.routerOptions.query.resource][0];
-
             if (!post) {
                 return next();
             }
@@ -60,7 +59,10 @@ module.exports = function previewController(req, res, next) {
                 return urlUtils.redirect301(res, urlUtils.urlJoin('/email', post.uuid, '/'));
             }
 
-            post.access = !!post.html;
+            // Preserve the old behavior of assuming the user has access to the post if member_status is not provided
+            if (!req.query?.member_status) {
+                post.access = !!post.html;
+            }
 
             return renderer.renderEntry(req, res)(post);
         })
