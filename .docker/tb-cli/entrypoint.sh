@@ -1,8 +1,6 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "Starting tb-cli"
-
 # Build the Tinybird files
 tb --local build
 
