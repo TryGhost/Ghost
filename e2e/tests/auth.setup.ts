@@ -2,12 +2,12 @@ import {test as setup, expect} from '@playwright/test';
 import {AnalyticsOverviewPage, LoginPage} from '../helpers/pages/admin';
 import * as path from 'node:path';
 import {existsSync, readFileSync} from 'fs';
-import { appConfig } from '../helpers/utils/app-config';
+import {appConfig, setupUser} from '../helpers/utils';
 
 const authFile = path.join(__dirname, '../playwright/.auth/user.json');
 
+// Check if auth file exists and has valid cookies
 function authFileExists() {
-    // Check if auth file exists and has valid cookies
     if (existsSync(authFile)) {
         try {
             const authData = JSON.parse(readFileSync(authFile, 'utf8'));
@@ -28,11 +28,15 @@ setup('authenticate', async ({page}) => {
         return;
     }
 
+    await setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password});
+    // TODO: remove the wait
+    await new Promise(r => {setTimeout(r, 2000)});
+
     const loginPage = new LoginPage(page);
     await loginPage.goto();
     await loginPage.signIn(appConfig.auth.email, appConfig.auth.password);
 
-    // waiting for page to be loaded, before storing the credentials
+    // waiting for the page to be loaded before storing the credentials
     const analyticsPage = new AnalyticsOverviewPage(page);
     await expect(analyticsPage.header).toBeVisible();
 

@@ -1,60 +1,85 @@
-import dotenv from 'dotenv';
-dotenv.config();
-
+import {appConfig} from './app-config';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logging = require('@tryghost/logging');
-import {appConfig} from './app-config';
 
-async function setupUser() {
-    const baseURL = appConfig.baseURL;
-    const adminUsername = appConfig.auth.email;
-    const adminPassword = appConfig.auth.password;
+export interface GhostUser {
+    name: string;
+    email: string;
+    password: string;
+    blogTitle: string;
+}
 
-    try {
-        const setupCheckResponse = await fetch(`${baseURL}/ghost/api/admin/authentication/setup`, {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json',
-                'Accept-Version': 'v5.0'
-            }
-        });
+export class GhostUserSetup {
+    private readonly baseURL: string;
+    private readonly headers: Record<string, string>;
+    private readonly setupAuthEndpoint = '/ghost/api/admin/authentication/setup';
 
-        const setupStatus = await setupCheckResponse.json();
+    constructor(baseURL: string) {
+        this.baseURL = baseURL;
+        this.headers = {'Content-Type': 'application/json'};
+    }
 
-        if (setupStatus.setup && setupStatus.setup[0] && setupStatus.setup[0].status === false) {
-            logging.info('Ghost setup not completed. Creating admin user...');
-
-            const setupResponse = await fetch(`${baseURL}/ghost/api/admin/authentication/setup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept-Version': 'v5.0'
-                },
-                body: JSON.stringify({
-                    setup: [{
-                        name: 'Test Admin',
-                        email: adminUsername,
-                        password: adminPassword,
-                        blogTitle: 'Test Blog'
-                    }]
-                })
-            });
-
-            if (!setupResponse.ok) {
-                const error = await setupResponse.text();
-                throw new Error(`Failed to setup Ghost: ${setupResponse.status} - ${error}`);
-            }
-
-            logging.info('✅ Admin user created successfully');
-        } else {
-            throw new Error('Ghost setup already completed');
+    async setupFirstUser(userOverrides: Partial<GhostUser> = {}): Promise<void> {
+        if (await this.setupIsAlreadyCompleted()) {
+            logging.info('Ghost user setup is already completed.');
+            return;
         }
-    } catch (error) {
-        logging.error('❌ Global setup failed:', error);
-        throw error;
+
+        const user = this.buildUser(userOverrides);
+        await this.createUser(user);
+    }
+
+    private async setupIsAlreadyCompleted(): Promise<boolean> {
+        const response = await this.makeRequest('GET');
+        const data = await response.json();
+        return data.setup?.[0]?.status === true;
+    }
+
+    private buildUser(overrides: Partial<GhostUser>): GhostUser {
+        return {
+            name: 'Test Admin',
+            email: 'test@example.com',
+            password: 'test123',
+            blogTitle: 'Test Blog',
+            ...overrides
+        };
+    }
+
+    private async createUser(user: GhostUser): Promise<void> {
+        await this.makeRequest('POST', {setup: [user]});
+        logging.info('Ghost user created successfully.');
+    }
+
+    private async makeRequest(method: 'GET' | 'POST', body?: unknown): Promise<Response> {
+        const options: RequestInit = {method, headers: this.headers};
+
+        if (body) {
+            options.body = JSON.stringify(body);
+        }
+
+        const response = await fetch(`${this.baseURL}${this.setupAuthEndpoint}`, options);
+
+        if (!response.ok) {
+            const error = await response.text();
+            throw new Error(`Ghost setup ${method} failed (${response.status}): ${error}`);
+        }
+
+        return response;
     }
 }
 
-setupUser();
+export async function setupUser(baseGhostUrl: string, userOverrides: Partial<GhostUser> = {}): Promise<void> {
+    const setup = new GhostUserSetup(baseGhostUrl);
+    await setup.setupFirstUser(userOverrides);
+}
 
 export default setupUser;
+
+// Execute only when run directly
+if (require.main === module) {
+    setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password})
+        .catch((error) => {
+            logging.error('Ghost user setup failed:', error.message);
+            process.exit(1);
+        });
+}

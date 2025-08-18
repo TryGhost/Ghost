@@ -548,6 +548,9 @@ jobs:
         run: echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
+        env:
+          E2E_ACCOUNT_USERNAME: ${{ secrets.E2E_ACCOUNT_USERNAME }}
+          E2E_ACCOUNT_PASSWORD: ${{ secrets.E2E_ACCOUNT_PASSWORD }}
         working-directory: ghost/core
         run: yarn test:ci:e2e
 
