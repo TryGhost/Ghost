@@ -88,12 +88,17 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             show_title_and_feature_image: true
         };
         
-        // Merge with user options, handling special cases
+        // Determine published_at based on status and user options
+        let publishedAt = options.published_at ?? defaults.published_at;
+        if (options.status === 'published' && !options.published_at) {
+            publishedAt = now;
+        }
+        
+        // Merge with user options
         const post: Post = {
             ...defaults,
             ...options,
-            // Handle published_at logic - if status is published but no published_at is set, use current time
-            published_at: options.status === 'published' && !options.published_at ? now : (options.published_at || defaults.published_at)
+            published_at: publishedAt
         } as Post;
         
         return post;
