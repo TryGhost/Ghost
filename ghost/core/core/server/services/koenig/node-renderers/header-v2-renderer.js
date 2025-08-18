@@ -125,7 +125,7 @@ function emailTemplate(nodeData, options) {
                     <!--[if mso]>
                     <td class="kg-header-card-content" style="${hasImageNoSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
                     <![endif]-->
-                    <!--[if !mso]><!-- -->
+                    <!--[if !mso]><!-->
                     <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
                     <!--<![endif]-->
                     ${hasImageNoSplit ? `
