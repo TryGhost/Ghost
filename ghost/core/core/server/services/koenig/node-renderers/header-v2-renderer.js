@@ -91,7 +91,7 @@ function emailTemplate(nodeData, options) {
     
     return (
         `
-        <div class="kg-header-card kg-v2${hasDarkBg ? ' kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+        <div class="kg-header-card kg-v2 ${hasDarkBg ? 'kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
@@ -123,7 +123,7 @@ function emailTemplate(nodeData, options) {
                 <tr>
                     ${labs.isSet('emailHeaderCardOutlook') ? `
                     <!--[if mso]>
-                    <td class="kg-header-card-content" style="${nodeData.layout !== 'split' ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                    <td class="kg-header-card-content" style="${hasImageNoSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
                     <![endif]-->
                     <!--[if !mso]><!-- -->
                     <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
