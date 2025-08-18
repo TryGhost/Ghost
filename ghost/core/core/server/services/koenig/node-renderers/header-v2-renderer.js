@@ -79,13 +79,8 @@ function generateMSOSplitHeaderImage(nodeData) {
     if (backgroundSize === 'contain') {
         return `
             <!--[if mso]>
-                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false"
-                style="width:600px;height:320px;">
-                    <v:fill type="frame"
-                            aspect="atmost"
-                            size="225pt,120pt"
-                            src="${backgroundImageSrc}"
-                            color="${backgroundColor}" />
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false" style="width:600px;height:320px;">
+                    <v:fill type="frame" aspect="atmost" size="225pt,120pt" src="${backgroundImageSrc}" color="${backgroundColor}" />
                     <v:textbox inset="0,0,0,0">
                     </v:textbox>
                 </v:rect>
@@ -94,8 +89,7 @@ function generateMSOSplitHeaderImage(nodeData) {
     } else {
         return `
             <!--[if mso]>
-                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" 
-                style="width:600px;height:320px;">
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:320px;">
                     <v:fill type="frame" aspect="atleast" src="${backgroundImageSrc}" color="${backgroundColor}" />
                     <v:textbox inset="0,0,0,0">
                     </v:textbox>
@@ -126,12 +120,7 @@ function generateMSOContentWrapper(nodeData) {
     const msoImageVML = hasImageNoSplit ? `
                     <!--[if mso]>
                         <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
-                            <v:fill 
-                                src="${backgroundImageSrc}" 
-                                color="${backgroundColor}" 
-                                type="frame" 
-                                aspect="atleast" 
-                                focusposition="0.5,0.5" />
+                            <v:fill src="${backgroundImageSrc}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
                             <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
                     <![endif]-->
                     ` : '';
