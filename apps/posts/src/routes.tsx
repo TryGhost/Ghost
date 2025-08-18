@@ -4,6 +4,7 @@ import Overview from './views/PostAnalytics/Overview/Overview';
 import PostAnalytics from './views/PostAnalytics/PostAnalytics';
 import PostAnalyticsProvider from './providers/PostAnalyticsContext';
 import Web from './views/PostAnalytics/Web/Web';
+import Tags from './views/Tags/Tags';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/withFeatureFlag';
@@ -47,6 +48,10 @@ export const routes: RouteObject[] = [
                         element: <Newsletter />
                     }
                 ]
+            },
+            {
+                path: 'tags',
+                element: <Tags />
             },
 
             // Error handling
