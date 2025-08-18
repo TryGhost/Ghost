@@ -1,13 +1,7 @@
 import {appConfig} from './app-config';
+import {UserFactory, User} from '../factories';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logging = require('@tryghost/logging');
-
-export interface GhostUser {
-    name: string;
-    email: string;
-    password: string;
-    blogTitle: string;
-}
 
 export class GhostUserSetup {
     private readonly baseURL: string;
@@ -19,33 +13,23 @@ export class GhostUserSetup {
         this.headers = {'Content-Type': 'application/json'};
     }
 
-    async setupFirstUser(userOverrides: Partial<GhostUser> = {}): Promise<void> {
-        if (await this.setupIsAlreadyCompleted()) {
+    async setup(userOverrides: Partial<User> = {}): Promise<void> {
+        if (await this.isSetupAlreadyCompleted()) {
             logging.info('Ghost user setup is already completed.');
             return;
         }
 
-        const user = this.buildUser(userOverrides);
+        const user = new UserFactory().build(userOverrides);
         await this.createUser(user);
     }
 
-    private async setupIsAlreadyCompleted(): Promise<boolean> {
+    private async isSetupAlreadyCompleted(): Promise<boolean> {
         const response = await this.makeRequest('GET');
         const data = await response.json();
         return data.setup?.[0]?.status === true;
     }
 
-    private buildUser(overrides: Partial<GhostUser>): GhostUser {
-        return {
-            name: 'Test Admin',
-            email: 'test@example.com',
-            password: 'test123',
-            blogTitle: 'Test Blog',
-            ...overrides
-        };
-    }
-
-    private async createUser(user: GhostUser): Promise<void> {
+    private async createUser(user: User): Promise<void> {
         await this.makeRequest('POST', {setup: [user]});
         logging.info('Ghost user created successfully.');
     }
@@ -68,9 +52,9 @@ export class GhostUserSetup {
     }
 }
 
-export async function setupUser(baseGhostUrl: string, userOverrides: Partial<GhostUser> = {}): Promise<void> {
-    const setup = new GhostUserSetup(baseGhostUrl);
-    await setup.setupFirstUser(userOverrides);
+export async function setupUser(baseGhostUrl: string, user: Partial<User> = {}): Promise<void> {
+    const ghostUserSetup = new GhostUserSetup(baseGhostUrl);
+    await ghostUserSetup.setup(user);
 }
 
 export default setupUser;
