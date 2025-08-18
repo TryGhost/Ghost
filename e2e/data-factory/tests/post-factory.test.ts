@@ -28,8 +28,7 @@ test.describe('PostFactory', () => {
         
         // Initialize adapter and factory
         adapter = new KnexPersistenceAdapter(db);
-        postFactory = new PostFactory();
-        postFactory.setAdapter(adapter);
+        postFactory = new PostFactory(adapter);
     });
 
     test.afterAll(async () => {
