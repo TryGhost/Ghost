@@ -219,6 +219,7 @@ services:
     image: tinybirdco/tinybird-local:latest
     ports:
       - "7181:7181"
+    stop_grace_period: 2s
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
       interval: 1s
