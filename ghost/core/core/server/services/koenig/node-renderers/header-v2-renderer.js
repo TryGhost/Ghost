@@ -175,14 +175,14 @@ function emailTemplate(nodeData, options) {
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
                         <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
-                            ${generateMSOSplitHeaderImage(nodeData)}
+                            ${generateMSOSplitHeaderImage(nodeData) /* mso-only img, no shared markup */}
                         </td>
                     </tr>
                 </table>
             ` : ''}
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
                 <tr>
-                    ${generateMSOContentWrapper(nodeData)}
+                    ${generateMSOContentWrapper(nodeData) /* creates correct opening td tag for any platform */}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                                 <td align="${nodeData.alignment}">
@@ -202,7 +202,7 @@ function emailTemplate(nodeData, options) {
                                 ` : ''}
                             </tr>
                         </table>
-                ${generateMSOContentClosing(nodeData)}
+                ${generateMSOContentClosing(nodeData) /* mso-only closing tags, no shared markup */}
                     </td>
                 </tr>
             </table>
