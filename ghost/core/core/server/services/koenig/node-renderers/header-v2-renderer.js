@@ -81,11 +81,11 @@ function generateMSOSplitHeaderImage(nodeData) {
             <!--[if mso]>
                 <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false"
                 style="width:600px;height:320px;">
-                <v:fill type="frame"
-                        aspect="atmost"
-                        size="225pt,120pt"
-                        src="${backgroundImageSrc}"
-                        color="${backgroundColor}" />
+                    <v:fill type="frame"
+                            aspect="atmost"
+                            size="225pt,120pt"
+                            src="${backgroundImageSrc}"
+                            color="${backgroundColor}" />
                     <v:textbox inset="0,0,0,0">
                     </v:textbox>
                 </v:rect>
@@ -117,17 +117,22 @@ function generateMSOContentWrapper(nodeData) {
     // Outlook clients will return the first td, all other clients will return the second td
     const msoOpenTag = `
                     <!--[if mso]>
-                    <td class="kg-header-card-content" style="${hasImageNoSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                        <td class="kg-header-card-content" style="${hasImageNoSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
                     <![endif]-->
                     <!--[if !mso]><!-->
-                    <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                        <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
                     <!--<![endif]-->`;
 
     const msoImageVML = hasImageNoSplit ? `
                     <!--[if mso]>
-                    <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
-                        <v:fill src="${backgroundImageSrc}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
-                        <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
+                            <v:fill 
+                                src="${backgroundImageSrc}" 
+                                color="${backgroundColor}" 
+                                type="frame" 
+                                aspect="atleast" 
+                                focusposition="0.5,0.5" />
+                            <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
                     <![endif]-->
                     ` : '';
 
