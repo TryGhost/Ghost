@@ -6,6 +6,11 @@ const CACHE_TIME = 1000 * 60 * 5; // 5 minutes
 export default class TagsRoute extends AuthenticatedRoute {
     @service infinity;
     @service tagsManager;
+    @service feature;
+
+    get templateName() {
+        return this.feature.tagsX ? 'tags-x' : 'tags';
+    }
 
     queryParams = {
         type: {
@@ -24,6 +29,10 @@ export default class TagsRoute extends AuthenticatedRoute {
     }
 
     model(params) {
+        if (this.feature.tagsX) {
+            return null;
+        }
+        
         const filterParams = {
             visibility: params.type
         };
