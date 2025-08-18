@@ -3,6 +3,7 @@ import Newsletter from './views/PostAnalytics/Newsletter/Newsletter';
 import Overview from './views/PostAnalytics/Overview/Overview';
 import PostAnalytics from './views/PostAnalytics/PostAnalytics';
 import PostAnalyticsProvider from './providers/PostAnalyticsContext';
+import Tags from './views/Tags/Tags';
 import Web from './views/PostAnalytics/Web/Web';
 import {ErrorPage} from '@tryghost/shade';
 import {RouteObject} from '@tryghost/admin-x-framework';
@@ -47,6 +48,10 @@ export const routes: RouteObject[] = [
                         element: <Newsletter />
                     }
                 ]
+            },
+            {
+                path: 'tags',
+                element: <Tags />
             },
 
             // Error handling
