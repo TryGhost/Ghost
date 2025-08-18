@@ -1,4 +1,5 @@
 import {Factory} from '../factory';
+import type {PersistenceAdapter} from '../../persistence/adapter';
 import {faker} from '@faker-js/faker';
 import {generateId, generateUuid, generateSlug} from '../../utils';
 
@@ -37,6 +38,10 @@ export interface Post {
 export class PostFactory extends Factory<Partial<Post>, Post> {
     name = 'post'; // Factory identifier
     entityType = 'posts'; // Entity name (for adapter; currently the database table)
+
+    constructor(adapter?: PersistenceAdapter) {
+        super(adapter);
+    }
     
     build(options: Partial<Post> = {}): Post {
         const now = new Date();

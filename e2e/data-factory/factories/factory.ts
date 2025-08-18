@@ -6,7 +6,7 @@ export abstract class Factory<TOptions extends Record<string, unknown> = Record<
     
     protected adapter?: PersistenceAdapter;
 
-    setAdapter(adapter: PersistenceAdapter): void {
+    constructor(adapter?: PersistenceAdapter) {
         this.adapter = adapter;
     }
 

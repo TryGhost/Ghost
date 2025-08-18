@@ -54,8 +54,7 @@ const {PostFactory, KnexPersistenceAdapter} = require('../build/data-factory');
 // Set up
 const db = knex(dbConfig);
 const adapter = new KnexPersistenceAdapter(db);
-const postFactory = new PostFactory();
-postFactory.setAdapter(adapter);
+const postFactory = new PostFactory(adapter);
 
 // Build in memory (not persisted)
 const draftPost = postFactory.build({
