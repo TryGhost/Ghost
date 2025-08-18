@@ -5,13 +5,14 @@ This is the web analytics implementation using [Tinybird Forward](https://www.ti
 
 ### Using Tinybird with Docker (Recommended)
 
-The easiest way to run Tinybird with Ghost locally is to use Docker and Docker Compose. You'll need to have Docker and Docker Compose installed on your machine.
+The easiest way to run Tinybird with Ghost locally is to use Docker and Docker Compose. This is the recommended approach because it requires zero additional configuration and avoids the need to install the Tinybird CLI on your machine. You'll need to have Docker and Docker Compose installed on your machine.
 
 All of these commands should be run from the root of the Ghost repository:
 
-1. `docker compose --profile analytics up -d` - This will start Tinybird, deploy the datafiles in this directory to it, and start the analytics service.
-1. `docker compose --profile split up` - This will start Ghost and automatically set its configuration to use the Tinybird service running in Docker.
-1. Ghost will be accessible at `http://localhost:2368`, and analytics should work out of the box.
+1. `docker compose --profile analytics up -d` - This will start the Tinybird local container, deploy the datafiles in this directory to it, and configure + start the Analytics service.
+1. `docker compose --profile split up` - This will start the Ghost service and configure it to use the bundled Tinybird & Analytics services automatically.
+
+Ghost will be accessible at `http://localhost:2368`, and analytics should work out of the box.
 
 #### Using the Tinybird CLI from Docker
 Following the above steps will deploy the Tinybird datafiles to the local Tinybird instance. If you want to use the Tinybird CLI without installing it on your machine, you can use the `tb` docker compose service to run a one-off command or initiate a shell session.
@@ -71,7 +72,7 @@ Sample config:
         "adminToken": "admin-token-from-tinybird",
         "tracker": {
             // -- needs to be present, and required Traffic Analytics service running with correct setup
-            "endpoint": "http://localhost:3000/tb/web_analytics"
+            "endpoint": "http://localhost:3000/api/v1/page_hit"
         },
         "stats": {
             //  -- optional override for site uuid
