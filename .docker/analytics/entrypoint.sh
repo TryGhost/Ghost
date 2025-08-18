@@ -1,7 +1,32 @@
 #!/bin/sh
+
+# Entrypoint script for the Analytics service in compose.yml
+## This script configures the environment for the Analytics service to use Tinybird local.
+## It depends on the `tb-cli` service, which creates the `.env` file, which is mounted
+## into the Analytics service container at `/app/.env`.
+
+# Note: the analytics service's container is based on alpine, hence `sh` instead of `bash`.
 set -eu
 
+# Handle shutdown signals gracefully.
+_term() {
+    echo "Caught SIGTERM/SIGINT signal, shutting down gracefully..."
+    kill -TERM "$child" 2>/dev/null
+    wait "$child"
+    exit 0
+}
+
+# Set up signal handlers
+trap _term SIGTERM SIGINT
+
+# Set the TINYBIRD_TRACKER_TOKEN environment variable from the .env file
+# This file is created by the `tb-cli` service and mounted into the Analytics service container
 source /app/.env
 export TINYBIRD_TRACKER_TOKEN="$TINYBIRD_TRACKER_TOKEN"
 
-exec "$@"
+# Start the process in the background
+"$@" &
+child=$!
+
+# Wait for the child process
+wait "$child"
