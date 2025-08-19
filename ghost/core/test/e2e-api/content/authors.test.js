@@ -41,8 +41,8 @@ describe('Authors Content API', function () {
                 
                 // Verify URL structure
                 const urlParts = new URL(body.authors[0].url);
-                assert.equal(urlParts.protocol, 'http:');
-                assert.equal(urlParts.host, '127.0.0.1:2369');
+                assert.ok(['http:', 'https:'].includes(urlParts.protocol));
+                assert.equal(urlParts.pathname, `/author/${body.authors[0].slug}/`);
             });
     });
     it('Can request authors including post count', async function () {
@@ -59,13 +59,17 @@ describe('Authors Content API', function () {
             .expect(({body}) => {
                 const {authors} = body;
 
-                // Verify post counts for specific authors
-                const getAuthorBySlug = slug => authors.find(author => author.slug === slug);
-                
-                assert.equal(getAuthorBySlug('joe-bloggs').count.posts, 4);
-                assert.equal(getAuthorBySlug('slimer-mcectoplasm').count.posts, 1);
-                assert.equal(getAuthorBySlug('ghost').count.posts, 7);
-                
+                // Verify slugs and post counts for specific authors
+                const mustFind = (slug) => {
+                    const expectedAuthor = authors.find(author => author.slug === slug);
+                    assert.ok(expectedAuthor, `Expected author slug "${slug}" to be present`);
+                    return expectedAuthor;
+                };
+
+                assert.equal(mustFind('joe-bloggs').count.posts, 4);
+                assert.equal(mustFind('slimer-mcectoplasm').count.posts, 1);
+                assert.equal(mustFind('ghost').count.posts, 7);
+
                 // Verify expected author IDs (excluding ghost)
                 const nonGhostIds = authors
                     .filter(author => author.slug !== 'ghost')
@@ -78,7 +82,7 @@ describe('Authors Content API', function () {
             });
     });
     it('Can request single author', async function () {
-        await agent.get(`authors/slug/${fixtureManager.get('users', 0).slug}`)
+        await agent.get(`authors/slug/${fixtureManager.get('users', 0).slug}/`)
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -107,6 +111,8 @@ describe('Authors Content API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.authors.length, 1);
+                const expectedId = fixtureManager.get('users', 0).id;
+                assert.equal(body.authors[0].id, expectedId);
             });
     });
 });
