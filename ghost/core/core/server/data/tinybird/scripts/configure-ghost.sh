@@ -55,6 +55,7 @@ export TINYBIRD_TRACKER_TOKEN="$TRACKER_TOKEN"
 export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
 export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
 export tinybird__stats__endpoint="http://localhost:7181"
+export tinybird__tracker__endpoint="http://localhost:3000/api/v1/page_hit"
 
 # If running in GitHub Actions, also export to GITHUB_ENV
 if [ -n "$GITHUB_ENV" ]; then
