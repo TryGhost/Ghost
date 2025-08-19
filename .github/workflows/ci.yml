@@ -867,8 +867,6 @@ jobs:
         run: yarn test:e2e
         env:
           GHOST_BASE_URL: http://localhost:2368
-          E2E_ACCOUNT_USERNAME: ${{ secrets.E2E_ACCOUNT_USERNAME }}
-          E2E_ACCOUNT_PASSWORD: ${{ secrets.E2E_ACCOUNT_PASSWORD }}
 
       - name: Upload test results
         if: always()
