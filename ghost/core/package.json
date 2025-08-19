@@ -216,7 +216,7 @@
     "superagent-throttle": "1.0.1",
     "terser": "5.43.1",
     "tiny-glob": "0.2.9",
-    "ua-parser-js": "1.0.40",
+    "ua-parser-js": "1.0.41",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
