@@ -875,7 +875,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: e2e-playwright-report
-          path: e2e/test-results
+          path: |
+            e2e/playwright-report
+            e2e/test-results
           retention-days: 30
 
       - name: Stop E2E services
