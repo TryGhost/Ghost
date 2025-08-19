@@ -115,7 +115,8 @@ function generateMSOContentWrapper(nodeData) {
                     <![endif]-->
                     <!--[if !mso]><!-->
                         <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
-                    <!--<![endif]-->`;
+                    <!--<![endif]-->
+                    `;
 
     const msoImageVML = hasImageNoSplit ? `
                     <!--[if mso]>
@@ -135,13 +136,12 @@ function generateMSOContentClosing(nodeData) {
         return '';
     }
 
-    // spacing here maintains proper markup indentation
     return `
-                <!--[if mso]>
-                    </v:textbox>
-                </v:rect>
-                <![endif]-->
-                `;
+        <!--[if mso]>
+            </v:textbox>
+        </v:rect>
+        <![endif]-->
+        `;
 }
 
 function emailTemplate(nodeData, options) {
