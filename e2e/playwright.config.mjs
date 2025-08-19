@@ -3,7 +3,7 @@ dotenv.config();
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: process.env.CI ? 60 * 1000 : 30 * 1000, 
+    timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     expect: {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
@@ -15,12 +15,12 @@ const config = {
         trace: 'retain-on-failure',
         browserName: 'chromium'
     },
-    testDir: './tests',
+    testDir: './',
+    testMatch: ['tests/**/*.test.{js,ts}', 'data-factory/*.test.{js,ts}'],
     projects: [
         // Main tests - run after setup with authentication
         {
-            name: 'test',
-
+            name: 'main',
             testIgnore: ['**/auth.setup.ts'], // Exclude setup files
             use: {
                 baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
