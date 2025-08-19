@@ -63,5 +63,5 @@ if [ -n "$GITHUB_ENV" ]; then
     echo "tinybird__workspaceId=$TINYBIRD_WORKSPACE_ID" >> $GITHUB_ENV
     echo "tinybird__stats__endpoint=$tinybird__stats__endpoint" >> $GITHUB_ENV
     echo "TINYBIRD_TRACKER_TOKEN=$TINYBIRD_TRACKER_TOKEN" >> $GITHUB_ENV
-    echo "tinybird__tracker__endpoint=$tinybird__tracker__endpoint" >> $GITHUB_ENV
+#    echo "tinybird__tracker__endpoint=$tinybird__tracker__endpoint" >> $GITHUB_ENV
 fi
