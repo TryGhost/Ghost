@@ -17,6 +17,7 @@ Object {
       "customFonts": true,
       "editorExcerpt": true,
       "emailCustomization": true,
+      "emailHeaderCardOutlook": true,
       "explore": true,
       "i18n": true,
       "importMemberTier": true,

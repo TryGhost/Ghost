@@ -27,6 +27,11 @@ const features: Feature[] = [{
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
+},
+{
+    title: 'Outlook header card image',
+    description: 'Enables header card images styled for Outlook',
+    flag: 'emailHeaderCardOutlook'
 }];
 
 const AlphaFeatures: React.FC = () => {
