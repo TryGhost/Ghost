@@ -17,6 +17,7 @@ const LOCALE_DATA = [
     {code: 'eo', label: 'Esperanto'},
     {code: 'es', label: 'Spanish'},
     {code: 'et', label: 'Estonian'},
+    {code: 'eu', label: 'Basque'},
     {code: 'fa', label: 'Persian/Farsi'},
     {code: 'fi', label: 'Finnish'},
     {code: 'fr', label: 'French'},

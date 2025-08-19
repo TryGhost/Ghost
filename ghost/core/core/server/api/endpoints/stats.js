@@ -533,12 +533,7 @@ const controller = {
             };
         },
         async query(frame) {
-            return await statsService.api.getTopSourcesWithRange(
-                frame.options.date_from, 
-                frame.options.date_to, 
-                frame.options.order || 'free_members desc',
-                frame.options.limit || 50
-            );
+            return await statsService.api.getTopSourcesWithRange(frame.options);
         }
     }
 

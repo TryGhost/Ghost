@@ -12,6 +12,7 @@ export default BaseSerializer.extend({
         includes.add('tags');
         includes.add('authors');
         includes.add('tiers');
+        includes.add('email');
 
         // clean up some things that mirage doesn't understand
         includes.delete('authorsRoles');

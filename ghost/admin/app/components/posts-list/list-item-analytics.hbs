@@ -200,11 +200,12 @@
                 {{/if}}
             {{/if}}
 
+            {{#if @post.email}}
             <div class="gh-post-analytics-email-metrics gh-post-list-analytics-tt-container">
                 <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
                     <h3>Newsletter performance</h3>
                     <div class="metrics">
-                        {{#if @post.email}}
+                        {{!-- Always show sent count --}}
                         <div class="metric">
                             <div class="data">
                                 {{svg-jar "analytics-sent"}}
@@ -212,7 +213,8 @@
                             </div>
                             <span>{{format-number @post.email.emailCount}}</span>
                         </div>
-                        {{/if}}
+                        {{!-- Show opens when enabled --}}
+                        {{#if @post.showEmailOpenAnalytics}}
                         <div class="metric">
                             <div class="data">
                                 {{svg-jar "analytics-opens"}}
@@ -220,6 +222,9 @@
                             </div>
                             <span>{{format-number @post.email.openedCount}}</span>
                         </div>
+                        {{/if}}
+                        {{!-- Show clicks when enabled --}}
+                        {{#if @post.showEmailClickAnalytics}}
                         <div class="metric">
                             <div class="data">
                                 {{svg-jar "analytics-clicks"}}
@@ -227,10 +232,11 @@
                             </div>
                             <span>{{format-number @post.count.clicks}}</span>
                         </div>
+                        {{/if}}
                     </div>
                 </div>
-                {{!-- Opened / Signups column --}}
-                {{#if (and @post.showEmailOpenAnalytics @post.showEmailClickAnalytics) }}
+                {{!-- Opens column --}}
+                {{#if @post.showEmailOpenAnalytics}}
                     <LinkTo @route="posts-x.posts-x" @models={{array @post.id "newsletter"}} class="permalink gh-list-data gh-post-list-metrics">
                         <div class="gh-post-list-analytics-metric" data-test-analytics-opens>
                             {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
@@ -241,8 +247,8 @@
                     </LinkTo>
                 {{/if}}
 
-                {{!-- Clicked / Conversions column --}}
-                {{#if @post.showEmailClickAnalytics }}
+                {{!-- Clicks column --}}
+                {{#if @post.showEmailClickAnalytics}}
                     <LinkTo @route="posts-x.posts-x" @models={{array @post.id "newsletter"}} class="permalink gh-list-data gh-post-list-metrics">
                         <div class="gh-post-list-analytics-metric" data-test-analytics-clicks>
                             {{svg-jar "analytics-clicks" class="gh-list-analytics-icon"}}
@@ -251,19 +257,21 @@
                             </span>
                         </div>
                     </LinkTo>
-                {{else}}
-                    {{#if @post.showEmailOpenAnalytics }}
-                        <LinkTo @route="posts-x.posts-x" @models={{array @post.id "newsletter"}} class="permalink gh-list-data gh-post-list-metrics">
-                            <div class="gh-post-list-analytics-metric" data-test-analytics-opens>
-                                {{svg-jar "analytics-opens" class="gh-list-analytics-icon"}}
-                                <span class="gh-content-email-stats-value">
-                                        {{@post.email.openRate}}%
-                                </span>
-                            </div>
-                        </LinkTo>
-                    {{/if}}
+                {{/if}}
+
+                {{!-- Sent column (only when both clicks and opens are disabled) --}}
+                {{#if (and (not @post.showEmailClickAnalytics) (not @post.showEmailOpenAnalytics))}}
+                    <LinkTo @route="posts-x.posts-x" @models={{array @post.id "newsletter"}} class="permalink gh-list-data gh-post-list-metrics">
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-sent>
+                            {{svg-jar "analytics-sent" class="gh-list-analytics-icon"}}
+                            <span class="gh-content-email-stats-value">
+                                {{abbreviate-number @post.email.emailCount}}
+                            </span>
+                        </div>
+                    </LinkTo>
                 {{/if}}
             </div>
+            {{/if}}
 
             {{!-- Member conversions column (only show for published posts when traffic analytics is enabled AND web analytics is enabled) --}}
             {{#if this.settings.membersTrackSources}}
@@ -285,19 +293,21 @@
                                     {{/if}}
                                 </span>
                             </div>
-                            <div class="metric">
-                                <div class="data">
-                                    {{svg-jar "analytics-paid-members"}}
-                                    Paid
+                            {{#if this.membersUtils.paidMembersEnabled}}
+                                <div class="metric">
+                                    <div class="data">
+                                        {{svg-jar "analytics-paid-members"}}
+                                        Paid
+                                    </div>
+                                    <span>
+                                        {{#if this.hasMemberData}}
+                                            {{format-number this.memberCounts.paid}}
+                                        {{else}}
+                                            0
+                                        {{/if}}
+                                    </span>
                                 </div>
-                                <span>
-                                    {{#if this.hasMemberData}}
-                                        {{format-number this.memberCounts.paid}}
-                                    {{else}}
-                                        0
-                                    {{/if}}
-                                </span>
-                            </div>
+                            {{/if}}
                         </div>
                     </div>
                         <div class="gh-post-list-analytics-metric" data-test-analytics-member-conversions>

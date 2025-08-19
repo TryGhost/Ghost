@@ -137,7 +137,7 @@ describe('Email addresses', function () {
 
     afterEach(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         mockManager.restore();
     });
 

@@ -16,7 +16,7 @@ const Feed: React.FC = () => {
     const {data: user} = useUserDataForUser('index');
 
     if (error && isApiError(error)) {
-        return <Error statusCode={error.statusCode}/>;
+        return <Error errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
     return <FeedList

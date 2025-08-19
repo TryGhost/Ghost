@@ -2,6 +2,7 @@ const {renderEmailButton} = require('../render-partials/email-button');
 const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
 const {slugify} = require('../render-utils/slugify');
 const {getSrcsetAttribute} = require('../render-utils/srcset-attribute');
+const labs = require('../../../../shared/labs');
 
 // TODO: nodeData.buttonTextColor should be calculated on the fly here rather than hardcoded by the editor
 
@@ -68,6 +69,81 @@ function cardTemplate(nodeData, options = {}) {
         `;
 }
 
+function generateMSOSplitHeaderImage(nodeData) {
+    const {backgroundSize, backgroundImageSrc, backgroundColor} = nodeData;
+
+    if (!labs.isSet('emailHeaderCardOutlook')) {
+        return '';
+    }
+
+    if (backgroundSize === 'contain') {
+        return `
+            <!--[if mso]>
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" stroke="false" style="width:600px;height:320px;">
+                    <v:fill type="frame" aspect="atmost" size="225pt,120pt" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:textbox inset="0,0,0,0">
+                    </v:textbox>
+                </v:rect>
+            <![endif]-->
+            `;
+    } else {
+        return `
+            <!--[if mso]>
+                <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:320px;">
+                    <v:fill type="frame" aspect="atleast" src="${backgroundImageSrc}" color="${backgroundColor}" />
+                    <v:textbox inset="0,0,0,0">
+                    </v:textbox>
+                </v:rect>
+            <![endif]-->
+            `;
+    }
+}
+
+function generateMSOContentWrapper(nodeData) {
+    const {backgroundImageSrc, backgroundColor} = nodeData;
+    const hasContainAndSplit = nodeData.backgroundSize === 'contain' && nodeData.layout === 'split';
+    const hasImageNoSplit = nodeData.backgroundImageSrc && nodeData.layout !== 'split';
+
+    if (!labs.isSet('emailHeaderCardOutlook')) {
+        return `<td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">`;
+    }
+
+    // Outlook clients will return the first td, all other clients will return the second td
+    const msoOpenTag = `
+                    <!--[if mso]>
+                        <td class="kg-header-card-content" style="${hasImageNoSplit ? 'padding: 0;' : 'padding: 40px;'}${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                    <![endif]-->
+                    <!--[if !mso]><!-->
+                        <td class="kg-header-card-content" style="${hasContainAndSplit ? 'padding-top: 0;' : ''}">
+                    <!--<![endif]-->
+                    `;
+
+    const msoImageVML = hasImageNoSplit ? `
+                    <!--[if mso]>
+                        <v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;">
+                            <v:fill src="${backgroundImageSrc}" color="${backgroundColor}" type="frame" aspect="atleast" focusposition="0.5,0.5" />
+                            <v:textbox inset="30pt,30pt,30pt,30pt" style="mso-fit-shape-to-text:true;">
+                    <![endif]-->
+                    ` : '';
+
+    return msoOpenTag + msoImageVML;
+}
+
+function generateMSOContentClosing(nodeData) {
+    const hasImageNoSplit = nodeData.backgroundImageSrc && nodeData.layout !== 'split';
+
+    if (!labs.isSet('emailHeaderCardOutlook') || !hasImageNoSplit) {
+        return '';
+    }
+
+    return `
+        <!--[if mso]>
+            </v:textbox>
+        </v:rect>
+        <![endif]-->
+        `;
+}
+
 function emailTemplate(nodeData, options) {
     const backgroundAccent = nodeData.backgroundColor === 'accent' ? `background-color: ${nodeData.accentColor};` : '';
     const alignment = nodeData.alignment === 'center' ? 'text-align: center;' : '';
@@ -88,17 +164,19 @@ function emailTemplate(nodeData, options) {
 
     return (
         `
-        <div class="kg-header-card kg-v2${hasDarkBg ? ' kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
+        <div class="kg-header-card kg-v2 ${hasDarkBg ? 'kg-header-card-dark-bg' : 'kg-header-card-light-bg'}" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
             ${nodeData.layout === 'split' && nodeData.backgroundImageSrc ? `
                 <table border="0" cellpadding="0" cellspacing="0" width="100%">
                     <tr>
-                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image"></td>
+                        <td background="${nodeData.backgroundImageSrc}" style="${splitImageStyle}" class="kg-header-card-image" bgcolor="${nodeData.backgroundColor}" align="center">
+                            ${generateMSOSplitHeaderImage(nodeData) /* mso-only img, no shared markup */}
+                        </td>
                     </tr>
                 </table>
             ` : ''}
             <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color:${nodeData.textColor}; ${alignment} ${backgroundImageStyle} ${backgroundAccent}">
                 <tr>
-                    <td class="kg-header-card-content" style="${nodeData.layout === 'split' && nodeData.backgroundSize === 'contain' ? 'padding-top: 0;' : ''}">
+                    ${generateMSOContentWrapper(nodeData) /* creates correct opening td tag for any platform */}
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
                                 <td align="${nodeData.alignment}">
@@ -118,6 +196,7 @@ function emailTemplate(nodeData, options) {
                                 ` : ''}
                             </tr>
                         </table>
+                ${generateMSOContentClosing(nodeData) /* mso-only closing tags, no shared markup */}
                     </td>
                 </tr>
             </table>

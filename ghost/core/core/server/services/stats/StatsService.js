@@ -123,6 +123,7 @@ class StatsService {
      * @param {number} [options.limit=20] - Max number of results to return
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
      */
     async getNewsletterStats(options = {}) {
@@ -146,6 +147,7 @@ class StatsService {
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @returns {Promise<{data: import('./PostsStatsService').NewsletterSubscriberStats[]}>}
      */
     async getNewsletterSubscriberStats(options = {}) {
@@ -190,6 +192,7 @@ class StatsService {
      * @param {string} [options.newsletter_id] - ID of the specific newsletter to get stats for
      * @param {string} [options.order='published_at desc'] - Order field and direction
      * @param {number} [options.limit=20] - Max number of results to return
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
      * @param {string} [options.date_from] - Start date filter in YYYY-MM-DD format
      * @param {string} [options.date_to] - End date filter in YYYY-MM-DD format
      * @returns {Promise<{data: import('./PostsStatsService').NewsletterStatResult[]}>}
@@ -229,8 +232,16 @@ class StatsService {
         return result;
     }
 
-    async getTopSourcesWithRange(startDate, endDate, orderBy, limit) {
-        return this.referrers.getTopSourcesWithRange(startDate, endDate, orderBy, limit);
+    /**
+     * @param {Object} options
+     * @param {string} [options.date_from] - Start date in YYYY-MM-DD format
+     * @param {string} [options.date_to] - End date in YYYY-MM-DD format
+     * @param {string} [options.timezone] - Timezone to use for date interpretation
+     * @param {string} [options.orderBy='signups desc'] - Sort order: 'signups desc', 'paid_conversions desc', 'mrr desc', 'source desc'
+     * @param {number} [options.limit=50] - Maximum number of sources to return
+     */
+    async getTopSourcesWithRange(options = {}) {
+        return this.referrers.getTopSourcesWithRange(options);
     }
 
     /**

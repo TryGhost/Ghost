@@ -1,5 +1,6 @@
 const knex = require('knex').default;
 const assert = require('assert/strict');
+const moment = require('moment-timezone');
 const ReferrersStatsService = require('../../../../../core/server/services/stats/ReferrersStatsService');
 const {DateTime} = require('luxon');
 
@@ -200,7 +201,8 @@ describe('ReferrersStatsService', function () {
         });
 
         it('should properly deduplicate members who converted from free to paid', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
+            const febDate = moment('2024-02-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             // Insert 3 member signups for Google
             await db('members_created_events').insert([
@@ -216,11 +218,11 @@ describe('ReferrersStatsService', function () {
 
             // 1 member converts to paid after the time window (in February)
             await db('members_subscription_created_events').insert([
-                {id: 'sub_2', member_id: 'member_2', subscription_id: 'sub_2', referrer_source: 'Google', created_at: '2024-02-15'}
+                {id: 'sub_2', member_id: 'member_2', subscription_id: 'sub_2', referrer_source: 'Google', created_at: febDate}
             ]);
 
             // Query for January
-            const result = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
             const googleStats = result.data.find(s => s.source === 'Google');
 
             // Expected: 2 signups (member_2 who converted later + member_3 who stayed free)
@@ -230,14 +232,14 @@ describe('ReferrersStatsService', function () {
             assert.equal(googleStats.paid_conversions, 1, 'Google should have 1 paid conversion in January');
             
             // Query for February to see member_2's conversion
-            const febResult = await stats.getTopSourcesWithRange('2024-02-01', '2024-02-28');
+            const febResult = await stats.getTopSourcesWithRange({date_from: '2024-02-01', date_to: '2024-02-28', timezone: 'UTC'});
             const febGoogleStats = febResult.data.find(s => s.source === 'Google');
             assert(febGoogleStats, 'Google stats should exist in February results');
             assert.equal(febGoogleStats.paid_conversions, 1, 'Google should have 1 paid conversion in February');
         });
 
         it('should aggregate MRR data correctly', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             // Insert paid conversions
             await db('members_subscription_created_events').insert([
@@ -253,7 +255,7 @@ describe('ReferrersStatsService', function () {
                 {member_id: 'paid_3', subscription_id: 'sub_3', mrr_delta: 750, created_at: testDate}
             ]);
 
-            const result = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
 
             const googleStats = result.data.find(s => s.source === 'Google');
             const twitterStats = result.data.find(s => s.source === 'Twitter');
@@ -265,14 +267,14 @@ describe('ReferrersStatsService', function () {
         it('should respect date range filters', async function () {
             // Insert events across different dates
             await db('members_created_events').insert([
-                {member_id: 'jan_1', referrer_source: 'Google', created_at: '2024-01-15'},
-                {member_id: 'jan_2', referrer_source: 'Google', created_at: '2024-01-20'},
-                {member_id: 'feb_1', referrer_source: 'Google', created_at: '2024-02-15'},
-                {member_id: 'feb_2', referrer_source: 'Google', created_at: '2024-02-20'}
+                {member_id: 'jan_1', referrer_source: 'Google', created_at: moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss')},
+                {member_id: 'jan_2', referrer_source: 'Google', created_at: moment('2024-01-20').utc().format('YYYY-MM-DD HH:mm:ss')},
+                {member_id: 'feb_1', referrer_source: 'Google', created_at: moment('2024-02-15').utc().format('YYYY-MM-DD HH:mm:ss')},
+                {member_id: 'feb_2', referrer_source: 'Google', created_at: moment('2024-02-20').utc().format('YYYY-MM-DD HH:mm:ss')}
             ]);
 
-            const janResult = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
-            const febResult = await stats.getTopSourcesWithRange('2024-02-01', '2024-02-28');
+            const janResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
+            const febResult = await stats.getTopSourcesWithRange({date_from: '2024-02-01', date_to: '2024-02-28', timezone: 'UTC'});
 
             const janGoogle = janResult.data.find(s => s.source === 'Google');
             const febGoogle = febResult.data.find(s => s.source === 'Google');
@@ -282,7 +284,7 @@ describe('ReferrersStatsService', function () {
         });
 
         it('should handle Direct traffic normalization', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             await db('members_created_events').insert([
                 {member_id: 'direct_1', referrer_source: null, created_at: testDate},
@@ -290,7 +292,7 @@ describe('ReferrersStatsService', function () {
                 {member_id: 'direct_3', referrer_source: null, created_at: testDate}
             ]);
 
-            const result = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
             const directStats = result.data.find(s => s.source === 'Direct');
 
             // The normalization happens in the service layer
@@ -302,7 +304,7 @@ describe('ReferrersStatsService', function () {
         });
 
         it('should sort results correctly', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             await db('members_created_events').insert([
                 // Twitter: 3 signups
@@ -317,17 +319,17 @@ describe('ReferrersStatsService', function () {
             ]);
 
             // Test different sort orders
-            const signupsResult = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31', 'signups desc');
+            const signupsResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'signups desc'});
             assert.equal(signupsResult.data[0].source, 'Twitter', 'Twitter should be first when sorted by signups');
             assert.equal(signupsResult.data[1].source, 'Facebook', 'Facebook should be second');
             assert.equal(signupsResult.data[2].source, 'Google', 'Google should be third');
 
-            const sourceResult = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31', 'source desc');
+            const sourceResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'source desc'});
             assert.equal(sourceResult.data[0].source, 'Twitter', 'Sources should be sorted alphabetically descending');
         });
 
         it('should respect limit parameter', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             // Insert signups for multiple sources
             const sources = ['Google', 'Twitter', 'Facebook', 'Reddit', 'LinkedIn'];
@@ -341,30 +343,30 @@ describe('ReferrersStatsService', function () {
             });
             await db('members_created_events').insert(inserts);
 
-            const result = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31', 'signups desc', 3);
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC', orderBy: 'signups desc', limit: 3});
             assert.equal(result.data.length, 3, 'Should return only 3 results when limit is 3');
         });
 
         it('should handle members with same source converting on different dates', async function () {
             // Member signs up free in January
             await db('members_created_events').insert([
-                {member_id: 'member_1', referrer_source: 'Google', created_at: '2024-01-15'}
+                {member_id: 'member_1', referrer_source: 'Google', created_at: moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss')}
             ]);
 
             // Same member converts to paid in February
             await db('members_subscription_created_events').insert([
-                {id: 'sub_1', member_id: 'member_1', subscription_id: 'sub_1', referrer_source: 'Google', created_at: '2024-02-15'}
+                {id: 'sub_1', member_id: 'member_1', subscription_id: 'sub_1', referrer_source: 'Google', created_at: moment('2024-02-15').utc().format('YYYY-MM-DD HH:mm:ss')}
             ]);
 
             // Query for January - should see the signup (no conversion in same window)
-            const janResult = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
+            const janResult = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
             const janGoogle = janResult.data.find(s => s.source === 'Google');
             assert(janGoogle, 'Google stats should exist in January results');
             assert.equal(janGoogle.signups, 1, 'January should count this member as signup (conversion happened later)');
             assert.equal(janGoogle.paid_conversions, 0, 'January should have no paid conversions');
 
             // Query for February - should see the paid conversion
-            const febResult = await stats.getTopSourcesWithRange('2024-02-01', '2024-02-28');
+            const febResult = await stats.getTopSourcesWithRange({date_from: '2024-02-01', date_to: '2024-02-28', timezone: 'UTC'});
             const febGoogle = febResult.data.find(s => s.source === 'Google');
             assert(febGoogle, 'Google stats should exist in February results');
             assert.equal(febGoogle.signups, 0, 'February should have no signups');
@@ -372,7 +374,7 @@ describe('ReferrersStatsService', function () {
         });
 
         it('should handle members who sign up and convert with different sources', async function () {
-            const testDate = '2024-01-15';
+            const testDate = moment('2024-01-15').utc().format('YYYY-MM-DD HH:mm:ss');
             
             // Member signs up via Google
             await db('members_created_events').insert([
@@ -384,7 +386,7 @@ describe('ReferrersStatsService', function () {
                 {id: 'sub_1', member_id: 'member_1', subscription_id: 'sub_1', referrer_source: 'Twitter', created_at: testDate}
             ]);
 
-            const result = await stats.getTopSourcesWithRange('2024-01-01', '2024-01-31');
+            const result = await stats.getTopSourcesWithRange({date_from: '2024-01-01', date_to: '2024-01-31', timezone: 'UTC'});
             
             const googleStats = result.data.find(s => s.source === 'Google');
             const twitterStats = result.data.find(s => s.source === 'Twitter');

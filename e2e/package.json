@@ -12,6 +12,7 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test",
+    "test:factory": "playwright test data-factory",
     "test:types": "tsc --noEmit",
     "lint": "eslint helpers --ext .ts --cache"
   },
@@ -19,8 +20,11 @@
     "build"
   ],
   "devDependencies": {
+    "@faker-js/faker": "8.4.1",
     "@playwright/test": "1.54.1",
     "c8": "10.1.3",
+    "knex": "3.1.0",
+    "mysql2": "3.14.3",
     "ts-node": "10.9.2",
     "typescript": "5.8.3"
   },

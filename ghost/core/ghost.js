@@ -17,7 +17,6 @@ switch (mode) {
 case 'repl':
 case 'timetravel':
 case 'generate-data':
-case 'record-test':
     require('./core/cli/command').run(mode);
     break;
 default:
