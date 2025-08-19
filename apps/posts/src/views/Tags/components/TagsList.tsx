@@ -6,7 +6,8 @@ import {
     TableCell,
     TableHead,
     TableHeader,
-    TableRow
+    TableRow,
+    formatNumber
 } from '@tryghost/shade';
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
 
@@ -15,30 +16,38 @@ const TagsList = ({items}: { items: Tag[] }) => {
         <Table>
             <TableHeader>
                 <TableRow>
-                    <TableHead>Tag</TableHead>
-                    <TableHead>Slug</TableHead>
-                    <TableHead>No. of posts</TableHead>
+                    <TableHead className="px-4">Tag</TableHead>
+                    <TableHead className="px-4">Slug</TableHead>
+                    <TableHead className="px-4">No. of posts</TableHead>
                     <TableHead></TableHead>
                 </TableRow>
             </TableHeader>
-            <TableBody className="border-b-0">
+            <TableBody>
                 {items.map(item => (
                     <TableRow
                         key={item.id}
-                        className="relative hover:bg-muted/50"
+                        className="relative"
                     >
-                        <TableCell className="static w-1/2">
+                        <TableCell className="static w-3/5 p-4">
                             <a
-                                className="block font-medium before:absolute before:inset-0 before:z-50 before:bg-transparent"
+                                className="block pb-1 text-lg font-medium before:absolute before:inset-0 before:z-10"
                                 href={`#/tags/${item.slug}`}
                             >
                                 {item.name}
                             </a>
-                            <span className="block truncate text-sm text-muted-foreground">{item.description}</span>
+                            <span className="block truncate text-muted-foreground">{item.description}</span>
                         </TableCell>
-                        <TableCell className="w-1/4">{item.slug}</TableCell>
-                        <TableCell className="">{item.count?.posts ?? 0}</TableCell>
-                        <TableCell className="w-4 justify-end">
+                        <TableCell className="p-4">{item.slug}</TableCell>
+                        <TableCell className="p-4">
+                            {item.count?.posts ? (
+                                <a className="relative z-10 -m-4 inline-block p-4 hover:underline" href={`#/posts?tag=${item.slug}`}>
+                                    {`${formatNumber(item.count?.posts)} ${item.count?.posts === 1 ? 'post' : 'posts'}`}
+                                </a>
+                            ) : (
+                                <span className="text-muted-foreground">0 posts</span>
+                            )}
+                        </TableCell>
+                        <TableCell className="w-4 justify-end p-4">
                             <Button
                                 className="w-12"
                                 size="icon"
