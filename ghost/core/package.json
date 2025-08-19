@@ -161,7 +161,7 @@
     "ghost-storage-base": "1.0.0",
     "glob": "8.1.0",
     "got": "11.8.6",
-    "gscan": "5.0.0",
+    "gscan": "5.1.0",
     "handlebars": "4.7.8",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
@@ -216,7 +216,7 @@
     "superagent-throttle": "1.0.1",
     "terser": "5.43.1",
     "tiny-glob": "0.2.9",
-    "ua-parser-js": "1.0.40",
+    "ua-parser-js": "1.0.41",
     "xml": "1.0.1"
   },
   "optionalDependencies": {
