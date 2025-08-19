@@ -457,7 +457,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Load config');
         config = require('./shared/config');
         debug('End: Load config');
-
+        console.log('TINYBIRD CONFIG', config.get('tinybird'));
         // Logging is also used absolutely everywhere
         debug('Begin: Load logging');
         logging = require('@tryghost/logging');

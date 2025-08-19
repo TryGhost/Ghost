@@ -16,11 +16,11 @@ import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopPostsViews} from '@tryghost/admin-x-framework/api/stats';
 
 interface HelpCardProps {
-    className?: string;
-    title: string;
-    description: string;
-    url: string;
-    children?: React.ReactNode;
+        className?: string;
+        title: string;
+        description: string;
+        url: string;
+        children?: React.ReactNode;
 }
 
 export const HelpCard: React.FC<HelpCardProps> = ({
@@ -47,23 +47,24 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 };
 
 interface WebKpiDataItem {
-    date: string;
-    [key: string]: string | number;
+        date: string;
+        [key: string]: string | number;
 }
 
 type GrowthChartDataItem = {
-    date: string;
-    value: number;
-    free: number;
-    paid: number;
-    comped: number;
-    mrr: number;
-    formattedValue: string;
-    label?: string;
+        date: string;
+        value: number;
+        free: number;
+        paid: number;
+        comped: number;
+        mrr: number;
+        formattedValue: string;
+        label?: string;
 };
 
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
+    console.log('App Settings:', appSettings);
     const {statsConfig, isLoading: isConfigLoading, range, audience} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
@@ -78,7 +79,7 @@ const Overview: React.FC = () => {
     });
 
     /* Get visitors
-    /* ---------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------- */
     const visitorsParams = {
         site_uuid: statsConfig?.id || '',
         date_from: formatQueryDate(startDate),
@@ -125,7 +126,7 @@ const Overview: React.FC = () => {
     }, [visitorsChartData]);
 
     /* Get members
-    /* ---------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------- */
     // Create chart data based on selected tab
     const membersChartData = useMemo(() => {
         if (!growthChartData || growthChartData.length === 0) {
@@ -149,7 +150,7 @@ const Overview: React.FC = () => {
     }, [growthChartData, range]);
 
     /* Get MRR
-    /* ---------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------- */
     // Create chart data based on selected tab
     const mrrChartData = useMemo(() => {
         if (!appSettings?.paidMembersEnabled || !growthChartData || growthChartData.length === 0) {
@@ -173,7 +174,7 @@ const Overview: React.FC = () => {
     }, [growthChartData, range, currencySymbol, appSettings]);
 
     /* Calculate KPI values
-    /* ---------------------------------------------------------------------- */
+        /* ---------------------------------------------------------------------- */
     const kpiValues = useMemo(() => {
         // Visitors data
         if (!visitorsData?.length) {
