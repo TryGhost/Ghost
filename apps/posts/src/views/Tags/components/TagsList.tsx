@@ -8,8 +8,9 @@ import {
     TableHeader,
     TableRow,
 } from "@tryghost/shade";
+import { Tag } from "@tryghost/admin-x-framework/api/tags";
 
-const TagsList = ({ items }: { items: any[] }) => {
+const TagsList = ({ items }: { items: Tag[] }) => {
     return (
         <Table>
             <TableHeader>
