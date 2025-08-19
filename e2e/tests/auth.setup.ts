@@ -29,8 +29,6 @@ setup('authenticate', async ({page}) => {
     }
 
     await setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password});
-    // TODO: remove the wait
-    await new Promise(r => {setTimeout(r, 2000)});
 
     const loginPage = new LoginPage(page);
     await loginPage.goto();
