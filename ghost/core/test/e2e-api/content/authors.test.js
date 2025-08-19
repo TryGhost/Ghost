@@ -85,11 +85,13 @@ describe('Authors Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                authors: new Array(1).fill(authorMatcher)
+                authors: [authorMatcher]
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.authors.length, 1);
+                const requestedId = fixtureManager.get('users', 0).id;
+                assert.equal(body.authors[0].id, requestedId);
             });
     });
     it('Can request author by id including post count', async function () {
@@ -100,7 +102,7 @@ describe('Authors Content API', function () {
                 etag: anyEtag
             })
             .matchBodySnapshot({
-                authors: new Array(1).fill(authorMatcherWithCount)
+                authors: [authorMatcherWithCount]
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
