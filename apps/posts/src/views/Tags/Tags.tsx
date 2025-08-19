@@ -3,6 +3,8 @@ import TagsContent from './components/TagsContent';
 import TagsHeader from './components/TagsHeader';
 import TagsLayout from './components/TagsLayout';
 import TagsList from './components/TagsList';
+import {LoadingIndicator} from '@tryghost/shade';
+import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 const Tags: React.FC = () => {
@@ -10,33 +12,23 @@ const Tags: React.FC = () => {
     const qs = new URLSearchParams(search);
     const type = qs.get('type') ?? 'public';
 
+    const {data, isLoading} = useBrowseTags({
+        filter: {
+            visibility: type
+        }
+    });
+
     return (
         <TagsLayout>
             <TagsHeader currentTab={type} />
             <TagsContent>
-
-                <TagsList items={[
-                    {
-                        id: 1,
-                        name: 'Tag 1',
-                        slug: 'tag-1',
-                        count: 10
-                    },
-                    
-                    {
-                        id: 2,
-                        name: 'Tag 2',
-                        slug: 'tag-2',
-                        count: 20
-                    },
-                    {
-                        id: 3,
-                        name: 'Tag 3',
-                        slug: 'tag-3',
-                        count: 30
-                    }
-                ]} />
-
+                {isLoading ? (
+                    <div className="flex h-full items-center justify-center">
+                        <LoadingIndicator size="lg" />
+                    </div>
+                ) : (
+                    <TagsList items={data?.tags ?? []} />
+                )}
             </TagsContent>
         </TagsLayout>
     );
