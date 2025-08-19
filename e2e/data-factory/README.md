@@ -16,7 +16,7 @@ e2e/data-factory/          # Source files (TypeScript) - committed to git
 │       └── knex.ts        # Knex SQL adapter
 ├── index.ts               # Main exports
 ├── utils.ts               # Utility functions
-└── test/
+└── tests/
     └── post-factory.test.js # Test file (JavaScript)
 
 e2e/build/data-factory/    # Compiled files (JavaScript) - gitignored
