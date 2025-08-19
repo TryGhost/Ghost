@@ -13,7 +13,7 @@
     "prepare": "tsc",
     "test": "playwright test --project=main",
     "test:parallel": "playwright test --project=main --workers=8",
-    "test:factory": "playwright test data-factory",
+    "test:factory": "playwright test --project=factories",
     "test:types": "tsc --noEmit",
     "test:setauth": "npx playwright test --project=setup",
     "lint": "eslint helpers --ext .ts --cache",

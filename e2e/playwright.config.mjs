@@ -22,16 +22,18 @@ const config = {
         {
             name: 'main',
             testIgnore: ['**/auth.setup.ts'], // Exclude setup files
+            testDir: './tests',
             use: {
-                baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
-                trace: 'retain-on-failure',
-                browserName: 'chromium',
                 // Use authentication state for all tests by default
                 storageState: 'playwright/.auth/user.json',
-                testDir: './tests',
                 viewport: {width: 1920, height: 1080}
             },
             dependencies: ['setup']
+        },
+        // Factory tests
+        {
+            name: 'factories',
+            testDir: './data-factory/tests'
         },
         // Setup project - runs first
         {
