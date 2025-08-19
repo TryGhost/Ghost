@@ -3036,6 +3036,11 @@
   resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-9.8.0.tgz#3344284028d1c9dc98dee2479f82939310370d88"
   integrity sha512-U9wpuSrJC93jZBxx/Qq2wPjCuYISBueyVUGK7qqdmj7r/nxaxwW8AQDCLeRO7wZnjj94sh3p246cAYjUKuqgfg==
 
+"@faker-js/faker@^8.0.0":
+  version "8.4.1"
+  resolved "https://registry.yarnpkg.com/@faker-js/faker/-/faker-8.4.1.tgz#5d5e8aee8fce48f5e189bf730ebd1f758f491451"
+  integrity sha512-XQ3cU+Q8Uqmrbf2e0cIC/QN43sTBSC8KF12u29Mb47tWrt2hAgBXSgpZMj4Ao8Uk0iJcU99QsOCaIL8934obCg==
+
 "@floating-ui/core@^1.4.1":
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/@floating-ui/core/-/core-1.4.1.tgz#0d633f4b76052668afb932492ac452f7ebe97f17"
@@ -13867,6 +13872,11 @@ commander@5.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-5.1.0.tgz#46abbd1652f8e059bddaef99bbdcb2ad9cf179ae"
   integrity sha512-P0CysNDQ7rtVw4QIQtm+MRxV66vKFSvlsQvGYXZWR3qFU0jlMKHZZZgw8e+8DSah4UDKMqnknRDQz+xuQXQ/Zg==
 
+commander@^10.0.0:
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-10.0.1.tgz#881ee46b4f77d1c1dccc5823433aa39b022cbe06"
+  integrity sha512-y4Mg2tXshplEbSGzx7amzPwKKOCGuoSRP/CjEdwwk0FOGlUbq6lKuoyDZTNZkmxHdJtp54hdfY/JUrdL7Xfdug==
+
 commander@^11.1.0, commander@~11.1.0:
   version "11.1.0"
   resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
@@ -22628,6 +22638,26 @@ knex@^0.21.12:
     tildify "2.0.0"
     v8flags "^3.2.0"
 
+knex@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/knex/-/knex-3.1.0.tgz#b6ddd5b5ad26a6315234a5b09ec38dc4a370bd8c"
+  integrity sha512-GLoII6hR0c4ti243gMs5/1Rb3B+AjwMOfjYm97pu0FOQa7JH56hgBxYf5WK2525ceSbBY1cjeZ9yk99GPMB6Kw==
+  dependencies:
+    colorette "2.0.19"
+    commander "^10.0.0"
+    debug "4.3.4"
+    escalade "^3.1.1"
+    esm "^3.2.25"
+    get-package-type "^0.1.0"
+    getopts "2.3.0"
+    interpret "^2.2.0"
+    lodash "^4.17.21"
+    pg-connection-string "2.6.2"
+    rechoir "^0.8.0"
+    resolve-from "^5.0.0"
+    tarn "^3.0.2"
+    tildify "2.0.0"
+
 known-css-properties@^0.29.0:
   version "0.29.0"
   resolved "https://registry.yarnpkg.com/known-css-properties/-/known-css-properties-0.29.0.tgz#e8ba024fb03886f23cb882e806929f32d814158f"
@@ -24727,6 +24757,21 @@ mysql2@3.14.2:
     seq-queue "^0.0.5"
     sqlstring "^2.3.2"
 
+mysql2@^3.0.0:
+  version "3.14.3"
+  resolved "https://registry.yarnpkg.com/mysql2/-/mysql2-3.14.3.tgz#52aa6266b416d8b629bf398ba2be9840492b9b08"
+  integrity sha512-fD6MLV8XJ1KiNFIF0bS7Msl8eZyhlTDCDl75ajU5SJtpdx9ZPEACulJcqJWr1Y8OYyxsFc4j3+nflpmhxCU5aQ==
+  dependencies:
+    aws-ssl-profiles "^1.1.1"
+    denque "^2.1.0"
+    generate-function "^2.3.1"
+    iconv-lite "^0.6.3"
+    long "^5.2.1"
+    lru.min "^1.0.0"
+    named-placeholders "^1.1.3"
+    seq-queue "^0.0.5"
+    sqlstring "^2.3.2"
+
 mz@^2.7.0:
   version "2.7.0"
   resolved "https://registry.yarnpkg.com/mz/-/mz-2.7.0.tgz#95008057a56cafadc2bc63dde7f9ff6955948e32"
@@ -26192,6 +26237,11 @@ pg-connection-string@2.5.0:
   version "2.5.0"
   resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.5.0.tgz#538cadd0f7e603fc09a12590f3b8a452c2c0cf34"
   integrity sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==
+
+pg-connection-string@2.6.2:
+  version "2.6.2"
+  resolved "https://registry.yarnpkg.com/pg-connection-string/-/pg-connection-string-2.6.2.tgz#713d82053de4e2bd166fab70cd4f26ad36aab475"
+  integrity sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==
 
 pg-int8@1.0.1:
   version "1.0.1"

@@ -16,6 +16,7 @@ env:
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.13.1
@@ -803,7 +804,7 @@ jobs:
     name: E2E tests
     env:
       CI: true
-      database__client: mysql
+      database__client: mysql2
       database__connection__host: localhost
       database__connection__port: 3306
       database__connection__user: ghost
