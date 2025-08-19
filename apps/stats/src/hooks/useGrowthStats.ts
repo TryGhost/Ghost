@@ -168,7 +168,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
         const free = lastMemberItem?.free ?? 0;
         const paid = lastMemberItem?.paid ?? 0;
         const comped = lastMemberItem?.comped ?? 0;
-        const paidTotal = paid + comped;  // Include comped in paid total for chart
+        const paidTotal = paid + comped;
         const value = free + paidTotal;
         const mrr = lastMrrItem?.mrr ?? 0;
         const paidSubscribed = lastMemberItem?.paid_subscribed ?? 0;
@@ -178,7 +178,7 @@ const formatChartData = (memberData: MemberStatusItem[], mrrData: MrrHistoryItem
             date,
             value,
             free,
-            paid: paidTotal,  // Return combined paid + comped as paid
+            paid: paidTotal,
             comped,
             mrr,
             paid_subscribed: paidSubscribed,
