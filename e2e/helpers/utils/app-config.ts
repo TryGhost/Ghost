@@ -7,8 +7,8 @@ export const appConfig = {
     baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
 
     auth: {
-        email: process.env.E2E_ACCOUNT_USERNAME || '',
-        password: process.env.E2E_ACCOUNT_PASSWORD || '',
+        email: process.env.E2E_ACCOUNT_USERNAME || 'test@ghost.org',
+        password: process.env.E2E_ACCOUNT_PASSWORD || 'test@123@test',
         storageFile: 'playwright/.auth/user.json'
     },
     debugLogs: process.env.E2E_DEBUG_LOGS === 'true' || process.env.E2E_DEBUG_LOGS === '1'
