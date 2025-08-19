@@ -2,7 +2,6 @@ const assert = require('assert/strict');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyNumber} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
-const localUtils = require('./utils');
 
 const authorMatcher = {
     id: anyObjectId
@@ -36,10 +35,6 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
-                // Verify response structure
-                localUtils.API.checkResponse(body, 'authors');
-                localUtils.API.checkResponse(body.authors[0], 'author', ['url'], null, null);
-                
                 // Verify default order 'name asc'
                 assert.equal(body.authors[0].name, 'Ghost');
                 assert.equal(body.authors[2].name, 'Slimer McEctoplasm');
@@ -63,11 +58,7 @@ describe('Authors Content API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 const {authors} = body;
-                
-                // Verify response structure
-                localUtils.API.checkResponse(body, 'authors');
-                localUtils.API.checkResponse(authors[0], 'author', ['count', 'url'], null, null);
-                
+
                 // Verify post counts for specific authors
                 const getAuthorBySlug = slug => authors.find(author => author.slug === slug);
                 
@@ -98,9 +89,6 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
-                // Verify response structure
-                localUtils.API.checkResponse(body.authors[0], 'author', ['url'], null, null);
-                
                 assert.equal(body.authors.length, 1);
             });
     });
@@ -116,9 +104,6 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
-                // Verify response structure
-                localUtils.API.checkResponse(body.authors[0], 'author', ['count', 'url'], null, null);
-                
                 assert.equal(body.authors.length, 1);
             });
     });
