@@ -5,6 +5,7 @@ import TagsLayout from "./components/TagsLayout";
 import { useLocation } from "@tryghost/admin-x-framework"
 import TagsList from "./components/TagsList";
 import { useBrowseTags } from "@tryghost/admin-x-framework/api/tags";
+import { LoadingIndicator } from "@tryghost/shade";
 
 const Tags: React.FC = () => {
     const { search } = useLocation();
@@ -21,7 +22,13 @@ const Tags: React.FC = () => {
         <TagsLayout>
             <TagsHeader currentTab={type} />
             <TagsContent>
-                <TagsList items={data?.tags ?? []} />
+                {isLoading ? (
+                    <div className="flex justify-center items-center h-full">
+                        <LoadingIndicator size="lg" />
+                    </div>
+                ) : (
+                    <TagsList items={data?.tags ?? []} />
+                )}
             </TagsContent>
         </TagsLayout>
     );
