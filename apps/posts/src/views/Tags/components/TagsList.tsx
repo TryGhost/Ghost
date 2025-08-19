@@ -1,5 +1,6 @@
 import {
     Button,
+    formatNumber,
     LucideIcon,
     Table,
     TableBody,
@@ -40,7 +41,7 @@ const TagsList = ({ items }: { items: Tag[] }) => {
                         <TableCell className="p-4">
                             {item.count?.posts ? (
                                 <a href={`#/posts?tag=${item.slug}`} className="relative inline-block z-10 p-4 -m-4 hover:underline">
-                                    {item.count?.posts} posts
+                                    {formatNumber(item.count?.posts)} posts
                                 </a>
                             ) : (
                                 <span className="text-muted-foreground">0 posts</span>
