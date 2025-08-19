@@ -12,8 +12,8 @@ const Tags: React.FC = () => {
     const type = qs.get("type") ?? "public";
 
     const { data, isLoading } = useBrowseTags({
-        searchParams: {
-            type
+        filter: {
+            visibility: type
         }
     });
 

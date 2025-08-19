@@ -14,10 +14,12 @@ const TagsList = ({ items }: { items: Tag[] }) => {
     return (
         <Table>
             <TableHeader>
-                <TableHead>Tag</TableHead>
-                <TableHead>Slug</TableHead>
-                <TableHead>No. of posts</TableHead>
-                <TableHead></TableHead>
+                <TableRow>
+                    <TableHead>Tag</TableHead>
+                    <TableHead>Slug</TableHead>
+                    <TableHead>No. of posts</TableHead>
+                    <TableHead></TableHead>
+                </TableRow>
             </TableHeader>
             <TableBody className="border-b-0">
                 {items.map((item) => (
@@ -25,16 +27,17 @@ const TagsList = ({ items }: { items: Tag[] }) => {
                         key={item.id}
                         className="hover:bg-muted/50 relative"
                     >
-                        <TableCell className="font-medium w-1/2 static">
+                        <TableCell className="w-1/2 static">
                             <a
-                                className="before:absolute before:z-50 before:inset-0 before:bg-transparent"
+                                className="before:absolute before:z-50 before:inset-0 before:bg-transparent font-medium block"
                                 href={`#/tags/${item.slug}`}
                             >
                                 {item.name}
                             </a>
+                            <span className="text-muted-foreground text-sm block truncate">{item.description}</span>
                         </TableCell>
                         <TableCell className="w-1/4">{item.slug}</TableCell>
-                        <TableCell className="">{item.count}</TableCell>
+                        <TableCell className="">{item.count?.posts ?? 0}</TableCell>
                         <TableCell className="w-4 justify-end">
                             <Button
                                 variant="outline"

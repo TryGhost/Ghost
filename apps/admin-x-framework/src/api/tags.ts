@@ -1,4 +1,9 @@
-import {Meta, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
+import {
+    Meta,
+    createQuery,
+    createQueryWithId,
+    createMutation,
+} from "../utils/api/hooks";
 
 export type Tag = {
     id: string;
@@ -19,33 +24,53 @@ export type Tag = {
     canonicalUrl: string;
     accentColor: string;
     featureImage: string;
-    visibility: 'public' | 'internal';
+    visibility: "public" | "internal";
     createdAtUTC: string;
     updatedAtUTC: string;
-    count: number;
+    count?: {
+        posts: number;
+    };
 };
 
 export interface TagsResponseType {
-    meta?: Meta
+    meta?: Meta;
     tags: Tag[];
 }
 
-const dataType = 'TagsResponseType';
+const dataType = "TagsResponseType";
 
-export const useBrowseTags = createQuery<TagsResponseType>({
+const useBrowseTagsQuery = createQuery<TagsResponseType>({
     dataType,
-    path: '/tags/',
-    defaultSearchParams: {
-        type: 'public'
-    }
+    path: "/tags/",
 });
+
+export const useBrowseTags = ({
+    filter,
+    ...args
+}: { filter: Record<string, string | number | boolean> } & Parameters<
+    typeof useBrowseTagsQuery
+>[0]) => {
+    const filterString = Object.entries(filter)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(",");
+    return useBrowseTagsQuery({
+        ...args,
+        searchParams: {
+            limit: "100",
+            order: "name asc",
+            include: "count.posts",
+            filter: filterString,
+            ...args.searchParams,
+        },
+    });
+};
 
 export const getTag = createQueryWithId<TagsResponseType>({
     dataType,
-    path: id => `/tags/${id}/`
+    path: (id) => `/tags/${id}/`,
 });
 
 export const useDeleteTag = createMutation<unknown, string>({
-    method: 'DELETE',
-    path: id => `/tags/${id}/`
+    method: "DELETE",
+    path: (id) => `/tags/${id}/`,
 });
