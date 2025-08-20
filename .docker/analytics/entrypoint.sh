@@ -8,16 +8,21 @@
 # Note: the analytics service's container is based on alpine, hence `sh` instead of `bash`.
 set -eu
 
+# Initialize child process variable
+child=""
+
 # Handle shutdown signals gracefully.
 _term() {
     echo "Caught SIGTERM/SIGINT signal, shutting down gracefully..."
-    kill -TERM "$child" 2>/dev/null
-    wait "$child"
+    if [ -n "$child" ]; then
+        kill -TERM "$child" 2>/dev/null || true
+        wait "$child" 2>/dev/null || true
+    fi
     exit 0
 }
 
-# Set up signal handlers
-trap _term SIGTERM SIGINT
+# Set up signal handlers (POSIX-compliant signal names)
+trap _term TERM INT
 
 # Set the TINYBIRD_TRACKER_TOKEN environment variable from the .env file
 # This file is created by the `tb-cli` service and mounted into the Analytics service container
