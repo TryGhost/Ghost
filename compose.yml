@@ -208,7 +208,6 @@ services:
       - TB_LOCAL_HOST=tinybird-local
     volumes:
       - ./ghost/core/core/server/data/tinybird:/home/tinybird
-      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       tinybird-local:
         condition: service_healthy
