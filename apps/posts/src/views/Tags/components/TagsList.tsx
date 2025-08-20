@@ -94,7 +94,7 @@ const TagsList = ({
         >
             <Table className="flex flex-col lg:table">
                 <TableHeader className="hidden lg:!table-header-group lg:!visible">
-                    <TableRow className="sticky top-0 lg:table-row">
+                    <TableRow>
                         <TableHead className="w-3/5 px-4">Tag</TableHead>
                         <TableHead className="px-4">Slug</TableHead>
                         <TableHead className="px-4">No. of posts</TableHead>
