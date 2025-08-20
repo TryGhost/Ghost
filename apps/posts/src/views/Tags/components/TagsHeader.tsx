@@ -1,20 +1,20 @@
-import React from "react";
+import React from 'react';
 import {
     Button,
     H1,
     Navbar,
     NavbarActions,
     PageMenu,
-    PageMenuItem,
-} from "@tryghost/shade";
-import { Link } from "@tryghost/admin-x-framework";
+    PageMenuItem
+} from '@tryghost/shade';
+import {Link} from '@tryghost/admin-x-framework';
 
 interface TagsHeaderProps {
     currentTab?: string;
     children?: React.ReactNode;
 }
 
-const TagsHeader: React.FC<TagsHeaderProps> = ({ currentTab }) => {
+const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
     return (
         <>
             <Navbar className="sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md md:flex-row md:items-center dark:bg-black">
@@ -35,7 +35,7 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({ currentTab }) => {
                         </PageMenuItem>
                     </PageMenu>
                     <Button asChild>
-                        <a href="#/tags/new" className="font-bold">
+                        <a className="font-bold" href="#/tags/new">
                             New tag
                         </a>
                     </Button>

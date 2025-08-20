@@ -1,17 +1,17 @@
-import React from "react";
-import TagsHeader from "./components/TagsHeader";
-import TagsContent from "./components/TagsContent";
-import TagsLayout from "./components/TagsLayout";
-import { useLocation } from "@tryghost/admin-x-framework";
-import TagsList from "./components/TagsList";
-import { useBrowseTags } from "@tryghost/admin-x-framework/api/tags";
-import { Button, LoadingIndicator } from "@tryghost/shade";
-import TagsPlaceholder from "./assets/icons/tags-placeholder.svg";
+import React from 'react';
+import TagsContent from './components/TagsContent';
+import TagsHeader from './components/TagsHeader';
+import TagsLayout from './components/TagsLayout';
+import TagsList from './components/TagsList';
+import TagsPlaceholder from './assets/icons/tags-placeholder.svg';
+import {Button, LoadingIndicator} from '@tryghost/shade';
+import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
+import {useLocation} from '@tryghost/admin-x-framework';
 
 const Tags: React.FC = () => {
-    const { search } = useLocation();
+    const {search} = useLocation();
     const qs = new URLSearchParams(search);
-    const type = qs.get("type") ?? "public";
+    const type = qs.get('type') ?? 'public';
 
     const {
         data,
@@ -19,11 +19,11 @@ const Tags: React.FC = () => {
         isLoading,
         isFetchingNextPage,
         fetchNextPage,
-        hasNextPage,
+        hasNextPage
     } = useBrowseTags({
         filter: {
-            visibility: type,
-        },
+            visibility: type
+        }
     });
 
     return (
@@ -31,15 +31,15 @@ const Tags: React.FC = () => {
             <TagsHeader currentTab={type} />
             <TagsContent>
                 {isLoading ? (
-                    <div className="flex justify-center items-center h-full">
+                    <div className="flex h-full items-center justify-center">
                         <LoadingIndicator size="lg" />
                     </div>
                 ) : isError ? (
-                    <div className="flex flex-col items-center justify-center h-full mb-16">
-                        <h2 className="text-xl font-medium mb-2">
+                    <div className="mb-16 flex h-full flex-col items-center justify-center">
+                        <h2 className="mb-2 text-xl font-medium">
                             Error loading tags
                         </h2>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="mb-4 text-muted-foreground">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
@@ -47,12 +47,12 @@ const Tags: React.FC = () => {
                         </Button>
                     </div>
                 ) : !data?.tags.length ? (
-                    <div className="flex flex-col items-center justify-center h-full gap-8 mb-16">
+                    <div className="mb-16 flex h-full flex-col items-center justify-center gap-8">
                         <img
-                            src={TagsPlaceholder}
                             alt="Tags placeholder"
-                            width={60}
                             height={60}
+                            src={TagsPlaceholder}
+                            width={60}
                         />
                         <h2 className="text-xl font-medium">
                             Start organizing your content
@@ -63,11 +63,11 @@ const Tags: React.FC = () => {
                     </div>
                 ) : (
                     <TagsList
-                        items={data?.tags ?? []}
-                        totalCount={data?.meta?.pagination?.total ?? 0}
+                        fetchNextPage={fetchNextPage}
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
-                        fetchNextPage={fetchNextPage}
+                        items={data?.tags ?? []}
+                        totalCount={data?.meta?.pagination?.total ?? 0}
                     />
                 )}
             </TagsContent>
