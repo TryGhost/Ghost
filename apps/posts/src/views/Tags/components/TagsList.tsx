@@ -92,13 +92,13 @@ const TagsList = ({
             ref={parentRef}
             style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
         >
-            <Table className="flex flex-col lg:table">
+            <Table className="table-fixed flex flex-col lg:table">
                 <TableHeader className="hidden lg:!table-header-group lg:!visible">
                     <TableRow>
-                        <TableHead className="w-3/5 px-4">Tag</TableHead>
-                        <TableHead className="px-4">Slug</TableHead>
-                        <TableHead className="px-4">No. of posts</TableHead>
-                        <TableHead className="px-4"></TableHead>
+                        <TableHead className="w-1/2 xl:w-3/5 px-4">Tag</TableHead>
+                        <TableHead className="w-1/5 px-4">Slug</TableHead>
+                        <TableHead className="w-1/5 px-4">No. of posts</TableHead>
+                        <TableHead className="w-16 px-4"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="flex flex-col lg:table-row-group">
@@ -139,7 +139,7 @@ const TagsList = ({
                                 ref={rowVirtualizer.measureElement}
                                 className="relative lg:table-row w-full grid grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem] items-center gap-x-4 p-2 lg:p-0"
                             >
-                                <TableCell className="static min-w-0 p-0 lg:p-4 lg:w-3/5 flex flex-col col-start-1 col-end-1 row-start-1 row-end-1 lg:table-cell">
+                                <TableCell className="static min-w-0 p-0 lg:p-4 lg:w-1/2 xl:w-3/5 flex flex-col col-start-1 col-end-1 row-start-1 row-end-1 lg:table-cell">
                                     <a
                                         className="before:absolute before:z-10 before:inset-0 font-medium text-lg block pb-1 truncate"
                                         href={`#/tags/${item.slug}`}
@@ -151,7 +151,7 @@ const TagsList = ({
                                     </span>
                                 </TableCell>
                                 <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-2 row-end-2 lg:table-cell">
-                                    {item.slug}
+                                    <span className="block truncate">{item.slug}</span>
                                 </TableCell>
                                 <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-3 row-end-3 md:row-start-1 md:row-end-3 md:col-start-2 md:col-end-2 lg:table-cell">
                                     {item.count?.posts ? (
