@@ -12,7 +12,15 @@ const Tags: React.FC = () => {
     const qs = new URLSearchParams(search);
     const type = qs.get('type') ?? 'public';
 
-    const {data, isLoading} = useBrowseTags({
+    const {
+        data,
+        //error,
+        //isFetching,
+        isLoading,
+        isFetchingNextPage,
+        fetchNextPage,
+        hasNextPage
+    } = useBrowseTags({
         filter: {
             visibility: type
         }
@@ -27,7 +35,13 @@ const Tags: React.FC = () => {
                         <LoadingIndicator size="lg" />
                     </div>
                 ) : (
-                    <TagsList items={data?.tags ?? []} />
+                    <TagsList
+                        fetchNextPage={fetchNextPage}
+                        hasNextPage={hasNextPage}
+                        isFetchingNextPage={isFetchingNextPage}
+                        items={data?.tags ?? []}
+                        totalCount={data?.meta?.pagination?.total ?? 0}
+                    />
                 )}
             </TagsContent>
         </TagsLayout>
