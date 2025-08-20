@@ -33,7 +33,7 @@ fi
 #
 # Get the admin token from the Tinybird API
 ## This is different from the workspace admin token
-ADMIN_TOKEN=$(curl -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "admin token") | .token')
+ADMIN_TOKEN=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "admin token") | .token')
 
 
 # Check if admin token is valid
@@ -43,7 +43,7 @@ if [ -z "$ADMIN_TOKEN" ] || [ "$ADMIN_TOKEN" = "null" ]; then
 fi
 
 # Get the tracker token from the Tinybird API
-TRACKER_TOKEN=$(curl -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "tracker") | .token')
+TRACKER_TOKEN=$(curl --fail --show-error -s -H "Authorization: Bearer $WORKSPACE_TOKEN" http://tinybird-local:7181/v0/tokens | jq -r '.tokens[] | select(.name == "tracker") | .token')
 
 # Check if tracker token is valid
 if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then
