@@ -49,7 +49,7 @@ const TagsList = ({
     const rowVirtualizer = useVirtualizer({
         getScrollElement: () => getScrollParent(parentRef.current),
         count: totalCount,
-        estimateSize: () => 77,
+        estimateSize: () => 100,
         debug: true,
     });
 
@@ -88,27 +88,30 @@ const TagsList = ({
     const colSpan = 4;
 
     return (
-        <div style={{ height: `${rowVirtualizer.getTotalSize()}px` }}>
-            <Table ref={parentRef}>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead className="w-3/5 px-4 sticky top-0">Tag</TableHead>
-                        <TableHead className="px-4 sticky top-0">
-                            Slug
-                        </TableHead>
-                        <TableHead className="px-4 sticky top-0">
-                            No. of posts
-                        </TableHead>
-                        <TableHead className="px-4 sticky top-0"></TableHead>
+        <div
+            ref={parentRef}
+            style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+        >
+            <Table className="flex flex-col lg:table">
+                <TableHeader className="hidden lg:!table-header-group lg:!visible">
+                    <TableRow className="sticky top-0 lg:table-row">
+                        <TableHead className="w-3/5 px-4">Tag</TableHead>
+                        <TableHead className="px-4">Slug</TableHead>
+                        <TableHead className="px-4">No. of posts</TableHead>
+                        <TableHead className="px-4"></TableHead>
                     </TableRow>
                 </TableHeader>
-                <TableBody>
+                <TableBody className="flex flex-col lg:table-row-group">
                     {before > 0 && (
-                        <tr>
-                            <td colSpan={colSpan} style={{ height: before }} />
+                        <tr className="flex lg:table-row">
+                            <td
+                                colSpan={colSpan}
+                                style={{ height: before }}
+                                className="flex lg:table-cell"
+                            />
                         </tr>
                     )}
-                    {visibleItems.map((virtualRow, index) => {
+                    {visibleItems.map((virtualRow) => {
                         const item = items[virtualRow.index];
                         const isLoaderRow = virtualRow.index > items.length - 1;
 
@@ -117,7 +120,7 @@ const TagsList = ({
                                 <TableRow
                                     key={virtualRow.key}
                                     ref={rowVirtualizer.measureElement}
-                                    className="relative"
+                                    className="relative lg:table-row flex flex-col"
                                     style={{
                                         height: `${virtualRow.size}px`,
                                     }}
@@ -133,13 +136,12 @@ const TagsList = ({
                         return (
                             <TableRow
                                 key={virtualRow.key}
-                                style={{
-                                    height: `${virtualRow.size}px`,
-                                }}
+                                ref={rowVirtualizer.measureElement}
+                                className="relative lg:table-row w-full grid grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem] items-center gap-x-4 p-2 lg:p-0"
                             >
-                                <TableCell className="w-3/5 static p-4">
+                                <TableCell className="static min-w-0 p-0 lg:p-4 lg:w-3/5 flex flex-col col-start-1 col-end-1 row-start-1 row-end-1 lg:table-cell">
                                     <a
-                                        className="before:absolute before:z-10 before:inset-0 font-medium text-lg block pb-1"
+                                        className="before:absolute before:z-10 before:inset-0 font-medium text-lg block pb-1 truncate"
                                         href={`#/tags/${item.slug}`}
                                     >
                                         {item.name}
@@ -148,10 +150,10 @@ const TagsList = ({
                                         {item.description}
                                     </span>
                                 </TableCell>
-                                <TableCell className="p-4">
+                                <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-2 row-end-2 lg:table-cell">
                                     {item.slug}
                                 </TableCell>
-                                <TableCell className="p-4">
+                                <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-3 row-end-3 md:row-start-1 md:row-end-3 md:col-start-2 md:col-end-2 lg:table-cell">
                                     {item.count?.posts ? (
                                         <a
                                             href={`#/posts?tag=${item.slug}`}
@@ -166,7 +168,7 @@ const TagsList = ({
                                         </span>
                                     )}
                                 </TableCell>
-                                <TableCell className="p-4 w-4 justify-end">
+                                <TableCell className="p-0 lg:p-4 w-4 col-start-2 col-end-2 row-start-1 row-end-3 md:col-start-3 md:col-end-3 lg:table-cell">
                                     <Button
                                         variant="outline"
                                         size="icon"
@@ -179,8 +181,12 @@ const TagsList = ({
                         );
                     })}
                     {after > 0 && (
-                        <tr>
-                            <td colSpan={colSpan} style={{ height: after }} />
+                        <tr className="flex lg:table-row">
+                            <td
+                                colSpan={colSpan}
+                                style={{ height: after }}
+                                className="flex lg:table-cell"
+                            />
                         </tr>
                     )}
                 </TableBody>
