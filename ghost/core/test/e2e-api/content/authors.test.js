@@ -2,6 +2,7 @@ const assert = require('assert/strict');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyNumber} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
+const localUtils = require('./utils');
 
 const authorMatcher = {
     id: anyObjectId
@@ -35,6 +36,9 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
+                // We don't expose the email address, status and other attrs.
+                localUtils.API.checkResponse(body.authors[0], 'author', ['url'], null, null);
+
                 // Verify default order 'name asc'
                 assert.equal(body.authors[0].name, 'Ghost');
                 assert.equal(body.authors[2].name, 'Slimer McEctoplasm');
@@ -58,6 +62,8 @@ describe('Authors Content API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 const {authors} = body;
+                // We don't expose the email address.
+                localUtils.API.checkResponse(body.authors[0], 'author', ['count', 'url'], null, null);
 
                 // Verify slugs and post counts for specific authors
                 const mustFind = (slug) => {
@@ -93,6 +99,9 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
+                // We don't expose the email address.
+                localUtils.API.checkResponse(body.authors[0], 'author', ['url'], null, null);
+
                 assert.equal(body.authors.length, 1);
                 const requestedId = fixtureManager.get('users', 0).id;
                 assert.equal(body.authors[0].id, requestedId);
@@ -110,6 +119,9 @@ describe('Authors Content API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
+                // We don't expose the email address.
+                localUtils.API.checkResponse(body.authors[0], 'author', ['count', 'url'], null, null);
+
                 assert.equal(body.authors.length, 1);
                 const expectedId = fixtureManager.get('users', 0).id;
                 assert.equal(body.authors[0].id, expectedId);
