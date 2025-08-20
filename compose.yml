@@ -73,8 +73,9 @@ services:
       - STRIPE_ACCOUNT_ID=${STRIPE_ACCOUNT_ID:-}
       - TB_HOST=${TB_HOST:-http://tinybird-local:7181}
       - TB_LOCAL_HOST=${TB_LOCAL_HOST:-tinybird-local}
-      - tinybird__stats__endpoint=http://tinybird.localhost
-      - tinybird__tracker__endpoint=http://ghost.localhost/.ghost/analytics/api/v1/page_hit
+      - tinybird__stats__endpoint=http://tinybird-local:7181
+      - tinybird__stats__endpointBrowser=http://localhost:7181
+      - tinybird__tracker__endpoint=http://localhost/.ghost/analytics/api/v1/page_hit
 
   admin:
     <<: *service-template
@@ -99,12 +100,6 @@ services:
       - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
     restart: always
-    networks:
-      default:
-        aliases:
-          - ghost.localhost
-          - admin.localhost
-          - tinybird.localhost
 
   ghost:
     <<: *service-template

@@ -7,6 +7,7 @@ import {ExternalLink} from './RoutingProvider';
 // Stats-specific configuration
 export interface StatsConfig {
     endpoint?: string;
+    endpointBrowser?: string;
     id?: string;
     token?: string;
     local?: {
