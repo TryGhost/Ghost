@@ -27,9 +27,17 @@ set -euo pipefail
 )
 
 # Configure Ghost to use Tinybird Local
-source /home/ghost/ghost/core/core/server/data/tinybird/.env
-export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
-export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
+if [ -f /home/ghost/ghost/core/core/server/data/tinybird/.env ]; then
+    source /home/ghost/ghost/core/core/server/data/tinybird/.env
+    if [ -n "${TINYBIRD_WORKSPACE_ID:-}" ] && [ -n "${TINYBIRD_ADMIN_TOKEN:-}" ]; then
+        export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
+        export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"
+    else
+        echo "WARNING: Tinybird not enabled: Missing required environment variables"
+    fi
+else
+    echo "WARNING: Tinybird not enabled: .env file not found"
+fi
 
 yarn nx reset
 
