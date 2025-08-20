@@ -51,10 +51,30 @@ if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then
     exit 1
 fi
 
-rm /home/tinybird/.env || true
-touch /home/tinybird/.env
-echo "TINYBIRD_WORKSPACE_ID=$WORKSPACE_ID" >> /home/tinybird/.env
-echo "TINYBIRD_ADMIN_TOKEN=$ADMIN_TOKEN" >> /home/tinybird/.env
-echo "TINYBIRD_TRACKER_TOKEN=$TRACKER_TOKEN" >> /home/tinybird/.env
+# Write environment variables to .env file
+ENV_FILE="/home/tinybird/.env"
+TMP_ENV_FILE="/home/tinybird/.env.tmp"
+
+echo "Writing Tinybird configuration to $ENV_FILE..."
+
+cat > "$TMP_ENV_FILE" << EOF
+TINYBIRD_WORKSPACE_ID=$WORKSPACE_ID
+TINYBIRD_ADMIN_TOKEN=$ADMIN_TOKEN
+TINYBIRD_TRACKER_TOKEN=$TRACKER_TOKEN
+EOF
+
+if [ $? -eq 0 ]; then
+    mv "$TMP_ENV_FILE" "$ENV_FILE"
+    if [ $? -eq 0 ]; then
+        echo "Successfully wrote Tinybird configuration to $ENV_FILE"
+    else
+        echo "Error: Failed to move temporary file to $ENV_FILE" >&2
+        exit 1
+    fi
+else
+    echo "Error: Failed to create temporary configuration file" >&2
+    rm -f "$TMP_ENV_FILE"
+    exit 1
+fi
 
 exec "$@"
