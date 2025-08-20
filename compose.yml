@@ -201,7 +201,6 @@ services:
       dockerfile: ./.docker/tb-cli/Dockerfile
     profiles: [ analytics ]
     working_dir: /home/tinybird
-    entrypoint: [ "/home/tinybird/.docker/tb-cli/entrypoint.sh" ]
     tty: true
     container_name: ghost-tb-cli
     environment:
@@ -209,7 +208,6 @@ services:
       - TB_LOCAL_HOST=tinybird-local
     volumes:
       - ./ghost/core/core/server/data/tinybird:/home/tinybird
-      - ./.docker/tb-cli:/home/tinybird/.docker/tb-cli
       - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       tinybird-local:
