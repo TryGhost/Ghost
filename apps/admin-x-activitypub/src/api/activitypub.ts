@@ -654,4 +654,12 @@ export class ActivityPubAPI {
         const json = await response.json();
         return json.fileUrl;
     }
+
+    async sendDM(recipient: string, content: string): Promise<void> {
+        const url = new URL('.ghost/activitypub/v1/actions/send-dm', this.apiUrl);
+        await this.fetchJSON(url, 'POST', {
+            recipient,
+            content
+        });
+    }
 }

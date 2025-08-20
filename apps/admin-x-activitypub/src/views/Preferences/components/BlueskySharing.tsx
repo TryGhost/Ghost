@@ -2,8 +2,29 @@ import APAvatar from '@src/components/global/APAvatar';
 import EditProfile from '@src/views/Preferences/components/EditProfile';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H3, LoadingIndicator, LucideIcon} from '@tryghost/shade';
-import {useAccountForUser, useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    H2,
+    H3,
+    LoadingIndicator,
+    LucideIcon,
+    buttonVariants
+} from '@tryghost/shade';
+import {toast} from 'sonner';
+import {useAccountForUser, useFollowMutationForUser, useSearchForUser, useSendDMMutationForUser, useUnfollowMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useLocation} from '@tryghost/admin-x-framework';
 
 const BlueskySharing: React.FC = () => {
@@ -13,6 +34,7 @@ const BlueskySharing: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const {updateAccountSearchResult} = useSearchForUser('index', blueskyAccount.handle);
 
     const handle = account?.handle || '';
@@ -37,12 +59,38 @@ const BlueskySharing: React.FC = () => {
         }
     );
 
+    const unfollowMutation = useUnfollowMutationForUser('index', () => {}, () => {});
+
+    const sendDMMutation = useSendDMMutationForUser('index', () => {}, () => {});
+
     const handleEnable = () => {
         if (!account?.avatarUrl) {
             setIsEditingProfile(true);
         } else {
             setLoading(true);
             followMutation.mutate('@bsky.brid.gy@bsky.brid.gy');
+        }
+    };
+
+    const handleDisable = async () => {
+        setLoading(true);
+
+        try {
+            await Promise.all([
+                sendDMMutation.mutateAsync({
+                    recipient: 'https://bsky.brid.gy/ap/bsky.brid.gy',
+                    content: 'stop'
+                }),
+                unfollowMutation.mutateAsync('@bsky.brid.gy@bsky.brid.gy')
+            ]);
+            setEnabled(false);
+            updateAccountSearchResult(blueskyAccount.id, {followedByMe: false});
+            setShowConfirm(false);
+            toast.success('Bluesky sharing disabled');
+        } catch (error) {
+            toast.error('Failed to disable Bluesky sharing. Please try again.');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -66,7 +114,11 @@ const BlueskySharing: React.FC = () => {
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {enabled && <span className='flex items-center gap-1 font-medium text-green'><LucideIcon.Check size={20} /> Enabled</span>}
+                    {enabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                        <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
+                        <span className='group-hover:hidden'>Enabled</span>
+                        <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
+                    </Button>}
                 </div>
                 {!enabled ?
                     <div className='mt-3 flex flex-col gap-5'>
@@ -98,7 +150,7 @@ const BlueskySharing: React.FC = () => {
                         )}
                     </div> :
                     <>
-                        <p className='mt-3 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky profile shown below. Allow a few minutes for your Bluesky profile to activate before posts appear. This profile automatically displays everything you publish on Ghost.</p>
+                        <p className='mt-2 pr-32 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky profile shown below. This profile automatically displays everything you publish on Ghost.</p>
                         <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                             <div className='relative'>
                                 <APAvatar
@@ -139,6 +191,34 @@ const BlueskySharing: React.FC = () => {
                     </>
                 }
             </div>
+
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Disable Bluesky sharing?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Your bridged Bluesky account will be deactivated and your content will no longer be shared on Bluesky. You can re-enable sharing at any time.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({variant: 'destructive'})}
+                            disabled={loading}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDisable();
+                            }}
+                        >
+                            {loading ? <LoadingIndicator color='light' size='sm' /> : 'Disable'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Layout>
     );
 };

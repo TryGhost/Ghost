@@ -996,7 +996,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             const followingHandle = handle === 'index' ? 'me' : handle;
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
             const existingData = queryClient.getQueryData(accountFollowsQueryKey);
-            
+
             // Update the following list cache if it exists, otherwise invalidate
             if (existingData) {
                 queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
@@ -1099,6 +1099,23 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
     });
 }
 
+export function useSendDMMutationForUser(handle: string, onSuccess: () => void, onError: () => void) {
+    return useMutation({
+        async mutationFn({recipient, content}: {recipient: string; content: string}) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.sendDM(recipient, content);
+        },
+        onSuccess() {
+            onSuccess();
+        },
+        onError() {
+            onError();
+        }
+    });
+}
+
 export function useFollowMutationForUser(handle: string, onSuccess: () => void, onError: () => void) {
     const queryClient = useQueryClient();
 
@@ -1144,7 +1161,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             const followingHandle = handle === 'index' ? 'me' : handle;
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
             const existingData = queryClient.getQueryData(accountFollowsQueryKey);
-            
+
             // Update the following list cache if it exists, otherwise invalidate
             if (existingData) {
                 queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
@@ -1582,7 +1599,7 @@ export function useAccountForUser(handle: string, profileHandle: string) {
 
 export function useAccountFollowsForUser(profileHandle: string, type: AccountFollowsType) {
     const queryClient = useQueryClient();
-    
+
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.accountFollows(profileHandle, type),
         async queryFn({pageParam}: {pageParam?: string}) {
@@ -1590,14 +1607,14 @@ export function useAccountFollowsForUser(profileHandle: string, type: AccountFol
             const api = createActivityPubAPI('index', siteUrl);
 
             const response = await api.getAccountFollows(profileHandle, type, pageParam);
-            
+
             // Cache individual account data for follow mutations
             if (response.accounts) {
                 response.accounts.forEach((account) => {
                     queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
                 });
             }
-            
+
             return response;
         },
         getNextPageParam(prevPage) {
