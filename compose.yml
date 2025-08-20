@@ -173,6 +173,7 @@ services:
   analytics:
     profiles: [ analytics ]
     image: ghost/traffic-analytics:1
+    platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
     entrypoint: [ "/app/entrypoint.sh" ]
     container_name: ghost-analytics
@@ -217,6 +218,7 @@ services:
   tinybird-local:
     profiles: [ analytics ]
     image: tinybirdco/tinybird-local:latest
+    platform: linux/amd64
     ports:
       - "7181:7181"
     stop_grace_period: 2s
@@ -260,6 +262,7 @@ services:
 
   mailhog:
     image: mailhog/mailhog:latest
+    platform: linux/amd64
     container_name: ghost-mailhog
     profiles: [ ghost, split ]
     ports:
