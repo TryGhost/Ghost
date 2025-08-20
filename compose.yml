@@ -61,6 +61,9 @@ services:
       analytics:
         condition: service_healthy
         required: false
+      tb-cli:
+        condition: service_completed_successfully
+        required: false
     environment:
       - DEBUG=${DEBUG:-}
       - SSH_AUTH_SOCK=/ssh-agent
