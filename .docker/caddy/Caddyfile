@@ -4,6 +4,12 @@
 
 # Run `sudo ./.docker/caddy/trust_caddy_ca.sh` while the caddy container is running to trust the Caddy CA
 (common_ghost_config) {
+
+    log {
+        output stdout
+        format json
+    }
+
     # Proxy analytics requests with any prefix (e.g. /.ghost/analytics/ or /blog/.ghost/analytics/)
     @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
     handle @analytics_paths {
