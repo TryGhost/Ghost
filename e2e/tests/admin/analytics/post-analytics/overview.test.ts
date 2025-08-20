@@ -10,12 +10,14 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
     test.beforeEach(async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
+
         await analyticsOverviewPage.latestPost.viewAnalytics();
         await new PostAnalyticsPage(page).waitForPageLoad();
     });
 
     test('empty page with all tabs', async ({page}) => {
         const postAnalyticsPage = new PostAnalyticsPage(page);
+
         await expect(postAnalyticsPage.overviewButton).toBeVisible();
         await expect(postAnalyticsPage.webTrafficButton).toBeVisible();
         await expect(postAnalyticsPage.growthButton).toBeVisible();
@@ -23,6 +25,7 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
 
     test('empty page - overview - growth', async ({page}) => {
         const postAnalyticsPage = new PostAnalyticsPage(page);
+
         await expect(postAnalyticsPage.growthSection.card).toContainText('Free members');
         await expect(postAnalyticsPage.growthSection.card).toContainText('0');
     });

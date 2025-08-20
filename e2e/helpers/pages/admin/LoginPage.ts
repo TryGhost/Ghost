@@ -8,6 +8,7 @@ export class LoginPage extends AdminPage {
 
     constructor(page: Page) {
         super(page);
+        this.pageUrl = '/ghost/#/signin';
 
         this.emailAddressField = page.getByRole('textbox', {name: 'Email address'});
         this.passwordField = page.getByRole('textbox', {name: 'Password'});
@@ -20,5 +21,20 @@ export class LoginPage extends AdminPage {
         await this.emailAddressField.fill(email);
         await this.passwordField.fill(password);
         await this.signInButton.click();
+    }
+
+    async waitForLoginPageAfterUserCreated(): Promise<void> {
+        let counter = 0;
+
+        while (counter < 5) {
+            await this.goto();
+            const pageUrl = this.page.url();
+
+            if (!pageUrl.includes('setup')) {
+                break;
+            }
+            await this.page.waitForTimeout(1000);
+            counter += 1;
+        }
     }
 }

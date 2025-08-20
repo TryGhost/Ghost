@@ -31,7 +31,8 @@ setup('authenticate', async ({page}) => {
     await setupUser(appConfig.baseURL, {email: appConfig.auth.email, password: appConfig.auth.password});
 
     const loginPage = new LoginPage(page);
-    await loginPage.goto();
+    await loginPage.waitForLoginPageAfterUserCreated();
+
     await loginPage.signIn(appConfig.auth.email, appConfig.auth.password);
 
     // waiting for the page to be loaded before storing the credentials

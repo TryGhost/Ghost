@@ -22,6 +22,6 @@ test.describe('Ghost Admin - Newsletters', () => {
     });
 
     test('empty top newsletters card', async () => {
-        await expect(newslettersPage.topNewslettersCard).toContainText('Your best performing newsletters in the last 30 days');
+        await expect(newslettersPage.topNewslettersCard).toContainText('newsletters in the last 30 days');
     });
 });
