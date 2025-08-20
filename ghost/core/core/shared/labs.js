@@ -46,8 +46,7 @@ const PRIVATE_FEATURES = [
     'urlCache',
     'lexicalIndicators',
     'contentVisibilityAlpha',
-    'emailCustomization',
-    'emailHeaderCardOutlook'
+    'emailCustomization'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
