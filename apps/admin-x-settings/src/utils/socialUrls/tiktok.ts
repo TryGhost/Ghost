@@ -31,7 +31,7 @@ export function validateTikTokUrl(newUrl: string) {
     // Validate username: alphanumeric, underscore, period, 2–24 chars, no leading/consecutive periods
     const username = handle.slice(1); // Remove @ for validation
     if (
-        !username.match(/^[a-zA-Z0-9][a-zA-Z0-9._]{0,22}[a-zA-Z0-9]$/) ||
+        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,22}[a-zA-Z0-9_]$/) ||
         username.includes('..') ||
         username.length < 2 ||
         username.length > 24
@@ -61,7 +61,7 @@ export const tiktokHandleToUrl = (handle: string) => {
 
     // Validate username: alphanumeric, underscore, period, 2–24 chars, no leading/consecutive periods
     if (
-        !username.match(/^[a-zA-Z0-9][a-zA-Z0-9._]{0,22}[a-zA-Z0-9]$/) ||
+        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,22}[a-zA-Z0-9_]$/) ||
         username.includes('..') ||
         username.length < 2 ||
         username.length > 24
