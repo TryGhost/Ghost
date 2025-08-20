@@ -94,6 +94,20 @@ services:
     profiles: [ split, all ]
     tty: true
 
+  admin-apps:
+    <<: *service-template
+    image: ghost-monorepo:latest
+    entrypoint: [ "/home/ghost/.docker/development.entrypoint.sh" ]
+    working_dir: /home/ghost
+    command: [ "sh", "-c", "yarn nx reset && yarn nx daemon --start && sleep 2 && exec npx nx watch --verbose --projects=@tryghost/admin-x-activitypub,@tryghost/admin-x-settings,@tryghost/posts,@tryghost/stats --includeDependentProjects -- yarn nx build \\$$NX_PROJECT_NAME" ]
+    profiles: [ split ]
+    tty: true
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   caddy:
     image: caddy:latest
     container_name: ghost-caddy

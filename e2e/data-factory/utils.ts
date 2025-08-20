@@ -1,5 +1,5 @@
-import {randomBytes} from 'crypto';
-import {faker} from '@faker-js/faker';
+import { randomBytes } from 'crypto';
+import { faker } from '@faker-js/faker';
 
 /**
  * Generate a MongoDB-style ObjectId
@@ -11,7 +11,7 @@ export function generateId(): string {
 }
 
 export function generateUuid(): string {
-    return faker.string.uuid();
+    return faker.datatype.uuid();
 }
 
 export function generateSlug(text: string): string {
