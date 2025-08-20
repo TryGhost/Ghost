@@ -1,6 +1,5 @@
 import {
     Button,
-    formatNumber,
     LucideIcon,
     Table,
     TableBody,
@@ -8,15 +7,16 @@ import {
     TableHead,
     TableHeader,
     TableRow,
-} from "@tryghost/shade";
-import { Tag } from "@tryghost/admin-x-framework/api/tags";
-import { useEffect, useRef } from "react";
-import { notUndefined, useVirtualizer } from "@tanstack/react-virtual";
+    formatNumber
+} from '@tryghost/shade';
+import {Tag} from '@tryghost/admin-x-framework/api/tags';
+import {notUndefined, useVirtualizer} from '@tanstack/react-virtual';
+import {useEffect, useRef} from 'react';
 
 function getScrollParent(node: Node | null): HTMLElement | null {
     const isElement = node instanceof HTMLElement;
     const overflowY = isElement && window.getComputedStyle(node).overflowY;
-    const isScrollable = overflowY !== "visible" && overflowY !== "hidden";
+    const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
 
     if (!node) {
         return null;
@@ -35,7 +35,7 @@ const TagsList = ({
     totalCount,
     hasNextPage,
     isFetchingNextPage,
-    fetchNextPage,
+    fetchNextPage
 }: {
     items: Tag[];
     totalCount: number;
@@ -50,7 +50,7 @@ const TagsList = ({
         getScrollElement: () => getScrollParent(parentRef.current),
         count: totalCount,
         estimateSize: () => 100,
-        debug: true,
+        debug: true
     });
 
     useEffect(() => {
@@ -72,30 +72,30 @@ const TagsList = ({
         fetchNextPage,
         tagCount,
         isFetchingNextPage,
-        rowVirtualizer.getVirtualItems(),
+        rowVirtualizer.getVirtualItems()
     ]);
 
     const visibleItems = rowVirtualizer.getVirtualItems();
     const [before, after] =
         visibleItems.length > 0
             ? [
-                  notUndefined(visibleItems[0]).start -
+                notUndefined(visibleItems[0]).start -
                       rowVirtualizer.options.scrollMargin,
-                  rowVirtualizer.getTotalSize() -
-                      notUndefined(visibleItems[visibleItems.length - 1]).end,
-              ]
+                rowVirtualizer.getTotalSize() -
+                      notUndefined(visibleItems[visibleItems.length - 1]).end
+            ]
             : [0, 0];
     const colSpan = 4;
 
     return (
         <div
             ref={parentRef}
-            style={{ height: `${rowVirtualizer.getTotalSize()}px` }}
+            style={{height: `${rowVirtualizer.getTotalSize()}px`}}
         >
-            <Table className="table-fixed flex flex-col lg:table">
-                <TableHeader className="hidden lg:!table-header-group lg:!visible">
+            <Table className="flex table-fixed flex-col lg:table">
+                <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
-                        <TableHead className="w-1/2 xl:w-3/5 px-4">Tag</TableHead>
+                        <TableHead className="w-1/2 px-4 xl:w-3/5">Tag</TableHead>
                         <TableHead className="w-1/5 px-4">Slug</TableHead>
                         <TableHead className="w-1/5 px-4">No. of posts</TableHead>
                         <TableHead className="w-16 px-4"></TableHead>
@@ -105,9 +105,9 @@ const TagsList = ({
                     {before > 0 && (
                         <tr className="flex lg:table-row">
                             <td
-                                colSpan={colSpan}
-                                style={{ height: before }}
                                 className="flex lg:table-cell"
+                                colSpan={colSpan}
+                                style={{height: before}}
                             />
                         </tr>
                     )}
@@ -120,13 +120,13 @@ const TagsList = ({
                                 <TableRow
                                     key={virtualRow.key}
                                     ref={rowVirtualizer.measureElement}
-                                    className="relative lg:table-row flex flex-col"
+                                    className="relative flex flex-col lg:table-row"
                                     style={{
-                                        height: `${virtualRow.size}px`,
+                                        height: `${virtualRow.size}px`
                                     }}
                                 >
                                     <TableCell className="relative z-10 h-24 animate-pulse">
-                                        <div className="h-full bg-muted rounded-md" />
+                                        <div className="h-full rounded-md bg-muted" />
                                     </TableCell>
                                     <TableCell colSpan={3} />
                                 </TableRow>
@@ -137,29 +137,29 @@ const TagsList = ({
                             <TableRow
                                 key={virtualRow.key}
                                 ref={rowVirtualizer.measureElement}
-                                className="relative lg:table-row w-full grid grid-cols-[1fr_5rem] md:grid-cols-[1fr_auto_5rem] items-center gap-x-4 p-2 lg:p-0"
+                                className="relative grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0"
                             >
-                                <TableCell className="static min-w-0 p-0 lg:p-4 lg:w-1/2 xl:w-3/5 flex flex-col col-start-1 col-end-1 row-start-1 row-end-1 lg:table-cell">
+                                <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                                     <a
-                                        className="before:absolute before:z-10 before:inset-0 font-medium text-lg block pb-1 truncate"
+                                        className="block truncate pb-1 text-lg font-medium before:absolute before:inset-0 before:z-10"
                                         href={`#/tags/${item.slug}`}
                                     >
                                         {item.name}
                                     </a>
-                                    <span className="text-muted-foreground block truncate">
+                                    <span className="block truncate text-muted-foreground">
                                         {item.description}
                                     </span>
                                 </TableCell>
-                                <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-2 row-end-2 lg:table-cell">
+                                <TableCell className="col-start-1 col-end-1 row-start-2 row-end-2 flex p-0 lg:table-cell lg:p-4">
                                     <span className="block truncate">{item.slug}</span>
                                 </TableCell>
-                                <TableCell className="p-0 lg:p-4 flex col-start-1 col-end-1 row-start-3 row-end-3 md:row-start-1 md:row-end-3 md:col-start-2 md:col-end-2 lg:table-cell">
+                                <TableCell className="col-start-1 col-end-1 row-start-3 row-end-3 flex p-0 md:col-start-2 md:col-end-2 md:row-start-1 md:row-end-3 lg:table-cell lg:p-4">
                                     {item.count?.posts ? (
                                         <a
+                                            className="relative z-10 -m-4 inline-block p-4 hover:underline"
                                             href={`#/posts?tag=${item.slug}`}
-                                            className="relative inline-block z-10 p-4 -m-4 hover:underline"
                                         >
-                                            {formatNumber(item.count?.posts)}{" "}
+                                            {formatNumber(item.count?.posts)}{' '}
                                             posts
                                         </a>
                                     ) : (
@@ -168,11 +168,11 @@ const TagsList = ({
                                         </span>
                                     )}
                                 </TableCell>
-                                <TableCell className="p-0 lg:p-4 w-4 col-start-2 col-end-2 row-start-1 row-end-3 md:col-start-3 md:col-end-3 lg:table-cell">
+                                <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 w-4 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <Button
-                                        variant="outline"
-                                        size="icon"
                                         className="w-12"
+                                        size="icon"
+                                        variant="outline"
                                     >
                                         <LucideIcon.Pencil />
                                     </Button>
@@ -183,9 +183,9 @@ const TagsList = ({
                     {after > 0 && (
                         <tr className="flex lg:table-row">
                             <td
-                                colSpan={colSpan}
-                                style={{ height: after }}
                                 className="flex lg:table-cell"
+                                colSpan={colSpan}
+                                style={{height: after}}
                             />
                         </tr>
                     )}
