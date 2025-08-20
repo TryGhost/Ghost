@@ -1,5 +1,7 @@
 // @ts-check
 const {ValidationError} = require('@tryghost/errors');
+const crypto = require('node:crypto');
+const {hotp} = require('otplib');
 
 class SingleUseTokenProvider {
     /**
@@ -8,12 +10,16 @@ class SingleUseTokenProvider {
      * @param {number} dependencies.validityPeriod - How long a token is valid for from it's creation in milliseconds.
      * @param {number} dependencies.validityPeriodAfterUsage - How long a token is valid after first usage, in milliseconds.
      * @param {number} dependencies.maxUsageCount - How many times a token can be used.
+     * @param {import('./MembersConfigProvider')} dependencies.membersConfig - Members config provider for auth secrets.
      */
-    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount}) {
+    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, membersConfig}) {
         this.model = SingleUseTokenModel;
         this.validityPeriod = validityPeriod;
         this.validityPeriodAfterUsage = validityPeriodAfterUsage;
         this.maxUsageCount = maxUsageCount;
+        this.membersConfig = membersConfig;
+        
+        hotp.options = {digits: 6};
     }
 
     /**
@@ -105,6 +111,54 @@ class SingleUseTokenProvider {
         } catch (err) {
             return {};
         }
+    }
+
+    /**
+     * @private
+     * @method deriveCounter
+     * Derives a counter from token ID and value using HMAC
+     *
+     * @param {string} tokenId
+     * @param {string} tokenValue
+     * @returns {number}
+     */
+    deriveCounter(tokenId, tokenValue) {
+        const secret = this.membersConfig.getAuthSecret();
+        const mac = crypto.createHmac('sha256', secret)
+            .update(`${tokenId}|${tokenValue}`)
+            .digest();
+        return mac.readUInt32BE(0);
+    }
+
+    /**
+     * @method deriveCode
+     * Derives a HOTP code from a token object
+     *
+     * @param {Object} token
+     * @param {string} token.id - Token ID
+     * @param {string} token.token - Token value
+     * @returns {string}
+     */
+    deriveCode(token) {
+        const secret = this.membersConfig.getAuthSecret().toString('hex');
+        const counter = this.deriveCounter(token.id, token.token);
+        return hotp.generate(secret, counter);
+    }
+
+    /**
+     * @method verifyCode
+     * Verifies a HOTP code against a token object
+     *
+     * @param {Object} token
+     * @param {string} token.id - Token ID
+     * @param {string} token.token - Token value
+     * @param {string} code - The code to verify
+     * @returns {boolean}
+     */
+    verifyCode(token, code) {
+        const secret = this.membersConfig.getAuthSecret().toString('hex');
+        const counter = this.deriveCounter(token.id, token.token);
+        return hotp.verify({token: code, secret, counter});
     }
 }
 
