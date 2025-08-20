@@ -1,5 +1,5 @@
 import {appConfig} from './app-config';
-import {UserFactory, User} from '../factories';
+import {UserFactory, User} from '../../data-factory/factories/user-factory';
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const logging = require('@tryghost/logging');
 

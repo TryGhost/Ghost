@@ -1,3 +1,5 @@
+import {Factory} from './factory';
+
 export interface User {
     name: string;
     email: string;
@@ -5,8 +7,11 @@ export interface User {
     blogTitle: string;
 }
 
-export class UserFactory {
-    public build(overrides: Partial<User>): User {
+export class UserFactory extends Factory<Partial<User>, User> {
+    name = 'user';
+    entityType = 'users';
+
+    public build(overrides: Partial<User> = {}): User {
         return {
             ...this.defaults,
             ...overrides
