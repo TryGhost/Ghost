@@ -1,8 +1,9 @@
+import {InfiniteData} from '@tanstack/react-query';
 import {
     Meta,
-    createQuery,
     createQueryWithId,
-    createMutation
+    createMutation,
+    createInfiniteQuery
 } from '../utils/api/hooks';
 
 export type Tag = {
@@ -42,9 +43,24 @@ export interface TagsResponseType {
 
 const dataType = 'TagsResponseType';
 
-const useBrowseTagsQuery = createQuery<TagsResponseType>({
+const useBrowseTagsQuery = createInfiniteQuery<TagsResponseType>({
     dataType,
-    path: '/tags/'
+    path: '/tags/',
+    defaultNextPageParams: (lastPage, otherParams) => ({
+        ...otherParams,
+        page: (lastPage.meta?.pagination.next || 1).toString()
+    }),
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<TagsResponseType>;
+        const tags = pages.flatMap(page => page.tags);
+        const meta = pages[pages.length - 1].meta;
+
+        return {
+            tags,
+            meta,
+            isEnd: meta ? meta.pagination.pages === meta.pagination.page : true
+        };
+    }
 });
 
 export const useBrowseTags = ({
