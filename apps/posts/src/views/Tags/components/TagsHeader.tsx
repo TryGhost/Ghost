@@ -17,7 +17,7 @@ interface TagsHeaderProps {
 const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
     return (
         <>
-            <Navbar className="sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black">
+            <Navbar className="sticky top-0 z-50 -mb-8 flex-col items-start gap-y-5 border-none bg-white/70 py-8 backdrop-blur-md md:flex-row md:items-center dark:bg-black">
                 <H1 className="min-h-[35px] max-w-[920px] indent-0 leading-[1.2em]">
                     Tags
                 </H1>
