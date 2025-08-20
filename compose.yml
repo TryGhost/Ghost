@@ -187,7 +187,6 @@ services:
       - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
       - ./ghost/core/core/server/data/tinybird/.env:/app/.env:ro
     environment:
-      - TINYBIRD_TRACKER_TOKEN=${TINYBIRD_TRACKER_TOKEN:-}
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
     depends_on:
       tinybird-local:
