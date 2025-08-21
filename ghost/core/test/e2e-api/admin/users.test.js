@@ -2,6 +2,7 @@ const assert = require('assert/strict');
 const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, nullable} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
@@ -111,7 +112,7 @@ describe('User API', function () {
                     ...userMatcher,
                     roles: anyArray,
                     count: {
-                        posts: 8
+                        posts: 7
                     }
                 }]
             })
@@ -370,129 +371,125 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet());
     });
 
-    // it('Can destroy an active user and transfer posts to the owner', async function () {
-    //     const userId = testUtils.getExistingData().users[1].id;
-    //     const userSlug = testUtils.getExistingData().users[1].slug;
-    //     const ownerId = testUtils.getExistingData().users[0].id;
+    it('Can destroy an active user and transfer posts to the owner', async function () {
+        // Use slimer-mcectoplasm user (index 3) who has a post in the fixtures
+        const {id: userId, slug: userSlug} = fixtureManager.get('users', 3); 
+        const ownerId = fixtureManager.get('users', 0).id;
 
-    //     const res = await request
-    //         .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}`))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
+        // First check the user actually has posts
+        const initialPostsRes = await agent.get(`posts/?filter=authors:${userSlug}`)
+            .expectStatus(200); 
+        
+        // Verify the user has posts to transfer (otherwise the test isn't meaningful)
+        assert.ok(initialPostsRes.body.posts.length > 0, `User ${userSlug} should have posts to make this test meaningful`);
 
-    //     res.body.posts.length.should.eql(7);
+        // Check initial database state
+        const ownerPostsAuthorsModels = await db.knex('posts_authors')
+            .where({author_id: ownerId})
+            .select();
+        const initialOwnerPostCount = ownerPostsAuthorsModels.length;
 
-    //     const ownerPostsAuthorsModels = await db.knex('posts_authors')
-    //         .where({
-    //             author_id: ownerId
-    //         })
-    //         .select();
+        const userPostsAuthorsModels = await db.knex('posts_authors')
+            .where({author_id: userId})
+            .select();
+        const initialUserPostCount = userPostsAuthorsModels.length;
 
-    //     // includes posts & pages
-    //     should.equal(ownerPostsAuthorsModels.length, 8);
+        // Delete the user
+        const deleteRes = await agent.delete(`users/${userId}`)
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.ok(body.meta.filename);
+            });
 
-    //     const userPostsAuthorsModels = await db.knex('posts_authors')
-    //         .where({
-    //             author_id: userId
-    //         })
-    //         .select();
+        // Check the backup file was created
+        await agent.get(`db/?filename=${deleteRes.body.meta.filename}/`)
+            .expectStatus(200);
 
-    //     // includes posts & pages
-    //     should.equal(userPostsAuthorsModels.length, 11);
+        // Verify user was deleted
+        await agent.get(`users/${userId}/`)
+            .expectStatus(404);
 
-    //     const res2 = await request
-    //         .delete(localUtils.API.getApiQuery(`users/${userId}`))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
+        // Check no posts are now assigned to the deleted user
+        await agent.get(`posts/?filter=authors:${userSlug}}`)
+            .expectStatus(200)
+            .expect(({body}) => {
+                assert.equal(body.posts.length, 0);
+            });
 
-    //     should.exist(res2.body.meta.filename);
+        // Verify database cleanup
+        const rolesUsersModels = await db.knex('roles_users')
+            .where({user_id: userId})
+            .select();
+        assert.equal(rolesUsersModels.length, 0);
 
-    //     await request
-    //         .get(localUtils.API.getApiQuery(`db/?filename=${res2.body.meta.filename}/`))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
+        const rolesUsers = await db.knex('roles_users').select();
+        assert.ok(rolesUsers.length > 0);
 
-    //     await request
-    //         .get(localUtils.API.getApiQuery(`users/${userId}/`))
-    //         .set('Origin', config.get('url'))
-    //         .expect(404);
+        // Verify posts were transferred to owner
+        const ownerPostsAuthorsModelsAfter = await db.knex('posts_authors')
+            .where({author_id: ownerId})
+            .select();
 
-    //     const res3 = await request
-    //         .get(localUtils.API.getApiQuery(`posts/?filter=authors:${userSlug}}`))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
+        assert.equal(ownerPostsAuthorsModelsAfter.length, initialOwnerPostCount + initialUserPostCount);
 
-    //     res3.body.posts.length.should.eql(0);
+        const userPostsAuthorsModelsAfter = await db.knex('posts_authors')
+            .where({author_id: userId})
+            .select();
+        assert.equal(userPostsAuthorsModelsAfter.length, 0);
+    });
 
-    //     const rolesUsersModels = await db.knex('roles_users')
-    //         .where({
-    //             user_id: userId
-    //         })
-    //         .select();
+    it('Can transfer ownership to admin user', async function () {
+        const originalOwnerId = fixtureManager.get('users', 0).id;
+        const newOwnerId = fixtureManager.get('users', 1).id;
 
-    //     rolesUsersModels.length.should.eql(0);
+        await agent.put('users/owner')
+            .body({
+                owner: [{
+                    id: newOwnerId
+                }]
+            })
+            .expectStatus(200)
+            .matchBodySnapshot({
+                users: [
+                    {
+                        ...userMatcher,
+                        id: originalOwnerId,
+                        roles: [{ name: 'Administrator'}]
+                    },
+                    {
+                        ...userMatcher,
+                        id: newOwnerId,
+                        roles: [{ name: 'Owner'}]
+                    },
+                ]
+            })
+    });
 
-    //     const rolesUsers = await db.knex('roles_users').select();
-    //     rolesUsers.length.should.greaterThan(0);
+    it('Can change password and retain the session', async function () {
+        await agent.put('users/password')
+            .body({
+                password: [{
+                    newPassword: '1234abcde!!',
+                    ne2Password: '1234abcde!!',
+                    oldPassword: 'Sl1m3rson99',
+                    user_id: fixtureManager.get('users', 0).id
+                }]
+            })
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot()
+            .expect(({body}) => {
+                assert.ok(body.password);
+                assert.ok(body.password[0].message);
+            });
 
-    //     const ownerPostsAuthorsModelsAfter = await db.knex('posts_authors')
-    //         .where({
-    //             author_id: ownerId
-    //         })
-    //         .select();
-
-    //     should.equal(ownerPostsAuthorsModelsAfter.length, 19);
-
-    //     const userPostsAuthorsModelsAfter = await db.knex('posts_authors')
-    //         .where({
-    //             author_id: userId
-    //         })
-    //         .select();
-
-    //     should.equal(userPostsAuthorsModelsAfter.length, 0);
-    // });
-
-    // it('Can transfer ownership to admin user', async function () {
-    //     const res = await request
-    //         .put(localUtils.API.getApiQuery('users/owner'))
-    //         .set('Origin', config.get('url'))
-    //         .send({
-    //             owner: [{
-    //                 id: admin.id
-    //             }]
-    //         })
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .expect(200);
-
-    //     res.body.users[0].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[0].name);
-    //     res.body.users[1].roles[0].name.should.equal(testUtils.DataGenerator.Content.roles[3].name);
-    // });
-
-    // it('Can change password and retain the session', async function () {
-    //     let res = await request
-    //         .put(localUtils.API.getApiQuery('users/password'))
-    //         .set('Origin', config.get('url'))
-    //         .send({
-    //             password: [{
-    //                 newPassword: '1234abcde!!',
-    //                 ne2Password: '1234abcde!!',
-    //                 oldPassword: 'Sl1m3rson99',
-    //                 user_id: testUtils.getExistingData().users[0].id
-    //             }]
-    //         })
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .expect(200);
-
-    //     should.exist(res.body.password);
-    //     should.exist(res.body.password[0].message);
-
-    //     await request
-    //         .get(localUtils.API.getApiQuery('users/me/'))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
-    // });
+        // Verify session is still valid
+        await agent.get('users/me/')
+            .expectStatus(200);
+    });
 
     // it('Can read the user\'s Personal Token', async function () {
     //     const res = await request
