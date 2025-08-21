@@ -4,7 +4,7 @@ import * as path from 'node:path';
 import {existsSync, readFileSync} from 'fs';
 import {appConfig, setupUser} from '../helpers/utils';
 
-const authFile = path.join(__dirname, '../playwright/.auth/user.json');
+const authFile = path.join(__dirname, '..', appConfig.auth.storageFile);
 
 // Check if auth file exists and has valid cookies
 function authFileExists() {

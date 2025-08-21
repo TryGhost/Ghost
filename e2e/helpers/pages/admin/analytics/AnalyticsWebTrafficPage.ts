@@ -18,7 +18,7 @@ export class AnalyticsWebTrafficPage extends AdminPage {
         this.pageUrl = '/ghost/#/analytics/web';
 
         this.totalViewsTab = page.getByRole('tab', {name: 'Total views'});
-        this.totalUniqueVisitorsTab = page.getByRole('tab', {name: 'Unique visitors'}); 
+        this.totalUniqueVisitorsTab = page.getByRole('tab', {name: 'Unique visitors'});
 
         this.webGraph = page.getByTestId('web-graph');
 
