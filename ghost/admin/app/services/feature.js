@@ -70,6 +70,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('contentVisibility') contentVisibility;
     @feature('contentVisibilityAlpha') contentVisibilityAlpha;
+    @feature('membersSigninOTC') membersSigninOTC;
 
     _user = null;
 
