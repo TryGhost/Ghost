@@ -887,7 +887,7 @@ export const transformApiTiersData = ({tiers}) => {
 };
 
 /**
- * Returns the member attribution URL history, which is stored in localStorage, if there is any.
+ * Returns the member attribution URL history, which is stored in sessionStorage, if there is any.
  * @warning If you make changes here, please also update the one in signup-form!
  * @returns {Object[]|undefined}
  */
@@ -895,7 +895,7 @@ export function getUrlHistory() {
     const STORAGE_KEY = 'ghost-history';
 
     try {
-        const historyString = localStorage.getItem(STORAGE_KEY);
+        const historyString = sessionStorage.getItem(STORAGE_KEY);
         if (historyString) {
             const parsed = JSON.parse(historyString);
 
@@ -904,7 +904,7 @@ export function getUrlHistory() {
             }
         }
     } catch (error) {
-        // Failed to access localStorage or something related to that.
+        // Failed to access sessionStorage or something related to that.
         // Log a warning, as this shouldn't happen on a modern browser.
 
         /* eslint-disable no-console */
