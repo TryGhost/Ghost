@@ -17,4 +17,4 @@ ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
 ENGINE_SORTING_KEY "site_uuid, timestamp"
 
 FORWARD_QUERY >
-    SELECT timestamp, session_id, action, version, toString(payload) as payload, site_uuid
+    SELECT timestamp, session_id, action, version, toString(payload) as payload, site_uuid, defaultValueOfTypeName('DateTime') AS inserted_at
