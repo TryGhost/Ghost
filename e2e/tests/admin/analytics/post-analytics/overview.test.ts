@@ -12,7 +12,6 @@ test.describe('Ghost Admin - Post Analytics - Overview', () => {
         await analyticsOverviewPage.goto();
 
         await analyticsOverviewPage.latestPost.analyticsButton.click();
-        await new PostAnalyticsPage(page).waitForPageLoad();
     });
 
     test('empty page with all tabs', async ({page}) => {

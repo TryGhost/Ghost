@@ -50,11 +50,5 @@ export class PostAnalyticsPage extends AdminPage {
     async waitForPageLoad() {
         await this.webPerformanceSection.card.waitFor({state: 'visible'});
     }
-
-    async growth() {
-        await this.waitForPageLoad(); // Ensure page is fully loaded before clicking
-        await this.growthButton.waitFor({state: 'visible'});
-        await this.growthButton.click();
-    }
 }
 
