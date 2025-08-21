@@ -10,14 +10,14 @@ class SingleUseTokenProvider {
      * @param {number} dependencies.validityPeriod - How long a token is valid for from it's creation in milliseconds.
      * @param {number} dependencies.validityPeriodAfterUsage - How long a token is valid after first usage, in milliseconds.
      * @param {number} dependencies.maxUsageCount - How many times a token can be used.
-     * @param {import('./MembersConfigProvider')} dependencies.membersConfig - Members config provider for auth secrets.
+     * @param {string} [dependencies.secret] - Secret for generating and verifying OTP codes.
      */
-    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, membersConfig}) {
+    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, secret}) {
         this.model = SingleUseTokenModel;
         this.validityPeriod = validityPeriod;
         this.validityPeriodAfterUsage = validityPeriodAfterUsage;
         this.maxUsageCount = maxUsageCount;
-        this.membersConfig = membersConfig;
+        this.secret = secret;
         
         hotp.options = {digits: 6};
     }
@@ -123,11 +123,9 @@ class SingleUseTokenProvider {
      * @returns {number}
      */
     deriveCounter(tokenId, tokenValue) {
-        const secret = this.membersConfig.getAuthSecret();
-        const mac = crypto.createHmac('sha256', secret)
-            .update(`${tokenId}|${tokenValue}`)
-            .digest();
-        return mac.readUInt32BE(0);
+        const msg = `${tokenId}|${tokenValue}`;
+        const digest = crypto.createHash('sha256').update(msg).digest();
+        return digest.readUInt32BE(0);
     }
 
     /**
@@ -140,9 +138,8 @@ class SingleUseTokenProvider {
      * @returns {string}
      */
     deriveCode(token) {
-        const secret = this.membersConfig.getAuthSecret().toString('hex');
         const counter = this.deriveCounter(token.id, token.token);
-        return hotp.generate(secret, counter);
+        return hotp.generate(this.secret, counter);
     }
 
     /**
@@ -156,9 +153,8 @@ class SingleUseTokenProvider {
      * @returns {boolean}
      */
     verifyCode(token, code) {
-        const secret = this.membersConfig.getAuthSecret().toString('hex');
         const counter = this.deriveCounter(token.id, token.token);
-        return hotp.verify({token: code, secret, counter});
+        return hotp.verify({token: code, secret: this.secret, counter});
     }
 }
 

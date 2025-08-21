@@ -27,7 +27,7 @@ describe('SingleUseTokenProvider', function () {
             validityPeriod: 86400000, // 24 hours
             validityPeriodAfterUsage: 3600000, // 1 hour
             maxUsageCount: 3,
-            membersConfig: mockMembersConfig
+            secret: mockMembersConfig.getAuthSecret()
         });
     });
 
@@ -177,7 +177,7 @@ describe('SingleUseTokenProvider', function () {
                 validityPeriod: 86400000,
                 validityPeriodAfterUsage: 3600000,
                 maxUsageCount: 3,
-                membersConfig: mockMembersConfig2
+                secret: mockMembersConfig2.getAuthSecret()
             });
 
             const testToken = {id: 'test-id', token: 'test-value'};
