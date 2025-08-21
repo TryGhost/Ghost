@@ -3,8 +3,8 @@ import {
     Meta,
     createQueryWithId,
     createMutation,
-    createInfiniteQuery,
-} from "../utils/api/hooks";
+    createInfiniteQuery
+} from '../utils/api/hooks';
 
 export type Tag = {
     id: string;
@@ -25,7 +25,7 @@ export type Tag = {
     canonicalUrl: string;
     accentColor: string;
     featureImage: string;
-    visibility: "public" | "internal";
+    visibility: 'public' | 'internal';
     createdAtUTC: string;
     updatedAtUTC: string;
     count?: {
@@ -38,15 +38,17 @@ export interface TagsResponseType {
     tags: Tag[];
 }
 
-const dataType = "TagsResponseType";
+const dataType = 'TagsResponseType';
 
 const useBrowseTagsQuery = createInfiniteQuery<TagsResponseType>({
     dataType,
-    path: "/tags/",
-    defaultNextPageParams: (lastPage, otherParams) => ({
-        ...otherParams,
-        page: (lastPage.meta?.pagination.next || 1).toString()
-    }),
+    path: '/tags/',
+    defaultNextPageParams: (lastPage, otherParams) => (lastPage.meta?.pagination.next
+        ? {
+            ...otherParams,
+            page: (lastPage.meta?.pagination.next || 1).toString()
+        }
+        : undefined),
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<TagsResponseType>;
         const tags = pages.flatMap(page => page.tags);
@@ -68,25 +70,25 @@ export const useBrowseTags = ({
 >[0]) => {
     const filterString = Object.entries(filter)
         .map(([key, value]) => `${key}:${value}`)
-        .join(",");
+        .join(',');
     return useBrowseTagsQuery({
         ...args,
         searchParams: {
-            limit: "100",
-            order: "name asc",
-            include: "count.posts",
+            limit: '100',
+            order: 'name asc',
+            include: 'count.posts',
             filter: filterString,
-            ...args.searchParams,
-        },
+            ...args.searchParams
+        }
     });
 };
 
 export const getTag = createQueryWithId<TagsResponseType>({
     dataType,
-    path: (id) => `/tags/${id}/`,
+    path: id => `/tags/${id}/`
 });
 
 export const useDeleteTag = createMutation<unknown, string>({
-    method: "DELETE",
-    path: (id) => `/tags/${id}/`,
+    method: 'DELETE',
+    path: id => `/tags/${id}/`
 });
