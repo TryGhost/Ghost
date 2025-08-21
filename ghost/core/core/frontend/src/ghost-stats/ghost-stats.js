@@ -164,7 +164,7 @@ export class GhostStats {
         const referrerData = parseReferrer(location?.href);
         referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
 
-        // Wait a bit for SPA routers
+        // Debounce tracking to avoid duplicates and ensure page has settled
         this.browser.setTimeout(() => {
             this.trackEvent('page_hit', {
                 'user-agent': navigator?.userAgent,
@@ -181,13 +181,6 @@ export class GhostStats {
         if (this.isListenersAttached) {
             return;
         }
-
-        // Track history navigation
-        this.browser.addEventListener('window', 'hashchange', () => this.trackPageHit());
-        
-        // Handle SPA navigation
-        this.browser.wrapHistoryMethod('pushState', () => this.trackPageHit());
-        this.browser.addEventListener('window', 'popstate', () => this.trackPageHit());
 
         // Handle visibility changes for prerendering
         if (this.browser.getVisibilityState() !== 'hidden') {

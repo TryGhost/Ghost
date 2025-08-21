@@ -404,13 +404,6 @@ describe('ghost-stats.js', function () {
             ghostStats.initConfig();
         });
 
-        it('should setup navigation tracking', function () {
-            ghostStats.setupEventListeners();
-            
-            expect(mockWindow.addEventListener.calledWith('hashchange')).to.be.true;
-            expect(mockWindow.addEventListener.calledWith('popstate')).to.be.true;
-        });
-
         it('should handle visibility changes', async function () {
             mockDocument.visibilityState = 'hidden';
             ghostStats.setupEventListeners();
@@ -430,20 +423,14 @@ describe('ghost-stats.js', function () {
 
         it('should not attach listeners multiple times', function () {
             ghostStats.setupEventListeners();
-            const firstCallCounts = {
-                hashchange: mockWindow.addEventListener.withArgs('hashchange').callCount,
-                popstate: mockWindow.addEventListener.withArgs('popstate').callCount,
-                pushState: mockWindow.history.pushState.callCount
-            };
+            const firstCallCount = mockWindow.addEventListener.callCount;
 
             // Call setupEventListeners multiple times
             ghostStats.setupEventListeners();
             ghostStats.setupEventListeners();
 
             // Verify no additional listeners were attached
-            expect(mockWindow.addEventListener.withArgs('hashchange').callCount).to.equal(firstCallCounts.hashchange);
-            expect(mockWindow.addEventListener.withArgs('popstate').callCount).to.equal(firstCallCounts.popstate);
-            expect(mockWindow.history.pushState.callCount).to.equal(firstCallCounts.pushState);
+            expect(mockWindow.addEventListener.callCount).to.equal(firstCallCount);
         });
 
         it('should maintain single visibility change listener when called multiple times', function () {
