@@ -71,7 +71,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
                                 <CardDescription>How did this post perform</CardDescription>
                             </CardHeader>
                             <CardContent className='p-0'>
-                                <div className='flex flex-col md:grid md:grid-cols-3 md:items-stretch'>
+                                <div className={`flex flex-col md:grid md:items-stretch ${appSettings?.paidMembersEnabled ? 'md:grid-cols-3' : 'md:grid-cols-1'}`}>
                                     <KpiCard className='grow'>
                                         <KpiCardMoreButton onClick={() => {
                                             const filterParam = encodeURIComponent(`signup:'${postId}'+conversion:-'${postId}'`);
