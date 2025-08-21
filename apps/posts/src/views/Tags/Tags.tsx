@@ -61,7 +61,7 @@ const Tags: React.FC = () => {
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
                         items={data?.tags ?? []}
-                        totalCount={data?.meta?.pagination?.total ?? 0}
+                        totalItems={data?.meta?.pagination?.total ?? 0}
                     />
                 )}
             </TagsContent>
