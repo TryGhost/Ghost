@@ -4,7 +4,7 @@ const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, nullable} = matchers;
+const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, anyString, nullable} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
 const localUtils = require('./utils');
 
@@ -96,7 +96,7 @@ describe('User API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => { 
-                assert.equal(body.users[0].slug, 'smith-wellingsworth')
+                assert.equal(body.users[0].slug, 'smith-wellingsworth');
             });
     });
     it('Can retrieve a user by id', async function () {
@@ -120,7 +120,7 @@ describe('User API', function () {
             .expect(({body}) => {
                 assert.equal(body.meta, undefined);
                 localUtils.API.checkResponse(body.users[0], 'user', ['roles', 'count']);
-        });
+            });
     });  
 
     it('Can retrieve a user by slug', async function () {
@@ -206,7 +206,7 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag,
+                etag: anyEtag
             })
             .matchBodySnapshot({
                 users: [{
@@ -265,7 +265,7 @@ describe('User API', function () {
             })
             .expect(({body}) => {
                 assert.equal(body.users[0].roles[0].name, 'Owner');
-            })
+            });
     });
 
     it('Cannot edit user with invalid roles data', async function () {
@@ -454,15 +454,21 @@ describe('User API', function () {
                     {
                         ...userMatcher,
                         id: originalOwnerId,
-                        roles: [{ name: 'Administrator'}]
+                        roles: [{name: 'Administrator', 
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime}]
                     },
                     {
                         ...userMatcher,
                         id: newOwnerId,
-                        roles: [{ name: 'Owner'}]
-                    },
+                        roles: [{name: 'Owner',
+                            id: anyObjectId,
+                            created_at: anyISODateTime,
+                            updated_at: anyISODateTime}]
+                    }
                 ]
-            })
+            });
     });
 
     it('Can change password and retain the session', async function () {
@@ -491,50 +497,90 @@ describe('User API', function () {
             .expectStatus(200);
     });
 
-    // it('Can read the user\'s Personal Token', async function () {
-    //     const res = await request
-    //         .get(localUtils.API.getApiQuery('users/me/token/'))
-    //         .set('Origin', config.get('url'))
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .expect(200);
+    it('Can read the user\'s Personal Token', async function () {
+        await agent.get('users/me/token/')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                apiKey: {
+                    id: anyObjectId,
+                    secret: anyString,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    role_id: anyObjectId,
+                    user_id: anyString,
+                    type: 'admin',
+                    integration_id: null,
+                    last_seen_at: null,
+                    last_seen_version: null
+                }
+            })
+            .expect(({body}) => {
+                assert.ok(body.apiKey);
+                assert.ok(body.apiKey.id);
+                assert.ok(body.apiKey.secret);
+            });
+    });
 
-    //     should.exist(res.body.apiKey);
-    //     should.exist(res.body.apiKey.id);
-    //     should.exist(res.body.apiKey.secret);
-    // });
+    it('Can\'t read another user\'s Personal Token', async function () {
+        // Try to access a different user's token (should be forbidden)
+        const otherUser = fixtureManager.get('users', 1);
+        
+        await agent.get(`users/${otherUser.id}/token/`)
+            .expectStatus(403)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                errors: [{
+                    type: 'NoPermissionError',
+                    message: 'You do not have permission to perform this action',
+                    id: anyString,
+                    code: null,
+                    context: null,
+                    details: null,
+                    ghostErrorCode: null,
+                    help: null,
+                    property: null
+                }]
+            });
+    });
 
-    // it('Can\'t read another user\'s Personal Token', async function () {
-    //     const userNotAdmin = testUtils.getExistingData().users.find(user => user.email === 'ghost-author@example.com');
-    //     const res = await request
-    //         .get(localUtils.API.getApiQuery('users/' + userNotAdmin.id + '/token/'))
-    //         .set('Origin', config.get('url'))
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .expect(403);
+    it('Can re-generate the user\'s Personal Token', async function () {
+        const originalTokenRes = await agent.get('users/me/token/')
+            .expectStatus(200);
+        
+        const {id: originalId, secret: originalSecret} = originalTokenRes.body.apiKey;
 
-    //     should.exist(res.body.errors);
-    // });
+        const newTokenRes = await agent.put('users/me/token')
+            .expectStatus(200)
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            })
+            .matchBodySnapshot({
+                apiKey: {
+                    id: anyObjectId,
+                    secret: anyString,
+                    created_at: anyISODateTime,
+                    updated_at: anyISODateTime,
+                    role_id: anyObjectId,
+                    user_id: anyString,
+                    type: 'admin',
+                    integration_id: null,
+                    last_seen_at: null,
+                    last_seen_version: null
+                }
+            })
+            .expect(cacheInvalidateHeaderNotSet());
+        
+        const {id: newId, secret: newSecret} = newTokenRes.body.apiKey;
 
-    // it('Can re-generate the user\'s Personal Token', async function () {
-    //     const {body: {apiKey: {id, secret}}} = await request
-    //         .get(localUtils.API.getApiQuery('users/me/token/'))
-    //         .set('Origin', config.get('url'))
-    //         .expect(200);
-
-    //     const res = await request
-    //         .put(localUtils.API.getApiQuery('users/me/token'))
-    //         .set('Origin', config.get('url'))
-    //         .expect('Content-Type', /json/)
-    //         .expect('Cache-Control', testUtils.cacheRules.private)
-    //         .expect(200);
-
-    //     should.exist(res.body.apiKey);
-    //     should.exist(res.body.apiKey.id);
-    //     should.exist(res.body.apiKey.secret);
-    //     should.not.exist(res.headers['x-cache-invalidate']);
-
-    //     should(res.body.id).not.be.equal(id);
-    //     should(res.body.secret).not.be.equal(secret);
-    // });
+        assert.notEqual(originalId, newId, 'Token id should have changed');
+        assert.notEqual(originalSecret, newSecret, 'Token secret should have changed');
+    });
 });
