@@ -3,7 +3,7 @@ const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyArray, anyISODateTime, nullable} = matchers;
+const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, nullable} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
 const localUtils = require('./utils');
 
@@ -45,7 +45,7 @@ describe('User API', function () {
             .expect(({body}) => {
                 localUtils.API.checkResponse(body, 'users');
                 localUtils.API.checkResponse(body.users[0], 'user');
-                
+
                 // Verify we have the expected user types in descending ID order
                 const userEmails = body.users.map(user => user.email);
                 assert.ok(userEmails.includes('ghost-author@example.com'));
@@ -93,7 +93,10 @@ describe('User API', function () {
                     }
                 }
             })
-            .expect(cacheInvalidateHeaderNotSet());
+            .expect(cacheInvalidateHeaderNotSet())
+            .expect(({body}) => { 
+                assert.equal(body.users[0].slug, 'smith-wellingsworth')
+            });
     });
     it('Can retrieve a user by id', async function () {
         const userId = fixtureManager.get('users', 0).id;
@@ -105,10 +108,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     roles: anyArray,
                     count: {
                         posts: 8
@@ -118,7 +118,8 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.meta, undefined);
-            });
+                localUtils.API.checkResponse(body.users[0], 'user', ['roles', 'count']);
+        });
     });  
 
     it('Can retrieve a user by slug', async function () {
@@ -135,6 +136,7 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.meta, undefined);
+                localUtils.API.checkResponse(body.users[0], 'user');
             });
     });
 
@@ -153,6 +155,7 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
                 assert.equal(body.meta, undefined);
+                localUtils.API.checkResponse(body.users[0], 'user');
             });
     });
 
@@ -172,10 +175,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     website: 'http://joe-bloggs.ghost.org'
                 }]
             })
@@ -184,7 +184,7 @@ describe('User API', function () {
                 assert.equal(body.users[0].password, undefined);
             });
 
-        // Verify password change was ignored for security
+        // Verify password change was ignored
         try {
             const user = await models.User.findOne({id: res.body.users[0].id});
             await models.User.isPasswordCorrect({
@@ -205,14 +205,11 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag
+                etag: anyEtag,
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     roles: anyArray,
                     name: fixtureManager.get('users', 1).name
                 }]
@@ -237,10 +234,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     roles: anyArray,
                     name: 'Changed Name'
                 }]
@@ -264,16 +258,13 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
-                    roles: anyArray
+                    ...userMatcher,
+                    roles: [anyObject]
                 }]
             })
             .expect(({body}) => {
-                assert.equal(body.users[0].roles[0].name, 'Owner'); // Owner role should be preserved despite empty roles array
-            });
+                assert.equal(body.users[0].roles[0].name, 'Owner');
+            })
     });
 
     it('Cannot edit user with invalid roles data', async function () {
@@ -307,11 +298,8 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
-                    roles: anyArray
+                    ...userMatcher,
+                    roles: [anyObject]
                 }]
             })
             .expect(({body}) => {
@@ -333,10 +321,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     comment_notifications: false
                 }]
             })
@@ -358,10 +343,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     mastodon: 'https://mastodon.social/@johnsmith'
                 }]
             });
@@ -381,10 +363,7 @@ describe('User API', function () {
             })
             .matchBodySnapshot({
                 users: [{
-                    id: anyObjectId,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    last_seen: nullable(anyISODateTime),
+                    ...userMatcher,
                     facebook: null
                 }]
             })
