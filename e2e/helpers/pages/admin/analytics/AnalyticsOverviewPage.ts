@@ -45,7 +45,7 @@ class TopPosts extends BasePage {
 
     constructor(page: Page) {
         super(page);
-        this.post = page.getByTestId('top-posts');
+        this.post = page.getByTestId('top-posts-card');
     }
 }
 
