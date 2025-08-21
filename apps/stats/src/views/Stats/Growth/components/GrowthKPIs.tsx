@@ -193,7 +193,8 @@ const GrowthKPIs: React.FC<{
             break;
         default:
             processedData = sanitizedData.map((item) => {
-                const currentTotal = item.free + item.paid + item.comped;
+                // Note: item.paid already includes comped members
+                const currentTotal = item.free + item.paid;
                 return {
                     ...item,
                     value: currentTotal,

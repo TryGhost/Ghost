@@ -12,7 +12,8 @@ const config = {
         trace: 'retain-on-failure',
         browserName: 'chromium'
     },
-    testDir: './tests'
+    testDir: './',
+    testMatch: ['tests/**/*.test.{js,ts}', 'data-factory/*.test.{js,ts}']
 };
 
 export default config;
