@@ -1156,6 +1156,12 @@ jobs:
           - package_name: '@tryghost/comments-ui'
             package_path: 'apps/comments-ui'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
+          - package_name: '@tryghost/signup-form'
+            package_path: 'apps/signup-form'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/signup-form@~CURRENT_MINOR/umd/signup-form.min.js'
+          - package_name: '@tryghost/announcement-bar'
+            package_path: 'apps/announcement-bar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

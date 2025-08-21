@@ -1,6 +1,6 @@
 {
     "name": "@tryghost/signup-form",
-    "version": "0.2.4",
+    "version": "0.3.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -30,7 +30,7 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "preship": "yarn lint",
-        "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn version; fi",
+        "ship": "node ../../.github/scripts/release-apps.js",
         "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
         "prepublishOnly": "yarn build"
     },
