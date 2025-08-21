@@ -10,7 +10,8 @@ const CONFIG_KEYS = {
     '@tryghost/portal': 'portal',
     '@tryghost/sodo-search': 'sodoSearch',
     '@tryghost/comments-ui': 'comments',
-    '@tryghost/announcement-bar': 'announcementBar'
+    '@tryghost/announcement-bar': 'announcementBar',
+    '@tryghost/signup-form': 'signupForm'
 };
 
 const CURRENT_DIR = process.cwd();

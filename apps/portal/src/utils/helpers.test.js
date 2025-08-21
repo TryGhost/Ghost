@@ -447,23 +447,23 @@ describe('Helpers - ', () => {
                 }
             ]));
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toHaveLength(1);
         });
 
         test('ignores invalid history ', () => {
             jest.spyOn(Storage.prototype, 'getItem').mockReturnValue('invalid');
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
         });
 
-        test('doesn\'t throw if localStorage is disabled', () => {
+        test('doesn\'t throw if sessionStorage is disabled', () => {
             jest.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
-                throw new Error('LocalStorage disabled');
+                throw new Error('SessionStorage disabled');
             });
             const urlHistory = getUrlHistory();
-            expect(localStorage.getItem).toHaveBeenCalled();
+            expect(sessionStorage.getItem).toHaveBeenCalled();
             expect(urlHistory).toBeUndefined();
         });
     });

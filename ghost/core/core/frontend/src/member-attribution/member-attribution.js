@@ -4,10 +4,12 @@ const urlAttribution = require('../utils/url-attribution');
 const parseReferrer = urlAttribution.parseReferrer;
 const getReferrer = urlAttribution.getReferrer;
 
-// Location where we want to store the history in localStorage
+// Location where we want to store the history in sessionStorage
 const STORAGE_KEY = 'ghost-history';
 
 // How long before an item should expire (24h)
+// Note: With sessionStorage, data automatically expires when the session ends,
+// but we still enforce time limits for long-running sessions
 const TIMEOUT = 24 * 60 * 60 * 1000;
 
 // Maximum amount of urls in the history
@@ -33,7 +35,7 @@ const LIMIT = 15;
 
 (async function () {
     try {
-        const storage = window.localStorage;
+        const storage = window.sessionStorage;
         const historyString = storage.getItem(STORAGE_KEY);
         const currentTime = new Date().getTime();
 

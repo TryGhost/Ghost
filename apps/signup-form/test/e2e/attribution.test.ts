@@ -3,12 +3,12 @@ import {initialize} from '../utils/e2e';
 import {test} from '@playwright/test';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function testHistory({page, embeddedOnUrl, path, urlHistory, localStorageHistory}: {page: any, embeddedOnUrl?: string, path: string, urlHistory: any[], localStorageHistory?: any[]}) {
+async function testHistory({page, embeddedOnUrl, path, urlHistory, sessionStorageHistory}: {page: any, embeddedOnUrl?: string, path: string, urlHistory: any[], sessionStorageHistory?: any[]}) {
     const {frame, lastApiRequest} = await initialize({page, title: 'Sign up', embeddedOnUrl, path});
 
     await page.evaluate((history) => {
-        localStorage.setItem('ghost-history', JSON.stringify(history));
-    }, localStorageHistory);
+        sessionStorage.setItem('ghost-history', JSON.stringify(history));
+    }, sessionStorageHistory);
 
     // Fill out the form
     const emailInput = frame.getByTestId('input');
@@ -60,8 +60,8 @@ test.describe('Attribution', async () => {
         );
     });
 
-    test('uses current localStorage history', async ({page}) => {
-        // Save history as localstorage item 'ghost-history'
+    test('uses current sessionStorage history', async ({page}) => {
+        // Save history as sessionStorage item 'ghost-history'
         const history = [
             {path: '/p/573d2c92-183a-435f-b0e7-34595e1ceae7/', time: 1686667443580, referrerSource: null, referrerMedium: null, referrerUrl: 'http://admin.ghost/'},
             {path: '/', time: 1686748392078, referrerSource: null, referrerMedium: null, referrerUrl: null}
@@ -71,12 +71,12 @@ test.describe('Attribution', async () => {
             page,
             path: '/my-custom-path/123?ref=ghost',
             urlHistory: history,
-            localStorageHistory: history
+            sessionStorageHistory: history
         });
     });
 
-    test('does not use current localStorage history if on external site', async ({page}) => {
-        // Save history as localstorage item 'ghost-history'
+    test('does not use current sessionStorage history if on external site', async ({page}) => {
+        // Save history as sessionStorage item 'ghost-history'
         const history = [
             {path: '/p/573d2c92-183a-435f-b0e7-34595e1ceae7/', time: 1686667443580, referrerSource: null, referrerMedium: null, referrerUrl: 'http://admin.ghost/'},
             {path: '/', time: 1686748392078, referrerSource: null, referrerMedium: null, referrerUrl: null}
@@ -94,7 +94,7 @@ test.describe('Attribution', async () => {
                     time: expect.any(Number)
                 }
             ],
-            localStorageHistory: history
+            sessionStorageHistory: history
         });
     });
 });
