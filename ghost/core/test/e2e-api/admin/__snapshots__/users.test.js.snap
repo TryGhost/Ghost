@@ -618,6 +618,66 @@ Object {
 }
 `;
 
+exports[`User API Can re-generate the user's Personal Token 1: [body] 1`] = `
+Object {
+  "apiKey": Object {
+    "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    "integration_id": null,
+    "last_seen_at": null,
+    "last_seen_version": null,
+    "role_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    "secret": Any<String>,
+    "type": "admin",
+    "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "user_id": Any<String>,
+  },
+}
+`;
+
+exports[`User API Can re-generate the user's Personal Token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "356",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`User API Can read the user's Personal Token 1: [body] 1`] = `
+Object {
+  "apiKey": Object {
+    "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    "integration_id": null,
+    "last_seen_at": null,
+    "last_seen_version": null,
+    "role_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+    "secret": Any<String>,
+    "type": "admin",
+    "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    "user_id": Any<String>,
+  },
+}
+`;
+
+exports[`User API Can read the user's Personal Token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "356",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
 exports[`User API Can request all users ordered by id 1: [body] 1`] = `
 Object {
   "meta": Object {
@@ -1151,11 +1211,11 @@ Object {
       "recommendation_notifications": true,
       "roles": Array [
         Object {
-          "created_at": "2025-08-21T21:47:29.000Z",
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": "Administrators",
-          "id": "68a793f1872c35061fb7f9cd",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Administrator",
-          "updated_at": "2025-08-21T21:47:29.000Z",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
         },
       ],
       "slug": "joe-bloggs",
@@ -1198,11 +1258,11 @@ Object {
       "recommendation_notifications": true,
       "roles": Array [
         Object {
-          "created_at": "2025-08-21T21:47:29.000Z",
+          "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
           "description": "Blog Owner",
-          "id": "68a793f1872c35061fb7f9d1",
+          "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
           "name": "Owner",
-          "updated_at": "2025-08-21T21:47:29.000Z",
+          "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
         },
       ],
       "slug": "smith-wellingsworth",
@@ -1217,6 +1277,37 @@ Object {
       "youtube": null,
     },
   ],
+}
+`;
+
+exports[`User API Can't read another user's Personal Token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": Any<String>,
+      "message": "You do not have permission to perform this action",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`User API Can't read another user's Personal Token 2: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "239",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
 }
 `;
 
