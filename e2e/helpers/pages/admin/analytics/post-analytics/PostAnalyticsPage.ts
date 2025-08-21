@@ -14,9 +14,9 @@ class GrowthSection extends AdminPage {
 }
 
 class WebPerformanceSection extends AdminPage {
-    public readonly card: Locator;
-    public readonly uniqueVisitors: Locator;
-    public readonly viewMoreButton: Locator;
+    readonly card: Locator;
+    readonly uniqueVisitors: Locator;
+    readonly viewMoreButton: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -28,12 +28,12 @@ class WebPerformanceSection extends AdminPage {
 }
 
 export class PostAnalyticsPage extends AdminPage {
-    public readonly overviewButton: Locator;
-    public readonly webTrafficButton: Locator;
-    public readonly growthButton: Locator;
+    readonly overviewButton: Locator;
+    readonly webTrafficButton: Locator;
+    readonly growthButton: Locator;
 
-    public readonly growthSection: GrowthSection;
-    public readonly webPerformanceSection: WebPerformanceSection;
+    readonly growthSection: GrowthSection;
+    readonly webPerformanceSection: WebPerformanceSection;
 
     constructor(page: Page) {
         super(page);
@@ -48,19 +48,11 @@ export class PostAnalyticsPage extends AdminPage {
     }
 
     async waitForPageLoad() {
-        await this.webPerformanceSection.viewMoreButton.waitFor({state: 'visible'});
-        await this.growthSection.viewMoreButton.waitFor({state: 'visible'});
-    }
-
-    async overview() {
-        await this.overviewButton.click();
-    };
-
-    async webTraffic() {
-        await this.webTrafficButton.click();
+        await this.webPerformanceSection.card.waitFor({state: 'visible'});
     }
 
     async growth() {
+        await this.waitForPageLoad(); // Ensure page is fully loaded before clicking
         await this.growthButton.waitFor({state: 'visible'});
         await this.growthButton.click();
     }
