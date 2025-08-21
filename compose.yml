@@ -103,11 +103,6 @@ services:
     profiles: [ split ]
     tty: true
     restart: always
-    depends_on:
-      mysql:
-        condition: service_healthy
-      redis:
-        condition: service_healthy
     environment:
       - CHOKIDAR_USEPOLLING=true
       - CHOKIDAR_INTERVAL=1000
