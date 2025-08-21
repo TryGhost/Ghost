@@ -5,6 +5,7 @@ const models = require('../../../core/server/models');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObjectId, anyArray, anyISODateTime, nullable} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
+const localUtils = require('./utils');
 
 const userMatcher = {
     id: anyObjectId,
@@ -42,6 +43,9 @@ describe('User API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => {
+                localUtils.API.checkResponse(body, 'users');
+                localUtils.API.checkResponse(body.users[0], 'user');
+                
                 // Verify we have the expected user types in descending ID order
                 const userEmails = body.users.map(user => user.email);
                 assert.ok(userEmails.includes('ghost-author@example.com'));
