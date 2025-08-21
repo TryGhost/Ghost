@@ -25,4 +25,5 @@ Dockerfile
 compose.yml
 
 .docker
-!.docker/development.entrypoint.sh
+!.docker/**/*.entrypoint.sh
+!.docker/**/*entrypoint.sh
