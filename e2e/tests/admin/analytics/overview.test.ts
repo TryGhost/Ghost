@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 import {
     AnalyticsOverviewPage,
     AnalyticsWebTrafficPage,
-    AnalyticsGrowthPage, LoginPage
+    AnalyticsGrowthPage
 } from '../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Analytics Overview', () => {

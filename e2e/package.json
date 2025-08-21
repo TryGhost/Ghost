@@ -15,7 +15,7 @@
     "test:parallel": "playwright test --project=main --workers=8",
     "test:factory": "playwright test --project=factories",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers --ext .ts --cache"
+    "lint": "eslint . --ext .ts --cache"
   },
   "files": [
     "build"
