@@ -46,10 +46,12 @@ const dataType = 'TagsResponseType';
 const useBrowseTagsQuery = createInfiniteQuery<TagsResponseType>({
     dataType,
     path: '/tags/',
-    defaultNextPageParams: (lastPage, otherParams) => ({
-        ...otherParams,
-        page: (lastPage.meta?.pagination.next || 1).toString()
-    }),
+    defaultNextPageParams: (lastPage, otherParams) => (lastPage.meta?.pagination.next
+        ? {
+            ...otherParams,
+            page: (lastPage.meta?.pagination.next || 1).toString()
+        }
+        : undefined),
     returnData: (originalData) => {
         const {pages} = originalData as InfiniteData<TagsResponseType>;
         const tags = pages.flatMap(page => page.tags);
