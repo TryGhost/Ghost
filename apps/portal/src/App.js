@@ -58,7 +58,8 @@ export default class App extends React.Component {
             lastPage: null,
             customSiteUrl: props.customSiteUrl,
             locale: props.locale,
-            scrollbarWidth: 0
+            scrollbarWidth: 0,
+            labs: props.labs || {}
         };
     }
 
