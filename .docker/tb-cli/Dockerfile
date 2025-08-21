@@ -1,7 +1,7 @@
 FROM python:3.13-slim@sha256:6544e0e002b40ae0f59bc3618b07c1e48064c4faed3a15ae2fbd2e8f663e8283
 
 # Install uv from Astral.sh
-COPY --from=ghcr.io/astral-sh/uv:0.8.12 /uv /uvx /bin/
+COPY --from=ghcr.io/astral-sh/uv:0.8.13 /uv /uvx /bin/
 
 # Install dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
