@@ -110,7 +110,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/web`, {crossApp: true});
-                                                }}>
+                                                }} data-testid='statistics-visitors'>
                                                     <PostListTooltip
                                                         metrics={[
                                                             {
@@ -192,7 +192,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
-                                                }}>
+                                                }} data-testid='statistics-members'>
                                                     <PostListTooltip
                                                         className='left-auto right-0 translate-x-0'
                                                         metrics={[

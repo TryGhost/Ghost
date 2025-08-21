@@ -12,7 +12,7 @@ test.describe('Ghost Admin - Post Analytics - Growth', () => {
     test.beforeEach(async ({page}) => {
         const analyticsOverviewPage = new AnalyticsOverviewPage(page);
         await analyticsOverviewPage.goto();
-        await analyticsOverviewPage.latestPost.viewAnalytics();
+        await analyticsOverviewPage.latestPost.analyticsButton.click();
 
         const postAnalyticsPage = new PostAnalyticsPage(page);
         // TODO: check post analytics component, we shouldn't need to wait on page load to be able to click growth link

@@ -2,14 +2,14 @@ import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 
 export class AnalyticsWebTrafficPage extends AdminPage {
-    public readonly totalViewsTab: Locator;
-    public readonly totalUniqueVisitorsTab: Locator;
+    readonly totalViewsTab: Locator;
+    readonly totalUniqueVisitorsTab: Locator;
     private readonly webGraph: Locator;
 
-    public readonly topContentCard: Locator;
-    public readonly postsAndPagesButton: Locator;
-    public readonly postsButton: Locator;
-    public readonly pagesButton: Locator;
+    readonly topContentCard: Locator;
+    readonly postsAndPagesButton: Locator;
+    readonly postsButton: Locator;
+    readonly pagesButton: Locator;
 
     public readonly topSourcesCard: Locator;
 

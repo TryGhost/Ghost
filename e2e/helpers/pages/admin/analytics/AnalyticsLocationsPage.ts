@@ -2,7 +2,7 @@ import {Page, Locator} from '@playwright/test';
 import {AdminPage} from '../AdminPage';
 
 export class AnalyticsLocationsPage extends AdminPage {
-    public readonly visitorsCard: Locator;
+    readonly visitorsCard: Locator;
 
     constructor(page: Page) {
         super(page);

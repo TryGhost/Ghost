@@ -13,12 +13,12 @@ export class AnalyticsNewslettersPage extends AdminPage {
         super(page);
 
         this.pageUrl = '/ghost/#/analytics/newsletters';
+
         this.newslettersCard = page.getByTestId('newsletters-card');
-        
-        this.totalSubscribersTab = page.getByRole('tab', {name: 'Total subscribers'});
+        this.topNewslettersCard = page.getByTestId('top-newsletters-card');
+
         this.averageOpenRateTab = page.getByRole('tab', {name: 'Avg. open rate'});
         this.averageClickRateTab = page.getByRole('tab', {name: 'Avg. click rate'});
-
-        this.topNewslettersCard = page.getByTestId('top-newsletters-card');
+        this.totalSubscribersTab = page.getByRole('tab', {name: 'Total subscribers'});
     }
 }

@@ -3,11 +3,11 @@ import {BasePage} from '../../BasePage';
 import {AdminPage} from '../AdminPage';
 
 class TopContentCard extends BasePage {
-    public readonly contentCard: Locator;
-    public readonly postsAndPagesButton: Locator;
-    public readonly postsButton: Locator;
-    public readonly pagesButton: Locator;
-    public readonly sourcesButton: Locator;
+    readonly contentCard: Locator;
+    readonly postsAndPagesButton: Locator;
+    readonly postsButton: Locator;
+    readonly pagesButton: Locator;
+    readonly sourcesButton: Locator;
 
     constructor(page: Page) {
         super(page);

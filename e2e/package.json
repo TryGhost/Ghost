@@ -15,9 +15,7 @@
     "test:parallel": "playwright test --project=main --workers=8",
     "test:factory": "playwright test --project=factories",
     "test:types": "tsc --noEmit",
-    "test:setauth": "npx playwright test --project=setup",
-    "lint": "eslint helpers --ext .ts --cache",
-    "setup:user": "ts-node helpers/utils/setup-user.ts"
+    "lint": "eslint helpers --ext .ts --cache"
   },
   "files": [
     "build"
@@ -30,7 +28,7 @@
     "mysql2": "3.14.3",
     "ts-node": "10.9.2",
     "typescript": "5.8.3",
-    "dotenv": "^16.6.1"
+    "dotenv": "16.6.1"
   },
   "dependencies": {
      "@tryghost/logging": "2.4.23"

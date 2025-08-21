@@ -4,8 +4,8 @@ import {BasePage} from '../../BasePage';
 
 class LatestPost extends BasePage {
     readonly post: Locator;
-    private readonly shareButton: Locator;
-    private readonly analyticsButton: Locator;
+    readonly shareButton: Locator;
+    readonly analyticsButton: Locator;
     private readonly visitors: Locator;
     private readonly members: Locator;
 
@@ -23,14 +23,6 @@ class LatestPost extends BasePage {
         return await this.post.textContent();
     }
 
-    async share() {
-        return await this.shareButton.click();
-    }
-
-    async viewAnalytics() {
-        return await this.analyticsButton.click();
-    }
-
     async visitorsCount() {
         return this.visitors.textContent();
     }
@@ -46,6 +38,14 @@ class TopPosts extends BasePage {
     constructor(page: Page) {
         super(page);
         this.post = page.getByTestId('top-posts-card');
+    }
+
+    async uniqueVisitorsStatistics() {
+        return await this.post.getByTestId('statistics-visitors').textContent();
+    }
+
+    async membersStatistics() {
+        return await this.post.getByTestId('statistics-members').textContent();
     }
 }
 

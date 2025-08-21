@@ -23,8 +23,15 @@ test.describe('Ghost Admin - Analytics Overview', () => {
         await analyticsOverviewPage.goto();
 
         await expect(analyticsOverviewPage.topPosts.post).toBeVisible();
-        await expect(analyticsOverviewPage.topPosts.post).toContainText('Unique visitors0');
-        await expect(analyticsOverviewPage.topPosts.post).toContainText('Free0');
+
+        const visitorsStatistics = await analyticsOverviewPage.topPosts.uniqueVisitorsStatistics();
+        const membersStatistics = await analyticsOverviewPage.topPosts.membersStatistics();
+
+        expect(visitorsStatistics).toContain('Unique visitors');
+        expect(visitorsStatistics).toContain('0');
+        expect(membersStatistics).toContain('New members');
+        expect(membersStatistics).toContain('Free');
+        expect(membersStatistics).toContain('0');
     });
 
     test('view more unique visitors details', async ({page}) => {

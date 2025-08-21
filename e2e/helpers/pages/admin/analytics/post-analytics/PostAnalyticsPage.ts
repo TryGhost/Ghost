@@ -2,8 +2,8 @@ import {Locator, Page} from '@playwright/test';
 import {AdminPage} from '../../AdminPage';
 
 class GrowthSection extends AdminPage {
-    public readonly card: Locator;
-    public readonly viewMoreButton: Locator;
+    readonly card: Locator;
+    readonly viewMoreButton: Locator;
 
     constructor(page: Page) {
         super(page);
