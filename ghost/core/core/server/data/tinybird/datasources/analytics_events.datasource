@@ -8,7 +8,7 @@ SCHEMA >
     `version` LowCardinality(String) `json:$.version`,
     `payload` String `json:$.payload`,
     `site_uuid` LowCardinality(String) `json:$.payload.site_uuid`,
-    `inserted_at` DateTime DEFAULT now()
+    `inserted_at` DateTime DEFAULT now() `json:$.inserted_at`
 
 ENGINE "MergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
