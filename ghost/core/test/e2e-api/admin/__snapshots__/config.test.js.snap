@@ -22,6 +22,7 @@ Object {
       "importMemberTier": true,
       "lexicalIndicators": true,
       "members": true,
+      "membersSigninOTC": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
       "themeErrorsNotification": true,

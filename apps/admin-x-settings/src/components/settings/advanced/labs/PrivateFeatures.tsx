@@ -27,6 +27,10 @@ const features: Feature[] = [{
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
     flag: 'explore'
+}, {
+    title: 'Members sign-in OTC (alpha)',
+    description: 'Enables one-time codes alongside magic links for members signin',
+    flag: 'membersSigninOTC'
 }];
 
 const AlphaFeatures: React.FC = () => {
