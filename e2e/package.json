@@ -22,7 +22,11 @@
   ],
   "devDependencies": {
     "@faker-js/faker": "8.4.1",
+<<<<<<< HEAD
     "@playwright/test": "1.55.1",
+=======
+    "@playwright/test": "1.54.1",
+>>>>>>> f20979186b (Reverted unrelated changes)
     "c8": "10.1.3",
     "dockerode": "4.0.9",
     "dotenv": "16.6.1",
