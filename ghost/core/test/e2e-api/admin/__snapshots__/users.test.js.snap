@@ -29,7 +29,9 @@ Object {
       "paid_subscription_started_notification": true,
       "profile_image": null,
       "recommendation_notifications": true,
-      "roles": Any<Array>,
+      "roles": Array [
+        Any<Object>,
+      ],
       "slug": "smith-wellingsworth",
       "status": "active",
       "threads": null,
@@ -87,7 +89,9 @@ Object {
       "paid_subscription_started_notification": true,
       "profile_image": "https://example.com/super_photo.jpg",
       "recommendation_notifications": true,
-      "roles": Any<Array>,
+      "roles": Array [
+        Any<Object>,
+      ],
       "slug": "joe-bloggs",
       "status": "active",
       "threads": null,
