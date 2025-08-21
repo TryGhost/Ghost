@@ -31,7 +31,6 @@
     "build-storybook": "storybook build",
     "preship": "yarn lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "postship": "git push ${GHOST_UPSTREAM:-origin} --follow-tags && npm publish",
     "prepublishOnly": "yarn build"
   },
   "dependencies": {
