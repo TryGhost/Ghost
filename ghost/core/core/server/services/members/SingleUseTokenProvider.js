@@ -116,7 +116,7 @@ class SingleUseTokenProvider {
     /**
      * @private
      * @method deriveCounter
-     * Derives a counter from token ID and value using HMAC
+     * Derives a counter from a token ID and value
      *
      * @param {string} tokenId
      * @param {string} tokenValue
@@ -129,32 +129,30 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method deriveCode
-     * Derives a HOTP code from a token object
+     * @method deriveOTC
+     * Derives an OTC (one-time code) from a token ID and value
      *
-     * @param {Object} token
-     * @param {string} token.id - Token ID
-     * @param {string} token.token - Token value
-     * @returns {string}
+     * @param {string} tokenId - Token ID
+     * @param {string} tokenValue - Token value
+     * @returns {string} The generated one-time code
      */
-    deriveCode(token) {
-        const counter = this.deriveCounter(token.id, token.token);
+    deriveOTC(tokenId, tokenValue) {
+        const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
     }
 
     /**
-     * @method verifyCode
-     * Verifies a HOTP code against a token object
+     * @method verifyOTC
+     * Verifies an OTC (one-time code) against a token ID and value
      *
-     * @param {Object} token
-     * @param {string} token.id - Token ID
-     * @param {string} token.token - Token value
-     * @param {string} code - The code to verify
-     * @returns {boolean}
+     * @param {string} tokenId - Token ID
+     * @param {string} tokenValue - Token value
+     * @param {string} otc - The one-time code to verify
+     * @returns {boolean} Returns true if the OTC is valid, false otherwise
      */
-    verifyCode(token, code) {
-        const counter = this.deriveCounter(token.id, token.token);
-        return hotp.verify({token: code, secret: this.secret, counter});
+    verifyOTC(tokenId, tokenValue, otc) {
+        const counter = this.deriveCounter(tokenId, tokenValue);
+        return hotp.verify({token: otc, secret: this.secret, counter});
     }
 }
 
