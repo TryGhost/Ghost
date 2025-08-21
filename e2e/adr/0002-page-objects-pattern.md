@@ -32,19 +32,18 @@ We will adopt the Page Objects pattern for organizing E2E tests. Every page or m
 Following both [Fowler's original principles](https://martinfowler.com/bliki/PageObject.html) and modern Playwright best practices:
 
 - ✅ **One page object per logical page or major component** (e.g., `LoginPage`, `PostEditor`, `AdminDashboard`)
-- ✅ **Model the structure that makes sense to the user**, not necessarily the HTML structure
+- ✅ **Model the structure that makes sense to the user**: not necessarily the HTML structure
 - ✅ **Use descriptive method names** that reflect user actions (e.g., `fillPostTitle()` not `typeInTitleInput()`)
-- ✅ **Return elements or data** for assertions in tests (e.g., `getErrorMessage()` returns locator)
-- ✅ **Include wait methods** for page readiness and async operations (e.g., `waitForErrorMessage()`)
-- ✅ **Chain related actions** in fluent interfaces where it makes sense
-- ✅ **Keep assertions in test files** - page objects should return data/elements, tests should assert
+- ✅ **Return elements or data**: for assertions in tests (e.g., `getErrorMessage()` returns locator)
+- ✅ **Include wait methods**: for page readiness and async operations (e.g., `waitForErrorMessage()`)
+- ✅ **Chain related actions**: in fluent interfaces where it makes sense
+- ✅ **Keep assertions in test files**: page objects should return data/elements, tests should assert
 - ✅ **Handle concurrency issues** within page objects (async operations, loading states)
-- ✅ **Expose Locators (read-only), not raw selector strings.** You can tests assert against public locators (since Playwright encourages it, with helpers on assertion) - "If you have WebDriver APIs in your test methods, You're Doing It Wrong" - Simon Stewart
-- ✅ **Keep locator construction private**
-- ✅ **Selector priority: Prefer getByRole / getByLabel / data-testid over CSS or XPath.** Add data-testid attributes where needed for stability
+- ✅ **Expose Locators (read-only), not raw selector strings**: you can tests assert against public locators (Playwright encourages it, with helpers on assertion) 
+  - `loginPage.saveButton.click` instead of `page.locator('[data-testid="save-button"]')`  
+- ✅ **Selector priority: prefer getByRole / getByLabel / data-testid over CSS or XPath.**: add data-testid attributes where needed for stability
 - ✅ **Use guards, not assertions, in POM**: prefer locator.waitFor({state:'visible'})
 - 🚫 **Don't include expectations/assertions** in page object methods (following Fowler's recommendation)
-- 🚫 **Don't make page objects too granular** - focus on user workflows, not individual elements
 - 📁 **Organize in `/e2e/helpers/pages/` directory** with clear naming conventions
 
 ## Example
