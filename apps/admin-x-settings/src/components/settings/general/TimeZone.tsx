@@ -1,10 +1,10 @@
 import React, {useEffect, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
-import timezoneData from '@tryghost/timezone-data';
 import useSettingGroup from '../../../hooks/useSettingGroup';
 import {Select, SettingGroupContent, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getLocalTime} from '../../../utils/helpers';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {timezoneDataWithGMTOffset} from '@tryghost/timezone-data';
 
 interface TimezoneDataDropdownOption {
     name: string;
@@ -47,7 +47,7 @@ const TimeZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const [publicationTimezone] = getSettingValues(localSettings, ['timezone']) as string[];
 
-    const timezoneOptions: Array<{value: string; label: string}> = timezoneData.map((tzOption: TimezoneDataDropdownOption) => {
+    const timezoneOptions: Array<{value: string; label: string}> = timezoneDataWithGMTOffset().map((tzOption: TimezoneDataDropdownOption) => {
         return {
             value: tzOption.name,
             label: tzOption.label
