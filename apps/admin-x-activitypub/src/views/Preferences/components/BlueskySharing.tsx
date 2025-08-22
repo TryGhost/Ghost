@@ -3,46 +3,42 @@ import EditProfile from '@src/views/Preferences/components/EditProfile';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
 import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H3, LoadingIndicator, LucideIcon} from '@tryghost/shade';
-import {useAccountForUser, useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {useAccountForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
 
 const BlueskySharing: React.FC = () => {
-    const {state: {blueskyAccount, isEnabled}} = useLocation();
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
-    const [enabled, setEnabled] = useState(isEnabled);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const {updateAccountSearchResult} = useSearchForUser('index', blueskyAccount.handle);
-
-    const handle = account?.handle || '';
-    const convertedHandle = handle.replace(/@([^@]+)@/, '$1.');
+    const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
+    const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
+    const enabled = account?.blueskyEnabled ?? false;
 
     const handleCopy = async () => {
         setCopied(true);
-        await navigator.clipboard.writeText(`@${convertedHandle}.ap.brid.gy`);
+        await navigator.clipboard.writeText(account?.blueskyHandle || '');
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const followMutation = useFollowMutationForUser('index',
-        () => {
-            setEnabled(true);
-            setLoading(false);
-            updateAccountSearchResult(blueskyAccount.id, {followedByMe: true});
-        },
-        () => {
-            setEnabled(false);
-            setLoading(false);
-            updateAccountSearchResult(blueskyAccount.id, {followedByMe: false});
-        }
-    );
-
-    const handleEnable = () => {
+    const handleEnable = async () => {
         if (!account?.avatarUrl) {
             setIsEditingProfile(true);
         } else {
             setLoading(true);
-            followMutation.mutate('@bsky.brid.gy@bsky.brid.gy');
+            try {
+                await enableBlueskyMutation.mutateAsync();
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleDisable = async () => {
+        setLoading(true);
+        try {
+            await disableBlueskyMutation.mutateAsync();
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -120,7 +116,7 @@ const BlueskySharing: React.FC = () => {
                             <div className='flex grow flex-col items-center'>
                                 <H3>{account?.name || ''}</H3>
                                 <div className='flex items-center gap-1 text-gray-800'>
-                                    <span className='text-lg font-medium'>@{convertedHandle}.ap.brid.gy</span>
+                                    <span className='text-lg font-medium'>{account?.blueskyHandle}</span>
                                     <Button className='size-6 p-0 hover:opacity-80' title='Copy handle' variant='link' onClick={handleCopy}>
                                         {!copied ?
                                             <LucideIcon.Copy size={16} /> :
@@ -130,10 +126,16 @@ const BlueskySharing: React.FC = () => {
                                 </div>
                             </div>
                             <Button className='mt-2 w-full' size='lg' variant='secondary' asChild>
-                                <a href={`https://bsky.app/profile/${convertedHandle}.ap.brid.gy`} rel='noreferrer' target='_blank'>
+                                <a href={`https://bsky.app/profile/${account?.blueskyHandle}`} rel='noreferrer' target='_blank'>
                                         Open profile
                                     <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
                                 </a>
+                            </Button>
+                            <Button className='w-full' disabled={loading} size='lg' variant='secondary' onClick={handleDisable}>
+                                {!loading ?
+                                    <>Disable Bluesky sharing</> :
+                                    <LoadingIndicator size='sm' />
+                                }
                             </Button>
                         </div>
                     </>
