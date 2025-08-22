@@ -201,17 +201,6 @@ const Sidebar: React.FC = () => {
                     {hasStripeEnabled && <NavItem icon='discount' keywords={growthSearchKeywords.offers} navid='offers' title="Offers" onClick={handleSectionClick} />}
                 </SettingNavSection>
 
-                <SettingNavSection isVisible={checkVisible(Object.values(emailSearchKeywords).flat())} title="Email newsletter">
-                    <NavItem icon='email-check' keywords={emailSearchKeywords.enableNewsletters} navid='enable-newsletters' title="Newsletter sending" onClick={handleSectionClick} />
-                    {newslettersEnabled !== 'disabled' && (
-                        <>
-                            <NavItem icon='recepients' keywords={emailSearchKeywords.defaultRecipients} navid='default-recipients' title="Default recipients" onClick={handleSectionClick} />
-                            <NavItem icon='email' keywords={emailSearchKeywords.newsletters} navid='newsletters' title="Newsletters" onClick={handleSectionClick} />
-                            {!config.mailgunIsConfigured && <NavItem icon='at-sign' keywords={emailSearchKeywords.bulkEmail} navid='bulk-email' title="Email provider" onClick={handleSectionClick} />}
-                        </>
-                    )}
-                </SettingNavSection>
-
                 <SettingNavSection isVisible={checkVisible(Object.values(advancedSearchKeywords).flat())} title="Advanced">
                     <NavItem icon='modules-3' keywords={advancedSearchKeywords.integrations} navid='integrations' title="Integrations" onClick={handleSectionClick} />
                     <NavItem icon='download' keywords={advancedSearchKeywords.migrationtools} navid='migration' title="Import/Export" onClick={handleSectionClick} />
