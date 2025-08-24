@@ -54,7 +54,7 @@
     "vite": "5.4.19",
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-dts": "3.9.1",
-    "vite-plugin-svgr": "4.3.0",
+    "vite-plugin-svgr": "4.5.0",
     "vitest": "1.6.1"
   }
 }

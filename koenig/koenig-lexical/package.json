@@ -124,7 +124,7 @@
     "tailwindcss": "3.4.17",
     "typescript": "5.9.2",
     "vite": "4.5.14",
-    "vite-plugin-svgr": "4.3.0",
+    "vite-plugin-svgr": "4.5.0",
     "vitest": "1.6.1",
     "y-websocket": "^3.0.0",
     "yjs": "^13.6.26"
