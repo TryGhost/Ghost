@@ -122,4 +122,190 @@ describe('MagicLink', function () {
             assert.deepEqual(data.id, args.tokenData.id);
         });
     });
+
+    describe('#sendMagicLink with labsService', function () {
+        afterEach(function () {
+            sandbox.restore();
+        });
+
+        it('should return tokenId when labsService is provided and flag is enabled', async function () {
+            const mockTokenProvider = {
+                create: sandbox.stub().resolves('mock-token'),
+                getIdByToken: sandbox.stub().resolves('test-token-id-123')
+            };
+            
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = {
+                tokenProvider: mockTokenProvider,
+                getSigninURL: sandbox.stub().returns('FAKEURL'),
+                getText: sandbox.stub().returns('SOMETEXT'),
+                getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
+                transporter: {
+                    sendMail: sandbox.stub().resolves({messageId: 'test'})
+                },
+                labsService
+            };
+            
+            const service = new MagicLink(options);
+            
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, 'test-token-id-123');
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(mockTokenProvider.getIdByToken.calledOnce);
+        });
+
+        it('should not return tokenId when labsService flag is disabled', async function () {
+            const mockTokenProvider = {
+                create: sandbox.stub().resolves('mock-token'),
+                getIdByToken: sandbox.stub().resolves('test-token-id-123')
+            };
+            
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
+            };
+
+            const options = {
+                tokenProvider: mockTokenProvider,
+                getSigninURL: sandbox.stub().returns('FAKEURL'),
+                getText: sandbox.stub().returns('SOMETEXT'),
+                getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
+                transporter: {
+                    sendMail: sandbox.stub().resolves({messageId: 'test'})
+                },
+                labsService
+            };
+            
+            const service = new MagicLink(options);
+            
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(mockTokenProvider.getIdByToken.notCalled);
+        });
+
+        it('should not return tokenId when labsService is not provided', async function () {
+            const mockTokenProvider = {
+                create: sandbox.stub().resolves('mock-token'),
+                getIdByToken: sandbox.stub().resolves('test-token-id-123')
+            };
+
+            const options = {
+                tokenProvider: mockTokenProvider,
+                getSigninURL: sandbox.stub().returns('FAKEURL'),
+                getText: sandbox.stub().returns('SOMETEXT'),
+                getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
+                transporter: {
+                    sendMail: sandbox.stub().resolves({messageId: 'test'})
+                }
+                // No labsService provided
+            };
+            
+            const service = new MagicLink(options);
+            
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(mockTokenProvider.getIdByToken.notCalled);
+        });
+
+        it('should work when tokenProvider does not have getIdByToken method', async function () {
+            const mockTokenProvider = {
+                create: sandbox.stub().resolves('mock-token')
+                // No getIdByToken method
+            };
+            
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = {
+                tokenProvider: mockTokenProvider,
+                getSigninURL: sandbox.stub().returns('FAKEURL'),
+                getText: sandbox.stub().returns('SOMETEXT'),
+                getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
+                transporter: {
+                    sendMail: sandbox.stub().resolves({messageId: 'test'})
+                },
+                labsService
+            };
+            
+            const service = new MagicLink(options);
+            
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+        });
+
+        it('should work without errors when labsService is undefined (backward compatibility)', async function () {
+            const mockTokenProvider = {
+                create: sandbox.stub().resolves('mock-token'),
+                getIdByToken: sandbox.stub().resolves('test-token-id-123')
+            };
+
+            const options = {
+                tokenProvider: mockTokenProvider,
+                getSigninURL: sandbox.stub().returns('FAKEURL'),
+                getText: sandbox.stub().returns('SOMETEXT'),
+                getHTML: sandbox.stub().returns('SOMEHTML'),
+                getSubject: sandbox.stub().returns('SOMESUBJECT'),
+                transporter: {
+                    sendMail: sandbox.stub().resolves({messageId: 'test'})
+                },
+                labsService: undefined
+            };
+            
+            const service = new MagicLink(options);
+            
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            // Should not throw any errors
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(mockTokenProvider.getIdByToken.notCalled);
+        });
+    });
 });
