@@ -35,6 +35,7 @@ class MagicLink {
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
      * @param {object} [options.sentry]
+     * @param {{isSet(name: string): boolean}} [options.labsService]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -47,6 +48,7 @@ class MagicLink {
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
         this.sentry = options.sentry || undefined;
+        this.labsService = options.labsService || undefined;
     }
 
     /**
@@ -81,9 +83,8 @@ class MagicLink {
             html: this.getHTML(url, type, options.email)
         });
         
-        // Only get tokenId if the provider supports it
         let tokenId = null;
-        if (typeof this.tokenProvider.getIdByToken === 'function') {
+        if (this.labsService?.isSet('membersSigninOTC') && typeof this.tokenProvider.getIdByToken === 'function') {
             tokenId = await this.tokenProvider.getIdByToken(token);
         }
 

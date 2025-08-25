@@ -628,7 +628,7 @@ module.exports = class RouterController {
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
                 
-                if (signIn.tokenId) {
+                if (this.labsService.isSet('membersSigninOTC') && signIn.tokenId) {
                     res.writeHead(201, {'Content-Type': 'application/json'});
                     return res.end(JSON.stringify({otc_ref: signIn.tokenId}));
                 }
