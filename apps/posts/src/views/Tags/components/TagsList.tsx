@@ -65,14 +65,14 @@ function TagsList({
             <Table className="flex table-fixed flex-col lg:table">
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
-                        <TableHead className="w-1/2 px-4 xl:w-3/5">
+                        <TableHead className="w-auto px-4">
                             Tag
                         </TableHead>
                         <TableHead className="w-1/5 px-4">Slug</TableHead>
                         <TableHead className="w-1/5 px-4">
                             No. of posts
                         </TableHead>
-                        <TableHead className="w-16 px-4"></TableHead>
+                        <TableHead className="w-20 px-4"></TableHead>
                     </TableRow>
                 </TableHeader>
                 <TableBody className="flex flex-col lg:table-row-group">
@@ -121,10 +121,12 @@ function TagsList({
                                         </span>
                                     )}
                                 </TableCell>
-                                <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 w-4 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
+                                <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <Button
+                                        aria-hidden="true"
                                         className="w-12"
                                         size="icon"
+                                        tabIndex={-1}
                                         variant="outline"
                                     >
                                         <LucideIcon.Pencil />
