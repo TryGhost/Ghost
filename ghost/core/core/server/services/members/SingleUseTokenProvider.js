@@ -150,6 +150,22 @@ class SingleUseTokenProvider {
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
     }
+
+    /**
+     * @method getIdByToken
+     * Retrieves the ID associated with a given token.
+     *
+     * @param {string} token - The token to look up.
+     * @returns {Promise<string|null>} The ID if found, or null if not found or on error.
+     */
+    async getIdByToken(token) {
+        try {
+            const model = await this.model.findOne({token});
+            return model ? model.get('id') : null;
+        } catch (err) {
+            return null;
+        }
+    }
 }
 
 module.exports = SingleUseTokenProvider;

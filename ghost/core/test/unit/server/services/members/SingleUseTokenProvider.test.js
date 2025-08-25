@@ -100,4 +100,143 @@ describe('SingleUseTokenProvider', function () {
             assert.throws(() => tokenProvider.deriveOTC('id', ''), /tokenId and tokenValue are required/i);
         });
     });
+
+    describe('getIdByToken', function () {
+        it('should return token ID when token exists', async function () {
+            const testTokenValue = 'test-token-value';
+            const expectedId = 'test-token-id';
+            
+            // Mock successful token lookup
+            mockModel.findOne.resolves({
+                get: sinon.stub().returns(expectedId)
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, expectedId);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when token does not exist', async function () {
+            const testTokenValue = 'nonexistent-token';
+            
+            // Mock token not found
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when database error occurs', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            // Mock database error
+            mockModel.findOne.rejects(new Error('Database connection failed'));
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should handle empty token gracefully', async function () {
+            const emptyToken = '';
+            
+            // Mock token lookup for empty string
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(emptyToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: emptyToken});
+        });
+
+        it('should handle undefined token gracefully', async function () {
+            const undefinedToken = undefined;
+            
+            // Mock token lookup for undefined
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(undefinedToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: undefinedToken});
+        });
+
+        it('should return null when model.get throws an error', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            // Mock model found but get() throws error
+            mockModel.findOne.resolves({
+                get: sinon.stub().throws(new Error('Model error'))
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+    });
+
+    describe('integration tests', function () {
+        it('should complete full generate/verify cycle successfully', function () {
+            const tokens = [
+                {id: 'token-1', token: 'value-1'},
+                {id: 'token-2', token: 'value-2'},
+                {id: 'token-3', token: 'value-3'}
+            ];
+
+            // Generate codes for all tokens
+            const codes = tokens.map(token => ({
+                token,
+                code: tokenProvider.deriveOTC(token.id, token.token)
+            }));
+
+            // Verify each code works with its corresponding token
+            codes.forEach(({token, code}) => {
+                const isValid = tokenProvider.verifyOTC(token.id, token.token, code);
+                assert.equal(isValid, true);
+            });
+
+            // Verify codes don't work with wrong tokens
+            codes.forEach(({code}, index) => {
+                const wrongToken = tokens[(index + 1) % tokens.length];
+                const isValid = tokenProvider.verifyOTC(wrongToken.id, wrongToken.token, code);
+                assert.equal(isValid, false);
+            });
+        });
+
+        it('should work with different auth secrets', function () {
+            // Create another provider with different secret
+            const differentSecret = Buffer.from('b'.repeat(128), 'hex');
+            const mockMembersConfig2 = {
+                getAuthSecret: sinon.stub().returns(differentSecret)
+            };
+
+            const tokenProvider2 = new SingleUseTokenProvider({
+                SingleUseTokenModel: mockModel,
+                validityPeriod: 86400000,
+                validityPeriodAfterUsage: 3600000,
+                maxUsageCount: 3,
+                secret: mockMembersConfig2.getAuthSecret()
+            });
+
+            const testToken = {id: 'test-id', token: 'test-value'};
+            
+            const code1 = tokenProvider.deriveOTC(testToken.id, testToken.token);
+            const code2 = tokenProvider2.deriveOTC(testToken.id, testToken.token);
+            
+            // Different secrets should produce different codes
+            assert.notEqual(code1, code2);
+            
+            // Each provider should only verify its own codes
+            assert.equal(tokenProvider.verifyOTC(testToken.id, testToken.token, code1), true);
+            assert.equal(tokenProvider.verifyOTC(testToken.id, testToken.token, code2), false);
+            
+            assert.equal(tokenProvider2.verifyOTC(testToken.id, testToken.token, code1), false);
+            assert.equal(tokenProvider2.verifyOTC(testToken.id, testToken.token, code2), true);
+        });
+    });
 });
