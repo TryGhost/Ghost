@@ -96,7 +96,7 @@ describe('User API', function () {
             })
             .expect(cacheInvalidateHeaderNotSet())
             .expect(({body}) => { 
-                assert.equal(body.users[0].slug, 'slimer-mcectoplasm');
+                assert.equal(body.users[0].slug, 'smith-wellingsworth');
             });
     });
     it('Can retrieve a user by id', async function () {
