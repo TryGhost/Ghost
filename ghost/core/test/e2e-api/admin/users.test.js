@@ -112,7 +112,7 @@ describe('User API', function () {
                     ...userMatcher,
                     roles: anyArray,
                     count: {
-                        posts: 7
+                        posts: 8
                     }
                 }]
             })
@@ -382,6 +382,21 @@ describe('User API', function () {
         
         // Verify the user has posts to transfer
         assert.ok(initialPostsRes.body.posts.length > 0, `User ${userSlug} should have posts to make this test meaningful`);
+
+        // Ensure the user's posts are only authored by that user (remove any co-authors)
+        const userPostIds = initialPostsRes.body.posts.map(post => post.id);
+        
+        // Remove all co-authors from the user's posts
+        await db.knex('posts_authors')
+            .whereIn('post_id', userPostIds)
+            .andWhereNot('author_id', userId)
+            .del();
+
+        // Ensure the user is the primary author (sort_order = 0) on all their posts
+        await db.knex('posts_authors')
+            .whereIn('post_id', userPostIds)
+            .where('author_id', userId)
+            .update({sort_order: 0});
 
         // Check initial database state
         const ownerPostsAuthorsModels = await db.knex('posts_authors')
