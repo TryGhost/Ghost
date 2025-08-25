@@ -1,7 +1,13 @@
 const path = require('path');
+const errors = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const config = require('../../../shared/config');
 const themeEngine = require('../../services/theme-engine');
 const express = require('../../../shared/express');
+
+const messages = {
+    notFound: 'File not found'
+};
 
 function isDeniedFile(file) {
     const deniedFileTypes = ['.hbs', '.md', '.json', '.lock', '.log'];
@@ -79,7 +85,33 @@ function forwardToExpressStatic(req, res, next) {
         maxAge: config.get('caching:theme:maxAge') * 1000,
         fallthrough
     }
-    )(req, res, next);
+    )(req, res, (err) => {
+        if (err) {
+            if (err.statusCode === 404) {
+                return next(new errors.NotFoundError({
+                    message: tpl(messages.notFound),
+                    code: 'STATIC_FILE_NOT_FOUND',
+                    property: err.path
+                }));
+            }
+
+            if (err.statusCode === 400) {
+                return next(new errors.BadRequestError({err: err}));
+            }
+
+            if (err.statusCode === 403) {
+                return next(new errors.NoPermissionError({err: err}));
+            }
+
+            if (err.name === 'RangeNotSatisfiableError') {
+                return next(new errors.RangeNotSatisfiableError({err}));
+            }
+
+            return next(new errors.InternalServerError({err: err}));
+        }
+
+        next();
+    });
 }
 
 function staticTheme() {
