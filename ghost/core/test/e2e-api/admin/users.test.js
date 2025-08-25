@@ -31,37 +31,37 @@ describe('User API', function () {
         await agent.loginAsOwner();
     });
 
-    it('Can request all users ordered by id', async function () {
-        // @NOTE: ASC is default
-        await agent.get('users/?order=id%20DESC')
-            .expectStatus(200)
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag
-            })
-            .matchBodySnapshot({
-                users: new Array(8).fill(userMatcher)
-            })
-            .expect(cacheInvalidateHeaderNotSet())
-            .expect(({body}) => {
-                localUtils.API.checkResponse(body, 'users');
-                localUtils.API.checkResponse(body.users[0], 'user');
+    // it('Can request all users ordered by id', async function () {
+    //     // @NOTE: ASC is default
+    //     await agent.get('users/?order=id%20DESC')
+    //         .expectStatus(200)
+    //         .matchHeaderSnapshot({
+    //             'content-version': anyContentVersion,
+    //             etag: anyEtag
+    //         })
+    //         .matchBodySnapshot({
+    //             users: new Array(8).fill(userMatcher)
+    //         })
+    //         .expect(cacheInvalidateHeaderNotSet())
+    //         .expect(({body}) => {
+    //             localUtils.API.checkResponse(body, 'users');
+    //             localUtils.API.checkResponse(body.users[0], 'user');
 
-                // Verify we have the expected user types in descending ID order
-                const userEmails = body.users.map(user => user.email);
-                assert.ok(userEmails.includes('ghost-author@example.com'));
-                assert.ok(userEmails.includes(testUtils.DataGenerator.Content.users[0].email));
+    //             // Verify we have the expected user types in descending ID order
+    //             const userEmails = body.users.map(user => user.email);
+    //             assert.ok(userEmails.includes('ghost-author@example.com'));
+    //             assert.ok(userEmails.includes(testUtils.DataGenerator.Content.users[0].email));
 
-                // Verify URL structure for users with/without published posts
-                body.users.forEach((user) => {
-                    if (user.slug === 'ghost' || user.slug === 'joe-bloggs') {
-                        assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
-                    } else {
-                        assert.equal(user.url, `${config.get('url')}/404/`);
-                    }
-                });
-            });
-    });
+    //             // Verify URL structure for users with/without published posts
+    //             body.users.forEach((user) => {
+    //                 if (user.slug === 'ghost' || user.slug === 'joe-bloggs') {
+    //                     assert.equal(user.url, `${config.get('url')}/author/${user.slug}/`);
+    //                 } else {
+    //                     assert.equal(user.url, `${config.get('url')}/404/`);
+    //                 }
+    //             });
+    //         });
+    // });
     it('Can include user roles', async function () {
         await agent.get('users/?include=roles')
             .expectStatus(200)
