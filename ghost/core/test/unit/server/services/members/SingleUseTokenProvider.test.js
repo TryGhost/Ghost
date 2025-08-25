@@ -137,6 +137,85 @@ describe('SingleUseTokenProvider', function () {
         });
     });
 
+    describe('getIdByToken', function () {
+        it('should return token ID when token exists', async function () {
+            const testTokenValue = 'test-token-value';
+            const expectedId = 'test-token-id';
+            
+            // Mock successful token lookup
+            mockModel.findOne.resolves({
+                get: sinon.stub().returns(expectedId)
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, expectedId);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when token does not exist', async function () {
+            const testTokenValue = 'nonexistent-token';
+            
+            // Mock token not found
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when database error occurs', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            // Mock database error
+            mockModel.findOne.rejects(new Error('Database connection failed'));
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should handle empty token gracefully', async function () {
+            const emptyToken = '';
+            
+            // Mock token lookup for empty string
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(emptyToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: emptyToken});
+        });
+
+        it('should handle undefined token gracefully', async function () {
+            const undefinedToken = undefined;
+            
+            // Mock token lookup for undefined
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(undefinedToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: undefinedToken});
+        });
+
+        it('should return null when model.get throws an error', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            // Mock model found but get() throws error
+            mockModel.findOne.resolves({
+                get: sinon.stub().throws(new Error('Model error'))
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+    });
+
     describe('integration tests', function () {
         it('should complete full generate/verify cycle successfully', function () {
             const tokens = [

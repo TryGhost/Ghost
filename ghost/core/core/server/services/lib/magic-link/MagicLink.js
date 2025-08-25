@@ -17,6 +17,7 @@ const messages = {
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
+ * @prop {(token: T) => Promise<string | null>} [getIdByToken]
  */
 
 /**
@@ -56,7 +57,7 @@ class MagicLink {
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
-     * @returns {Promise<{token: Token, info: SentMessageInfo}>}
+     * @returns {Promise<{token: Token, tokenId: string | null, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
@@ -79,8 +80,14 @@ class MagicLink {
             text: this.getText(url, type, options.email),
             html: this.getHTML(url, type, options.email)
         });
+        
+        // Only get tokenId if the provider supports it
+        let tokenId = null;
+        if (typeof this.tokenProvider.getIdByToken === 'function') {
+            tokenId = await this.tokenProvider.getIdByToken(token);
+        }
 
-        return {token, info};
+        return {token, tokenId, info};
     }
 
     /**
