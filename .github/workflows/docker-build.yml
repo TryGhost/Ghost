@@ -21,12 +21,42 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          # List of Docker images to use as base name for tags
+          images: |
+            ghcr.io/${{ github.repository_owner }}/ghost-test
+          # Generate tags based on the following events/attributes
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value={{branch}}-{{date 'YYYYMMDD'}}-{{sha}},enable=${{ github.event_name == 'push' }}
+          # Set labels
+          labels: |
+            org.opencontainers.image.title=Ghost Development
+            org.opencontainers.image.description=Ghost development build
+            org.opencontainers.image.vendor=TryGhost
+            maintainer=TryGhost
+
+      - name: Display Docker metadata
+        run: |
+          echo "Generated tags:"
+          echo "${{ steps.meta.outputs.tags }}"
+          echo ""
+          echo "Generated labels:"
+          echo "${{ steps.meta.outputs.labels }}"
+
       - name: Build Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: .docker/Dockerfile
           push: false
-          tags: ghost-monorepo
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=buildkit
           cache-to: type=gha,mode=max,scope=buildkit
