@@ -141,7 +141,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
     return (
-        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
+        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-sources-card'>
             {topSources.length <= 0 &&
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>

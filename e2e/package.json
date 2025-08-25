@@ -11,10 +11,11 @@
     "build": "yarn build:ts",
     "build:ts": "tsc",
     "prepare": "tsc",
-    "test": "playwright test",
-    "test:factory": "playwright test data-factory",
+    "test": "playwright test --project=main",
+    "test:parallel": "playwright test --project=main --workers=8",
+    "test:factory": "playwright test --project=factories",
     "test:types": "tsc --noEmit",
-    "lint": "eslint helpers --ext .ts --cache"
+    "lint": "eslint . --ext .ts --cache"
   },
   "files": [
     "build"
@@ -26,7 +27,10 @@
     "knex": "3.1.0",
     "mysql2": "3.14.3",
     "ts-node": "10.9.2",
-    "typescript": "5.8.3"
+    "typescript": "5.8.3",
+    "dotenv": "16.6.1"
   },
-  "dependencies": {}
+  "dependencies": {
+     "@tryghost/logging": "2.4.23"
+  }
 }
