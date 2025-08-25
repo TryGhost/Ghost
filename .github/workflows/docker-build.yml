@@ -56,12 +56,12 @@ jobs:
           echo "Generated labels:"
           echo "${{ steps.meta.outputs.labels }}"
 
-      - name: Build Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
           context: .
           file: .docker/Dockerfile
-          push: false
+          push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=buildkit
