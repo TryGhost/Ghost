@@ -20,7 +20,6 @@ import {Activity} from '@src/api/activitypub';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
 import {isPendingActivity} from '../../../utils/pending-activity';
 import {openLinksInNewTab} from '@src/utils/content-formatters';
-import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useDebounce} from 'use-debounce';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
@@ -45,7 +44,6 @@ const ArticleBody: React.FC<{
     onIframeLoad?: (iframe: HTMLIFrameElement) => void;
     onLoadingChange?: (isLoading: boolean) => void;
     isPopoverOpen: boolean;
-    siteUrl?: string;
 }> = ({
     postUrl,
     heading,
@@ -59,8 +57,7 @@ const ArticleBody: React.FC<{
     onHeadingsExtracted,
     onIframeLoad,
     onLoadingChange,
-    isPopoverOpen,
-    siteUrl
+    isPopoverOpen
 }) => {
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -154,12 +151,12 @@ const ArticleBody: React.FC<{
                     waitForImages();
 
                     const script = document.createElement('script');
-                    script.src = '${siteUrl ? `${siteUrl.replace(/\/$/, '')}/public/cards.min.js` : '/public/cards.min.js'}';
+                    script.src = '/ghost/cards/admin-cards.min.js';
                     document.head.appendChild(script);
 
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = '${siteUrl ? `${siteUrl.replace(/\/$/, '')}/public/cards.min.css` : '/public/cards.min.css'}';
+                    link.href = '/ghost/cards/admin-cards.min.css';
                     document.head.appendChild(link);
                 });
             </script>
@@ -427,7 +424,6 @@ export const Reader: React.FC<ReaderProps> = ({
         decreaseFontSize,
         resetFontSize
     } = useCustomizerSettings();
-    const {data: siteData} = useBrowseSite();
     const modalRef = useRef<HTMLElement>(null);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
@@ -846,7 +842,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                             image={typeof object.image === 'string' ? object.image : object.image?.url}
                                             isPopoverOpen={isCustomizerOpen || isTOCOpen}
                                             postUrl={object?.url || ''}
-                                            siteUrl={siteData?.site?.url}
                                             onHeadingsExtracted={handleHeadingsExtracted}
                                             onIframeLoad={handleIframeLoad}
                                             onLoadingChange={setIsLoading}
