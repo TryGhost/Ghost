@@ -142,11 +142,13 @@ class SingleUseTokenProvider {
                 message: 'Cannot derive OTC: secret not configured'
             });
         }
+
         if (!tokenId || !tokenValue) {
             throw new ValidationError({
                 message: 'Cannot derive OTC: tokenId and tokenValue are required'
             });
         }
+        
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
     }
