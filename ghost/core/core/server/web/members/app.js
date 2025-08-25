@@ -69,6 +69,11 @@ module.exports = function setupMembersApp() {
     // Manage session
     membersApp.get('/api/session', middleware.getIdentityToken);
     membersApp.delete('/api/session', bodyParser.json({limit: '5mb'}), middleware.deleteSession);
+    
+    // OTC verification
+    membersApp.post('/api/session/verify-otc', bodyParser.json({limit: '5mb'}), function lazyVerifyOTCMw(req, res, next) {
+        return membersService.api.middleware.verifyOTC(req, res, next);
+    });
 
     membersApp.get('/api/integrity-token', middleware.createIntegrityToken);
 

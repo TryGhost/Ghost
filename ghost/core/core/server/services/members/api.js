@@ -57,7 +57,8 @@ function createApiInstance(config) {
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
                 validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+                maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+                secret: config.getAuthSecret()
             })
         },
         mail: {
@@ -91,7 +92,7 @@ function createApiInstance(config) {
                     return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                 }
             },
-            getText(url, type, email) {
+            getText(url, type, email, otc = null) {
                 const siteTitle = settingsCache.get('title');
                 switch (type) {
                 case 'subscribe':
@@ -168,7 +169,7 @@ function createApiInstance(config) {
                         ${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}
 
                         ${url}
-
+                        ${otc ? `\n${t('Alternatively, use this verification code:')} ${otc}\n` : ''}
                         ${t('For your security, the link will expire in 24 hours time.')}
 
                         ${t('See you soon!')}
@@ -180,7 +181,7 @@ function createApiInstance(config) {
                         `;
                 }
             },
-            getHTML(url, type, email) {
+            getHTML(url, type, email, otc = null) {
                 const siteTitle = settingsCache.get('title');
                 const siteUrl = urlUtils.urlFor('home', true);
                 const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -197,7 +198,7 @@ function createApiInstance(config) {
                     return updateEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
                 case 'signin':
                 default:
-                    return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl});
+                    return signinEmail({t, url, email, siteTitle, accentColor, siteDomain, siteUrl, otc});
                 }
             }
         },

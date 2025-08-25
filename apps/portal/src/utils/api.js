@@ -298,13 +298,46 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
-                return 'Success';
+                // Try to parse JSON response, fallback to 'Success' for backward compatibility
+                try {
+                    const data = await res.json();
+                    return data;
+                } catch (e) {
+                    return 'Success';
+                }
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
                     throw humanError;
                 }
                 throw new Error('Failed to send magic link email');
+            }
+        },
+
+        async verifyOTC({otc, otc_ref}) {
+            const url = endpointFor({type: 'members', resource: 'session/verify-otc'});
+            const body = {
+                otc,
+                otc_ref
+            };
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                return await res.json();
+            } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to verify code');
             }
         },
 

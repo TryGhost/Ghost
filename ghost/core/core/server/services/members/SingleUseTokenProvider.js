@@ -137,6 +137,16 @@ class SingleUseTokenProvider {
      * @returns {string} The generated one-time code
      */
     deriveOTC(tokenId, tokenValue) {
+        if (!this.secret) {
+            throw new ValidationError({
+                message: 'Cannot generate OTC: auth secret not configured'
+            });
+        }
+        if (!tokenId || !tokenValue) {
+            throw new ValidationError({
+                message: 'Cannot generate OTC: tokenId and tokenValue are required'
+            });
+        }
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
     }
@@ -151,6 +161,12 @@ class SingleUseTokenProvider {
      * @returns {boolean} Returns true if the OTC is valid, false otherwise
      */
     verifyOTC(tokenId, tokenValue, otc) {
+        if (!this.secret) {
+            return false;
+        }
+        if (!tokenId || !tokenValue || !otc) {
+            return false;
+        }
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.verify({token: otc, secret: this.secret, counter});
     }

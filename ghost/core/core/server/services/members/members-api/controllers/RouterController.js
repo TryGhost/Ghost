@@ -745,6 +745,200 @@ module.exports = class RouterController {
             .filter(newsletter => newsletter.status === 'active')
             .map(newsletter => ({id: newsletter.id}));
     }
+
+    async verifyOTC(req, res) {
+        const {otc, otc_ref} = req.body;
+
+        if (!otc || !otc_ref) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.badRequest),
+                context: 'OTC and otc_ref are required'
+            });
+        }
+
+        // Validate OTC format (6 digits)
+        if (!/^\d{6}$/.test(otc)) {
+            throw new errors.BadRequestError({
+                message: 'Invalid verification code format'
+            });
+        }
+
+        try {
+            // Get the token provider from magic link service
+            const tokenProvider = this._magicLinkService.tokenProvider;
+            
+            if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
+                throw new errors.BadRequestError({
+                    message: 'OTC verification not supported'
+                });
+            }
+
+            // Find the token model by ID
+            const models = require('../../../../models');
+            const tokenModel = await models.SingleUseToken.findOne({id: otc_ref});
+            
+            if (!tokenModel) {
+                throw new errors.BadRequestError({
+                    message: 'Invalid verification request'
+                });
+            }
+
+            const tokenValue = tokenModel.get('token');
+            
+            // Verify the OTC
+            const isValidOTC = tokenProvider.verifyOTC(otc_ref, tokenValue, otc);
+            
+            if (!isValidOTC) {
+                res.writeHead(400, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    valid: false,
+                    message: 'Invalid verification code'
+                }));
+            }
+
+            // OTC is valid - create session directly
+            await this._createSessionFromToken(req, res, tokenValue);
+        } catch (err) {
+            logging.error(err);
+            throw new errors.BadRequestError({
+                message: 'Failed to verify code, please try again'
+            });
+        }
+    }
+
+    async _createSessionFromToken(req, res, tokenValue) {
+        try {
+            // Import required services
+            const membersService = require('../../service');
+            const spamPrevention = require('../../../../web/shared/middleware/api/spam-prevention');
+            const config = require('../../../../../shared/config');
+            const {formattedMemberResponse} = require('../../utils');
+
+            // Create session using core methods directly
+            const member = await membersService.ssr._getMemberDataFromToken(tokenValue);
+            
+            if (!member) {
+                throw new errors.BadRequestError({
+                    message: 'Invalid token or member not found'
+                });
+            }
+
+            // Handle geolocation (same as exchangeTokenForSession)
+            if (!member.geolocation) {
+                try {
+                    await membersService.ssr._setMemberGeolocationFromIp(member.email, req.ip);
+                } catch (err) {
+                    // Non-critical operation, ignore errors
+                }
+            }
+
+            // Set session cookie
+            membersService.ssr._setSessionCookie(req, res, member.transient_id);
+            
+            // Post-session processing (same as createSessionFromMagicLink middleware)
+            spamPrevention.membersAuth().reset(req.ip, `${member.email}login`);
+            
+            // Set access cookies for caching
+            if (config.get('cacheMembersContent:enabled')) {
+                try {
+                    const freeTier = await this._getFreeTier();
+                    this._setAccessCookies(member, req, res, freeTier);
+                } catch {
+                    // Non-critical operation, ignore errors
+                }
+            }
+
+            // Determine redirect URL (same logic as middleware)
+            const redirectUrl = this._determineRedirectUrl(req);
+            
+            // Return success response with redirect URL
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                valid: true,
+                success: true,
+                redirectUrl,
+                member: formattedMemberResponse(member),
+                message: 'Sign in successful'
+            }));
+        } catch (err) {
+            logging.error('Failed to create session from token:', err);
+            res.writeHead(400, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                valid: false,
+                message: 'Failed to create session'
+            }));
+        }
+    }
+
+    async _getFreeTier() {
+        const tiersService = require('../../../tiers/service');
+        const response = await tiersService.api.browse();
+        const freeTier = response.data.find(tier => tier.type === 'free');
+        return freeTier;
+    }
+
+    _setAccessCookies(member, req, res, freeTier) {
+        // Copy of setAccessCookies function from middleware (not exported)
+        const crypto = require('crypto');
+        const config = require('../../../../../shared/config');
+        
+        if (!member) {
+            // If there is no cookie sent with the request, return early
+            if (!req.headers.cookie || !req.headers.cookie.includes('ghost-access')) {
+                return;
+            }
+            // If there are cookies sent with the request, set them to null and expire them immediately
+            const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+            const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+            const existingCookies = res.getHeader('Set-Cookie') || [];
+            const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+
+            res.setHeader('Set-Cookie', cookiesToSet);
+            return;
+        }
+        const hmacSecret = config.get('cacheMembersContent:hmacSecret');
+        if (!hmacSecret) {
+            return;
+        }
+        const hmacSecretBuffer = Buffer.from(hmacSecret, 'base64');
+        if (hmacSecretBuffer.length === 0) {
+            return;
+        }
+        const activeSubscription = member.subscriptions?.find(sub => sub.status === 'active');
+
+        const cookieTimestamp = Math.floor(Date.now() / 1000); // to mitigate a cookie replay attack
+        const memberTier = activeSubscription && activeSubscription.tier.id || freeTier.id;
+        const memberTierAndTimestamp = `${memberTier}:${cookieTimestamp}`;
+        const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
+
+        const maxAge = 3600;
+        const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+
+        const existingCookies = res.getHeader('Set-Cookie') || [];
+        const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
+        res.setHeader('Set-Cookie', cookiesToSet);
+    }
+
+    _determineRedirectUrl(req) {
+        const urlUtils = require('../../../../../shared/url-utils');
+        
+        // Same logic as createSessionFromMagicLink middleware
+        const searchParams = new URLSearchParams('');
+        const referrer = req.query.r;
+        const siteUrl = urlUtils.getSiteUrl();
+
+        if (referrer && referrer.startsWith(siteUrl)) {
+            const redirectUrl = new URL(referrer);
+            redirectUrl.searchParams.set('success', 'true');
+            redirectUrl.searchParams.set('action', 'signin');
+            return redirectUrl.href;
+        }
+
+        // Default redirect to homepage with success
+        searchParams.set('success', 'true');
+        return `${urlUtils.getSubdir()}/?${searchParams.toString()}`;
+    }
 };
 
 function parsePersonalNote(rawText) {

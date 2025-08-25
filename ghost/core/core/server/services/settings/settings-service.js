@@ -14,6 +14,8 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
+const crypto = require('crypto');
+const logging = require('@tryghost/logging');
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
@@ -22,6 +24,24 @@ const emailAddressService = require('../email-address');
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
+
+/**
+ * Gets the auth secret for member token generation
+ * @returns {Buffer} The auth secret
+ */
+function getAuthSecret() {
+    const hexSecret = SettingsCache.get('members_email_auth_secret');
+    if (!hexSecret) {
+        logging.warn('Could not find members_email_auth_secret, using dynamically generated secret');
+        return crypto.randomBytes(64);
+    }
+    const secret = Buffer.from(hexSecret, 'hex');
+    if (secret.length < 64) {
+        logging.warn('members_email_auth_secret not large enough (64 bytes), using dynamically generated secret');
+        return crypto.randomBytes(64);
+    }
+    return secret;
+}
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -37,7 +57,8 @@ const getSettingsBREADServiceInstance = () => {
             SingleUseTokenModel: models.SingleUseToken,
             validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+            secret: getAuthSecret()
         }),
         urlUtils,
         emailAddressService: emailAddressService

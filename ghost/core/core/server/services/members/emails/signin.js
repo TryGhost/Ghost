@@ -1,4 +1,4 @@
-module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain, siteUrl}) => `
+module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain, siteUrl, otc = null}) => `
 <!doctype html>
 <html>
   <head>
@@ -133,6 +133,12 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
                             </tr>
                           </tbody>
                         </table>
+                        ${otc ? `
+                        <div style="background-color: #F5F8FA; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 10px;">${t('Alternatively, use this verification code:')}</p>
+                          <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 32px; color: #15212A; font-weight: bold; letter-spacing: 8px; margin: 0;">${otc}</p>
+                        </div>
+                        ` : ''}
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;">${t('For your security, the link will expire in 24 hours time.')}</p>
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 30px;">${t('See you soon!')}</p>
                         <hr/>

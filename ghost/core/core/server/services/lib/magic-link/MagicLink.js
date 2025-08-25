@@ -18,6 +18,7 @@ const messages = {
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
+ * @prop {(tokenId: string, token: T) => string} [deriveOTC]
  */
 
 /**
@@ -74,18 +75,24 @@ class MagicLink {
 
         const url = this.getSigninURL(token, type, options.referrer);
 
-        const info = await this.transporter.sendMail({
-            to: options.email,
-            subject: this.getSubject(type),
-            text: this.getText(url, type, options.email),
-            html: this.getHTML(url, type, options.email)
-        });
-        
         // Only get tokenId if the provider supports it
         let tokenId = null;
         if (typeof this.tokenProvider.getIdByToken === 'function') {
             tokenId = await this.tokenProvider.getIdByToken(token);
         }
+
+        // Derive OTC if provider supports it and we have a tokenId
+        let otc = null;
+        if (tokenId && typeof this.tokenProvider.deriveOTC === 'function') {
+            otc = this.tokenProvider.deriveOTC(tokenId, token);
+        }
+
+        const info = await this.transporter.sendMail({
+            to: options.email,
+            subject: this.getSubject(type),
+            text: this.getText(url, type, options.email, otc),
+            html: this.getHTML(url, type, options.email, otc)
+        });
 
         return {token, tokenId, info};
     }
@@ -124,14 +131,20 @@ class MagicLink {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string|null} [otc] - Optional one-time code
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url, type, email) {
+function defaultGetText(url, type, email, otc = null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
-    return `Click here to ${msg} ${url}. This msg was sent to ${email}`;
+    let text = `Click here to ${msg} ${url}`;
+    if (otc) {
+        text += ` Or use code: ${otc}`;
+    }
+    text += `. This msg was sent to ${email}`;
+    return text;
 }
 
 /**
@@ -140,14 +153,20 @@ function defaultGetText(url, type, email) {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string|null} [otc] - Optional one-time code
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url, type, email) {
+function defaultGetHTML(url, type, email, otc = null) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
-    return `<a href="${url}">Click here to ${msg}</a> This msg was sent to ${email}`;
+    let html = `<a href="${url}">Click here to ${msg}</a>`;
+    if (otc) {
+        html += ` Or use code: <strong>${otc}</strong>`;
+    }
+    html += ` This msg was sent to ${email}`;
+    return html;
 }
 
 /**

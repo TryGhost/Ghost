@@ -355,6 +355,10 @@ module.exports = function MembersAPI({
             body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
+        verifyOTC: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.verifyOTC(req, res))
+        ),
         wellKnown: Router()
             .get('/jwks.json',
                 (req, res) => wellKnownController.getPublicKeys(req, res)
