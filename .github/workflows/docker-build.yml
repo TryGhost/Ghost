@@ -1,0 +1,39 @@
+name: Docker Build
+
+on:
+  # Allow manual triggering
+  workflow_dispatch:
+  # Add PR trigger with label requirement
+  pull_request:
+    types: [labeled, opened, synchronize, reopened]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name != 'pull_request') ||
+      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-docker-build'))
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: .docker/Dockerfile
+          push: false
+          # Use fixed tag that matches compose.yml
+          tags: ghost-monorepo
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          # Important: load the image into Docker's image store
+          load: true
+
+      # Check that the image is available locally
+      - name: Check image
+        run: docker image ls
