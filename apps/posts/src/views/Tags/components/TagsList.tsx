@@ -123,11 +123,11 @@ function TagsList({
                                 </TableCell>
                                 <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <Button
+                                        aria-hidden="true"
                                         className="w-12"
                                         size="icon"
-                                        variant="outline"
-                                        aria-hidden="true"
                                         tabIndex={-1}
+                                        variant="outline"
                                     >
                                         <LucideIcon.Pencil />
                                     </Button>

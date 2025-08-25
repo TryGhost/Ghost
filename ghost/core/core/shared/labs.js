@@ -48,7 +48,7 @@ const PRIVATE_FEATURES = [
     'contentVisibilityAlpha',
     'emailCustomization',
     'membersSigninOTC',
-    'tagsX',
+    'tagsX'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
