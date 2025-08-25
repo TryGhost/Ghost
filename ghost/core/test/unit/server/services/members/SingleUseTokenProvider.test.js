@@ -82,5 +82,22 @@ describe('SingleUseTokenProvider', function () {
             
             assert.notEqual(code1, code2);
         });
+
+        it('throws if secret is not configured', function () {
+            const providerNoSecret = new SingleUseTokenProvider({
+                SingleUseTokenModel: mockModel,
+                validityPeriod: 86400000,
+                validityPeriodAfterUsage: 3600000,
+                maxUsageCount: 3
+            });
+            assert.throws(() => {
+                providerNoSecret.deriveOTC('id', 'value');
+            }, /secret not configured/i);
+        });
+
+        it('throws if tokenId or tokenValue is missing', function () {
+            assert.throws(() => tokenProvider.deriveOTC('', 'value'), /tokenId and tokenValue are required/i);
+            assert.throws(() => tokenProvider.deriveOTC('id', ''), /tokenId and tokenValue are required/i);
+        });
     });
 });

@@ -18,8 +18,6 @@ class SingleUseTokenProvider {
         this.validityPeriodAfterUsage = validityPeriodAfterUsage;
         this.maxUsageCount = maxUsageCount;
         this.secret = secret;
-        
-        hotp.options = {digits: 6};
     }
 
     /**
