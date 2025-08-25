@@ -137,22 +137,18 @@ class SingleUseTokenProvider {
      * @returns {string} The generated one-time code
      */
     deriveOTC(tokenId, tokenValue) {
+        if (!this.secret) {
+            throw new ValidationError({
+                message: 'Cannot derive OTC: secret not configured'
+            });
+        }
+        if (!tokenId || !tokenValue) {
+            throw new ValidationError({
+                message: 'Cannot derive OTC: tokenId and tokenValue are required'
+            });
+        }
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
-    }
-
-    /**
-     * @method verifyOTC
-     * Verifies an OTC (one-time code) against a token ID and value
-     *
-     * @param {string} tokenId - Token ID
-     * @param {string} tokenValue - Token value
-     * @param {string} otc - The one-time code to verify
-     * @returns {boolean} Returns true if the OTC is valid, false otherwise
-     */
-    verifyOTC(tokenId, tokenValue, otc) {
-        const counter = this.deriveCounter(tokenId, tokenValue);
-        return hotp.verify({token: otc, secret: this.secret, counter});
     }
 }
 
