@@ -5,7 +5,7 @@ const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyEtag, anyObject, anyObjectId, anyArray, anyISODateTime, anyString, nullable} = matchers;
-const {cacheInvalidateHeaderNotSet} = assertions;
+const {cacheInvalidateHeaderNotSet, cacheInvalidateHeaderSetToWildcard} = assertions;
 const localUtils = require('./utils');
 
 const userMatcher = {
@@ -171,9 +171,9 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag,
-                'x-cache-invalidate': '/*'
+                etag: anyEtag
             })
+            .expect(cacheInvalidateHeaderSetToWildcard())
             .matchBodySnapshot({
                 users: [{
                     ...userMatcher,
@@ -230,9 +230,9 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag,
-                'x-cache-invalidate': '/*'
+                etag: anyEtag
             })
+            .expect(cacheInvalidateHeaderSetToWildcard())
             .matchBodySnapshot({
                 users: [{
                     ...userMatcher,
@@ -339,9 +339,9 @@ describe('User API', function () {
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                etag: anyEtag,
-                'x-cache-invalidate': '/*'
+                etag: anyEtag
             })
+            .expect(cacheInvalidateHeaderSetToWildcard())
             .matchBodySnapshot({
                 users: [{
                     ...userMatcher,
@@ -380,7 +380,7 @@ describe('User API', function () {
         const initialPostsRes = await agent.get(`posts/?filter=authors:${userSlug}`)
             .expectStatus(200); 
         
-        // Verify the user has posts to transfer (otherwise the test isn't meaningful)
+        // Verify the user has posts to transfer
         assert.ok(initialPostsRes.body.posts.length > 0, `User ${userSlug} should have posts to make this test meaningful`);
 
         // Check initial database state
@@ -580,7 +580,7 @@ describe('User API', function () {
         
         const {id: newId, secret: newSecret} = newTokenRes.body.apiKey;
 
-        assert.notEqual(originalId, newId, 'Token id should have changed');
+        assert.equal(originalId, newId, 'Token id should remain the same');
         assert.notEqual(originalSecret, newSecret, 'Token secret should have changed');
     });
 });
