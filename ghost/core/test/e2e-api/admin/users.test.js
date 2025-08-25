@@ -63,7 +63,7 @@ describe('User API', function () {
             });
     });
     it('Can include user roles', async function () {
-        await agent.get('users/?include=roles')
+        await agent.get('users/?include=roles&order=id%20ASC')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
