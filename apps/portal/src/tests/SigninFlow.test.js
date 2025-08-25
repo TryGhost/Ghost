@@ -3,7 +3,7 @@ import {fireEvent, appRender, within} from '../utils/test-utils';
 import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
-const setup = async ({site, member = null}) => {
+const setup = async ({site, member = null, labs = {}}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
         return Promise.resolve({
@@ -25,7 +25,7 @@ const setup = async ({site, member = null}) => {
     });
 
     const utils = appRender(
-        <App api={ghostApi} />
+        <App api={ghostApi} labs={labs} />
     );
 
     const triggerButtonFrame = await utils.findByTitle(/portal-trigger/i);
@@ -40,6 +40,7 @@ const setup = async ({site, member = null}) => {
     const monthlyPlanTitle = within(popupIframeDocument).queryByText('Monthly');
     const yearlyPlanTitle = within(popupIframeDocument).queryByText('Yearly');
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
+
     return {
         ghostApi,
         popupIframeDocument,
@@ -129,6 +130,7 @@ describe('Signin', () => {
         afterEach(() => {
             window.location = realLocation;
         });
+
         test('with default settings', async () => {
             const {
                 ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,popupIframeDocument
@@ -155,6 +157,26 @@ describe('Signin', () => {
                 email: 'jamie@example.com',
                 emailType: 'signin',
                 integrityToken: 'testtoken'
+            });
+        });
+
+        test('with OTC enabled', async () => {
+            const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.basic,
+                labs: {membersSigninOTC: true}
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+                email: 'jamie@example.com',
+                emailType: 'signin',
+                integrityToken: 'testtoken',
+                otc: true
             });
         });
 
