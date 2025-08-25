@@ -29,8 +29,8 @@ jobs:
           push: false
           # Use fixed tag that matches compose.yml
           tags: ghost-monorepo
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=buildkit
+          cache-to: type=gha,mode=max,scope=buildkit
           # Important: load the image into Docker's image store
           load: true
 
