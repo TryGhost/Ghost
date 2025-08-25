@@ -74,7 +74,7 @@ test.describe('PostFactory', () => {
         expect(publishedPost.published_at).toBeTruthy();
     });
 
-    test('create a post in database', async () => {
+    test('created a post in database', async () => {
         const post = await postFactory.create({
             title: 'Test Persisted Post',
             status: 'published'
