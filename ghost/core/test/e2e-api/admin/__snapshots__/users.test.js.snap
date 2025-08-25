@@ -1070,7 +1070,7 @@ Object {
       "bluesky": null,
       "comment_notifications": true,
       "count": Object {
-        "posts": 7,
+        "posts": 8,
       },
       "cover_image": null,
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
