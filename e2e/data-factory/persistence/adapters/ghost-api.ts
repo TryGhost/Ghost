@@ -7,15 +7,13 @@ type EntityData = Record<string, unknown>;
 // Type for Ghost API responses
 interface GhostApiResponse {
     posts?: EntityData[];
-    pages?: EntityData[];
-    members?: EntityData[];
 }
 
 /**
  * Ghost-specific API adapter that handles Ghost's API formatting requirements
  */
 export class GhostApiAdapter extends ApiPersistenceAdapter {
-    constructor(agent: GhostApiClient, entityType: 'posts' | 'pages' | 'members') {
+    constructor(agent: GhostApiClient, entityType: 'posts') {
         const configs = {
             posts: {
                 endpoint: '/ghost/api/admin/posts?formats=mobiledoc,lexical,html',
@@ -23,26 +21,6 @@ export class GhostApiAdapter extends ApiPersistenceAdapter {
                 extractResponse: (response: GhostApiResponse) => {
                     if (response.posts && Array.isArray(response.posts)) {
                         return response.posts[0];
-                    }
-                    return response;
-                }
-            },
-            pages: {
-                endpoint: '/ghost/api/admin/pages?formats=mobiledoc,lexical,html',
-                wrapRequest: (data: EntityData) => ({pages: [data]}),
-                extractResponse: (response: GhostApiResponse) => {
-                    if (response.pages && Array.isArray(response.pages)) {
-                        return response.pages[0];
-                    }
-                    return response;
-                }
-            },
-            members: {
-                endpoint: '/ghost/api/admin/members',
-                wrapRequest: (data: EntityData) => ({members: [data]}),
-                extractResponse: (response: GhostApiResponse) => {
-                    if (response.members && Array.isArray(response.members)) {
-                        return response.members[0];
                     }
                     return response;
                 }

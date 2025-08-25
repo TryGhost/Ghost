@@ -30,34 +30,3 @@ export async function createPostFactory(options?: FactoryOptions): Promise<PostF
     const adapter = new GhostApiAdapter(client, 'posts');
     return new PostFactory(adapter);
 }
-
-// // Future factory creators
-// export async function createPageFactory(options?: FactoryOptions) {
-//     const {
-//         baseURL = appConfig.baseURL,
-//         email = appConfig.auth.email,
-//         password = appConfig.auth.password
-//     } = options || {};
-    
-//     const client = new GhostApiClient(baseURL);
-//     await client.authenticate(email, password);
-    
-//     const adapter = new GhostApiAdapter(client, 'pages');
-//     // return new PageFactory(adapter);
-//     throw new Error('PageFactory not yet implemented');
-// }
-
-// export async function createMemberFactory(options?: FactoryOptions) {
-//     const {
-//         baseURL = appConfig.baseURL,
-//         email = appConfig.auth.email,
-//         password = appConfig.auth.password
-//     } = options || {};
-    
-//     const client = new GhostApiClient(baseURL);
-//     await client.authenticate(email, password);
-    
-//     const adapter = new GhostApiAdapter(client, 'members');
-//     // return new MemberFactory(adapter);
-//     throw new Error('MemberFactory not yet implemented');
-// }
