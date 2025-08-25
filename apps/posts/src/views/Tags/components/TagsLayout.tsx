@@ -5,7 +5,7 @@ const PostAnalyticsLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
     return (
         <MainLayout>
             <div className='grid w-full grow'>
-                <div className='flex h-full flex-col px-8'>
+                <div className='flex h-full flex-col'>
                     {children}
                 </div>
             </div>
