@@ -1,5 +1,5 @@
-name: "Run E2E Tests"
-description: "Run E2E tests using Playwright in Docker"
+name: "Run Playwright Tests"
+description: "Run Playwright tests"
 
 inputs:
   ghost_base_url:
@@ -7,7 +7,7 @@ inputs:
     required: false
     default: "http://localhost:2368"
   test_command:
-    description: "Test command to run"
+    description: "Command to execute tests"
     required: true
     default: "yarn test:e2e"
 
@@ -18,8 +18,8 @@ runs:
       id: playwright-version
       shell: bash
       run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
-      
-    - name: Run E2E tests
+
+    - name: Run tests
       shell: bash
       run: |
         docker run --rm \
@@ -29,5 +29,5 @@ runs:
           -w /workspace \
           -e GHOST_BASE_URL=${{ inputs.ghost_base_url }} \
           -e CI=true \
-          mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }}-noble \
+          mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }} \
           ${{ inputs.test_command }}
