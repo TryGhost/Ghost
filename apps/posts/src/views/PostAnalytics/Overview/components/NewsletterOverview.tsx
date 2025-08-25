@@ -72,7 +72,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                     </CardTitle>
                 </CardHeader>
                 <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                    navigate(`/analytics/${postId}/newsletter`);
+                    navigate(`/posts/analytics/${postId}/newsletter`);
                 }}>View more</Button>
             </div>
             {isNewsletterStatsLoading ?
@@ -172,7 +172,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         </div>
                     </div>
                     {/* <Button variant='outline' onClick={() => {
-                        navigate(`/analytics/${postId}/newsletter`);
+                        navigate(`/posts/analytics/${postId}/newsletter`);
                     }}>
                         View all
                         <LucideIcon.ArrowRight />
