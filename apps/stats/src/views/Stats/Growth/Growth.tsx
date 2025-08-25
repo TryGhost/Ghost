@@ -127,7 +127,7 @@ const Growth: React.FC = () => {
                 <DateRangeSelect />
             </StatsHeader>
             <StatsView data={isPageLoading ? undefined : chartData} isLoading={false} loadingComponent={<></>}>
-                <Card>
+                <Card data-testid='total-members-card'>
                     <CardContent>
                         <GrowthKPIs
                             chartData={chartData}
@@ -150,7 +150,7 @@ const Growth: React.FC = () => {
                         </CardContent>
                     </Card>
                     :
-                    <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
+                    <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-content-card'>
                         <CardHeader>
                             <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                             <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>

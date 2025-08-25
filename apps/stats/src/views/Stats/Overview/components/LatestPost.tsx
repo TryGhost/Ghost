@@ -44,7 +44,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const metricClassName = 'group mr-2 flex flex-col gap-1.5 hover:cursor-pointer';
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%'>
+        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium leading-snug text-muted-foreground'>
                     Latest post performance
@@ -149,7 +149,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && appSettings?.analytics.webAnalytics &&
-                                    <div className={metricClassName} onClick={() => {
+                                    <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/web`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
@@ -173,7 +173,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                             // Member metric is moved to the 2nd row in the grid if the post is email only or if web analytics is turned off, otherwise leave as is
                                             (metricsToShow.showEmailMetrics && (!metricsToShow.showWebMetrics || !appSettings?.analytics.webAnalytics)) && 'row-[2/3] col-[1/2]'
                                         )
-                                    } onClick={() => {
+                                    } data-testid='latest-post-members' onClick={() => {
                                         navigate(`/posts/analytics/${latestPostStats.id}/growth`, {crossApp: true});
                                     }}>
                                         <div className='flex items-center gap-1.5 font-medium text-muted-foreground transition-all group-hover:text-foreground'>
