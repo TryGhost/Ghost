@@ -30,7 +30,3 @@ jobs:
           tags: ghost-monorepo
           cache-from: type=gha,scope=buildkit
           cache-to: type=gha,mode=max,scope=buildkit
-          load: true
-
-      - name: Check image
-        run: docker image ls
