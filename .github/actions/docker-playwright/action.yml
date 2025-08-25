@@ -10,6 +10,10 @@ inputs:
     description: "Command to execute tests"
     required: true
     default: "yarn test:e2e"
+  env_vars:
+    description: "Environment variables to pass (space-separated KEY=value pairs)"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -30,4 +34,4 @@ runs:
           -e GHOST_BASE_URL=${{ inputs.ghost_base_url }} \
           -e CI=true \
           mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }} \
-          ${{ inputs.test_command }}
+          bash -c "${{ inputs.env_vars }} ${{ inputs.test_command }}"
