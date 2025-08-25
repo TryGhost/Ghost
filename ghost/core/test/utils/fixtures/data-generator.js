@@ -1661,12 +1661,12 @@ DataGenerator.forKnex = (function () {
             author_id: _.find(DataGenerator.Content.users, {email: 'jbOgendAth@example.com'}).id,
             sort_order: 1
         },
-        // {
-        //     id: ObjectId().toHexString(),
-        //     post_id: DataGenerator.Content.posts[4].id,
-        //     author_id: DataGenerator.Content.users[0].id,
-        //     sort_order: 0
-        // },
+        {
+            id: ObjectId().toHexString(),
+            post_id: DataGenerator.Content.posts[4].id,
+            author_id: DataGenerator.Content.users[0].id,
+            sort_order: 0
+        },
         {
             id: ObjectId().toHexString(),
             post_id: DataGenerator.Content.posts[4].id,
