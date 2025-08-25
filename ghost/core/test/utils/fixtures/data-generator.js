@@ -135,7 +135,7 @@ DataGenerator.Content = {
             password: 'Sl1m3rson99',
             profile_image: 'https://example.com/super_photo.jpg',
             paid_subscription_canceled_notification: true,
-            last_seen: moment().subtract(1, 'hour').toDate()
+            last_seen: new Date('2023-10-06T07:22:47.000Z')
         },
         {
             // admin
