@@ -9,6 +9,7 @@ const errorHandler = require('@tryghost/mw-error-handler');
 const sentry = require('../../../shared/sentry');
 const redirectAdminUrls = require('./middleware/redirect-admin-urls');
 const bridge = require('../../../bridge');
+const adminCardAssets = require('./card-assets');
 
 /**
  *
@@ -53,6 +54,9 @@ module.exports = function setupAdminApp() {
     }, serveStatic(
         path.join(config.getContentPath('public'), 'admin-auth')
     ));
+
+    // Card assets for admin features (independent of theme configuration)
+    adminApp.use('/cards', adminCardAssets.serveMiddleware());
 
     // Ember CLI's live-reload script
     if (config.get('env') === 'development') {
