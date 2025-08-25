@@ -359,14 +359,13 @@ jobs:
       working-directory: ghost/core
       run: yarn knex-migrator init
 
-    - name: Setup Playwright
-      uses: ./.github/actions/setup-playwright
-
     - name: Build Admin
       run: yarn nx run ghost-admin:build:dev
 
     - name: Run Playwright tests locally
-      run: yarn test:browser
+      uses: ./.github/actions/docker-playwright
+      with:
+        test_command: "yarn test:browser"            
       env:
         CI: true
         STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
@@ -658,11 +657,11 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: yarn nx run @tryghost/admin-x-settings:test:acceptance
-
+      - name: Run playwright tests
+        uses: ./.github/actions/docker-playwright
+        with:
+          test_command: "yarn nx run @tryghost/admin-x-settings:test:acceptance"
+      
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -698,10 +697,10 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: yarn nx run @tryghost/admin-x-activitypub:test:acceptance
+      - name: Run playwright tests
+        uses: ./.github/actions/docker-playwright
+        with:
+          test_command: "yarn nx run @tryghost/admin-x-activitypub:test:acceptance"          
 
       - name: Upload test results
         if: always()
@@ -738,10 +737,10 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: yarn nx run @tryghost/comments-ui:test
+      - name: Run playwright tests
+        uses: ./.github/actions/docker-playwright
+        with:
+            test_command: "yarn nx run @tryghost/comments-ui:test"
 
       - name: Upload test results
         if: always()
@@ -778,10 +777,10 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - run: yarn nx run @tryghost/signup-form:test:e2e
+      - name: Run E2E tests
+        uses: ./.github/actions/docker-playwright
+        with:
+          test_command: "yarn nx run @tryghost/signup-form:test:e2e"
 
       - name: Upload test results
         if: always()
@@ -835,9 +834,6 @@ jobs:
         env:
           DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
 
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
 
@@ -865,9 +861,9 @@ jobs:
           timeout 120 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
 
       - name: Run E2E tests
-        run: yarn test:e2e
-        env:
-          GHOST_BASE_URL: http://localhost:2368
+        uses: ./.github/actions/docker-playwright
+        with:
+          test_command: "yarn test:e2e"
 
       - name: Upload test results
         if: always()
