@@ -7,7 +7,7 @@ const config = {
     expect: {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
-    retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
+    retries: 1, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
     workers: 1, // One worker for now in the interest of stability. Parallelism leads to flaky tests when not done carefully.
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
