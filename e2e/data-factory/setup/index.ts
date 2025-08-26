@@ -1,32 +1,29 @@
 import {PostFactory} from '../factories/posts/post-factory';
 import {GhostApiAdapter} from '../persistence/adapters/ghost-api';
-import {GhostApiClient} from '../utils/api-client';
 import {appConfig} from '../../helpers/utils/app-config';
+import {APIRequestContext, request} from '@playwright/test';
 
 interface FactoryOptions {
     baseURL?: string;
-    email?: string;
-    password?: string;
+    context?: APIRequestContext;
 }
 
 /**
  * Create a new PostFactory with API persistence
- * Each factory gets its own authenticated client for test isolation
+ * Uses existing Playwright authentication from setup phase
  * 
- * @param options - Optional overrides for Ghost instance and credentials
+ * @param options - Optional overrides for Ghost instance and API context
  * @returns PostFactory ready to use with the specified Ghost backend
  */
 export async function createPostFactory(options?: FactoryOptions): Promise<PostFactory> {
-    const {
-        baseURL = appConfig.baseURL,
-        email = appConfig.auth.email,
-        password = appConfig.auth.password
-    } = options || {};
+    const baseURL = options?.baseURL || appConfig.baseURL;
     
-    // Create a new client for this factory instance
-    const client = new GhostApiClient(baseURL);
-    await client.authenticate(email, password);
+    // Create context with stored auth state from Playwright setup
+    const context = options?.context || await request.newContext({
+        baseURL,
+        storageState: appConfig.auth.storageFile
+    });
     
-    const adapter = new GhostApiAdapter(client, 'posts');
+    const adapter = new GhostApiAdapter(context, 'posts');
     return new PostFactory(adapter);
 }

@@ -1,5 +1,5 @@
 import {ApiPersistenceAdapter} from './api';
-import type {GhostApiClient} from '../../utils/api-client';
+import type {APIRequestContext} from '@playwright/test';
 
 // Type for the data being sent/received
 type EntityData = Record<string, unknown>;
@@ -11,9 +11,10 @@ interface GhostApiResponse {
 
 /**
  * Ghost-specific API adapter that handles Ghost's API formatting requirements
+ * Extends the generic API adapter with Ghost-specific configuration
  */
 export class GhostApiAdapter extends ApiPersistenceAdapter {
-    constructor(agent: GhostApiClient, entityType: 'posts') {
+    constructor(context: APIRequestContext, entityType: 'posts') {
         const configs = {
             posts: {
                 endpoint: '/ghost/api/admin/posts?formats=mobiledoc,lexical,html',
@@ -29,7 +30,7 @@ export class GhostApiAdapter extends ApiPersistenceAdapter {
 
         const config = configs[entityType];
         super({
-            agent,
+            context,
             endpoint: config.endpoint,
             wrapRequest: config.wrapRequest,
             extractResponse: config.extractResponse
