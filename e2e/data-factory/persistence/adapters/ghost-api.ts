@@ -1,5 +1,5 @@
 import {ApiPersistenceAdapter} from './api';
-import type {APIRequestContext} from '@playwright/test';
+import type {BrowserContext} from '@playwright/test';
 
 // Type for the data being sent/received
 type EntityData = Record<string, unknown>;
@@ -14,7 +14,7 @@ interface GhostApiResponse {
  * Extends the generic API adapter with Ghost-specific configuration
  */
 export class GhostApiAdapter extends ApiPersistenceAdapter<EntityData, GhostApiResponse> {
-    constructor(context: APIRequestContext, entityType: 'posts') {
+    constructor(context: BrowserContext, entityType: 'posts') {
         const configs = {
             posts: {
                 endpoint: '/ghost/api/admin/posts?formats=mobiledoc,lexical,html',
