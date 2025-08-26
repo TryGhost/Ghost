@@ -14,12 +14,12 @@ const mode = argv[2];
 
 // Switch between boot modes
 switch (mode) {
-    case 'repl':
-    case 'timetravel':
-    case 'generate-data':
-        require('./core/cli/command').run(mode);
-        break;
-    default:
-        // New boot sequence
-        require('./core/boot')();
+case 'repl':
+case 'timetravel':
+case 'generate-data':
+    require('./core/cli/command').run(mode);
+    break;
+default:
+    // New boot sequence
+    require('./core/boot')();
 }
