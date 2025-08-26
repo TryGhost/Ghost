@@ -275,7 +275,7 @@ describe('MagicLink', function () {
             assert(options.transporter.sendMail.calledOnce);
         });
 
-        it('should work without errors when labsService is undefined (backward compatibility)', async function () {
+        it('should work without errors when labsService is undefined', async function () {
             const mockTokenProvider = {
                 create: sandbox.stub().resolves('mock-token'),
                 getIdByToken: sandbox.stub().resolves('test-token-id-123')

@@ -17,7 +17,7 @@ const messages = {
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
- * @prop {(token: T) => Promise<string | null>} [getIdByToken]
+ * @prop {(token: T) => Promise<string | null>} getIdByToken
  */
 
 /**

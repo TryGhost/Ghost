@@ -106,7 +106,6 @@ describe('SingleUseTokenProvider', function () {
             const testTokenValue = 'test-token-value';
             const expectedId = 'test-token-id';
             
-            // Mock successful token lookup
             mockModel.findOne.resolves({
                 get: sinon.stub().returns(expectedId)
             });
@@ -120,7 +119,6 @@ describe('SingleUseTokenProvider', function () {
         it('should return null when a token does not exist', async function () {
             const testTokenValue = 'nonexistent-token';
             
-            // Mock token not found
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(testTokenValue);
@@ -132,7 +130,6 @@ describe('SingleUseTokenProvider', function () {
         it('should return null when a database error occurs', async function () {
             const testTokenValue = 'test-token-value';
             
-            // Mock database error
             mockModel.findOne.rejects(new Error('Database connection failed'));
 
             const result = await tokenProvider.getIdByToken(testTokenValue);
@@ -144,7 +141,6 @@ describe('SingleUseTokenProvider', function () {
         it('should handle an empty token gracefully', async function () {
             const emptyToken = '';
             
-            // Mock token lookup for empty string
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(emptyToken);
@@ -156,7 +152,6 @@ describe('SingleUseTokenProvider', function () {
         it('should handle an undefined token gracefully', async function () {
             const undefinedToken = undefined;
             
-            // Mock token lookup for undefined
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(undefinedToken);
@@ -168,7 +163,6 @@ describe('SingleUseTokenProvider', function () {
         it('should return null when model.get throws an error', async function () {
             const testTokenValue = 'test-token-value';
             
-            // Mock model found but get() throws error
             mockModel.findOne.resolves({
                 get: sinon.stub().throws(new Error('Model error'))
             });
