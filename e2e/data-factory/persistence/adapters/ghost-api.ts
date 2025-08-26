@@ -1,43 +1,27 @@
 import {ApiPersistenceAdapter} from './api';
 import type {BrowserContext} from '@playwright/test';
 
-// Type for the data being sent/received
-type EntityData = Record<string, unknown>;
-
-// Type for Ghost API responses
-interface GhostApiResponse {
-    posts?: EntityData[];
-}
-
 /**
- * Ghost-specific API adapter that handles Ghost's API formatting requirements
- * Extends the generic API adapter with Ghost-specific configuration
+ * Ghost Admin API adapter that handles Ghost's API formatting conventions
+ * All Ghost Admin API endpoints follow the pattern:
+ * - Endpoint: /ghost/api/admin/{resource}
+ * - Request wrapper: { [resource]: [data] }
+ * - Response extractor: response[resource][0]
  */
-export class GhostApiAdapter extends ApiPersistenceAdapter<EntityData, GhostApiResponse> {
-    constructor(context: BrowserContext, entityType: 'posts') {
-        const configs = {
-            posts: {
-                endpoint: '/ghost/api/admin/posts',
-                queryParams: {
-                    formats: 'mobiledoc,lexical,html'
-                },
-                wrapRequest: (data: EntityData) => ({posts: [data]}),
-                extractResponse: (response: GhostApiResponse) => {
-                    if (response.posts && Array.isArray(response.posts)) {
-                        return response.posts[0];
-                    }
-                    return response;
-                }
-            }
-        };
-
-        const config = configs[entityType];
+export class GhostAdminApiAdapter extends ApiPersistenceAdapter {
+    constructor(context: BrowserContext, resourcePath: string, queryParams?: Record<string, string>) {
+        // Extract the resource name from the path (e.g., 'posts' from 'posts' or 'posts/1234')
+        const resource = resourcePath.split('/')[0];
+        
         super({
             context,
-            endpoint: config.endpoint,
-            queryParams: config.queryParams,
-            wrapRequest: config.wrapRequest,
-            extractResponse: config.extractResponse
+            endpoint: `/ghost/api/admin/${resourcePath}`,
+            queryParams: queryParams || {},
+            wrapRequest: data => ({[resource]: [data]}),
+            extractResponse: (response: any) => {
+                const items = response[resource];
+                return Array.isArray(items) ? items[0] : response;
+            }
         });
     }
 }
