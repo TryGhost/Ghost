@@ -32,7 +32,7 @@ describe('User API', function () {
     });
 
     it('Can request all users ordered by id', async function () {
-        // @NOTE: ASC is default
+        // @NOTE: ASC is default - explicit order also helps with consistent db ordering
         await agent.get('users/?order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -63,6 +63,7 @@ describe('User API', function () {
             });
     });
     it('Can include user roles', async function () {
+        // uses explicit order for consistent db ordering
         await agent.get('users/?include=roles&order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
@@ -75,6 +76,7 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet());
     });
     it('Can paginate users', async function () {
+        // uses explicit order for consistent db ordering
         await agent.get('users/?page=2&limit=5&order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
