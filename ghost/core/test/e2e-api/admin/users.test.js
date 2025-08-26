@@ -1,5 +1,4 @@
 const assert = require('assert/strict');
-const testUtils = require('../../utils');
 const config = require('../../../core/shared/config');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
