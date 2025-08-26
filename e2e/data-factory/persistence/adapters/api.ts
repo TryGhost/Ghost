@@ -4,8 +4,8 @@ import type {APIRequestContext} from '@playwright/test';
 interface ApiAdapterOptions {
     context: APIRequestContext;
     endpoint: string;
-    wrapRequest: (data: any) => any;
-    extractResponse: (response: any) => any;
+    wrapRequest: (data: unknown) => unknown;
+    extractResponse: (response: unknown) => unknown;
 }
 
 /**
@@ -15,8 +15,8 @@ interface ApiAdapterOptions {
 export class ApiPersistenceAdapter implements PersistenceAdapter {
     protected context: APIRequestContext;
     protected endpoint: string;
-    protected wrapRequest: (data: any) => any;
-    protected extractResponse: (response: any) => any;
+    protected wrapRequest: (data: unknown) => unknown;
+    protected extractResponse: (response: unknown) => unknown;
     
     constructor(options: ApiAdapterOptions) {
         this.context = options.context;
@@ -35,7 +35,7 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
         }
         
         const body = await response.json();
-        return this.extractResponse(body);
+        return this.extractResponse(body) as T;
     }
     
     async findById<T>(entityType: string, id: string): Promise<T | null> {
@@ -52,11 +52,11 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
         }
         
         const body = await response.json();
-        return this.extractResponse(body);
+        return this.extractResponse(body) as T;
     }
     
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
-        const existing = await this.findById<any>(entityType, id);
+        const existing = await this.findById<T>(entityType, id);
         if (!existing) {
             throw new Error(`${entityType} with id ${id} not found`);
         }
@@ -72,7 +72,7 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
         }
         
         const body = await response.json();
-        return this.extractResponse(body);
+        return this.extractResponse(body) as T;
     }
     
     async delete(entityType: string, id: string): Promise<void> {
@@ -82,14 +82,5 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
         if (!response.ok() && response.status() !== 404) {
             throw new Error(`Failed to delete ${entityType}: ${response.status()}`);
         }
-    }
-    
-    async deleteMany(entityType: string, ids: string[]): Promise<void> {
-        await Promise.all(ids.map(id => this.delete(entityType, id)));
-    }
-    
-    async findMany<T>(entityType: string, filter?: Record<string, unknown>): Promise<T[]> {
-        // For now, just return empty array - can implement filtering later if needed
-        return [];
     }
 }
