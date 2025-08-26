@@ -9,7 +9,6 @@
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
-console.log('hello world, again!');
 const argv = process.argv;
 const mode = argv[2];
 
