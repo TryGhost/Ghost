@@ -1,5 +1,7 @@
 // @ts-check
 const {ValidationError} = require('@tryghost/errors');
+const crypto = require('node:crypto');
+const {hotp} = require('otplib');
 
 class SingleUseTokenProvider {
     /**
@@ -8,12 +10,14 @@ class SingleUseTokenProvider {
      * @param {number} dependencies.validityPeriod - How long a token is valid for from it's creation in milliseconds.
      * @param {number} dependencies.validityPeriodAfterUsage - How long a token is valid after first usage, in milliseconds.
      * @param {number} dependencies.maxUsageCount - How many times a token can be used.
+     * @param {string} [dependencies.secret] - Secret for generating and verifying OTP codes.
      */
-    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount}) {
+    constructor({SingleUseTokenModel, validityPeriod, validityPeriodAfterUsage, maxUsageCount, secret}) {
         this.model = SingleUseTokenModel;
         this.validityPeriod = validityPeriod;
         this.validityPeriodAfterUsage = validityPeriodAfterUsage;
         this.maxUsageCount = maxUsageCount;
+        this.secret = secret;
     }
 
     /**
@@ -105,6 +109,46 @@ class SingleUseTokenProvider {
         } catch (err) {
             return {};
         }
+    }
+
+    /**
+     * @private
+     * @method deriveCounter
+     * Derives a counter from a token ID and value
+     *
+     * @param {string} tokenId
+     * @param {string} tokenValue
+     * @returns {number}
+     */
+    deriveCounter(tokenId, tokenValue) {
+        const msg = `${tokenId}|${tokenValue}`;
+        const digest = crypto.createHash('sha256').update(msg).digest();
+        return digest.readUInt32BE(0);
+    }
+
+    /**
+     * @method deriveOTC
+     * Derives an OTC (one-time code) from a token ID and value
+     *
+     * @param {string} tokenId - Token ID
+     * @param {string} tokenValue - Token value
+     * @returns {string} The generated one-time code
+     */
+    deriveOTC(tokenId, tokenValue) {
+        if (!this.secret) {
+            throw new ValidationError({
+                message: 'Cannot derive OTC: secret not configured'
+            });
+        }
+
+        if (!tokenId || !tokenValue) {
+            throw new ValidationError({
+                message: 'Cannot derive OTC: tokenId and tokenValue are required'
+            });
+        }
+        
+        const counter = this.deriveCounter(tokenId, tokenValue);
+        return hotp.generate(this.secret, counter);
     }
 }
 
