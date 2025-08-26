@@ -39,8 +39,8 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 WORKDIR /home/ghost
-COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
-RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
+# COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
+# RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
 
 # --------------------
 # Development Base
@@ -67,6 +67,7 @@ COPY apps/posts/package.json apps/posts/package.json
 COPY apps/shade/package.json apps/shade/package.json
 COPY apps/signup-form/package.json apps/signup-form/package.json
 COPY apps/sodo-search/package.json apps/sodo-search/package.json
+COPY e2e/package.json e2e/package.json
 COPY ghost/admin/lib/asset-delivery/package.json ghost/admin/lib/asset-delivery/package.json
 COPY ghost/admin/lib/ember-power-calendar-moment/package.json ghost/admin/lib/ember-power-calendar-moment/package.json
 COPY ghost/admin/lib/ember-power-calendar-utils/package.json ghost/admin/lib/ember-power-calendar-utils/package.json
@@ -77,7 +78,9 @@ COPY ghost/i18n/package.json ghost/i18n/package.json
 # Copy patches directory so patch-package can apply patches during yarn install
 COPY patches patches
 
-RUN yarn install --frozen-lockfile --prefer-offline
+RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
+    yarn config set cache-folder /home/yarn/.yarn-cache && \
+    yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Development
