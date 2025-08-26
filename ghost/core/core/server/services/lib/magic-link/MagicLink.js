@@ -85,7 +85,12 @@ class MagicLink {
         
         let tokenId = null;
         if (this.labsService?.isSet('membersSigninOTC') && typeof this.tokenProvider.getIdByToken === 'function') {
-            tokenId = await this.tokenProvider.getIdByToken(token);
+            try {
+                tokenId = await this.tokenProvider.getIdByToken(token);
+            } catch (err) {
+                this.sentry?.captureException?.(err);
+                tokenId = null;
+            }
         }
 
         return {token, tokenId, info};
