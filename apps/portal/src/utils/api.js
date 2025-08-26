@@ -298,7 +298,12 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
-                return 'Success';
+                try {
+                    const data = await res.json();
+                    return data;
+                } catch (e) {
+                    return 'Success';
+                }
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
