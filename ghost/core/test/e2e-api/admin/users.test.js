@@ -33,7 +33,7 @@ describe('User API', function () {
 
     it('Can request all users ordered by id', async function () {
         // @NOTE: ASC is default
-        await agent.get('users/')
+        await agent.get('users/?order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -63,7 +63,7 @@ describe('User API', function () {
             });
     });
     it('Can include user roles', async function () {
-        await agent.get('users/?include=roles')
+        await agent.get('users/?include=roles&order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -75,7 +75,7 @@ describe('User API', function () {
             .expect(cacheInvalidateHeaderNotSet());
     });
     it('Can paginate users', async function () {
-        await agent.get('users/?page=2&limit=5')
+        await agent.get('users/?page=2&limit=5&order=id%20DESC')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
