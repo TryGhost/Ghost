@@ -3,8 +3,7 @@ import TagsContent from './components/TagsContent';
 import TagsHeader from './components/TagsHeader';
 import TagsLayout from './components/TagsLayout';
 import TagsList from './components/TagsList';
-import TagsPlaceholder from './assets/icons/tags-placeholder.svg';
-import {Button, LoadingIndicator} from '@tryghost/shade';
+import {Button, LoadingIndicator, LucideIcon} from '@tryghost/shade';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useLocation} from '@tryghost/admin-x-framework';
 
@@ -39,7 +38,7 @@ const Tags: React.FC = () => {
                         <h2 className="mb-2 text-xl font-medium">
                             Error loading tags
                         </h2>
-                        <p className="mb-4 text-muted-foreground">
+                        <p className="text-muted-foreground mb-4">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
@@ -48,12 +47,7 @@ const Tags: React.FC = () => {
                     </div>
                 ) : !data?.tags.length ? (
                     <div className="mb-16 flex h-full flex-col items-center justify-center gap-8">
-                        <img
-                            alt="Tags placeholder"
-                            height={60}
-                            src={TagsPlaceholder}
-                            width={60}
-                        />
+                        <LucideIcon.Tags className="text-muted-foreground -mb-4 size-16" strokeWidth={1} />
                         <h2 className="text-xl font-medium">
                             Start organizing your content
                         </h2>
