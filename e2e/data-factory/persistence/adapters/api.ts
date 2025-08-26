@@ -1,40 +1,40 @@
 import {PersistenceAdapter} from '../adapter';
 import type {APIRequestContext} from '@playwright/test';
 
-interface ApiAdapterOptions {
+interface ApiAdapterOptions<TRequest = unknown, TResponse = unknown> {
     context: APIRequestContext;
     endpoint: string;
-    wrapRequest: (data: unknown) => unknown;
-    extractResponse: (response: unknown) => unknown;
+    wrapRequest?: (data: TRequest) => unknown;
+    extractResponse?: (response: TResponse) => unknown;
 }
 
 /**
  * Generic API persistence adapter that works with Playwright's APIRequestContext
  * Can be extended for specific API implementations
  */
-export class ApiPersistenceAdapter implements PersistenceAdapter {
+export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> implements PersistenceAdapter {
     protected context: APIRequestContext;
     protected endpoint: string;
-    protected wrapRequest: (data: unknown) => unknown;
-    protected extractResponse: (response: unknown) => unknown;
+    protected wrapRequest: (data: TRequest) => unknown;
+    protected extractResponse: (response: TResponse) => unknown;
     
-    constructor(options: ApiAdapterOptions) {
+    constructor(options: ApiAdapterOptions<TRequest, TResponse>) {
         this.context = options.context;
         this.endpoint = options.endpoint;
-        this.wrapRequest = options.wrapRequest || (data => data);
-        this.extractResponse = options.extractResponse || (response => response);
+        this.wrapRequest = options.wrapRequest || ((data: TRequest) => data as unknown);
+        this.extractResponse = options.extractResponse || ((response: TResponse) => response as unknown);
     }
     
     async insert<T>(entityType: string, data: T): Promise<T> {
         const response = await this.context.post(this.endpoint, {
-            data: this.wrapRequest(data)
+            data: this.wrapRequest(data as unknown as TRequest)
         });
         
         if (!response.ok()) {
             throw new Error(`Failed to create ${entityType}: ${response.status()}`);
         }
         
-        const body = await response.json();
+        const body = await response.json() as TResponse;
         return this.extractResponse(body) as T;
     }
     
@@ -51,7 +51,7 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
             throw new Error(`Failed to find ${entityType}: ${response.status()}`);
         }
         
-        const body = await response.json();
+        const body = await response.json() as TResponse;
         return this.extractResponse(body) as T;
     }
     
@@ -64,14 +64,14 @@ export class ApiPersistenceAdapter implements PersistenceAdapter {
         const baseEndpoint = this.endpoint.split('?')[0];
         const queryParams = this.endpoint.includes('?') ? '?' + this.endpoint.split('?')[1] : '';
         const response = await this.context.put(`${baseEndpoint}/${id}${queryParams}`, {
-            data: this.wrapRequest({...existing, ...data})
+            data: this.wrapRequest({...existing, ...data} as unknown as TRequest)
         });
         
         if (!response.ok()) {
             throw new Error(`Failed to update ${entityType}: ${response.status()}`);
         }
         
-        const body = await response.json();
+        const body = await response.json() as TResponse;
         return this.extractResponse(body) as T;
     }
     

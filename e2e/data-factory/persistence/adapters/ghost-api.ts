@@ -13,7 +13,7 @@ interface GhostApiResponse {
  * Ghost-specific API adapter that handles Ghost's API formatting requirements
  * Extends the generic API adapter with Ghost-specific configuration
  */
-export class GhostApiAdapter extends ApiPersistenceAdapter {
+export class GhostApiAdapter extends ApiPersistenceAdapter<EntityData, GhostApiResponse> {
     constructor(context: APIRequestContext, entityType: 'posts') {
         const configs = {
             posts: {
