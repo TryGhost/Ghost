@@ -50,7 +50,7 @@ function TagsList({
     isFetchingNextPage?: boolean;
     fetchNextPage: () => void;
 }) {
-    const parentRef = useRef<HTMLTableElement>(null);
+    const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItems, spaceBefore, spaceAfter} = useInfiniteVirtualScroll({
         items,
         totalItems,
