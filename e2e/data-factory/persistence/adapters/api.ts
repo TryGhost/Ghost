@@ -49,11 +49,11 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
         return this.extractResponse(body) as T;
     }
     
-    async findById<T>(entityType: string, id: string): Promise<T | null> {
+    async findById<T>(entityType: string, id: string): Promise<T> {
         const response = await this.apiContext.get(this.buildUrl(id));
         
         if (response.status() === 404) {
-            return null;
+            throw new Error(`${entityType} with id ${id} not found`);
         }
         
         if (!response.ok()) {
@@ -66,9 +66,6 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
     
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
         const existing = await this.findById<T>(entityType, id);
-        if (!existing) {
-            throw new Error(`${entityType} with id ${id} not found`);
-        }
         
         const response = await this.apiContext.put(this.buildUrl(id), {
             data: this.wrapRequest({...existing, ...data} as unknown as TRequest)
