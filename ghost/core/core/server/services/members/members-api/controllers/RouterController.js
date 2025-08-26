@@ -5,6 +5,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const labs = require('../../../../../shared/labs');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -684,7 +685,15 @@ module.exports = class RouterController {
     }
 
     async _handleSignin(req, normalizedEmail, referrer = null) {
-        const {emailType} = req.body;
+        const {emailType, otc} = req.body;
+
+        const options = {
+            otc: false
+        };
+
+        if (labs.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
+            options.otc = true;
+        }
 
         const member = await this._memberRepository.get({email: normalizedEmail});
 
@@ -695,7 +704,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, options});
     }
 
     /**

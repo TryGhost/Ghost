@@ -1,6 +1,8 @@
 const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
+const labs = require('../../../../shared/labs');
+
 const messages = {
     invalidEmail: 'Email is not valid'
 };
@@ -18,6 +20,7 @@ const messages = {
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
+ * @prop {(tokenId: string, tokenValue: T) => string} deriveOTC
  */
 
 /**
@@ -59,6 +62,7 @@ class MagicLink {
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
+     * @param {boolean} [options.otc=false] - Whether to send a one-time-code in the email.
      * @returns {Promise<{token: Token, tokenId: string | null, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
@@ -76,13 +80,18 @@ class MagicLink {
 
         const url = this.getSigninURL(token, type, options.referrer);
 
+        let otc = null;
+        if (labs.isSet('membersSigninOTC') && options.otc) {
+            otc = await this.getOTCFromToken(token);
+        }
+
         const info = await this.transporter.sendMail({
             to: options.email,
-            subject: this.getSubject(type),
-            text: this.getText(url, type, options.email),
-            html: this.getHTML(url, type, options.email)
+            subject: this.getSubject(type, otc),
+            text: this.getText(url, type, options.email, otc),
+            html: this.getHTML(url, type, options.email, otc)
         });
-        
+
         let tokenId = null;
         if (this.labsService?.isSet('membersSigninOTC') && typeof this.tokenProvider.getIdByToken === 'function') {
             try {
@@ -113,6 +122,29 @@ class MagicLink {
     }
 
     /**
+     * getIdFromToken
+     *
+     * @param {Token} token - The token to get the id from
+     * @returns {Promise<string>} id - The id of the token
+     */
+    async getIdFromToken(token) {
+        const id = await this.tokenProvider.getIdFromToken(token);
+        return id;
+    }
+
+    /**
+     * getOTCFromToken
+     *
+     * @param {Token} token - The token to get the otc from
+     * @returns {Promise<string>} otc - The otc of the token
+     */
+    async getOTCFromToken(token) {
+        const tokenId = await this.getIdFromToken(token);
+        const otc = await this.tokenProvider.deriveOTC(tokenId, token);
+        return otc;
+    }
+
+    /**
      * getDataFromToken
      *
      * @param {Token} token - The token to decode
@@ -130,13 +162,19 @@ class MagicLink {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string} otc - Optional one-time-code
  * @returns {string} text - The text content of an email to send
  */
-function defaultGetText(url, type, email) {
+function defaultGetText(url, type, email, otc) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
+
+    if (otc) {
+        return `Enter the code ${otc} or click here to ${msg} ${url}. This msg was sent to ${email}`;
+    }
+
     return `Click here to ${msg} ${url}. This msg was sent to ${email}`;
 }
 
@@ -146,13 +184,19 @@ function defaultGetText(url, type, email) {
  * @param {URL} url - The url which will trigger sign in flow
  * @param {string} type - The type of email to send e.g. signin, signup
  * @param {string} email - The recipient of the email to send
+ * @param {string} otc - Optional one-time-code
  * @returns {string} HTML - The HTML content of an email to send
  */
-function defaultGetHTML(url, type, email) {
+function defaultGetHTML(url, type, email, otc) {
     let msg = 'sign in';
     if (type === 'signup') {
         msg = 'confirm your email address';
     }
+
+    if (otc) {
+        return `Enter the code ${otc} or <a href="${url}">click here to ${msg}</a> This msg was sent to ${email}`;
+    }
+
     return `<a href="${url}">Click here to ${msg}</a> This msg was sent to ${email}`;
 }
 
@@ -160,12 +204,18 @@ function defaultGetHTML(url, type, email) {
  * defaultGetSubject
  *
  * @param {string} type - The type of email to send e.g. signin, signup
+ * @param {string} otc - Optional one-time-code
  * @returns {string} subject - The subject of an email to send
  */
-function defaultGetSubject(type) {
+function defaultGetSubject(type, otc) {
     if (type === 'signup') {
         return `Signup!`;
     }
+
+    if (otc) {
+        return `Your signin verification code is ${otc}`;
+    }
+
     return `Signin!`;
 }
 

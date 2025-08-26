@@ -38,6 +38,17 @@ class SingleUseTokenProvider {
     }
 
     /**
+     * @method getIdFromToken
+     *
+     * @param {string} token
+     * @returns {Promise<string>}
+     */
+    async getIdFromToken(token) {
+        const model = await this.model.findOne({token});
+        return model.get('id');
+    }
+
+    /**
      * @method validate
      * Validates a token, returning any parsable data associated.
      * If the token is invalid the returned Promise will reject.
@@ -146,7 +157,7 @@ class SingleUseTokenProvider {
                 message: 'Cannot derive OTC: tokenId and tokenValue are required'
             });
         }
-        
+
         const counter = this.deriveCounter(tokenId, tokenValue);
         return hotp.generate(this.secret, counter);
     }
