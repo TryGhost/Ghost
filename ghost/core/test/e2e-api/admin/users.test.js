@@ -15,12 +15,10 @@ const userMatcher = {
     last_seen: nullable(anyISODateTime)
 };
 
-const userMatcherWithRoles = Object.assign(
-    {},
-    userMatcher, {
-        roles: anyArray
-    }
-);
+const userMatcherWithRoles = {
+    ...userMatcher,
+    roles: anyArray
+};
 
 describe('User API', function () {
     let agent;
@@ -50,7 +48,7 @@ describe('User API', function () {
                 // Verify we have the expected user types in descending ID order
                 const userEmails = body.users.map(user => user.email);
                 assert.ok(userEmails.includes('ghost-author@example.com'));
-                assert.ok(userEmails.includes(testUtils.DataGenerator.Content.users[0].email));
+                assert.ok(userEmails.includes(fixtureManager.get('users', 1).email));
 
                 // Verify URL structure for users with/without published posts
                 body.users.forEach((user) => {
@@ -419,7 +417,7 @@ describe('User API', function () {
             });
 
         // Check the backup file was created
-        await agent.get(`db/?filename=${deleteRes.body.meta.filename}/`)
+        await agent.get(`db/?filename=${deleteRes.body.meta.filename}`)
             .expectStatus(200);
 
         // Verify user was deleted
@@ -427,7 +425,7 @@ describe('User API', function () {
             .expectStatus(404);
 
         // Check no posts are now assigned to the deleted user
-        await agent.get(`posts/?filter=authors:${userSlug}}`)
+        await agent.get(`posts/?filter=authors:${userSlug}`)
             .expectStatus(200)
             .expect(({body}) => {
                 assert.equal(body.posts.length, 0);
@@ -573,7 +571,7 @@ describe('User API', function () {
         
         const {id: originalId, secret: originalSecret} = originalTokenRes.body.apiKey;
 
-        const newTokenRes = await agent.put('users/me/token')
+        const newTokenRes = await agent.put('users/me/token/')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
