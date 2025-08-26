@@ -87,5 +87,6 @@ RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
+RUN yarn nx run ghost-admin:build
 RUN yarn build
 CMD ["yarn", "dev"]
