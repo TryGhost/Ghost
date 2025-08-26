@@ -3,6 +3,8 @@ import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
+import InputForm from '../common/InputForm';
+import {ValidateInputForm} from '../../utils/form';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -23,8 +25,17 @@ export const MagicLinkStyles = `
     }
 `;
 
+const OTC_FIELD_NAME = 'otc';
+
 export default class MagicLinkPage extends React.Component {
     static contextType = AppContext;
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            [OTC_FIELD_NAME]: ''
+        };
+    }
 
     renderFormHeader() {
         const {t} = this.context;
@@ -81,12 +92,106 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
+    getInputFields({state}) {
+        const {t} = this.context;
+        const errors = state.errors || {};
+
+        return [
+            {
+                id: OTC_FIELD_NAME,
+                name: OTC_FIELD_NAME,
+                type: 'text',
+                value: state.otc,
+                placeholder: '• • • • • •',
+                label: t('Enter one-time code'),
+                required: true,
+                errorMessage: errors.otc || '',
+                autoFocus: false,
+                maxLength: 6,
+                pattern: '[0-9]*',
+                inputmode: 'numeric',
+                autocomplete: 'one-time-code',
+                class: 'gh-input'
+            }
+        ];
+    }
+
+    handleSubmit(e) {
+        e.preventDefault();
+        this.doVerifyOTC();
+    }
+
+    doVerifyOTC() {
+        this.setState((state) => {
+            return {
+                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
+            };
+        }, async () => {
+            const {otc, errors} = this.state;
+            const {otcRef} = this.context;
+            const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
+            if (!hasFormErrors && otcRef) {
+                // @TODO: replace with verifyOTC action
+                console.log(`token: ${otcRef} otc: ${otc}`);
+            }
+        });
+    }
+
+    handleInputChange(e, field) {
+        const fieldName = field.name;
+        this.setState({
+            [fieldName]: e.target.value
+        });
+    }
+
+    onKeyDown(e) {
+        // Handles submit on Enter press
+        if (e.keyCode === 13){
+            this.handleSubmit(e);
+        }
+    }
+
+    renderOTCForm() {
+        const {t, action, labs, otcRef} = this.context;
+
+        if (!labs.membersSigninOTC || !otcRef) {
+            return null;
+        }
+
+        const isRunning = (action === 'verifyOTC:running');
+        const isError = (action === 'verifyOTC:failed');
+
+        return (
+            <section>
+                <div className='gh-portal-section'>
+                    <div>{t('You can also use the one-time code to sign in here.')}</div>
+                    <InputForm
+                        fields={this.getInputFields({state: this.state})}
+                        onChange={(e, field) => this.handleInputChange(e, field)}
+                        onKeyDown={(e, field) => this.onKeyDown(e, field)}
+                    />
+                </div>
+                <footer className='gh-portal-signin-footer'>
+                    <ActionButton
+                        style={{width: '100%'}}
+                        onClick={e => this.handleSubmit(e)}
+                        brandColor={this.context.brandColor}
+                        label={isRunning ? t('Verifying...') : t('Verify Code')}
+                        isRunning={isRunning}
+                        retry={isError}
+                        disabled={isRunning}
+                    />
+                </footer>
+            </section>
+        );
+    }
+
     render() {
         return (
             <div className='gh-portal-content'>
                 <CloseButton />
                 {this.renderFormHeader()}
-                {this.renderCloseButton()}
+                {this.renderOTCForm()}
             </div>
         );
     }
