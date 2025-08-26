@@ -1,6 +1,10 @@
 import {ApiPersistenceAdapter} from './api';
 import type {BrowserContext} from '@playwright/test';
 
+type GhostApiResponse = {
+    [key: string]: unknown[] | unknown;
+};
+
 /**
  * Ghost Admin API adapter that handles Ghost's API formatting conventions
  * All Ghost Admin API endpoints follow the pattern:
@@ -8,7 +12,7 @@ import type {BrowserContext} from '@playwright/test';
  * - Request wrapper: { [resource]: [data] }
  * - Response extractor: response[resource][0]
  */
-export class GhostAdminApiAdapter extends ApiPersistenceAdapter {
+export class GhostAdminApiAdapter extends ApiPersistenceAdapter<unknown, GhostApiResponse> {
     constructor(context: BrowserContext, resourcePath: string, queryParams?: Record<string, string>) {
         // Extract the resource name from the path (e.g., 'posts' from 'posts' or 'posts/1234')
         const resource = resourcePath.split('/')[0];
@@ -18,7 +22,7 @@ export class GhostAdminApiAdapter extends ApiPersistenceAdapter {
             endpoint: `/ghost/api/admin/${resourcePath}`,
             queryParams: queryParams || {},
             wrapRequest: data => ({[resource]: [data]}),
-            extractResponse: (response: any) => {
+            extractResponse: (response: GhostApiResponse) => {
                 const items = response[resource];
                 return Array.isArray(items) ? items[0] : response;
             }

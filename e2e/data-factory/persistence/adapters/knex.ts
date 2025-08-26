@@ -20,12 +20,7 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
             throw new Error('Cannot insert without an id field');
         }
         
-        const inserted = await this.findById<T>(entityType, id);
-        if (!inserted) {
-            throw new Error(`Entity not found after insert: ${entityType}/${id}`);
-        }
-        
-        return inserted;
+        return await this.findById<T>(entityType, id);
     }
     
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
@@ -33,12 +28,7 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
             .where('id', id)
             .update(data);
         
-        const updated = await this.findById<T>(entityType, id);
-        if (!updated) {
-            throw new Error(`Entity not found after update: ${entityType}/${id}`);
-        }
-        
-        return updated;
+        return await this.findById<T>(entityType, id);
     }
     
     async delete(entityType: string, id: string): Promise<void> {
@@ -57,12 +47,16 @@ export class KnexPersistenceAdapter implements PersistenceAdapter {
             .del();
     }
     
-    async findById<T>(entityType: string, id: string): Promise<T | null> {
+    async findById<T>(entityType: string, id: string): Promise<T> {
         const result = await this.db(entityType)
             .where('id', id)
             .first();
         
-        return result || null;
+        if (!result) {
+            throw new Error(`${entityType} with id ${id} not found`);
+        }
+        
+        return result;
     }
     
     async findMany<T>(entityType: string, query?: Record<string, unknown>): Promise<T[]> {
