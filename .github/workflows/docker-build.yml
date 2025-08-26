@@ -9,7 +9,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest-8-cores
+    runs-on: ubuntu-latest-4-cores
     if: |
       (github.event_name != 'pull_request') ||
       (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-docker-build'))

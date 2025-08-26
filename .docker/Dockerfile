@@ -87,5 +87,5 @@ RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN NX_PARALLEL=8 yarn build
+RUN yarn build
 CMD ["yarn", "dev"]
