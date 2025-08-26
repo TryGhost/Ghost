@@ -17,7 +17,10 @@ export class GhostApiAdapter extends ApiPersistenceAdapter<EntityData, GhostApiR
     constructor(context: BrowserContext, entityType: 'posts') {
         const configs = {
             posts: {
-                endpoint: '/ghost/api/admin/posts?formats=mobiledoc,lexical,html',
+                endpoint: '/ghost/api/admin/posts',
+                queryParams: {
+                    formats: 'mobiledoc,lexical,html'
+                },
                 wrapRequest: (data: EntityData) => ({posts: [data]}),
                 extractResponse: (response: GhostApiResponse) => {
                     if (response.posts && Array.isArray(response.posts)) {
@@ -32,6 +35,7 @@ export class GhostApiAdapter extends ApiPersistenceAdapter<EntityData, GhostApiR
         super({
             context,
             endpoint: config.endpoint,
+            queryParams: config.queryParams,
             wrapRequest: config.wrapRequest,
             extractResponse: config.extractResponse
         });
