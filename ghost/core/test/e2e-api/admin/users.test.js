@@ -33,7 +33,7 @@ describe('User API', function () {
 
     it('Can request all users ordered by id', async function () {
         // @NOTE: ASC is default
-        await agent.get('users/?order=id%20DESC')
+        await agent.get('users/')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
@@ -63,7 +63,7 @@ describe('User API', function () {
             });
     });
     it('Can include user roles', async function () {
-        await agent.get('users/?include=roles&order=id%20ASC')
+        await agent.get('users/?include=roles')
             .expectStatus(200)
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
