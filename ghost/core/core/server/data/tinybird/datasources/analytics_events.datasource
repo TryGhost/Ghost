@@ -15,4 +15,14 @@ ENGINE_PARTITION_KEY "toYYYYMM(timestamp)"
 ENGINE_SORTING_KEY "site_uuid, timestamp"
 
 FORWARD_QUERY >
-    SELECT timestamp, session_id, action, version, toString(payload) as payload, site_uuid, parseDateTime64BestEffortOrZero('DateTime64(3)') AS inserted_at
+    SELECT
+        timestamp,
+        session_id,
+        action,
+        version,
+        toString(payload) as payload,
+        site_uuid,
+        -- `inserted_at` was added after launch with a default value, so it's always possible that it can be undefined when running a deployment
+        -- i.e. if upgrading from initial version to current version, without intermediate deployments
+        -- therefore, we need to use the existing value if it exists, or fallback to `1970-01-01 00:00:00.000` if missing/invalid
+        toDateTime64OrZero(inserted_at, 3) AS inserted_at
