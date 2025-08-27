@@ -172,7 +172,7 @@ function createApiInstance(config) {
                         ${t(`Hey there,`)}
 
                         ${otc
-                            ? `${t('Your verification code for {siteTitle} is:', {siteTitle, interpolation: {escapeValue: false}})} ${otc}\n\n${t('Or use this link to sign in securely:', {interpolation: {escapeValue: false}})}`
+                            ? `${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}: ${otc}\n\n${t('Or use this link to securely sign in', {interpolation: {escapeValue: false}})}:`
                             : `${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}`
                         }
 
