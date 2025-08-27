@@ -359,16 +359,18 @@ jobs:
       working-directory: ghost/core
       run: yarn knex-migrator init
 
+    - name: Setup Playwright
+      uses: ./.github/actions/setup-playwright
+
     - name: Build Admin
       run: yarn nx run ghost-admin:build:dev
 
-    - name: Run browser tests
-      uses: ./.github/actions/docker-playwright
-      with:
-        test_command: "yarn test:browser"
-        env_vars: >-
-          STRIPE_PUBLISHABLE_KEY=${{ secrets.STRIPE_PUBLISHABLE_KEY }}
-          STRIPE_SECRET_KEY=${{ secrets.STRIPE_SECRET_KEY }}
+    - name: Run Playwright tests locally
+      run: yarn test:browser
+      env:
+        CI: true
+        STRIPE_PUBLISHABLE_KEY: ${{ secrets.STRIPE_PUBLISHABLE_KEY }}
+        STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
 
     - uses: tryghost/actions/actions/slack-build@main
       if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
