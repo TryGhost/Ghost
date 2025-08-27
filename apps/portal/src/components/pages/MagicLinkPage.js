@@ -49,7 +49,7 @@ export default class MagicLinkPage extends React.Component {
             popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
         }
 
-        if (otcRef) {
+        if (this.context.lastPage === 'signin' && otcRef) {
             popupDescription = t(`An email has been sent to your inbox. Use the link inside or enter the code below.`);
         }
 
@@ -134,7 +134,12 @@ export default class MagicLinkPage extends React.Component {
     onKeyDown(e) {
         // Handles submit on Enter press
         if (e.keyCode === 13){
-            this.handleSubmit(e);
+            const {action} = this.context;
+            const isRunning = (action === 'verifyOTC:running');
+            
+            if (!isRunning) {
+                this.handleSubmit(e);
+            }
         }
     }
 
@@ -142,7 +147,7 @@ export default class MagicLinkPage extends React.Component {
         const {t, action, labs, otcRef} = this.context;
         const errors = this.state.errors || {};
 
-        if (!labs.membersSigninOTC || !otcRef) {
+        if (!labs?.membersSigninOTC || !otcRef) {
             return null;
         }
 
