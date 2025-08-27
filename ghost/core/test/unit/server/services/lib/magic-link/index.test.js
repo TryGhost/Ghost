@@ -79,13 +79,13 @@ describe('MagicLink', function () {
             assert(options.getSigninURL.firstCall.calledWithExactly(token, 'blazeit', 'https://whatever.com'));
 
             assert(options.getText.calledOnce);
-            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', null));
 
             assert(options.getHTML.calledOnce);
-            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com'));
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'blazeit', 'test@example.com', null));
 
             assert(options.getSubject.calledOnce);
-            assert(options.getSubject.firstCall.calledWithExactly('blazeit'));
+            assert(options.getSubject.firstCall.calledWithExactly('blazeit', null));
 
             assert(options.transporter.sendMail.calledOnce);
             assert.equal(options.transporter.sendMail.firstCall.args[0].to, args.email);
