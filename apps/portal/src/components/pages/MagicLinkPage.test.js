@@ -2,8 +2,8 @@ import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
+const OTC_ERROR_REGEX = /please enter otc/i;
 
-// Unified setup function for all test scenarios
 const setupTest = (options = {}) => {
     const {
         labs = {membersSigninOTC: false},
@@ -120,7 +120,7 @@ describe('MagicLinkPage', () => {
             expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
-            expect(otcInput).toHaveAttribute('aria-label', 'Code');
+            expect(otcInput).toHaveAttribute('aria-label', OTC_LABEL_REGEX);
         });
 
         test('accepts and updates with numeric input progressively', () => {
@@ -159,7 +159,7 @@ describe('MagicLinkPage', () => {
             
             fireEvent.click(submitButton);
             
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
             expect(otcInput).toHaveClass('error');
         });
 
@@ -169,7 +169,7 @@ describe('MagicLinkPage', () => {
             
             fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
             
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
         });
 
         test('clears validation error when valid input provided', () => {
@@ -179,12 +179,12 @@ describe('MagicLinkPage', () => {
             
             // triggers error because there's no input
             fireEvent.click(submitButton);
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
             
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(submitButton);
             
-            expect(utils.queryByText(/please enter otc/i)).not.toBeInTheDocument();
+            expect(utils.queryByText(OTC_ERROR_REGEX)).not.toBeInTheDocument();
             expect(otcInput).not.toHaveClass('error');
         });
 
@@ -212,17 +212,17 @@ describe('MagicLinkPage', () => {
             
             // triggers error because there's no input
             fireEvent.click(submitButton);
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
             
             // still an error, input too short
             fireEvent.change(otcInput, {target: {value: '1'}});
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
             
             // input valid, error should clear
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(submitButton);
             
-            expect(utils.queryByText(/please enter otc/i)).not.toBeInTheDocument();
+            expect(utils.queryByText(OTC_ERROR_REGEX)).not.toBeInTheDocument();
         });
     });
 
@@ -304,12 +304,12 @@ describe('MagicLinkPage', () => {
             expect(consoleSpy).not.toHaveBeenCalled();
         }));
 
-        test('Enter key submission bypasses loading state', withConsoleSpy((consoleSpy) => {
+        test('Enter key submission is blocked during loading state', withConsoleSpy((consoleSpy) => {
             const testUtils = setupOTCTest({action: 'verifyOTC:running'});
             
             fillAndSubmitOTC(testUtils, '123456', 'enter');
             
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
+            expect(consoleSpy).not.toHaveBeenCalled();
         }));
 
         test('validation works during error state', () => {
@@ -318,7 +318,7 @@ describe('MagicLinkPage', () => {
             
             fireEvent.click(submitButton);
             
-            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
         });
     });
 

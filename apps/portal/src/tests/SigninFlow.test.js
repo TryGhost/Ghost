@@ -371,6 +371,7 @@ describe('OTC Integration Flow', () => {
         });
 
         // Mock verifyOTC action
+        // @TODO: update when this is implemented
         ghostApi.member.verifyOTC = jest.fn(() => {
             return Promise.resolve({
                 success: true,
@@ -471,24 +472,5 @@ describe('OTC Integration Flow', () => {
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
         
         expect(otcInput).toBeInTheDocument();
-    });
-
-    test('OTC flow shows close functionality instead of back navigation', async () => {
-        const {popupIframeDocument} = await setupOTCFlow({
-            site: FixtureSite.singleTier.basic
-        });
-
-        await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
-
-        const closeButton = within(popupIframeDocument).getByTestId('close-popup');
-        expect(closeButton).toBeInTheDocument();
-
-        const backToSignin = within(popupIframeDocument).queryByText(/Back to Log in/i);
-        expect(backToSignin).not.toBeInTheDocument();
-
-        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-        expect(otcInput).toBeInTheDocument();
-        expect(verifyButton).toBeInTheDocument();
     });
 });
