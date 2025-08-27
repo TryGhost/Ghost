@@ -1,6 +1,8 @@
 import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
+const OTC_LABEL_REGEX = /Code/i;
+
 // Unified setup function for all test scenarios
 const setupTest = (options = {}) => {
     const {
@@ -50,11 +52,11 @@ const withConsoleSpy = (testFn) => {
 };
 
 const fillAndSubmitOTC = (utils, code = '123456', method = 'button') => {
-    const otcInput = utils.getByLabelText(/Enter one-time code/i);
+    const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
     fireEvent.change(otcInput, {target: {value: code}});
     
     if (method === 'button') {
-        const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+        const submitButton = utils.getByRole('button', {name: 'Continue'});
         fireEvent.click(submitButton);
     } else {
         fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
@@ -89,9 +91,8 @@ describe('MagicLinkPage', () => {
         test('renders OTC form when lab flag enabled and otcRef exists', () => {
             const utils = setupOTCTest();
             
-            expect(utils.getByText(/You can also use the one-time code to sign in here/i)).toBeInTheDocument();
-            expect(utils.getByLabelText(/Enter one-time code/i)).toBeInTheDocument();
-            expect(utils.getByRole('button', {name: 'Verify Code'})).toBeInTheDocument();
+            expect(utils.getByLabelText(OTC_LABEL_REGEX)).toBeInTheDocument();
+            expect(utils.getByRole('button', {name: 'Continue'})).toBeInTheDocument();
         });
 
         test('does not render OTC form when conditions not met', () => {
@@ -104,9 +105,8 @@ describe('MagicLinkPage', () => {
             scenarios.forEach(({labs, otcRef}) => {
                 const utils = setupTest({labs, otcRef});
                 
-                expect(utils.queryByText(/You can also use the one-time code to sign in here/i)).not.toBeInTheDocument();
-                expect(utils.queryByLabelText(/Enter one-time code/i)).not.toBeInTheDocument();
-                expect(utils.queryByRole('button', {name: 'Verify Code'})).not.toBeInTheDocument();
+                expect(utils.queryByLabelText(OTC_LABEL_REGEX)).not.toBeInTheDocument();
+                expect(utils.queryByRole('button', {name: 'Continue'})).not.toBeInTheDocument();
             });
         });
     });
@@ -114,18 +114,18 @@ describe('MagicLinkPage', () => {
     describe('OTC input behavior', () => {
         test('has correct accessibility and field configuration', () => {
             const utils = setupOTCTest();
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             expect(otcInput).toHaveAttribute('type', 'text');
             expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
-            expect(otcInput).toHaveAttribute('aria-label', 'Enter one-time code');
+            expect(otcInput).toHaveAttribute('aria-label', 'Code');
         });
 
         test('accepts and updates with numeric input progressively', () => {
             const utils = setupOTCTest();
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             expect(otcInput).toHaveValue('');
             
@@ -141,7 +141,7 @@ describe('MagicLinkPage', () => {
 
         test('handles various valid numeric patterns', () => {
             const utils = setupOTCTest();
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             const testCodes = ['000000', '123456', '999999', '000123'];
             
             testCodes.forEach((code) => {
@@ -154,8 +154,8 @@ describe('MagicLinkPage', () => {
     describe('OTC form validation', () => {
         test('shows validation error for empty form submission', () => {
             const utils = setupOTCTest();
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             fireEvent.click(submitButton);
             
@@ -165,7 +165,7 @@ describe('MagicLinkPage', () => {
 
         test('shows validation error for Enter key submission', () => {
             const utils = setupOTCTest();
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
             
@@ -174,8 +174,8 @@ describe('MagicLinkPage', () => {
 
         test('clears validation error when valid input provided', () => {
             const utils = setupOTCTest();
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             // triggers error because there's no input
             fireEvent.click(submitButton);
@@ -190,8 +190,8 @@ describe('MagicLinkPage', () => {
 
         test('validation blocks submission and allows valid submission', withConsoleSpy((consoleSpy) => {
             const testUtils = setupOTCTest();
-            const submitButton = testUtils.getByRole('button', {name: 'Verify Code'});
-            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
+            const submitButton = testUtils.getByRole('button', {name: 'Continue'});
+            const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
             
             // empty submission should be blocked
             fireEvent.click(submitButton);
@@ -207,8 +207,8 @@ describe('MagicLinkPage', () => {
 
         test('validation state persists across input changes until submission', () => {
             const utils = setupOTCTest();
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
-            const otcInput = utils.getByLabelText(/Enter one-time code/i);
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
+            const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
             // triggers error because there's no input
             fireEvent.click(submitButton);
@@ -270,11 +270,11 @@ describe('MagicLinkPage', () => {
     describe('OTC button states', () => {
         test('shows normal state by default', () => {
             const utils = setupOTCTest();
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
             
             expect(submitButton).toBeInTheDocument();
             expect(submitButton).not.toBeDisabled();
-            expect(submitButton).toHaveTextContent('Verify Code');
+            expect(submitButton).toHaveTextContent('Continue');
         });
 
         test('shows loading state and disables interaction', () => {
@@ -287,16 +287,16 @@ describe('MagicLinkPage', () => {
 
         test('shows error state and allows retry', () => {
             const utils = setupOTCTest({action: 'verifyOTC:failed'});
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
             
             expect(submitButton).not.toBeDisabled();
-            expect(submitButton).toHaveTextContent('Verify Code');
+            expect(submitButton).toHaveTextContent('Continue');
         });
 
         test('button click is blocked during loading state', withConsoleSpy((consoleSpy) => {
             const testUtils = setupOTCTest({action: 'verifyOTC:running'});
             const loadingButton = testUtils.getByRole('button');
-            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
+            const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
             
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(loadingButton);
@@ -314,7 +314,7 @@ describe('MagicLinkPage', () => {
 
         test('validation works during error state', () => {
             const utils = setupOTCTest({action: 'verifyOTC:failed'});
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const submitButton = utils.getByRole('button', {name: 'Continue'});
             
             fireEvent.click(submitButton);
             
@@ -330,15 +330,15 @@ describe('MagicLinkPage', () => {
             });
             
             expect(utils.queryByText(/You can also use the one-time code to sign in here/i)).not.toBeInTheDocument();
-            expect(utils.queryByRole('button', {name: 'Verify Code'})).not.toBeInTheDocument();
+            expect(utils.queryByRole('button', {name: 'Continue'})).not.toBeInTheDocument();
             expect(utils.getByRole('button', {name: 'Close'})).toBeInTheDocument();
         });
 
         // @TODO: - when full OTC flow is implemented these will have to be invalid values
         test('supports multiple submission attempts with different values', withConsoleSpy((consoleSpy) => {
             const testUtils = setupOTCTest();
-            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
-            const submitButton = testUtils.getByRole('button', {name: 'Verify Code'});
+            const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
+            const submitButton = testUtils.getByRole('button', {name: 'Continue'});
             
             fireEvent.change(otcInput, {target: {value: '111111'}});
             fireEvent.click(submitButton);
