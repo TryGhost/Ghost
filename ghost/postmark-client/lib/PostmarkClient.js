@@ -113,7 +113,7 @@ module.exports = class PostmarkClient {
             });
 
             return {
-                id: message.id
+                id: response[0]?.MessageID ?? 'no-postmark-message-id'
             };
         } catch (error) {
             logging.error(error);
