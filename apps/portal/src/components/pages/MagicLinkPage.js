@@ -107,7 +107,7 @@ export default class MagicLinkPage extends React.Component {
                 required: true,
                 errorMessage: errors.otc || '',
                 autoFocus: false,
-                maxLength: 6,
+                maxlength: 6,
                 pattern: '[0-9]*',
                 inputmode: 'numeric',
                 autocomplete: 'one-time-code',
@@ -132,6 +132,8 @@ export default class MagicLinkPage extends React.Component {
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
                 // @TODO: replace with verifyOTC action
+                // For now, just log the values for development
+                // eslint-disable-next-line no-console
                 console.log(`token: ${otcRef} otc: ${otc}`);
             }
         });
@@ -187,11 +189,14 @@ export default class MagicLinkPage extends React.Component {
     }
 
     render() {
+        const {labs, otcRef} = this.context;
+        const showOTCForm = labs?.membersSigninOTC && otcRef;
+
         return (
             <div className='gh-portal-content'>
                 <CloseButton />
                 {this.renderFormHeader()}
-                {this.renderOTCForm()}
+                {showOTCForm ? this.renderOTCForm() : this.renderCloseButton()}
             </div>
         );
     }
