@@ -158,7 +158,8 @@ module.exports = function MembersAPI({
         getText,
         getHTML,
         getSubject,
-        sentry
+        sentry,
+        labsService
     });
 
     const paymentsService = new PaymentsService({

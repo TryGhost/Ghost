@@ -345,36 +345,80 @@ describe('sendMagicLink', function () {
                 .expectStatus(201);
         });
 
-        it('allows signins from email domains blocked in config', async function () {
-            // Create member with the blocked email address in the database
-            const email = 'hello@blocked-domain-config.com';
-            await membersService.api.members.create({email, name: 'Member Test'});
+        describe('signin from blocked domains', function () {
+            describe('with membersSigninOTC feature flag enabled', function () {
+                beforeEach(function () {
+                    settingsCache.set('labs', {value: JSON.stringify({membersSigninOTC: true})});
+                });
 
-            // Check that the member can still sign in
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin'
-                })
-                .expectEmptyBody()
-                .expectStatus(201);
-        });
+                it('allows signins from email domains blocked in config', async function () {
+                    const email = 'hello-enabled@blocked-domain-config.com';
+                    await membersService.api.members.create({email, name: 'Member Test'});
 
-        it('allows signins from email domains blocked in settings', async function () {
-            settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+                    await membersAgent.post('/api/send-magic-link')
+                        .body({
+                            email,
+                            emailType: 'signin'
+                        })
+                        .expectStatus(201)
+                        .expect(({body}) => {
+                            Object.keys(body).should.eql(['otc_ref']);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                        });
+                });
 
-            // Create member with the blocked email address in the database
-            const email = 'hello@blocked-domain-setting.com';
-            await membersService.api.members.create({email, name: 'Member Test'});
+                it('allows signins from email domains blocked in settings', async function () {
+                    settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
 
-            // Check that the member can still sign in
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin'
-                })
-                .expectEmptyBody()
-                .expectStatus(201);
+                    const email = 'hello-enabled@blocked-domain-setting.com';
+                    await membersService.api.members.create({email, name: 'Member Test'});
+
+                    await membersAgent.post('/api/send-magic-link')
+                        .body({
+                            email,
+                            emailType: 'signin'
+                        })
+                        .expectStatus(201)
+                        .expect(({body}) => {
+                            should.exist(body.otc_ref);
+                            body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
+                        });
+                });
+            });
+
+            describe('with membersSigninOTC feature flag disabled', function () {
+                beforeEach(function () {
+                    settingsCache.set('labs', {value: JSON.stringify({membersSigninOTC: false})});
+                });
+
+                it('allows signins from email domains blocked in config', async function () {
+                    const email = 'hello-disabled@blocked-domain-config.com';
+                    await membersService.api.members.create({email, name: 'Member Test'});
+
+                    await membersAgent.post('/api/send-magic-link')
+                        .body({
+                            email,
+                            emailType: 'signin'
+                        })
+                        .expectEmptyBody()
+                        .expectStatus(201);
+                });
+
+                it('allows signins from email domains blocked in settings', async function () {
+                    settingsCache.set('all_blocked_email_domains', {value: ['blocked-domain-setting.com']});
+
+                    const email = 'hello-disabled@blocked-domain-setting.com';
+                    await membersService.api.members.create({email, name: 'Member Test'});
+
+                    await membersAgent.post('/api/send-magic-link')
+                        .body({
+                            email,
+                            emailType: 'signin'
+                        })
+                        .expectEmptyBody()
+                        .expectStatus(201);
+                });
+            });
         });
 
         it('blocks changing email to a blocked domain', async function () {

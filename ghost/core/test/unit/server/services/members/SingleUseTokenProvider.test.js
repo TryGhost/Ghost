@@ -100,4 +100,77 @@ describe('SingleUseTokenProvider', function () {
             assert.throws(() => tokenProvider.deriveOTC('id', ''), /tokenId and tokenValue are required/i);
         });
     });
+
+    describe('getIdByToken', function () {
+        it('should return the token ID', async function () {
+            const testTokenValue = 'test-token-value';
+            const expectedId = 'test-token-id';
+            
+            mockModel.findOne.resolves({
+                get: sinon.stub().returns(expectedId)
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, expectedId);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when a token does not exist', async function () {
+            const testTokenValue = 'nonexistent-token';
+            
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should return null when a database error occurs', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            mockModel.findOne.rejects(new Error('Database connection failed'));
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+
+        it('should handle an empty token gracefully', async function () {
+            const emptyToken = '';
+            
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(emptyToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: emptyToken});
+        });
+
+        it('should handle an undefined token gracefully', async function () {
+            const undefinedToken = undefined;
+            
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.getIdByToken(undefinedToken);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: undefinedToken});
+        });
+
+        it('should return null when model.get throws an error', async function () {
+            const testTokenValue = 'test-token-value';
+            
+            mockModel.findOne.resolves({
+                get: sinon.stub().throws(new Error('Model error'))
+            });
+
+            const result = await tokenProvider.getIdByToken(testTokenValue);
+
+            assert.equal(result, null);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
+        });
+    });
 });
