@@ -120,7 +120,7 @@ describe('MagicLinkPage', () => {
             expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
-            expect(otcInput).toHaveAttribute('aria-label', OTC_LABEL_REGEX);
+            expect(otcInput.getAttribute('aria-label')).toMatch(OTC_LABEL_REGEX);
         });
 
         test('accepts and updates with numeric input progressively', () => {
