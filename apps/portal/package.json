@@ -79,7 +79,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.0",
-    "@doist/react-interpolate": "2.2.0",
+    "@doist/react-interpolate": "2.2.1",
     "@sentry/react": "7.120.4",
     "@testing-library/jest-dom": "5.17.0",
     "@testing-library/react": "12.1.5",
