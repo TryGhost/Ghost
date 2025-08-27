@@ -94,6 +94,6 @@
     "typescript": "5.8.3"
   },
   "dependencies": {
-    "nx": "20.8.0"
+    "nx": "20.8.2"
   }
 }
