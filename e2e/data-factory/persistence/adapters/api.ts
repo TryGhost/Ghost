@@ -30,15 +30,25 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
     }
     
     protected buildUrl(path?: string): string {
-        const url = path ? `${this.endpoint}/${path}` : this.endpoint;
+        // Ensure we have the full URL including the base
+        const baseUrl = 'http://localhost:2368';
+        const endpoint = this.endpoint.startsWith('/') ? this.endpoint : `/${this.endpoint}`;
+        const url = path ? `${baseUrl}${endpoint}/${path}` : `${baseUrl}${endpoint}`;
         const params = new URLSearchParams(this.queryParams);
         const queryString = params.toString();
         return queryString ? `${url}?${queryString}` : url;
     }
     
     async insert<T>(entityType: string, data: T): Promise<T> {
-        const response = await this.apiContext.post(this.buildUrl(), {
-            data: this.wrapRequest(data as unknown as TRequest)
+        const url = this.buildUrl();
+        const requestData = this.wrapRequest(data as unknown as TRequest);
+        
+        const response = await this.apiContext.post(url, {
+            data: requestData,
+            headers: {
+                'Origin': 'http://localhost:2368',
+                'Content-Type': 'application/json'
+            }
         });
         
         if (!response.ok()) {

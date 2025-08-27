@@ -3,43 +3,47 @@ dotenv.config();
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
-    timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
+    timeout: 60 * 1000, // Longer timeout for database reset and Ghost restart
     expect: {
-        timeout: process.env.CI ? 30 * 1000 : 10 * 1000
+        timeout: 15 * 1000
     },
-    retries: 1, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: 1, // One worker for now in the interest of stability. Parallelism leads to flaky tests when not done carefully.
+    retries: 0, // No retries - if test fails with proper isolation, it's a real failure
+    workers: 1, // Must be sequential for Ghost restart between tests
+    fullyParallel: false, // Disable parallel execution
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
+        video: 'retain-on-failure',
+        screenshot: 'only-on-failure',
         browserName: 'chromium'
     },
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
+    
+    // Global setup and teardown for Ghost process management
+    globalSetup: './helpers/global-setup.ts',
+    globalTeardown: './helpers/global-teardown.ts',
+    
     projects: [
-        // Main tests - run after setup with authentication
+        // All tests run with isolation - no shared state
         {
             name: 'main',
-            testIgnore: ['**/auth.setup.ts'], // Exclude setup files
+            testIgnore: ['**/auth.setup.ts'], // No longer need auth setup
             testDir: './tests',
             use: {
-                // Use authentication state for all tests by default
-                storageState: 'playwright/.auth/user.json',
+                // No storageState - each test handles its own auth after reset
                 viewport: {width: 1920, height: 1080}
-            },
-            dependencies: ['setup']
+            }
+            // No dependencies - each test is independent
         },
-        // Factory tests
+        // Factory tests - also isolated
         {
             name: 'factories',
-            testDir: './data-factory/tests'
-        },
-        // Setup project - runs first
-        {
-            name: 'setup',
-            testMatch: /.*\.setup\.ts/,
-            testDir: './tests'
+            testDir: './data-factory/tests',
+            use: {
+                viewport: {width: 1920, height: 1080}
+            }
         }
     ]
 };

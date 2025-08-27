@@ -1,15 +1,8 @@
-import {test, expect} from '@playwright/test';
-import {createPostFactory} from '../data-factory';
-import type {PostFactory} from '../data-factory';
+import {test, expect} from '../helpers/base-test';
 
 test.describe('Post Factory API Integration', () => {
-    let postFactory: PostFactory;
-    
-    test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page);
-    });
-    
-    test('should create a post and view it on the frontend', async ({page}) => {
+    test('should create a post and view it on the frontend', async ({page, ghostAdmin}) => {
+        const {postFactory} = ghostAdmin;
         const post = await postFactory.create({
             title: 'Test Post from Factory',
             status: 'published'
@@ -24,7 +17,8 @@ test.describe('Post Factory API Integration', () => {
         await expect(page.locator('h1.gh-article-title')).toContainText('Test Post from Factory');
     });
     
-    test('should create a post visible in Ghost Admin', async ({page}) => {
+    test('should create a post visible in Ghost Admin', async ({page, ghostAdmin}) => {
+        const {postFactory} = ghostAdmin;
         const uniqueTitle = `Admin Test Post ${Date.now()}`;
         const post = await postFactory.create({
             title: uniqueTitle,
@@ -36,7 +30,8 @@ test.describe('Post Factory API Integration', () => {
         await expect(page.locator(`text="${post.title}"`).first()).toBeVisible();
     });
     
-    test('should create draft post that is not accessible on frontend', async ({page}) => {
+    test('should create draft post that is not accessible on frontend', async ({page, ghostAdmin}) => {
+        const {postFactory} = ghostAdmin;
         const draftPost = await postFactory.create({
             title: 'Draft Post from Factory',
             status: 'draft'

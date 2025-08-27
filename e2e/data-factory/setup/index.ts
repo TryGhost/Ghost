@@ -10,7 +10,7 @@ import {Page} from '@playwright/test';
  * @param page - The Playwright page object from the test
  * @returns PostFactory ready to use with the specified Ghost backend
  */
-export function createPostFactory(page: Page): PostFactory {
+export async function createPostFactory(page: Page): Promise<PostFactory> {
     const adapter = new GhostAdminApiAdapter(
         page.context(), 
         'posts',
