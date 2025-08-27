@@ -298,12 +298,16 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
-                try {
-                    const data = await res.json();
-                    return data;
-                } catch (e) {
-                    return 'Success';
+                const contentType = (res.headers.get('content-type') || '').toLowerCase();
+                if (contentType.includes('application/json')) {
+                    try {
+                        return await res.json();
+                    } catch (e) {
+                        // fall through to text handling
+                    }
                 }
+                const text = (await res.text())?.trim();
+                return text || 'Success';
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
