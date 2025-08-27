@@ -78,9 +78,7 @@ COPY ghost/i18n/package.json ghost/i18n/package.json
 # Copy patches directory so patch-package can apply patches during yarn install
 COPY patches patches
 
-RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
-    yarn config set cache-folder /home/yarn/.yarn-cache && \
-    yarn install --frozen-lockfile --prefer-offline
+RUN yarn install --frozen-lockfile --prefer-offline
 
 # --------------------
 # Shade Builder
