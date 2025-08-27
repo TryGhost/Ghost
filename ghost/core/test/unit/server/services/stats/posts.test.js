@@ -1680,8 +1680,8 @@ describe('PostsStatsService', function () {
             // Subscribe/unsubscribe events
             await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
             await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
-            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-03T00:00:00Z'));
             await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-03T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-03T01:00:00Z'));
 
             const result = await service.getNewsletterSubscriberStats(newsletterId, {
                 date_from: '2024-01-01',
