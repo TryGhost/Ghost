@@ -1,7 +1,6 @@
 const {IncorrectUsageError, BadRequestError} = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const tpl = require('@tryghost/tpl');
-const labs = require('../../../../shared/labs');
 
 const messages = {
     invalidEmail: 'Email is not valid'
@@ -81,7 +80,7 @@ class MagicLink {
         const url = this.getSigninURL(token, type, options.referrer);
 
         let otc = null;
-        if (labs.isSet('membersSigninOTC') && options.otc) {
+        if (this.labsService?.isSet('membersSigninOTC') && options.otc) {
             otc = await this.getOTCFromToken(token);
         }
 

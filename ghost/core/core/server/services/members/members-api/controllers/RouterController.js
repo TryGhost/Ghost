@@ -5,7 +5,6 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
-const labs = require('../../../../../shared/labs');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -628,7 +627,7 @@ module.exports = class RouterController {
                 await this._handleSignup(req, normalizedEmail, referrer);
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
-                
+
                 if (this.labsService.isSet('membersSigninOTC') && signIn.tokenId) {
                     res.writeHead(201, {'Content-Type': 'application/json'});
                     return res.end(JSON.stringify({otc_ref: signIn.tokenId}));
@@ -691,7 +690,7 @@ module.exports = class RouterController {
             otc: false
         };
 
-        if (labs.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
+        if (this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
             options.otc = true;
         }
 
