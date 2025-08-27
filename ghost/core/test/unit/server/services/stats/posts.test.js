@@ -1816,11 +1816,9 @@ describe('PostsStatsService', function () {
             
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
-            await db('members').insert([
-                {id: 'member1', email: 'member1@test.com', email_disabled: false},
-                {id: 'member2', email: 'member2@test.com', email_disabled: false},
-                {id: 'member3', email: 'member3@test.com', email_disabled: false}
-            ]);
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
 
             // Current state: 2 subscribers
             await _createMemberNewsletterSubscription('member1', newsletterId);
@@ -1848,11 +1846,9 @@ describe('PostsStatsService', function () {
             
             await _createNewsletter(newsletterId, 'Test Newsletter');
 
-            await db('members').insert([
-                {id: 'member1', email: 'member1@test.com', email_disabled: false},
-                {id: 'member2', email: 'member2@test.com', email_disabled: false},
-                {id: 'member3', email: 'member3@test.com', email_disabled: false}
-            ]);
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
 
             // Current state
             await db('members_newsletters').insert([
@@ -1862,29 +1858,9 @@ describe('PostsStatsService', function () {
             ]);
 
             // Events spanning multiple days
-            await db('members_subscribe_events').insert([
-                {
-                    id: 'event1',
-                    member_id: 'member1',
-                    newsletter_id: newsletterId,
-                    subscribed: true,
-                    created_at: new Date('2024-01-01T00:00:00Z').toISOString()
-                },
-                {
-                    id: 'event2',
-                    member_id: 'member2',
-                    newsletter_id: newsletterId,
-                    subscribed: true,
-                    created_at: new Date('2024-01-05T00:00:00Z').toISOString()
-                },
-                {
-                    id: 'event3',
-                    member_id: 'member3',
-                    newsletter_id: newsletterId,
-                    subscribed: true,
-                    created_at: new Date('2024-01-10T00:00:00Z').toISOString()
-                }
-            ]);
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-05T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-10T00:00:00Z'));
 
             // Request only middle date range
             const result = await service.getNewsletterSubscriberStats(newsletterId, {
