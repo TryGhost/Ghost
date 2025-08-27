@@ -12,6 +12,7 @@ x-service-template: &service-template
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
+    - node_modules_e2e:/home/ghost/e2e/node_modules:delegated
     - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
@@ -273,6 +274,7 @@ volumes:
   node_modules_ghost_admin: {}
   node_modules_ghost_core: {}
   node_modules_ghost_i18n: {}
+  node_modules_e2e: {}
   node_modules_apps_admin-x-activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}
