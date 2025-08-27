@@ -362,7 +362,7 @@ describe('sendMagicLink', function () {
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
-                            should.exist(body.otc_ref);
+                            Object.keys(body).should.eql(['otc_ref']);
                             body.otc_ref.should.be.a.String().and.match(/^[a-f0-9]{24}$/);
                         });
                 });
