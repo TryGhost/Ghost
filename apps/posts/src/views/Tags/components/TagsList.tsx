@@ -112,8 +112,7 @@ function TagsList({
                                             className="relative z-10 -m-4 inline-block p-4 hover:underline"
                                             href={`#/posts?tag=${item.slug}`}
                                         >
-                                            {formatNumber(item.count?.posts)}{' '}
-                                            posts
+                                            {`${formatNumber(item.count?.posts)} ${item.count?.posts === 1 ? 'post' : 'posts'}`}
                                         </a>
                                     ) : (
                                         <span className="text-muted-foreground">
