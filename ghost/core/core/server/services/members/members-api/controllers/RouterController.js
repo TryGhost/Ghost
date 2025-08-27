@@ -686,12 +686,10 @@ module.exports = class RouterController {
     async _handleSignin(req, normalizedEmail, referrer = null) {
         const {emailType, otc} = req.body;
 
-        const options = {
-            otc: false
-        };
+        let includeOTC = false;
 
         if (this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
-            options.otc = true;
+            includeOTC = true;
         }
 
         const member = await this._memberRepository.get({email: normalizedEmail});
@@ -703,7 +701,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, options});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, includeOTC});
     }
 
     /**
