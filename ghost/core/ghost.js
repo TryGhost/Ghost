@@ -6,7 +6,7 @@
  *
  **/
 
-console.log('hello from ghost.js!');
+console.log('hello from ghost.js!!!');
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
