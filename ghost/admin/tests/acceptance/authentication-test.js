@@ -3,11 +3,13 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {Response} from 'miragejs';
 import {afterEach, beforeEach, describe, it} from 'mocha';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
-import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, visit, waitFor, waitUntil} from '@ember/test-helpers';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
+import {click, currentRouteName, currentURL, fillIn, find, findAll, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {run} from '@ember/runloop';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
+import {visit} from '../helpers/visit';
 
 function setupVerificationRequired(server, responseCode = 403) {
     server.post('/session', function () {
@@ -59,7 +61,12 @@ describe('Acceptance: Authentication', function () {
     setupMirage(hooks);
 
     beforeEach(async function () {
+        mockAnalyticsApps();
         this.server.loadFixtures('configs');
+    });
+
+    afterEach(function () {
+        cleanupMockAnalyticsApps();
     });
 
     describe('setup redirect', function () {
@@ -177,7 +184,7 @@ describe('Acceptance: Authentication', function () {
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
             await visit('/');
-
+            
             expect(currentURL(), 'current url').to.equal('/signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
@@ -204,7 +211,7 @@ describe('Acceptance: Authentication', function () {
             await completeSignIn();
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
             await completeVerification();
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('handles 2fa code verification failure', async function () {
@@ -294,7 +301,7 @@ describe('Acceptance: Authentication', function () {
             // can correctly submit after failed attempts
             await fillIn(codeInput, '123456');
             await click(verifyButton);
-            expect(currentURL()).to.equal('/dashboard');
+            expect(currentURL()).to.equal('/analytics');
         });
 
         it('can resend verification code', async function () {

@@ -20,7 +20,7 @@ import {
 
 interface ProfileMenuProps {
     account?: Account,
-    trigger: React.ReactNode;
+    children: React.ReactNode;
     onCopyHandle: () => void;
     onBlockAccount: () => void;
     onBlockDomain: () => void;
@@ -31,7 +31,7 @@ interface ProfileMenuProps {
 
 const ProfileMenu: React.FC<ProfileMenuProps> = ({
     account,
-    trigger,
+    children,
     onCopyHandle,
     onBlockAccount,
     onBlockDomain,
@@ -111,7 +111,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
         <>
             <Popover>
                 <PopoverTrigger disabled={disabled} asChild onClick={e => e.stopPropagation()}>
-                    {trigger}
+                    {children}
                 </PopoverTrigger>
                 <PopoverContent align="end" className='p-2'>
                     <div className='flex w-48 flex-col'>
@@ -128,7 +128,7 @@ const ProfileMenu: React.FC<ProfileMenuProps> = ({
                                 }
                                 setDialogOpen(true);
                             }}>
-                                {isBlocked || isDomainBlocked ? 'Unblock' : 'Block'} user
+                                {isBlocked ? 'Unblock user' : isDomainBlocked ? 'Unblock domain' : 'Block user'}
                             </Button>
                         </PopoverClose>
                     </div>

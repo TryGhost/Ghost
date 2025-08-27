@@ -1,6 +1,7 @@
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger, LucideIcon} from '@tryghost/shade';
-import {useGlobalData} from '@src/providers/GlobalDataProvider';
+import {useAppContext} from '@src/App';
+import {useGlobalData} from '@src/providers/PostAnalyticsContext';
 
 const AUDIENCE_BITS = {
     PUBLIC: 1 << 0, // 1
@@ -32,6 +33,7 @@ export const getAudienceQueryParam = (audience: number) => {
 
 const AudienceSelect: React.FC = () => {
     const {audience, setAudience} = useGlobalData();
+    const {appSettings} = useAppContext();
 
     const toggleAudience = (bit: number) => {
         setAudience(audience ^ bit);
@@ -55,6 +57,25 @@ const AudienceSelect: React.FC = () => {
         if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
             selectedAudiences.push('Free members');
         }
+
+        if (!appSettings?.paidMembersEnabled) {
+            if (selectedAudiences.length === 2) {
+                return 'All audiences';
+            }
+
+            if (selectedAudiences.length === 1) {
+                if (isAudienceSelected(AUDIENCE_BITS.FREE)) {
+                    return 'Free members';
+                } else {
+                    return 'Public visitors';
+                }
+            }
+
+            if (selectedAudiences.length === 0) {
+                return 'Select audience';
+            }
+        }
+
         if (isAudienceSelected(AUDIENCE_BITS.PAID)) {
             selectedAudiences.push('Paid members');
         }
@@ -77,7 +98,7 @@ const AudienceSelect: React.FC = () => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
+                <Button className='w-full' variant="dropdown"><LucideIcon.User2 /><span className='lowercase first-letter:capitalize'>{getAudienceLabel()}</span></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align='end' className="w-full min-w-48">
                 <DropdownMenuCheckboxItem
@@ -92,12 +113,14 @@ const AudienceSelect: React.FC = () => {
                 >
                     Free members
                 </DropdownMenuCheckboxItem>
-                <DropdownMenuCheckboxItem
-                    checked={isAudienceSelected(AUDIENCE_BITS.PAID)}
-                    onSelect={e => handleSelect(e, AUDIENCE_BITS.PAID)}
-                >
-                    Paid members
-                </DropdownMenuCheckboxItem>
+                {appSettings?.paidMembersEnabled &&
+                    <DropdownMenuCheckboxItem
+                        checked={isAudienceSelected(AUDIENCE_BITS.PAID)}
+                        onSelect={e => handleSelect(e, AUDIENCE_BITS.PAID)}
+                    >
+                        Paid members
+                    </DropdownMenuCheckboxItem>
+                }
             </DropdownMenuContent>
         </DropdownMenu>
     );

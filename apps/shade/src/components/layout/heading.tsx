@@ -21,7 +21,7 @@ const H2 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
         return (
             <h2
                 ref={ref}
-                className={cn('scroll-m-20 text-2xl font-bold tracking-tight first:mt-0', className)}
+                className={cn('scroll-m-20 text-2xl font-bold tracking-tighter first:mt-0', className)}
                 {...props} />
         );
     }
@@ -52,9 +52,27 @@ const H4 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
 );
 H4.displayName = 'H4';
 
+interface HTableProps extends React.HTMLAttributes<HTMLDivElement> {
+    children?: React.ReactNode;
+    className?: string;
+}
+
+const HTable = React.forwardRef<HTMLDivElement, HTableProps>(
+    ({className, ...props}, ref) => {
+        return (
+            <div
+                ref={ref}
+                className={cn('text-xs text-muted-foreground tracking-wide font-medium uppercase', className)}
+                {...props} />
+        );
+    }
+);
+HTable.displayName = 'HTable';
+
 export {
     H1,
     H2,
     H3,
-    H4
+    H4,
+    HTable
 };

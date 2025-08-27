@@ -49,17 +49,15 @@ const controller = {
             'id'
         ],
         permissions: true,
-        query(frame) {
-            return models.Email.findOne(frame.data, frame.options)
-                .then((model) => {
-                    if (!model) {
-                        throw new errors.NotFoundError({
-                            message: tpl(messages.emailNotFound)
-                        });
-                    }
-
-                    return model;
+        async query(frame) {
+            const model = await models.Email.findOne(frame.data, frame.options);
+            if (!model) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.emailNotFound)
                 });
+            }
+
+            return model;
         }
     },
 

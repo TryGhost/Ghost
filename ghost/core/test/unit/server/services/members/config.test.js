@@ -61,7 +61,7 @@ describe('Members - config', function () {
 
     afterEach(async function () {
         await configUtils.restore();
-        urlUtils.restore();
+        await urlUtils.restore();
         sinon.restore();
     });
 

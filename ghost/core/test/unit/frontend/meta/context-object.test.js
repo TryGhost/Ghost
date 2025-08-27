@@ -30,24 +30,6 @@ describe('getContextObject', function () {
         contextObject.should.eql(data.post);
     });
 
-    it('should return post context object for an AMP post', function () {
-        data = {post: {id: 2}};
-        context = ['amp', 'post'];
-        contextObject = getContextObject(data, context);
-
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
-    });
-
-    it('should return post context object for a static page with amp context', function () {
-        data = {post: {id: 2}};
-        context = ['amp', 'page'];
-        contextObject = getContextObject(data, context);
-
-        should.exist(contextObject);
-        contextObject.should.eql(data.post);
-    });
-
     it('should return page', function () {
         data = {page: {id: 2}};
         context = ['news', 'page'];

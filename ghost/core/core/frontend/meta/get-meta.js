@@ -3,7 +3,6 @@ const urlUtils = require('../../shared/url-utils');
 const logging = require('@tryghost/logging');
 
 // These are in filename order
-const getAmpUrl = require('./amp-url');
 const getAuthorFacebook = require('./author-fb-url');
 const getAuthorImage = require('./author-image');
 const getAuthorUrl = require('./author-url');
@@ -21,7 +20,7 @@ const getOgImage = require('./og-image');
 const getPaginatedUrl = require('./paginated-url');
 const getPublishedDate = require('./published-date');
 const getRssUrl = require('./rss-url');
-const getSchema = require('./schema');
+const {getSchema} = require('./schema');
 const getStructuredData = require('./structured-data');
 const getTitle = require('./title');
 const getTwitterImage = require('./twitter-image');
@@ -31,7 +30,6 @@ function getMetaData(data, root) {
     const metaData = {
         url: getUrl(data, true),
         canonicalUrl: getCanonicalUrl(data),
-        ampUrl: getAmpUrl(data),
         previousUrl: getPaginatedUrl('prev', data, true),
         nextUrl: getPaginatedUrl('next', data, true),
         authorUrl: getAuthorUrl(data, true),
@@ -70,8 +68,7 @@ function getMetaData(data, root) {
             navigation: settingsCache.get('navigation'),
             icon: settingsCache.get('icon'),
             cover_image: settingsCache.get('cover_image'),
-            logo: getBlogLogo(),
-            amp: settingsCache.get('amp')
+            logo: getBlogLogo()
         }
     };
 

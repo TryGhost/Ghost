@@ -8,7 +8,6 @@ const shared = require('../../../shared');
 const express = require('../../../../../shared/express');
 const sentry = require('../../../../../shared/sentry');
 const routes = require('./routes');
-const APIVersionCompatibilityService = require('../../../../services/api-version-compatibility');
 
 /**
  * @returns {import('express').Application}
@@ -38,7 +37,6 @@ module.exports = function setupApiApp() {
 
     // API error handling
     apiApp.use(errorHandler.resourceNotFound);
-    apiApp.use(APIVersionCompatibilityService.errorHandler);
     apiApp.use(errorHandler.handleJSONResponse(sentry));
 
     debug('Admin API setup end');

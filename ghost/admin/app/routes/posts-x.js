@@ -7,6 +7,14 @@ export default class PostsXRoute extends AuthenticatedRoute {
     @service session;
     @service feature;
 
+    setupController(controller, model, transition) {
+        if (transition.from?.name.includes('stats-x')) {
+            controller.fromAnalytics = true;
+        } else {
+            controller.fromAnalytics = false;
+        }
+    }
+
     beforeModel() {
         super.beforeModel(...arguments);
 
@@ -15,11 +23,6 @@ export default class PostsXRoute extends AuthenticatedRoute {
             return this.transitionTo('posts');
         } else if (!this.session.user.isAdmin) {
             return this.transitionTo('site');
-        }
-
-        // This ensures that we don't load this page if the stats config is not set
-        if (!(this.config.stats && this.feature.trafficAnalytics)) {
-            return this.transitionTo('home');
         }
     }
 }

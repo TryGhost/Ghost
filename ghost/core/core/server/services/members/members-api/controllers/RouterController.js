@@ -4,6 +4,7 @@ const sanitizeHtml = require('sanitize-html');
 const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureError, NotFoundError} = require('@tryghost/errors');
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
+const normalizeEmail = require('../utils/normalize-email');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -369,9 +370,9 @@ module.exports = class RouterController {
 
         if (member) {
             options.successUrl = this._generateSuccessUrl(options.successUrl, tier.welcomePageURL);
-            
+
             const restrictCheckout = member.get('status') === 'paid';
-            
+
             if (restrictCheckout) {
                 // This member is already subscribed to a paid tier
                 // We don't want to create a duplicate subscription
@@ -413,17 +414,17 @@ module.exports = class RouterController {
         try {
             // Create URL objects
             const siteUrl = this._urlUtils.getSiteUrl();
-            
+
             // This will throw if welcomePageURL is invalid
             const welcomeUrl = new URL(
-                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL, 
+                welcomePageURL.startsWith('http') ? welcomePageURL : welcomePageURL,
                 siteUrl
             );
-            
+
             // Add success parameters
             welcomeUrl.searchParams.set('success', 'true');
             welcomeUrl.searchParams.set('action', 'signup');
-            
+
             return welcomeUrl.href;
         } catch (err) {
             logging.warn(`Invalid welcome page URL "${welcomePageURL}", using original success URL`, err);
@@ -509,6 +510,10 @@ module.exports = class RouterController {
         // Store attribution data in the metadata
         await this._setAttributionMetadata(metadata);
 
+        if (metadata.newsletters) {
+            metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
+        }
+
         // Build options
         const options = {
             successUrl: req.body.successUrl,
@@ -581,6 +586,23 @@ module.exports = class RouterController {
             });
         }
 
+        // Normalize email to prevent homograph attacks
+        let normalizedEmail;
+
+        try {
+            normalizedEmail = normalizeEmail(email);
+
+            if (normalizedEmail !== email) {
+                logging.info(`Email normalized from ${email} to ${normalizedEmail} for magic link`);
+            }
+        } catch (err) {
+            logging.error(`Failed to normalize [${email}]: ${err.message}`);
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidEmail)
+            });
+        }
+
         if (honeypot) {
             logging.warn('Honeypot field filled, this is likely a bot');
 
@@ -602,9 +624,9 @@ module.exports = class RouterController {
 
         try {
             if (emailType === 'signup' || emailType === 'subscribe') {
-                await this._handleSignup(req, referrer);
+                await this._handleSignup(req, normalizedEmail, referrer);
             } else {
-                await this._handleSignin(req, referrer);
+                await this._handleSignin(req, normalizedEmail, referrer);
             }
 
             res.writeHead(201);
@@ -622,7 +644,7 @@ module.exports = class RouterController {
         }
     }
 
-    async _handleSignup(req, referrer = null) {
+    async _handleSignup(req, normalizedEmail, referrer = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
                 throw new errors.BadRequestError({
@@ -636,30 +658,30 @@ module.exports = class RouterController {
         }
 
         const blockedEmailDomains = this._settingsCache.get('all_blocked_email_domains');
-        const emailDomain = req.body.email.split('@')[1]?.toLowerCase();
+        const emailDomain = normalizedEmail.split('@')[1]?.toLowerCase();
         if (emailDomain && blockedEmailDomains.includes(emailDomain)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.blockedEmailDomain)
             });
         }
 
-        const {email, emailType} = req.body;
+        const {emailType} = req.body;
 
         const tokenData = {
             labels: req.body.labels,
             name: req.body.name,
             reqIp: req.ip ?? undefined,
-            newsletters: await this._validateNewsletters(req),
+            newsletters: await this._validateNewsletters(req.body?.newsletters ?? []),
             attribution: await this._memberAttributionService.getAttribution(req.body.urlHistory)
         };
 
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _handleSignin(req, referrer = null) {
-        const {email, emailType} = req.body;
+    async _handleSignin(req, normalizedEmail, referrer = null) {
+        const {emailType} = req.body;
 
-        const member = await this._memberRepository.get({email});
+        const member = await this._memberRepository.get({email: normalizedEmail});
 
         if (!member) {
             throw new errors.BadRequestError({
@@ -668,45 +690,55 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
-    async _validateNewsletters(req) {
-        const {newsletters: requestedNewsletters} = req.body;
-
-        if (requestedNewsletters && requestedNewsletters.length > 0 && requestedNewsletters.every(newsletter => newsletter.name !== undefined)) {
-            const newsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
-            const newsletterNamesFilter = newsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
-            const newsletters = (await this._newslettersService.getAll({
-                filter: `name:[${newsletterNamesFilter}]`,
-                columns: ['id','name','status']
-            }));
-
-            // Check for invalid newsletters
-            if (newsletters.length !== newsletterNames.length) {
-                const validNewsletters = newsletters.map(newsletter => newsletter.name);
-                const invalidNewsletters = newsletterNames.filter(newsletter => !validNewsletters.includes(newsletter));
-
-                throw new errors.BadRequestError({
-                    message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletters})
-                });
-            }
-
-            // Check for archived newsletters
-            const archivedNewsletters = newsletters
-                .filter(newsletter => newsletter.status === 'archived')
-                .map(newsletter => newsletter.name);
-
-            if (archivedNewsletters && archivedNewsletters.length > 0) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.archivedNewsletters, {newsletters: archivedNewsletters})
-                });
-            }
-
-            return newsletters
-                .filter(newsletter => newsletter.status === 'active')
-                .map(newsletter => ({id: newsletter.id}));
+    /**
+     * Validates the newsletters in the request body
+     * @param {object[]} requestedNewsletters
+     * @param {string} requestedNewsletters[].name
+     * @returns {Promise<object[] | undefined>} The validated newsletters
+     */
+    async _validateNewsletters(requestedNewsletters) {
+        if (!requestedNewsletters || requestedNewsletters.length === 0) {
+            return undefined;
         }
+
+        if (requestedNewsletters.some(newsletter => !newsletter.name)) {
+            return undefined;
+        }
+
+        const requestedNewsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+        const requestedNewsletterNamesFilter = requestedNewsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
+        const matchedNewsletters = (await this._newslettersService.getAll({
+            filter: `name:[${requestedNewsletterNamesFilter}]`,
+            columns: ['id','name','status']
+        }));
+
+        // Check for invalid newsletters
+        if (matchedNewsletters.length !== requestedNewsletterNames.length) {
+            const validNewsletterNames = matchedNewsletters.map(newsletter => newsletter.name);
+            const invalidNewsletterNames = requestedNewsletterNames.filter(newsletter => !validNewsletterNames.includes(newsletter));
+
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidNewsletters, {newsletters: invalidNewsletterNames})
+            });
+        }
+
+        // Check for archived newsletters
+        const requestedArchivedNewsletters = matchedNewsletters
+            .filter(newsletter => newsletter.status === 'archived')
+            .map(newsletter => newsletter.name);
+
+        if (requestedArchivedNewsletters && requestedArchivedNewsletters.length > 0) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.archivedNewsletters, {newsletters: requestedArchivedNewsletters})
+            });
+        }
+
+        return matchedNewsletters
+            .filter(newsletter => newsletter.status === 'active')
+            .map(newsletter => ({id: newsletter.id}));
     }
 };
 

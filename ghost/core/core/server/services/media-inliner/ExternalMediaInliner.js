@@ -5,6 +5,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const string = require('@tryghost/string');
 const path = require('path');
+const convert = require('heic-convert');
 
 class ExternalMediaInliner {
     /** @type {object} */
@@ -70,22 +71,41 @@ class ExternalMediaInliner {
 
     /**
      *
+     * @param {string} requestURL - url of remote media
      * @param {Object} response - response from request
-     * @returns {Object}
+     * @returns {Promise<Object>}
      */
     async extractFileDataFromResponse(requestURL, response) {
         let extension;
+        let body = response.body;
 
         // Attempt to get the file extension from the file itself
         // If that fails, or if `.ext` is undefined, get the extension from the file path in the catch
         try {
-            const fileInfo = await FileType.fromBuffer(response.body);
+            const fileInfo = await FileType.fromBuffer(body);
             extension = fileInfo.ext;
         } catch {
             const headers = response.headers;
             const contentType = headers['content-type'];
             const extensionFromPath = path.parse(requestURL).ext.split(/[^a-z]/i).filter(Boolean)[0];
             extension = mime.extension(contentType) || extensionFromPath;
+        }
+
+        // If the file is heic or heif, attempt to convert it to jpeg
+        try {
+            if (extension === 'heic' || extension === 'heif') {
+                body = await convert({
+                    buffer: body,
+                    format: 'JPEG'
+                });
+
+                extension = 'jpg';
+            }
+        } catch (error) {
+            logging.error(`Error converting file to JPEG: ${requestURL}`);
+            logging.error(new errors.DataImportError({
+                err: error
+            }));
         }
 
         const removeExtRegExp = new RegExp(`.${extension}`, '');
@@ -99,7 +119,7 @@ class ExternalMediaInliner {
         }).slice(-248).replace(/^-|-$/, '');
 
         return {
-            fileBuffer: response.body,
+            fileBuffer: body,
             filename: `${fileName}.${extension}`,
             extension: `.${extension}`
         };

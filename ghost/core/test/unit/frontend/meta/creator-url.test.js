@@ -36,40 +36,6 @@ describe('getCreatorTwitterUrl', function () {
         should(twitterUrl).equal(null);
     });
 
-    it('should return author twitter url if AMP post and has url',
-        function () {
-            const twitterUrl = getCreatorTwitterUrl({
-                context: ['amp', 'post'],
-                post: {
-                    primary_author: {
-                        twitter: 'https://twitter.com/user'
-                    }
-                }
-            });
-            twitterUrl.should.equal('https://twitter.com/user');
-        });
-
-    it('should return null if context does not contain author twitter url and is an AMP post',
-        function () {
-            const twitterUrl = getCreatorTwitterUrl({
-                context: ['amp', 'post'],
-                post: {
-                    primary_author: {
-                        twitter: ''
-                    }
-                }
-            });
-            should(twitterUrl).equal(null);
-        });
-
-    it('should return null if context does not contain author and is an AMP post', function () {
-        const twitterUrl = getCreatorTwitterUrl({
-            context: ['amp', 'post'],
-            post: {}
-        });
-        should(twitterUrl).equal(null);
-    });
-
     it('should return author twitter url if author and has url',
         function () {
             const twitterUrl = getCreatorTwitterUrl({

@@ -10,6 +10,7 @@ describe('mapPostToActivity', function () {
             type: PostType.Article,
             title: 'Test Post',
             excerpt: 'Test Excerpt',
+            summary: 'Test Summary',
             content: 'Test Content',
             url: 'https://example.com/posts/123',
             featureImageUrl: 'https://example.com/posts/123/feature.jpg',
@@ -37,7 +38,8 @@ describe('mapPostToActivity', function () {
                 handle: '@testuser@example.com',
                 avatarUrl: 'https://example.com/users/123/avatar.jpg',
                 name: 'Test User',
-                url: 'https://example.com/users/123'
+                url: 'https://example.com/users/123',
+                followedByMe: false
             },
             authoredByMe: true,
             repostCount: 5,
@@ -59,7 +61,8 @@ describe('mapPostToActivity', function () {
                     handle: '@testuser2@example.com',
                     avatarUrl: 'https://example.com/users/456/avatar.jpg',
                     name: 'Test User 2',
-                    url: 'https://example.com/users/456'
+                    url: 'https://example.com/users/456',
+                    followedByMe: true
                 }
             }).type
         ).toBe('Announce');
@@ -81,7 +84,8 @@ describe('mapPostToActivity', function () {
                 handle: '@testuser2@example.com',
                 avatarUrl: 'https://example.com/users/456/avatar.jpg',
                 name: 'Test User 2',
-                url: 'https://example.com/users/456'
+                url: 'https://example.com/users/456',
+                followedByMe: false
             }
         }).actor;
 
@@ -117,6 +121,7 @@ describe('mapPostToActivity', function () {
         expect(object.type).toBe('Article');
         expect(object.name).toBe('Test Post');
         expect(object.content).toBe('Test Content');
+        expect(object.summary).toBe('Test Summary');
         expect(object.url).toBe('https://example.com/posts/123');
         expect(object.attributedTo.id).toBe('https://example.com/users/123');
         expect(object.published).toBe('2024-01-01T00:00:00Z');
@@ -144,5 +149,60 @@ describe('mapPostToActivity', function () {
             name: 'test1.jpg',
             url: 'https://example.com/test1.jpg'
         });
+    });
+
+    test('it maps followedByMe property correctly', function () {
+        // Test for regular posts (non-reposts)
+        const activity = mapPostToActivity({
+            ...post,
+            author: {
+                ...post.author,
+                followedByMe: true
+            }
+        });
+
+        expect(activity.actor.followedByMe).toBe(true);
+
+        // Test for reposts
+        const repostActivity = mapPostToActivity({
+            ...post,
+            repostedBy: {
+                id: 'https://example.com/users/456',
+                handle: '@testuser2@example.com',
+                avatarUrl: 'https://example.com/users/456/avatar.jpg',
+                name: 'Test User 2',
+                url: 'https://example.com/users/456',
+                followedByMe: true
+            }
+        });
+
+        expect(repostActivity.actor.followedByMe).toBe(true);
+        expect(repostActivity.object.attributedTo.followedByMe).toBe(false); // Original author from post.author
+    });
+
+    test('it maps reposted property correctly', function () {
+        // Test for regular posts
+        const activity = mapPostToActivity({
+            ...post,
+            repostedByMe: true
+        });
+
+        expect(activity.object.reposted).toBe(true);
+
+        // Test for reposts
+        const repostActivity = mapPostToActivity({
+            ...post,
+            repostedByMe: false,
+            repostedBy: {
+                id: 'https://example.com/users/456',
+                handle: '@testuser2@example.com',
+                avatarUrl: 'https://example.com/users/456/avatar.jpg',
+                name: 'Test User 2',
+                url: 'https://example.com/users/456',
+                followedByMe: true
+            }
+        });
+
+        expect(repostActivity.object.reposted).toBe(false);
     });
 });

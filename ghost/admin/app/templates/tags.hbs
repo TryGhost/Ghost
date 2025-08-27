@@ -6,7 +6,7 @@
                 <button class="gh-btn {{if (eq this.type "public") "gh-btn-group-selected"}}" type="button" {{action "changeType" "public"}} data-test-tags-nav="public" data-test-active={{eq this.type "public"}}><span>Public tags</span></button>
                 <button class="gh-btn {{if (eq this.type "internal") "gh-btn-group-selected"}}" type="button" {{action "changeType" "internal"}} data-test-tags-nav="internal" data-test-active={{eq this.type "internal"}}><span>Internal tags</span></button>
             </div>
-            <LinkTo @route="tag.new" class="gh-btn gh-btn-primary"><span>New tag</span></LinkTo>
+            <LinkTo @route="tag.new" class="gh-btn gh-btn-primary" data-test-button="new-tag"><span>New tag</span></LinkTo>
         </section>
     </GhCanvasHeader>
 
@@ -19,7 +19,14 @@
                     <div class="gh-list-header gh-list-cellwidth-10">No. of posts</div>
                     <div class="gh-list-header gh-list-cellwidth-10"></div>
                 </li>
-                <VerticalCollection @items={{this.sortedTags}} @key="id" @containerSelector=".gh-main" @estimateHeight={{60}} @bufferSize={{20}} as |tag|>
+                <VerticalCollection
+                    @items={{this.sortedTags}}
+                    @key="id"
+                    @containerSelector=".gh-main"
+                    @estimateHeight={{60}}
+                    @bufferSize={{20}}
+                    @lastReached={{this.loadMoreTags}}
+                as |tag|>
                     <Tags::ListItem @tag={{tag}} data-test-tag={{tag.id}} />
                 </VerticalCollection>
             {{else}}
