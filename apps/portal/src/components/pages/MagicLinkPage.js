@@ -3,8 +3,9 @@ import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
-import InputForm from '../common/InputForm';
+
 import {ValidateInputForm} from '../../utils/form';
+import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -38,7 +39,7 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderFormHeader() {
-        const {t} = this.context;
+        const {t, otcRef} = this.context;
 
         let popupTitle = t(`Now check your email!`);
         let popupDescription = t(`A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`);
@@ -46,6 +47,10 @@ export default class MagicLinkPage extends React.Component {
         if (this.context.lastPage === 'signup') {
             popupTitle = t(`Now check your email!`);
             popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
+        }
+
+        if (otcRef) {
+            popupDescription = t(`An email has been sent to your inbox. Use the link inside or enter the code below.`);
         }
 
         return (
@@ -92,30 +97,6 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
-    getInputFields({state}) {
-        const {t} = this.context;
-        const errors = state.errors || {};
-
-        return [
-            {
-                id: OTC_FIELD_NAME,
-                name: OTC_FIELD_NAME,
-                type: 'text',
-                value: state.otc,
-                placeholder: '• • • • • •',
-                label: t('Enter one-time code'),
-                required: true,
-                errorMessage: errors.otc || '',
-                autoFocus: false,
-                maxlength: 6,
-                pattern: '[0-9]*',
-                inputmode: 'numeric',
-                autocomplete: 'one-time-code',
-                class: 'gh-input'
-            }
-        ];
-    }
-
     handleSubmit(e) {
         e.preventDefault();
         this.doVerifyOTC();
@@ -124,7 +105,11 @@ export default class MagicLinkPage extends React.Component {
     doVerifyOTC() {
         this.setState((state) => {
             return {
-                errors: ValidateInputForm({fields: this.getInputFields({state}), t: this.context.t})
+                errors: ValidateInputForm({fields: [{
+                    name: OTC_FIELD_NAME,
+                    value: state.otc,
+                    required: true
+                }], t: this.context.t})
             };
         }, async () => {
             const {otc, errors} = this.state;
@@ -155,22 +140,31 @@ export default class MagicLinkPage extends React.Component {
 
     renderOTCForm() {
         const {t, action, labs, otcRef} = this.context;
+        const errors = this.state.errors || {};
 
         if (!labs.membersSigninOTC || !otcRef) {
             return null;
         }
 
+        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
         const isError = (action === 'verifyOTC:failed');
 
         return (
             <section>
                 <div className='gh-portal-section'>
-                    <div>{t('You can also use the one-time code to sign in here.')}</div>
-                    <InputForm
-                        fields={this.getInputFields({state: this.state})}
-                        onChange={(e, field) => this.handleInputChange(e, field)}
-                        onKeyDown={(e, field) => this.onKeyDown(e, field)}
+                    <InputField
+                        id={`input-${OTC_FIELD_NAME}`}
+                        name={OTC_FIELD_NAME}
+                        type="text"
+                        value={this.state.otc}
+                        placeholder="• • • • • •"
+                        label={t('Code')}
+                        errorMessage={errors.otc || ''}
+                        autoFocus={false}
+                        maxlength={6}
+                        onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                        onKeyDown={e => this.onKeyDown(e, {name: OTC_FIELD_NAME})}
                     />
                 </div>
                 <footer className='gh-portal-signin-footer'>
@@ -178,7 +172,7 @@ export default class MagicLinkPage extends React.Component {
                         style={{width: '100%'}}
                         onClick={e => this.handleSubmit(e)}
                         brandColor={this.context.brandColor}
-                        label={isRunning ? t('Verifying...') : t('Verify Code')}
+                        label={isRunning ? t('Verifying...') : t('Continue')}
                         isRunning={isRunning}
                         retry={isError}
                         disabled={isRunning}

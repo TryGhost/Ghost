@@ -3,6 +3,8 @@ import {fireEvent, appRender, within} from '../utils/test-utils';
 import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
+const OTC_LABEL_REGEX = /Code/i;
+
 const setup = async ({site, member = null, labs = {}}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = jest.fn(() => {
@@ -425,11 +427,9 @@ describe('OTC Integration Flow', () => {
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
         
-        const otcDescription = within(popupIframeDocument).getByText(/You can also use the one-time code to sign in here/i);
-        const otcInput = within(popupIframeDocument).getByLabelText(/Enter one-time code/i);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Verify Code'});
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
         
-        expect(otcDescription).toBeInTheDocument();
         expect(otcInput).toBeInTheDocument();
         expect(verifyButton).toBeInTheDocument();
 
@@ -451,8 +451,8 @@ describe('OTC Integration Flow', () => {
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
 
-        const otcDescription = within(popupIframeDocument).queryByText(/You can also use the one-time code to sign in here/i);
-        expect(otcDescription).not.toBeInTheDocument();
+        const otcInput = within(popupIframeDocument).queryByLabelText(OTC_LABEL_REGEX);
+        expect(otcInput).not.toBeInTheDocument();
 
         const closeButton = within(popupIframeDocument).getByRole('button', {name: 'Close'});
         expect(closeButton).toBeInTheDocument();
@@ -468,10 +468,8 @@ describe('OTC Integration Flow', () => {
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
 
-        const otcDescription = within(popupIframeDocument).getByText(/You can also use the one-time code to sign in here/i);
-        const otcInput = within(popupIframeDocument).getByLabelText(/Enter one-time code/i);
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
         
-        expect(otcDescription).toBeInTheDocument();
         expect(otcInput).toBeInTheDocument();
     });
 
@@ -482,17 +480,14 @@ describe('OTC Integration Flow', () => {
 
         await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
 
-        const otcDescription = within(popupIframeDocument).getByText(/You can also use the one-time code to sign in here/i);
-        expect(otcDescription).toBeInTheDocument();
-
         const closeButton = within(popupIframeDocument).getByTestId('close-popup');
         expect(closeButton).toBeInTheDocument();
 
         const backToSignin = within(popupIframeDocument).queryByText(/Back to Log in/i);
         expect(backToSignin).not.toBeInTheDocument();
 
-        const otcInput = within(popupIframeDocument).getByLabelText(/Enter one-time code/i);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Verify Code'});
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
         expect(otcInput).toBeInTheDocument();
         expect(verifyButton).toBeInTheDocument();
     });
