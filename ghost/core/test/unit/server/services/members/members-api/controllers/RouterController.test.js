@@ -856,6 +856,91 @@ describe('RouterController', function () {
                 sendEmailWithMagicLinkStub.notCalled.should.be.true();
             });
         });
+
+        describe('membersSigninOTC feature flag', function () {
+            let req, res, handleSigninStub, routerController;
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'test@example.com',
+                        emailType: 'signin'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                handleSigninStub = sinon.stub();
+                
+                routerController = new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    labsService: {
+                        isSet: sinon.stub()
+                    },
+                    settingsCache: {
+                        get: sinon.stub().returns([])
+                    },
+                    offersAPI: {},
+                    paymentsService: {},
+                    memberRepository: {},
+                    StripePrice: {},
+                    magicLinkService: {},
+                    stripeAPIService: {},
+                    tokenService: {},
+                    sendEmailWithMagicLink: sinon.stub(),
+                    newslettersService: {},
+                    sentry: {},
+                    urlUtils: {}
+                });
+                
+                routerController._handleSignin = handleSigninStub;
+            });
+
+            it('should return otc_ref when flag is enabled and tokenId exists', async function () {
+                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+                handleSigninStub.resolves({tokenId: 'test-token-123'});
+
+                await routerController.sendMagicLink(req, res);
+
+                res.writeHead.calledWith(201, {'Content-Type': 'application/json'}).should.be.true();
+                res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})).should.be.true();
+            });
+
+            it('should not return otc_ref when flag is disabled', async function () {
+                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(false);
+                handleSigninStub.resolves({tokenId: 'test-token-123'});
+
+                await routerController.sendMagicLink(req, res);
+
+                res.writeHead.calledWith(201).should.be.true();
+                res.end.calledWith('Created.').should.be.true();
+            });
+
+            it('should not return otc_ref when flag is enabled but no tokenId', async function () {
+                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+                handleSigninStub.resolves({tokenId: null});
+
+                await routerController.sendMagicLink(req, res);
+
+                res.writeHead.calledWith(201).should.be.true();
+                res.end.calledWith('Created.').should.be.true();
+            });
+
+            it('should not return otc_ref when flag is enabled but tokenId is undefined', async function () {
+                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+                handleSigninStub.resolves({});
+
+                await routerController.sendMagicLink(req, res);
+
+                res.writeHead.calledWith(201).should.be.true();
+                res.end.calledWith('Created.').should.be.true();
+            });
+        });
     });
 
     describe('_generateSuccessUrl', function () {

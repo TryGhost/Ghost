@@ -17,6 +17,7 @@ const messages = {
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
+ * @prop {(token: T) => Promise<string | null>} [getIdByToken]
  */
 
 /**
@@ -34,6 +35,7 @@ class MagicLink {
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
      * @param {object} [options.sentry]
+     * @param {{isSet(name: string): boolean}} [options.labsService]
      */
     constructor(options) {
         if (!options || !options.transporter || !options.tokenProvider || !options.getSigninURL) {
@@ -46,6 +48,7 @@ class MagicLink {
         this.getHTML = options.getHTML || defaultGetHTML;
         this.getSubject = options.getSubject || defaultGetSubject;
         this.sentry = options.sentry || undefined;
+        this.labsService = options.labsService || undefined;
     }
 
     /**
@@ -56,7 +59,7 @@ class MagicLink {
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
-     * @returns {Promise<{token: Token, info: SentMessageInfo}>}
+     * @returns {Promise<{token: Token, tokenId: string | null, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
@@ -79,8 +82,18 @@ class MagicLink {
             text: this.getText(url, type, options.email),
             html: this.getHTML(url, type, options.email)
         });
+        
+        let tokenId = null;
+        if (this.labsService?.isSet('membersSigninOTC') && typeof this.tokenProvider.getIdByToken === 'function') {
+            try {
+                tokenId = await this.tokenProvider.getIdByToken(token);
+            } catch (err) {
+                this.sentry?.captureException?.(err);
+                tokenId = null;
+            }
+        }
 
-        return {token, info};
+        return {token, tokenId, info};
     }
 
     /**
