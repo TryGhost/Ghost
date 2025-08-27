@@ -87,6 +87,5 @@ RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn nx run-many -t build --exclude=ghost-admin
-RUN yarn workspace ghost-admin build
+RUN yarn build
 CMD ["yarn", "dev"]
