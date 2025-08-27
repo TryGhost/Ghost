@@ -49,7 +49,7 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "2368:2368"
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
     depends_on:
       mysql:
@@ -90,13 +90,13 @@ services:
     ports:
       - "4200:4200"
       - "4201:4201"
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
 
   caddy:
     image: caddy:latest
     container_name: ghost-caddy
-    profiles: [ split ]
+    profiles: [ split, all ]
     ports:
       - "80:80"
       - "443:443"
@@ -125,7 +125,7 @@ services:
       - "6174:6174" # Signup form
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
-    profiles: [ ghost ]
+    profiles: [ ghost, all]
     tty: true
     depends_on:
       mysql:
@@ -170,7 +170,7 @@ services:
       retries: 120
 
   analytics:
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     image: ghost/traffic-analytics:1
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -197,7 +197,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/tb-cli/Dockerfile
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     working_dir: /home/tinybird
     tty: true
     container_name: ghost-tb-cli
@@ -211,7 +211,7 @@ services:
         condition: service_healthy
 
   tinybird-local:
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     image: tinybirdco/tinybird-local:latest
     platform: linux/amd64
     ports:
@@ -224,7 +224,7 @@ services:
       retries: 120
 
   prometheus:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: prom/prometheus:v2.55.1
     container_name: ghost-prometheus
     ports:
@@ -234,7 +234,7 @@ services:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: grafana/grafana:8.5.27
     container_name: ghost-grafana
     ports:
@@ -249,7 +249,7 @@ services:
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
 
   pushgateway:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
@@ -259,7 +259,7 @@ services:
     image: mailhog/mailhog:latest
     platform: linux/amd64
     container_name: ghost-mailhog
-    profiles: [ ghost, split ]
+    profiles: [ ghost, split, all ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
