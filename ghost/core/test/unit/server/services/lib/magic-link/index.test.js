@@ -114,7 +114,7 @@ describe('MagicLink', function () {
     });
 
     describe('#sendMagicLink with labsService', function () {
-        it('should return tokenId when labsService is provided and flag is enabled', async function () {
+        it('should not return tokenId when labsService is provided and flag is enabled but includeOTC is not set', async function () {
             const labsService = {
                 isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
             };
@@ -130,9 +130,8 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, 'test-token-id-123');
-            assert(labsService.isSet.calledWith('membersSigninOTC'));
-            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert.equal(result.tokenId, null);
+            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
         });
 
         it('should not return tokenId when labsService flag is disabled', async function () {
@@ -146,13 +145,13 @@ describe('MagicLink', function () {
                 email: 'test@example.com',
                 tokenData: {
                     id: '420'
-                }
+                },
+                includeOTC: true
             };
 
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.tokenId, null);
-            assert(labsService.isSet.calledWith('membersSigninOTC'));
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
         });
 
@@ -163,7 +162,8 @@ describe('MagicLink', function () {
                 email: 'test@example.com',
                 tokenData: {
                     id: '420'
-                }
+                },
+                includeOTC: true
             };
 
             // Should not throw any errors
@@ -188,13 +188,13 @@ describe('MagicLink', function () {
                 email: 'test@example.com',
                 tokenData: {
                     id: '420'
-                }
+                },
+                includeOTC: true
             };
 
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.tokenId, null);
-            assert(labsService.isSet.calledWith('membersSigninOTC'));
             assert(options.transporter.sendMail.calledOnce);
         });
 
@@ -211,14 +211,212 @@ describe('MagicLink', function () {
                 email: 'test@example.com',
                 tokenData: {
                     id: '420'
-                }
+                },
+                includeOTC: true
             };
 
             const result = await service.sendMagicLink(args);
 
             assert.equal(result.tokenId, null);
-            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            // deriveOTC is only possible with a token so it's skipped if getIdByToken returns null
+            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            assert(mockSingleUseTokenProvider.getIdByToken.calledTwice);
+        });
+
+        it('should include OTC when includeOTC is true and labs flag is enabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = buildOptions({labsService});
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                },
+                includeOTC: true
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert(mockSingleUseTokenProvider.getIdByToken.calledTwice);
+            assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
+            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-id-123', 'mock-token'));
+            assert.equal(result.tokenId, 'test-token-id-123');
+
+            // Verify OTC is passed to email content functions
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+            assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
+        });
+
+        it('should not include OTC when includeOTC is false even if labs flag is enabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = buildOptions({labsService});
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                },
+                includeOTC: false
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            assert.equal(result.tokenId, null);
+
+            // Verify OTC is not passed to email content functions
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+            assert(options.getSubject.firstCall.calledWithExactly('signin', null));
+        });
+
+        it('should not include OTC when includeOTC is true but labs flag is disabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
+            };
+
+            const service = new MagicLink(buildOptions({labsService}));
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                },
+                includeOTC: true
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+            assert.equal(result.tokenId, null);
+        });
+
+        it('should pass OTC to email content functions when OTC is enabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = buildOptions({labsService});
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                },
+                includeOTC: true
+            };
+
+            await service.sendMagicLink(args);
+
+            assert(options.getText.calledOnce);
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+
+            assert(options.getHTML.calledOnce);
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
+
+            assert(options.getSubject.calledOnce);
+            assert(options.getSubject.firstCall.calledWithExactly('signin', '654321'));
+        });
+
+        it('should not include OTC when tokenProvider lacks deriveOTC method', async function () {
+            delete mockSingleUseTokenProvider.deriveOTC;
+
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = buildOptions({labsService});
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                },
+                includeOTC: true
+            };
+
+            await service.sendMagicLink(args);
+
+            assert(options.getText.calledOnce);
+            assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+
+            assert(options.getHTML.calledOnce);
+            assert(options.getHTML.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
+
+            assert(options.getSubject.calledOnce);
+            assert(options.getSubject.firstCall.calledWithExactly('signin', null));
+        });
+    });
+
+    describe('#getIdFromToken', function () {
+        it('should return token ID when tokenProvider has getIdByToken method', async function () {
+            const service = new MagicLink(buildOptions());
+            const tokenId = await service.getIdFromToken('mock-token');
+
+            assert.equal(tokenId, 'test-token-id-123');
             assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.getIdByToken.calledWith('mock-token'));
+        });
+
+        it('should return null when tokenProvider lacks getIdByToken method', async function () {
+            delete mockSingleUseTokenProvider.getIdByToken;
+            const service = new MagicLink(buildOptions());
+            const tokenId = await service.getIdFromToken('mock-token');
+
+            assert.equal(tokenId, null);
+        });
+    });
+
+    describe('#getOTCFromToken', function () {
+        it('should return OTC when tokenProvider has required methods', async function () {
+            const service = new MagicLink(buildOptions());
+            const otc = await service.getOTCFromToken('mock-token');
+
+            assert.equal(otc, '654321');
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
+            assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-id-123', 'mock-token'));
+        });
+
+        it('should return null when tokenProvider lacks getIdByToken method', async function () {
+            delete mockSingleUseTokenProvider.getIdByToken;
+            const service = new MagicLink(buildOptions());
+            const otc = await service.getOTCFromToken('mock-token');
+
+            assert.equal(otc, null);
+            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
+        });
+
+        it('should return null when tokenProvider lacks deriveOTC method', async function () {
+            delete mockSingleUseTokenProvider.deriveOTC;
+            const service = new MagicLink(buildOptions());
+            const otc = await service.getOTCFromToken('mock-token');
+
+            assert.equal(otc, null);
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+        });
+
+        it('should return null when getIdByToken returns null', async function () {
+            mockSingleUseTokenProvider.getIdByToken.resolves(null);
+            const service = new MagicLink(buildOptions());
+            const otc = await service.getOTCFromToken('mock-token');
+
+            assert.equal(otc, null);
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+            assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
         });
     });
 });

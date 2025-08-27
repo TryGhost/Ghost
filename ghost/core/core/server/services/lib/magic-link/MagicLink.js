@@ -81,7 +81,12 @@ class MagicLink {
 
         let otc = null;
         if (this.labsService?.isSet('membersSigninOTC') && options.includeOTC) {
-            otc = await this.getOTCFromToken(token);
+            try {
+                otc = await this.getOTCFromToken(token);
+            } catch (err) {
+                this.sentry?.captureException?.(err);
+                otc = null;
+            }
         }
 
         const info = await this.transporter.sendMail({
@@ -91,8 +96,10 @@ class MagicLink {
             html: this.getHTML(url, type, options.email, otc)
         });
 
+        // return tokenId so we can pass it as a reference to the client so it
+        // can pass it back as a reference when verifying the OTC
         let tokenId = null;
-        if (this.labsService?.isSet('membersSigninOTC')) {
+        if (this.labsService?.isSet('membersSigninOTC') && options.includeOTC) {
             try {
                 tokenId = await this.getIdFromToken(token);
             } catch (err) {
