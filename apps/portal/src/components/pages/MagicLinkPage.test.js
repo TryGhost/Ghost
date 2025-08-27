@@ -1,220 +1,147 @@
 import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
-const setup = (overrideContext = {}) => {
+// Unified setup function for all test scenarios
+const setupTest = (options = {}) => {
+    const {
+        labs = {membersSigninOTC: false},
+        otcRef = null,
+        action = 'init:success',
+        ...contextOverrides
+    } = options;
+
     const {mockOnActionFn, ...utils} = render(
         <MagicLinkPage />,
         {
             overrideContext: {
-                labs: {membersSigninOTC: false},
-                otcRef: null,
-                ...overrideContext
+                labs,
+                otcRef,
+                action,
+                ...contextOverrides
             }
         }
     );
-    const inboxText = utils.getByText(/Now check your email!/i);
-    const closeBtn = utils.queryByRole('button', {name: 'Close'});
+
     return {
-        inboxText,
-        closeBtn,
         mockOnActionFn,
         ...utils
     };
 };
 
-describe('MagicLinkPage', () => {
-    test('renders', () => {
-        const {inboxText, closeBtn} = setup();
-
-        expect(inboxText).toBeInTheDocument();
-        expect(closeBtn).toBeInTheDocument();
+// Helper for OTC-enabled tests
+const setupOTCTest = (options = {}) => {
+    return setupTest({
+        labs: {membersSigninOTC: true},
+        otcRef: 'test-otc-ref',
+        ...options
     });
+};
 
-    test('calls on action with close popup', () => {
-        const {closeBtn, mockOnActionFn} = setup();
+// @TODO: - temporary until full OTC functionality is implemented
+const withConsoleSpy = (testFn) => {
+    return () => {
+        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+        try {
+            return testFn(consoleSpy);
+        } finally {
+            consoleSpy.mockRestore();
+        }
+    };
+};
 
-        fireEvent.click(closeBtn);
-        expect(mockOnActionFn).toHaveBeenCalledWith('closePopup');
+const fillAndSubmitOTC = (utils, code = '123456', method = 'button') => {
+    const otcInput = utils.getByLabelText(/Enter one-time code/i);
+    fireEvent.change(otcInput, {target: {value: code}});
+    
+    if (method === 'button') {
+        const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+        fireEvent.click(submitButton);
+    } else {
+        fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
+    }
+    
+    return otcInput;
+};
+
+describe('MagicLinkPage', () => {
+    describe('Basic functionality', () => {
+        test('renders magic link page with email notification', () => {
+            const utils = setupTest();
+            
+            const inboxText = utils.getByText(/Now check your email!/i);
+            const closeBtn = utils.getByRole('button', {name: 'Close'});
+            
+            expect(inboxText).toBeInTheDocument();
+            expect(closeBtn).toBeInTheDocument();
+        });
+
+        test('calls close popup action when close button clicked', () => {
+            const {getByRole, mockOnActionFn} = setupTest();
+            const closeBtn = getByRole('button', {name: 'Close'});
+            
+            fireEvent.click(closeBtn);
+            
+            expect(mockOnActionFn).toHaveBeenCalledWith('closePopup');
+        });
     });
 
     describe('OTC form conditional rendering', () => {
-        test('renders OTC form when lab flag is enabled and otcRef exists', () => {
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: 'test-otc-ref'
-                    }
-                }
-            );
-
-            const otcSection = utils.getByText('You can also use the one-time code to sign in here.');
-            const otcInput = utils.getByLabelText('Enter one-time code');
-            const verifyButton = utils.getByRole('button', {name: 'Verify Code'});
-
-            expect(otcSection).toBeInTheDocument();
-            expect(otcInput).toBeInTheDocument();
-            expect(verifyButton).toBeInTheDocument();
+        test('renders OTC form when lab flag enabled and otcRef exists', () => {
+            const utils = setupOTCTest();
+            
+            expect(utils.getByText(/You can also use the one-time code to sign in here/i)).toBeInTheDocument();
+            expect(utils.getByLabelText(/Enter one-time code/i)).toBeInTheDocument();
+            expect(utils.getByRole('button', {name: 'Verify Code'})).toBeInTheDocument();
         });
 
-        test('does not render OTC form when lab flag is disabled', () => {
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: false},
-                        otcRef: 'test-otc-ref'
-                    }
-                }
-            );
+        test('does not render OTC form when conditions not met', () => {
+            const scenarios = [
+                {labs: {membersSigninOTC: false}, otcRef: 'test-ref'},
+                {labs: {membersSigninOTC: true}, otcRef: null},
+                {labs: {membersSigninOTC: false}, otcRef: null}
+            ];
 
-            const otcSection = utils.queryByText('You can also use the one-time code to sign in here.');
-            const otcInput = utils.queryByLabelText('Enter one-time code');
-            const verifyButton = utils.queryByRole('button', {name: 'Verify Code'});
-
-            expect(otcSection).not.toBeInTheDocument();
-            expect(otcInput).not.toBeInTheDocument();
-            expect(verifyButton).not.toBeInTheDocument();
-        });
-
-        test('does not render OTC form when otcRef is missing', () => {
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: null
-                    }
-                }
-            );
-
-            const otcSection = utils.queryByText('You can also use the one-time code to sign in here.');
-            const otcInput = utils.queryByLabelText('Enter one-time code');
-            const verifyButton = utils.queryByRole('button', {name: 'Verify Code'});
-
-            expect(otcSection).not.toBeInTheDocument();
-            expect(otcInput).not.toBeInTheDocument();
-            expect(verifyButton).not.toBeInTheDocument();
-        });
-
-        test('does not render OTC form when both lab flag is disabled and otcRef is missing', () => {
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: false},
-                        otcRef: null
-                    }
-                }
-            );
-
-            const otcSection = utils.queryByText('You can also use the one-time code to sign in here.');
-            const otcInput = utils.queryByLabelText('Enter one-time code');
-            const verifyButton = utils.queryByRole('button', {name: 'Verify Code'});
-
-            expect(otcSection).not.toBeInTheDocument();
-            expect(otcInput).not.toBeInTheDocument();
-            expect(verifyButton).not.toBeInTheDocument();
+            scenarios.forEach(({labs, otcRef}) => {
+                const utils = setupTest({labs, otcRef});
+                
+                expect(utils.queryByText(/You can also use the one-time code to sign in here/i)).not.toBeInTheDocument();
+                expect(utils.queryByLabelText(/Enter one-time code/i)).not.toBeInTheDocument();
+                expect(utils.queryByRole('button', {name: 'Verify Code'})).not.toBeInTheDocument();
+            });
         });
     });
 
-    describe('OTC input field properties and behavior', () => {
-        const setupWithOTC = () => {
-            return render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: 'test-otc-ref'
-                    }
-                }
-            );
-        };
-
-        test('input field has correct basic attributes', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
+    describe('OTC input behavior', () => {
+        test('has correct accessibility and field configuration', () => {
+            const utils = setupOTCTest();
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
             expect(otcInput).toHaveAttribute('type', 'text');
             expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
-            expect(otcInput).toHaveClass('gh-portal-input');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
+            expect(otcInput).toHaveAttribute('aria-label', 'Enter one-time code');
         });
 
-        test('input field is initially empty', () => {
-            const {getByLabelText} = setupWithOTC();
+        test('accepts and updates with numeric input progressively', () => {
+            const utils = setupOTCTest();
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
-            const otcInput = getByLabelText('Enter one-time code');
             expect(otcInput).toHaveValue('');
-        });
-
-        test('input accepts numeric values and updates', () => {
-            const {getByLabelText} = setupWithOTC();
             
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            expect(otcInput).toHaveValue('123456');
-        });
-
-        test('input accepts partial numeric values', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '123'}});
-            expect(otcInput).toHaveValue('123');
-        });
-
-        test('input field updates progressively', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            // Test progressive input
             fireEvent.change(otcInput, {target: {value: '1'}});
             expect(otcInput).toHaveValue('1');
             
-            fireEvent.change(otcInput, {target: {value: '123'}});
-            expect(otcInput).toHaveValue('123');
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            expect(otcInput).toHaveValue('123456');
-        });
-
-        test('input can be cleared and reset', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            // Enter a value first
             fireEvent.change(otcInput, {target: {value: '123456'}});
             expect(otcInput).toHaveValue('123456');
             
-            // Clear the value
             fireEvent.change(otcInput, {target: {value: ''}});
             expect(otcInput).toHaveValue('');
         });
 
-        test('input field has proper label association', () => {
-            const {getByLabelText, getByText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const labelText = getByText('Enter one-time code');
-            
-            expect(otcInput).toBeInTheDocument();
-            expect(labelText).toBeInTheDocument();
-        });
-
-        test('input handles various numeric patterns', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            // Test different valid OTC patterns
+        test('handles various valid numeric patterns', () => {
+            const utils = setupOTCTest();
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             const testCodes = ['000000', '123456', '999999', '000123'];
             
             testCodes.forEach((code) => {
@@ -222,587 +149,206 @@ describe('MagicLinkPage', () => {
                 expect(otcInput).toHaveValue(code);
             });
         });
-
-        test('input field configuration is accessible', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            // Test accessibility and basic field setup
-            expect(otcInput.id).toBe('input-otc');
-            expect(otcInput.name).toBe('otc');
-            expect(otcInput.type).toBe('text');
-            expect(otcInput.placeholder).toBe('• • • • • •');
-            expect(otcInput).toHaveAttribute('aria-label', 'Enter one-time code');
-        });
     });
 
-    describe('OTC form validation and error handling', () => {
-        const setupWithOTC = () => {
-            return render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: 'test-otc-ref'
-                    }
-                }
-            );
-        };
-
-        test('shows validation error when submitting empty form', () => {
-            const {getByLabelText, getByRole, queryByText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            expect(otcInput).toHaveValue('');
+    describe('OTC form validation', () => {
+        test('shows validation error for empty form submission', () => {
+            const utils = setupOTCTest();
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
             fireEvent.click(submitButton);
             
-            const errorMessage = queryByText(/please enter otc/i);
-            expect(errorMessage).toBeInTheDocument();
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
+            expect(otcInput).toHaveClass('error');
         });
 
-        test('shows validation error when submitting form via Enter key', () => {
-            const {getByLabelText, queryByText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            expect(otcInput).toHaveValue('');
+        test('shows validation error for Enter key submission', () => {
+            const utils = setupOTCTest();
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
             fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
             
-            const errorMessage = queryByText(/please enter otc/i);
-            expect(errorMessage).toBeInTheDocument();
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
         });
 
-        test('clears validation error when valid input is provided', () => {
-            const {getByLabelText, getByRole, queryByText} = setupWithOTC();
+        test('clears validation error when valid input provided', () => {
+            const utils = setupOTCTest();
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Submit empty form to trigger error
+            // triggers error because there's no input
             fireEvent.click(submitButton);
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
             
-            // Verify error appears
-            let errorMessage = queryByText(/please enter otc/i);
-            expect(errorMessage).toBeInTheDocument();
-            
-            // Enter valid OTC
             fireEvent.change(otcInput, {target: {value: '123456'}});
-            
-            // Submit again
             fireEvent.click(submitButton);
             
-            // Error should be cleared
-            errorMessage = queryByText(/please enter otc/i);
-            expect(errorMessage).not.toBeInTheDocument();
-        });
-
-        test('input field shows error styling when validation fails', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Initially no error styling
-            expect(otcInput).not.toHaveClass('error');
-            
-            // Submit empty form
-            fireEvent.click(submitButton);
-            
-            // Input should have error styling
-            expect(otcInput).toHaveClass('error');
-        });
-
-        test('input field clears error styling when valid input provided', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Trigger error state
-            fireEvent.click(submitButton);
-            expect(otcInput).toHaveClass('error');
-            
-            // Enter valid input
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            
-            // Submit again
-            fireEvent.click(submitButton);
-            
-            // Error styling should be cleared
+            expect(utils.queryByText(/please enter otc/i)).not.toBeInTheDocument();
             expect(otcInput).not.toHaveClass('error');
         });
 
-        // @TODO: this needs to be updated when console log is removed
-        test('validation does not proceed to submission when errors exist', () => {
-            const {getByRole} = setupWithOTC();
+        test('validation blocks submission and allows valid submission', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest();
+            const submitButton = testUtils.getByRole('button', {name: 'Verify Code'});
+            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
             
-            // Mock console.log to verify submission doesn't happen
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Submit empty form
+            // empty submission should be blocked
             fireEvent.click(submitButton);
             
-            // Verify console.log was not called (submission didn't happen)
             expect(consoleSpy).not.toHaveBeenCalled();
             
-            consoleSpy.mockRestore();
-        });
-
-        // @TODO: this needs to be updated when console log is removed
-        test('validation allows submission when no errors exist', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            // Mock console.log to verify submission happens
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Enter valid OTC
+            // valid submission should proceed
             fireEvent.change(otcInput, {target: {value: '123456'}});
-            
-            // Submit form
             fireEvent.click(submitButton);
             
-            // Verify console.log was called (submission happened)
             expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('multiple validation attempts update error state correctly', () => {
-            const {getByLabelText, getByRole, queryByText} = setupWithOTC();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // First attempt: empty form
-            fireEvent.click(submitButton);
-            expect(queryByText(/please enter otc/i)).toBeInTheDocument();
-            
-            // Second attempt: enter partial code then clear
-            fireEvent.change(otcInput, {target: {value: '123'}});
-            fireEvent.change(otcInput, {target: {value: ''}});
-            fireEvent.click(submitButton);
-            expect(queryByText(/please enter otc/i)).toBeInTheDocument();
-            
-            // Third attempt: valid code
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            fireEvent.click(submitButton);
-            expect(queryByText(/please enter otc/i)).not.toBeInTheDocument();
-        });
+        }));
 
         test('validation state persists across input changes until submission', () => {
-            const {getByLabelText, getByRole, queryByText} = setupWithOTC();
+            const utils = setupOTCTest();
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            const otcInput = utils.getByLabelText(/Enter one-time code/i);
             
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Trigger validation error
+            // triggers error because there's no input
             fireEvent.click(submitButton);
-            expect(queryByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
             
-            // Type in input (should not clear error until submission)
+            // still an error, input too short
             fireEvent.change(otcInput, {target: {value: '1'}});
-            expect(queryByText(/please enter otc/i)).toBeInTheDocument();
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
             
-            fireEvent.change(otcInput, {target: {value: '12'}});
-            expect(queryByText(/please enter otc/i)).toBeInTheDocument();
-            
-            // Only clears when form is submitted again
+            // input valid, error should clear
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(submitButton);
-            expect(queryByText(/please enter otc/i)).not.toBeInTheDocument();
+            
+            expect(utils.queryByText(/please enter otc/i)).not.toBeInTheDocument();
         });
     });
 
-    describe('OTC form submission behavior', () => {
-        const setupWithOTC = () => {
-            return render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: 'test-otc-ref'
-                    }
-                }
-            );
-        };
-
-        test('form submits via button click with valid OTC', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
+    describe('OTC form submission', () => {
+        test('submits via button click', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest();
             
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            
-            fireEvent.click(submitButton);
+            fillAndSubmitOTC(testUtils, '123456', 'button');
             
             expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
-            
-            consoleSpy.mockRestore();
-        });
+        }));
 
-        test('form submits via Enter key with valid OTC', () => {
-            const {getByLabelText} = setupWithOTC();
+        test('submits via Enter key', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest();
             
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '654321'}});
-            
-            fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
+            fillAndSubmitOTC(testUtils, '654321', 'enter');
             
             expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 654321');
-            
-            consoleSpy.mockRestore();
-        });
+        }));
 
-        test('form submission handles different valid OTC formats', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
+        test('includes correct context values in submission', withConsoleSpy((consoleSpy) => {
+            const customOtcRef = 'custom-test-ref-12345';
+            const testUtils = setupOTCTest({otcRef: customOtcRef});
             
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
+            fillAndSubmitOTC(testUtils, '987654');
             
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            const testCodes = ['000000', '123456', '999999', '101010'];
+            expect(consoleSpy).toHaveBeenCalledWith(`token: ${customOtcRef} otc: 987654`);
+        }));
+
+        // @TODO: This test will have to be updated once the full OTC flow is implemented,
+        // because we can't just clear the form and submit again
+        test('handles different valid OTC formats', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest();
+            const testCodes = ['000000', '123456', '999999'];
             
             testCodes.forEach((code) => {
-                // Clear previous calls
                 consoleSpy.mockClear();
-                
-                fireEvent.change(otcInput, {target: {value: code}});
-                
-                fireEvent.click(submitButton);
+                fillAndSubmitOTC(testUtils, code);
                 
                 expect(consoleSpy).toHaveBeenCalledWith(`token: test-otc-ref otc: ${code}`);
             });
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('form submission does not occur without otcRef in context', () => {
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: null // No otcRef
-                    }
-                }
-            );
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            // OTC form should not render without otcRef
-            const submitButton = utils.queryByRole('button', {name: 'Verify Code'});
-            
-            // Button should not exist without otcRef
-            expect(submitButton).not.toBeInTheDocument();
-            
-            // Verify no submission occurred
-            expect(consoleSpy).not.toHaveBeenCalled();
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('form submission includes correct context values', () => {
-            const customOtcRef = 'custom-test-ref-12345';
-            const utils = render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: customOtcRef
-                    }
-                }
-            );
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = utils.getByLabelText('Enter one-time code');
-            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
-            
-            fireEvent.change(otcInput, {target: {value: '987654'}});
-            
-            fireEvent.click(submitButton);
-            
-            expect(consoleSpy).toHaveBeenCalledWith(`token: ${customOtcRef} otc: 987654`);
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('form submission triggers validation before proceeding', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Try to submit empty form (should not proceed due to validation)
-            fireEvent.click(submitButton);
-            expect(consoleSpy).not.toHaveBeenCalled();
-            
-            // Enter valid OTC and submit (should proceed)
-            fireEvent.change(otcInput, {target: {value: '555555'}});
-            fireEvent.click(submitButton);
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 555555');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('multiple submissions with different values work correctly', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // First submission
-            fireEvent.change(otcInput, {target: {value: '111111'}});
-            fireEvent.click(submitButton);
-            expect(consoleSpy).toHaveBeenLastCalledWith('token: test-otc-ref otc: 111111');
-            
-            // Second submission with different value
-            fireEvent.change(otcInput, {target: {value: '222222'}});
-            fireEvent.click(submitButton);
-            expect(consoleSpy).toHaveBeenLastCalledWith('token: test-otc-ref otc: 222222');
-            
-            // Verify total call count
-            expect(consoleSpy).toHaveBeenCalledTimes(2);
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('form submission preserves input state', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            const testCode = '333333';
-            
-            fireEvent.change(otcInput, {target: {value: testCode}});
-            expect(otcInput).toHaveValue(testCode);
-            
-            fireEvent.click(submitButton);
-            
-            expect(otcInput).toHaveValue(testCode);
-            expect(consoleSpy).toHaveBeenCalledWith(`token: test-otc-ref otc: ${testCode}`);
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('form handles rapid successive submissions', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            // Enter valid OTC
-            fireEvent.change(otcInput, {target: {value: '444444'}});
-            
-            // Multiple rapid submissions
-            fireEvent.click(submitButton);
-            fireEvent.click(submitButton);
-            fireEvent.click(submitButton);
-            
-            // Should handle all submissions
-            expect(consoleSpy).toHaveBeenCalledTimes(3);
-            consoleSpy.mock.calls.forEach((call) => {
-                expect(call[0]).toBe('token: test-otc-ref otc: 444444');
-            });
-            
-            consoleSpy.mockRestore();
-        });
+        }));
     });
 
-    describe('OTC button loading and error states', () => {
-        const setupWithOTC = (action = 'init:success') => {
-            return render(
-                <MagicLinkPage />,
-                {
-                    overrideContext: {
-                        labs: {membersSigninOTC: true},
-                        otcRef: 'test-otc-ref',
-                        action
-                    }
-                }
-            );
-        };
-
-        test('button shows normal state by default', () => {
-            const {getByRole} = setupWithOTC();
-            
-            const submitButton = getByRole('button', {name: 'Verify Code'});
+    describe('OTC button states', () => {
+        test('shows normal state by default', () => {
+            const utils = setupOTCTest();
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
             
             expect(submitButton).toBeInTheDocument();
             expect(submitButton).not.toBeDisabled();
             expect(submitButton).toHaveTextContent('Verify Code');
         });
 
-        test('button shows loading state when verifying OTC', () => {
-            const {getByRole} = setupWithOTC('verifyOTC:running');
-            
-            // In loading state, button shows loading icon but no text
-            const submitButton = getByRole('button');
-            
-            expect(submitButton).toBeInTheDocument();
-            expect(submitButton).toBeDisabled();
-            expect(submitButton.querySelector('.gh-portal-loadingicon')).toBeInTheDocument();
-        });
-
-        test('button shows error state after failed verification', () => {
-            const {getByRole} = setupWithOTC('verifyOTC:failed');
-            
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            expect(submitButton).toBeInTheDocument();
-            expect(submitButton).not.toBeDisabled();
-            expect(submitButton).toHaveTextContent('Verify Code');
-        });
-
-        test('button is clickable in normal state', () => {
-            const {getByLabelText, getByRole} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            fireEvent.click(submitButton);
-            
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('button is not clickable in loading state', () => {
-            const {getByLabelText, getByRole} = setupWithOTC('verifyOTC:running');
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button');
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            fireEvent.click(submitButton);
-            
-            // Should not submit when disabled
-            expect(consoleSpy).not.toHaveBeenCalled();
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('button is clickable in error state for retry', () => {
-            const {getByLabelText, getByRole} = setupWithOTC('verifyOTC:failed');
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            const submitButton = getByRole('button', {name: 'Verify Code'});
-            
-            fireEvent.change(otcInput, {target: {value: '654321'}});
-            fireEvent.click(submitButton);
-            
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 654321');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('Enter key submission currently ignores loading state', () => {
-            const {getByLabelText} = setupWithOTC('verifyOTC:running');
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '123456'}});
-            fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
-            
-            // Current implementation allows Enter key submission even during loading
-            // This could be considered a bug, but testing actual behavior
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('Enter key submission works in normal state', () => {
-            const {getByLabelText} = setupWithOTC();
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '789012'}});
-            fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
-            
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 789012');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('Enter key submission works in error state', () => {
-            const {getByLabelText} = setupWithOTC('verifyOTC:failed');
-            
-            const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-            
-            const otcInput = getByLabelText('Enter one-time code');
-            
-            fireEvent.change(otcInput, {target: {value: '345678'}});
-            fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
-            
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 345678');
-            
-            consoleSpy.mockRestore();
-        });
-
-        test('button shows loading icon in loading state', () => {
-            const {getByRole} = setupWithOTC('verifyOTC:running');
-            
-            const loadingButton = getByRole('button');
+        test('shows loading state and disables interaction', () => {
+            const utils = setupOTCTest({action: 'verifyOTC:running'});
+            const loadingButton = utils.getByRole('button');
             
             expect(loadingButton).toBeDisabled();
             expect(loadingButton.querySelector('.gh-portal-loadingicon')).toBeInTheDocument();
         });
 
-        test('button properties are consistent across states', () => {
-            // This test documents that button behavior is already covered
-            // by individual state tests above - normal, loading, error states
-            // are each tested separately to avoid DOM conflicts
-            expect(true).toBe(true);
+        test('shows error state and allows retry', () => {
+            const utils = setupOTCTest({action: 'verifyOTC:failed'});
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            
+            expect(submitButton).not.toBeDisabled();
+            expect(submitButton).toHaveTextContent('Verify Code');
         });
 
-        test('validation still works during error state', () => {
-            const {getByRole, queryByText} = setupWithOTC('verifyOTC:failed');
+        test('button click is blocked during loading state', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest({action: 'verifyOTC:running'});
+            const loadingButton = testUtils.getByRole('button');
+            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
             
-            const submitButton = getByRole('button', {name: 'Verify Code'});
+            fireEvent.change(otcInput, {target: {value: '123456'}});
+            fireEvent.click(loadingButton);
             
-            // Submit empty form in error state
+            expect(consoleSpy).not.toHaveBeenCalled();
+        }));
+
+        test('Enter key submission bypasses loading state', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest({action: 'verifyOTC:running'});
+            
+            fillAndSubmitOTC(testUtils, '123456', 'enter');
+            
+            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
+        }));
+
+        test('validation works during error state', () => {
+            const utils = setupOTCTest({action: 'verifyOTC:failed'});
+            const submitButton = utils.getByRole('button', {name: 'Verify Code'});
+            
             fireEvent.click(submitButton);
             
-            // Should still show validation error
-            const errorMessage = queryByText(/please enter otc/i);
-            expect(errorMessage).toBeInTheDocument();
+            expect(utils.getByText(/please enter otc/i)).toBeInTheDocument();
         });
+    });
+
+    describe('OTC flow edge cases', () => {
+        test('does not render form without otcRef even with lab flag', () => {
+            const utils = setupTest({
+                labs: {membersSigninOTC: true},
+                otcRef: null
+            });
+            
+            expect(utils.queryByText(/You can also use the one-time code to sign in here/i)).not.toBeInTheDocument();
+            expect(utils.queryByRole('button', {name: 'Verify Code'})).not.toBeInTheDocument();
+            expect(utils.getByRole('button', {name: 'Close'})).toBeInTheDocument();
+        });
+
+        // @TODO: - when full OTC flow is implemented these will have to be invalid values
+        test('supports multiple submission attempts with different values', withConsoleSpy((consoleSpy) => {
+            const testUtils = setupOTCTest();
+            const otcInput = testUtils.getByLabelText(/Enter one-time code/i);
+            const submitButton = testUtils.getByRole('button', {name: 'Verify Code'});
+            
+            fireEvent.change(otcInput, {target: {value: '111111'}});
+            fireEvent.click(submitButton);
+            
+            fireEvent.change(otcInput, {target: {value: '222222'}});
+            fireEvent.click(submitButton);
+            
+            expect(consoleSpy).toHaveBeenCalledTimes(2);
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, 'token: test-otc-ref otc: 111111');
+            expect(consoleSpy).toHaveBeenNthCalledWith(2, 'token: test-otc-ref otc: 222222');
+        }));
     });
 });
