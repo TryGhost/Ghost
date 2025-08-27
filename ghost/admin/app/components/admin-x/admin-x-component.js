@@ -71,8 +71,9 @@ export const importComponent = async (packageName) => {
         try {
             const remoteConfig = await fetch(remoteConfigUrl, window.location);
             const remoteConfigJson = await remoteConfig.json();
-            if (remoteConfigJson.cdnUrl) {
-                url = new URL(remoteConfigJson.cdnUrl);
+            const client = remoteConfigJson.client;
+            if (client && client.cdnUrl) {
+                url = new URL(client.cdnUrl);
             }
         } catch (error) {
             // Fallback to previous behaviour
