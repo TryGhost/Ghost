@@ -1851,11 +1851,9 @@ describe('PostsStatsService', function () {
             await _createMember('member3');
 
             // Current state
-            await db('members_newsletters').insert([
-                {id: 'mn1', member_id: 'member1', newsletter_id: newsletterId},
-                {id: 'mn2', member_id: 'member2', newsletter_id: newsletterId},
-                {id: 'mn3', member_id: 'member3', newsletter_id: newsletterId}
-            ]);
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+            await _createMemberNewsletterSubscription('member3', newsletterId);
 
             // Events spanning multiple days
             await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
