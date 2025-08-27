@@ -61,7 +61,7 @@ class MagicLink {
      * @param {TokenData} options.tokenData - The data for token
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
-     * @param {boolean} [options.otc=false] - Whether to send a one-time-code in the email.
+     * @param {boolean} [options.includeOTC=false] - Whether to send a one-time-code in the email.
      * @returns {Promise<{token: Token, tokenId: string | null, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
@@ -80,7 +80,7 @@ class MagicLink {
         const url = this.getSigninURL(token, type, options.referrer);
 
         let otc = null;
-        if (this.labsService?.isSet('membersSigninOTC') && options.otc) {
+        if (this.labsService?.isSet('membersSigninOTC') && options.includeOTC) {
             otc = await this.getOTCFromToken(token);
         }
 
