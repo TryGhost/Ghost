@@ -116,6 +116,44 @@ async function signin({data, api, state}) {
     }
 }
 
+async function verifyOTC({data, api, state}) {
+    const {t} = state;
+
+    try {
+        const response = await api.member.verifyOTC(data);
+
+        if (response.valid && response.success) {
+            // Redirect immediately using the provided URL (which includes referrer if available)
+            if (response.redirectUrl) {
+                window.location.href = response.redirectUrl;
+            } else {
+                // Fallback: redirect to current page or homepage
+                window.location.href = window.location.origin + window.location.pathname;
+            }
+
+            return {
+                action: 'verifyOTC:success'
+            };
+        } else {
+            return {
+                action: 'verifyOTC:failed',
+                popupNotification: createPopupNotification({
+                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                    message: response.message || t('Invalid verification code')
+                })
+            };
+        }
+    } catch (e) {
+        return {
+            action: 'verifyOTC:failed',
+            popupNotification: createPopupNotification({
+                type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
+            })
+        };
+    }
+}
+
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
@@ -579,6 +617,7 @@ const Actions = {
     back,
     signout,
     signin,
+    verifyOTC,
     signup,
     updateSubscription,
     cancelSubscription,

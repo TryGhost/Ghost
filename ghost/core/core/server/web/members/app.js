@@ -85,6 +85,11 @@ module.exports = function setupMembersApp() {
             return membersService.api.middleware.sendMagicLink(req, res, next);
         }
     );
+    // OTC verification
+    membersApp.post('/api/verify-otc', bodyParser.json({limit: '5mb'}), function lazyVerifyOTCMw(req, res, next) {
+        return membersService.api.middleware.verifyOTC(req, res, next);
+    });
+    
     membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSession(req, res, next);
     });

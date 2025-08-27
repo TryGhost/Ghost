@@ -14,6 +14,7 @@ const {obfuscatedSetting, isSecretSetting, hideValueIfSecret} = require('./setti
 const mail = require('../mail');
 const SingleUseTokenProvider = require('../members/SingleUseTokenProvider');
 const urlUtils = require('../../../shared/url-utils');
+const errors = require('@tryghost/errors');
 
 const ObjectId = require('bson-objectid').default;
 const settingsHelpers = require('../settings-helpers');
@@ -22,6 +23,30 @@ const emailAddressService = require('../email-address');
 const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
 const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
 const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
+
+/**
+ * Gets the auth secret for member token generation
+ * @returns {string} The auth secret
+ */
+function getAuthSecret() {
+    // Get the members email auth secret using SettingsCache
+    const hexSecret = SettingsCache.get('members_email_auth_secret');
+    if (!hexSecret) {
+        throw new errors.BadRequestError({
+            message: 'Authentication secret not configured'
+        });
+    }
+
+    // Convert hex secret to buffer (following MembersConfigProvider pattern)  
+    const secret = Buffer.from(hexSecret, 'hex');
+    if (secret.length < 64) {
+        throw new errors.BadRequestError({
+            message: 'Authentication secret not properly configured'
+        });
+    }
+
+    return secret.toString();
+}
 
 /**
  * @returns {SettingsBREADService} instance of the PostsService
@@ -37,7 +62,8 @@ const getSettingsBREADServiceInstance = () => {
             SingleUseTokenModel: models.SingleUseToken,
             validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
             validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
+            maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT,
+            secret: getAuthSecret()
         }),
         urlUtils,
         emailAddressService: emailAddressService
