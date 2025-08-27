@@ -19,7 +19,7 @@ const messages = {
  * @prop {(data: D) => Promise<T>} create
  * @prop {(token: T) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
- * @prop {(tokenId: string, tokenValue: T) => string} deriveOTC
+ * @prop {(tokenId: string, tokenValue: T) => string} [deriveOTC]
  */
 
 /**
@@ -92,9 +92,9 @@ class MagicLink {
         });
 
         let tokenId = null;
-        if (this.labsService?.isSet('membersSigninOTC') && typeof this.tokenProvider.getIdByToken === 'function') {
+        if (this.labsService?.isSet('membersSigninOTC')) {
             try {
-                tokenId = await this.tokenProvider.getIdByToken(token);
+                tokenId = await this.getIdFromToken(token);
             } catch (err) {
                 this.sentry?.captureException?.(err);
                 tokenId = null;
@@ -124,10 +124,14 @@ class MagicLink {
      * getIdFromToken
      *
      * @param {Token} token - The token to get the id from
-     * @returns {Promise<string>} id - The id of the token
+     * @returns {Promise<string|null>} id - The id of the token
      */
     async getIdFromToken(token) {
-        const id = await this.tokenProvider.getIdFromToken(token);
+        if (typeof this.tokenProvider.getIdByToken !== 'function') {
+            return null;
+        }
+
+        const id = await this.tokenProvider.getIdByToken(token);
         return id;
     }
 
@@ -135,10 +139,15 @@ class MagicLink {
      * getOTCFromToken
      *
      * @param {Token} token - The token to get the otc from
-     * @returns {Promise<string>} otc - The otc of the token
+     * @returns {Promise<string|null>} otc - The otc of the token
      */
     async getOTCFromToken(token) {
         const tokenId = await this.getIdFromToken(token);
+
+        if (!tokenId || typeof this.tokenProvider.deriveOTC !== 'function') {
+            return null;
+        }
+
         const otc = await this.tokenProvider.deriveOTC(tokenId, token);
         return otc;
     }
