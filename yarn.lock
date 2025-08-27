@@ -25336,10 +25336,10 @@ nwsapi@^2.2.0, nwsapi@^2.2.12:
   resolved "https://registry.yarnpkg.com/nwsapi/-/nwsapi-2.2.12.tgz#fb6af5c0ec35b27b4581eb3bbad34ec9e5c696f8"
   integrity sha512-qXDmcVlZV4XRtKFzddidpfVP4oMSGhga+xdMc25mv8kaLUHtgzCDhUxkrN8exkGdTlLNaXj7CV3GtON7zuGZ+w==
 
-nx@20.10.0:
-  version "20.10.0"
-  resolved "https://registry.yarnpkg.com/nx/-/nx-20.10.0.tgz#47d1a698f71191f788e8da7d8a97c9eae9228f70"
-  integrity sha512-QY2o5YZgqFAV23ciu6/bQ/ghcekSxGJtkqaIh/x0zkRiTY6ErvsuIIPP/Ss3c6GroROka0BoBTsFlXkCRPEdtQ==
+nx@20.12.0:
+  version "20.12.0"
+  resolved "https://registry.yarnpkg.com/nx/-/nx-20.12.0.tgz#68bcf3df6328e0a23e99dfec0e59e2a8b202ea83"
+  integrity sha512-m8LBFPkUdKsI8Yz6qrlnpZ8qkw3VNoGgtwXTGRiA8Oub61Evww7ZZyqX60OKnU6/WS3TRxM+0rNi51gsW23eDA==
   dependencies:
     "@napi-rs/wasm-runtime" "0.2.4"
     "@yarnpkg/lockfile" "^1.1.0"
