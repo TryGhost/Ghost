@@ -30,7 +30,7 @@ const Tags: React.FC = () => {
             <TagsHeader currentTab={type} />
             <TagsContent>
                 {isLoading ? (
-                    <div className="flex h-full items-center justify-center">
+                    <div className="flex h-full items-center justify-center"> 
                         <LoadingIndicator size="lg" />
                     </div>
                 ) : isError ? (
@@ -38,7 +38,7 @@ const Tags: React.FC = () => {
                         <h2 className="mb-2 text-xl font-medium">
                             Error loading tags
                         </h2>
-                        <p className="text-muted-foreground mb-4">
+                        <p className="mb-4 text-muted-foreground">
                             Please reload the page to try again
                         </p>
                         <Button onClick={() => window.location.reload()}>
@@ -47,7 +47,7 @@ const Tags: React.FC = () => {
                     </div>
                 ) : !data?.tags.length ? (
                     <div className="mb-16 flex h-full flex-col items-center justify-center gap-8">
-                        <LucideIcon.Tags className="text-muted-foreground -mb-4 size-16" strokeWidth={1} />
+                        <LucideIcon.Tags className="-mb-4 size-16 text-muted-foreground" strokeWidth={1} />
                         <h2 className="text-xl font-medium">
                             Start organizing your content
                         </h2>
