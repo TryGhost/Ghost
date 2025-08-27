@@ -34,7 +34,8 @@ export default class MagicLinkPage extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            [OTC_FIELD_NAME]: ''
+            [OTC_FIELD_NAME]: '',
+            errors: {}
         };
     }
 
@@ -112,6 +113,7 @@ export default class MagicLinkPage extends React.Component {
                 }], t: this.context.t})
             };
         }, async () => {
+            // eslint-disable-next-line no-unused-vars
             const {otc, errors} = this.state;
             const {otcRef} = this.context;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
@@ -121,7 +123,8 @@ export default class MagicLinkPage extends React.Component {
                 // eslint-disable-next-line no-console
                 console.log(`token: ${otcRef} otc: ${otc}`);
             }
-        });
+        }
+        );
     }
 
     handleInputChange(e, field) {
@@ -133,7 +136,7 @@ export default class MagicLinkPage extends React.Component {
 
     onKeyDown(e) {
         // Handles submit on Enter press
-        if (e.keyCode === 13){
+        if (e.key === 'Enter'){
             const {action} = this.context;
             const isRunning = (action === 'verifyOTC:running');
             
@@ -156,8 +159,9 @@ export default class MagicLinkPage extends React.Component {
         const isError = (action === 'verifyOTC:failed');
 
         return (
-            <section>
-                <div className='gh-portal-section'>
+            <form onSubmit={e => this.handleSubmit(e)}>
+                <section className='gh-portal-section'>
+                    {/* @TODO: create different input component with updated design */}
                     <InputField
                         id={`input-${OTC_FIELD_NAME}`}
                         name={OTC_FIELD_NAME}
@@ -171,7 +175,7 @@ export default class MagicLinkPage extends React.Component {
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
                         onKeyDown={e => this.onKeyDown(e, {name: OTC_FIELD_NAME})}
                     />
-                </div>
+                </section>
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
                         style={{width: '100%'}}
@@ -183,7 +187,7 @@ export default class MagicLinkPage extends React.Component {
                         disabled={isRunning}
                     />
                 </footer>
-            </section>
+            </form>
         );
     }
 

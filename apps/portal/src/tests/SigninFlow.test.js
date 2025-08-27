@@ -427,7 +427,8 @@ describe('OTC Integration Flow', () => {
         
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
-        
+        expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
+
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
         const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
         
@@ -451,6 +452,7 @@ describe('OTC Integration Flow', () => {
 
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
+        expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         const otcInput = within(popupIframeDocument).queryByLabelText(OTC_LABEL_REGEX);
         expect(otcInput).not.toBeInTheDocument();

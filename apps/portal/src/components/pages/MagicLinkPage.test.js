@@ -59,7 +59,7 @@ const fillAndSubmitOTC = (utils, code = '123456', method = 'button') => {
         const submitButton = utils.getByRole('button', {name: 'Continue'});
         fireEvent.click(submitButton);
     } else {
-        fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
+        fireEvent.keyDown(otcInput, {key: 'Enter'});
     }
     
     return otcInput;
@@ -120,7 +120,7 @@ describe('MagicLinkPage', () => {
             expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
-            expect(otcInput.getAttribute('aria-label')).toMatch(OTC_LABEL_REGEX);
+            expect(otcInput).toHaveAccessibleName(OTC_LABEL_REGEX); 
         });
 
         test('accepts and updates with numeric input progressively', () => {
