@@ -87,16 +87,6 @@ RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn workspace @tryghost/announcement-bar build
-RUN yarn workspace @tryghost/sodo-search build
-RUN yarn workspace @tryghost/comments-ui build
-RUN yarn workspace @tryghost/portal build
-RUN yarn workspace @tryghost/shade build
-RUN yarn workspace @tryghost/admin-x-design-system build
-RUN yarn workspace @tryghost/admin-x-framework build
-RUN yarn workspace @tryghost/admin-x-activitypub build
-RUN yarn workspace @tryghost/posts build
-RUN yarn workspace @tryghost/stats build
-RUN yarn workspace @tryghost/admin-x-settings build
+RUN yarn nx run-many -t build --exclude=ghost-admin
 RUN yarn workspace ghost-admin build
 CMD ["yarn", "dev"]
