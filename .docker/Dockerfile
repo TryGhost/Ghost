@@ -87,5 +87,12 @@ RUN --mount=type=cache,target=/home/yarn/.yarn-cache \
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn build
+RUN yarn workspace @tryghost/shade build
+RUN yarn workspace @tryghost/admin-x-design-system build
+RUN yarn workspace @tryghost/admin-x-framework build
+RUN yarn workspace @tryghost/admin-x-activitypub build
+RUN yarn workspace @tryghost/posts build
+RUN yarn workspace @tryghost/stats build
+RUN yarn workspace @tryghost/admin-x-settings build
+RUN yarn workspace ghost-admin build
 CMD ["yarn", "dev"]
