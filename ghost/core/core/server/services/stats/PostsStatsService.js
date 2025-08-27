@@ -74,7 +74,7 @@ const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
 /**
  * @typedef {Object} NewsletterSubscriberStats
  * @property {number} total - Total current subscriber count
- * @property {Array<{date: string, value: number}>} values - Daily subscription deltas
+ * @property {Array<{date: string, value: number}>} values - Daily subscription cumulative values
  */
 
 class PostsStatsService {
