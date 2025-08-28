@@ -1,6 +1,7 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const should = require('should');
 const sinon = require('sinon');
+const assert = require('assert/strict');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
@@ -289,30 +290,61 @@ describe('sendMagicLink', function () {
     });
 
     describe('signin email', function () {
-        it('matches snapshot', async function () {
-            const email = 'member1@test.com';
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin'
-                })
-                .expectStatus(201);
+        const testEmail = 'member1@test.com';
 
-            const mail = mockManager.assert.sentEmail({
-                to: email
-            });
+        beforeEach(function () {
+            mockManager.mockLabsDisabled();
+        });
 
+        afterEach(function () {
+            mockManager.restore();
+        });
+
+        function scrubEmailContent(mail) {
             const scrub = s => s && s
-                .replace(/([?&])token=[^&\s'"]+/gi, '$1token=<TOKEN>');
+                .replace(/([?&])token=[^&\s'"]+/gi, '$1token=<TOKEN>')
+                .replace(/\d{6}/g, '<OTC>');
 
-            const snapshot = {
+            return {
                 to: mail.to,
                 subject: mail.subject,
                 html: scrub(mail.html),
                 text: scrub(mail.text)
             };
+        }
 
-            should(snapshot).matchSnapshot();
+        async function sendSigninRequest(options = {}) {
+            const body = {
+                email: testEmail,
+                emailType: 'signin',
+                ...options
+            };
+
+            await membersAgent.post('/api/send-magic-link')
+                .body(body)
+                .expectStatus(201);
+
+            return mockManager.assert.sentEmail({to: testEmail});
+        }
+
+        it('matches snapshot', async function () {
+            const mail = await sendSigninRequest();
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
+        });
+
+        it('matches non-OTC snapshot (membersSigninOTC enabled)', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest();
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
+        });
+
+        it('matches OTC snapshot (membersSigninOTC enabled)', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest({otc: true});
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
         });
     });
 
@@ -387,7 +419,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            otc: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -405,7 +438,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            otc: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -766,6 +800,163 @@ describe('sendMagicLink', function () {
                     emailType: 'signup'
                 })
                 .expectStatus(201);
+        });
+    });
+
+    describe('OTC', function () {
+        function sendMagicLinkRequest(email, emailType = 'signin', otc = false) {
+            const body = {email, emailType};
+            if (otc) {
+                body.otc = otc;
+            }
+
+            return membersAgent
+                .post('/api/send-magic-link')
+                .body(body);
+        }
+
+        function assertOTCInEmailContent(mail) {
+            const otcRegex = /\d{6}/;
+
+            // NOTE: we don't (at time of writing tests) include the OTC in the subject line
+            assert(otcRegex.test(mail.html), 'Email HTML should contain OTC');
+            assert(otcRegex.test(mail.text), 'Email text should contain OTC');
+        }
+
+        function assertNoOTCInEmailContent(mail) {
+            const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
+
+            assert(!otcRegex.test(mail.subject), 'Email subject should not contain OTC');
+            assert(!otcRegex.test(mail.html), 'Email HTML should not contain OTC');
+            assert(!otcRegex.test(mail.text), 'Email text should not contain OTC');
+        }
+
+        beforeEach(async function () {
+            // ensure we don't hit rate limits whilst testing
+            await dbUtils.truncate('brute');
+            await resetRateLimits();
+        });
+
+        describe('With membersSigninOTC flag disabled', function () {
+            beforeEach(function () {
+                mockManager.mockLabsDisabled('membersSigninOTC');
+            });
+
+            it('Should return empty body for signin magic link requests', async function () {
+                await sendMagicLinkRequest('member1@test.com')
+                    .expectEmptyBody()
+                    .expectStatus(201);
+            });
+
+            it('Should not include otc_ref in response when requesting magic link', async function () {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                    .expectStatus(201);
+
+                assert(!response.body.otc_ref, 'Response should not contain otc_ref');
+            });
+
+            ['signin', 'signup'].forEach((emailType) => {
+                it(`Should generate ${emailType} emails without OTC codes in content`, async function () {
+                    await sendMagicLinkRequest('member1@test.com', emailType, true);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                });
+            });
+
+            it('Should allow normal magic link authentication flow', async function () {
+                const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signin');
+                const magicLinkUrl = new URL(magicLink);
+                const token = magicLinkUrl.searchParams.get('token');
+
+                await membersAgent.get(`/?token=${token}`)
+                    .expectStatus(302)
+                    .expectHeader('Location', /success=true/)
+                    .expectHeader('Set-Cookie', /members-ssr.*/);
+            });
+
+            it('Should not call OTC generation methods when flag is disabled', async function () {
+                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCSpy = sinon.spy(tokenProvider.prototype, 'deriveOTC');
+
+                try {
+                    await sendMagicLinkRequest('member1@test.com', 'signin', true);
+                    sinon.assert.notCalled(deriveOTCSpy);
+                } finally {
+                    deriveOTCSpy.restore();
+                }
+            });
+        });
+
+        describe('With membersSigninOTC flag enabled', function () {
+            beforeEach(function () {
+                mockManager.mockLabsEnabled('membersSigninOTC');
+            });
+
+            [true, 'true'].forEach((otcValue) => {
+                it(`Should include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
+                        .expectStatus(201);
+
+                    assert(response.body.otc_ref, `Response should contain otc_ref for otc=${otcValue}`);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertOTCInEmailContent(mail);
+                });
+            });
+
+            [false, 'false'].forEach((otcValue) => {
+                it(`Should not include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
+                        .expectStatus(201);
+
+                    assert(!response.body.otc_ref, `Response should not contain otc_ref for otc=${otcValue}`);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                });
+            });
+
+            it('Should gracefully handle OTC generation failures', async function () {
+                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
+
+                try {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                        .expectStatus(201);
+
+                    // Ensure we're actually hitting our stub
+                    sinon.assert.called(deriveOTCStub);
+
+                    // Should still succeed but without OTC
+                    assert(!response.body.otc_ref, 'Response should not contain otc_ref when OTC generation fails');
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                } finally {
+                    deriveOTCStub.restore();
+                }
+            });
+
+            it('Should handle OTC parameter with non-existent member email', async function () {
+                const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
+                    .expectStatus(400);
+
+                // Should still process the request normally for non-existent members
+                assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
+            });
         });
     });
 });
