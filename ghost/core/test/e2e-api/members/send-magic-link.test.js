@@ -302,7 +302,17 @@ describe('sendMagicLink', function () {
                 to: email
             });
 
-            should({mail}).matchSnapshot();
+            const scrub = s => s && s
+                .replace(/([?&])token=[^&\s'"]+/gi, '$1token=<TOKEN>');
+
+            const snapshot = {
+                to: mail.to,
+                subject: mail.subject,
+                html: scrub(mail.html),
+                text: scrub(mail.text)
+            };
+
+            should(snapshot).matchSnapshot();
         });
     });
 
