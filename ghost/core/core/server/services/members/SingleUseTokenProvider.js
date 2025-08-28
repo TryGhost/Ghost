@@ -37,7 +37,6 @@ class SingleUseTokenProvider {
         return model.get('token');
     }
 
-
     /**
      * @method validate
      * Validates a token, returning any parsable data associated.
