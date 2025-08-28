@@ -699,7 +699,6 @@ module.exports = class RouterController {
                 }));
             }
 
-            // OTC is valid - create session directly
             const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
             const redirectUrl = await this._buildRedirectUrl(req, tokenValue, otcVerificationHash);
 
@@ -757,16 +756,9 @@ module.exports = class RouterController {
         
         // Add required parameters for magic link compatibility
         redirectUrl.searchParams.set('token', token);
-        redirectUrl.searchParams.set('action', 'signin');
         redirectUrl.searchParams.set('otc_verification', otcVerificationHash);
         
-        // Preserve referrer if provided in the original request
-        // Check for referrer in request body or query params
-        const referrer = req.body.r || req.query.r;
-        if (referrer) {
-            redirectUrl.searchParams.set('r', referrer);
-        }
-        
+        // Return basic URL - frontend will add referrer and action
         return redirectUrl.toString();
     }
 

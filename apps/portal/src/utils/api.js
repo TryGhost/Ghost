@@ -321,11 +321,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             const url = endpointFor({type: 'members', resource: 'verify-otc'});
             const body = {
                 otc,
-                otcRef,
-                // Current page is where we want to redirect back to
-                r: window.location.href,
-                // Indicate this is a signin action
-                action: 'signin'
+                otcRef
             };
 
             const res = await makeRequest({
