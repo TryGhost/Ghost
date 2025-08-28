@@ -97,9 +97,11 @@ class MagicLink {
         });
 
         // return tokenId so we can pass it as a reference to the client so it
-        // can pass it back as a reference when verifying the OTC
+        // can pass it back as a reference when verifying the OTC. We only do
+        // this if we've successfully generated an OTC to avoid clients showing
+        // a token input field when the email doesn't contain an OTC
         let tokenId = null;
-        if (this.labsService?.isSet('membersSigninOTC') && options.includeOTC) {
+        if (this.labsService?.isSet('membersSigninOTC') && otc) {
             try {
                 tokenId = await this.getIdFromToken(token);
             } catch (err) {

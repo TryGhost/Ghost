@@ -220,7 +220,7 @@ describe('MagicLink', function () {
             assert.equal(result.tokenId, null);
             // deriveOTC is only possible with a token so it's skipped if getIdByToken returns null
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert(mockSingleUseTokenProvider.getIdByToken.calledTwice);
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
         });
 
         it('should include OTC when includeOTC is true and labs flag is enabled', async function () {
