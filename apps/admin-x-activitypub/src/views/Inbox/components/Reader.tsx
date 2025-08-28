@@ -151,12 +151,12 @@ const ArticleBody: React.FC<{
                     waitForImages();
 
                     const script = document.createElement('script');
-                    script.src = 'cards/admin-cards.min.js';
+                    script.src = '/ghost/cards/admin-cards.min.js';
                     document.head.appendChild(script);
 
                     const link = document.createElement('link');
                     link.rel = 'stylesheet';
-                    link.href = 'cards/admin-cards.min.css';
+                    link.href = '/ghost/cards/admin-cards.min.css';
                     document.head.appendChild(link);
                 });
             </script>
