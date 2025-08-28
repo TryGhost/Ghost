@@ -152,16 +152,16 @@ describe('Admin Routing', function () {
     });
 
     describe('Card Assets', function () {
-        before(function () {
+        before(async function () {
             // Create test card asset fixtures
             const cardAssetsFixtures = require('../utils/fixtures/card-assets');
-            cardAssetsFixtures.setup();
+            await cardAssetsFixtures.setup();
         });
 
-        after(function () {
+        after(async function () {
             // Clean up test card asset fixtures
             const cardAssetsFixtures = require('../utils/fixtures/card-assets');
-            cardAssetsFixtures.cleanup();
+            await cardAssetsFixtures.cleanup();
         });
 
         it('should serve admin card CSS with correct headers', async function () {
