@@ -17,7 +17,7 @@ const messages = {
  * @template D
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
- * @prop {(token: T) => Promise<D>} validate
+ * @prop {(token: T, options?: Object) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
  * @prop {(otcRef: string, tokenValue: T) => string} [deriveOTC]
  */
@@ -167,8 +167,8 @@ class MagicLink {
      * @param {Token} token - The token to decode
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
-    async getDataFromToken(token) {
-        const tokenData = await this.tokenProvider.validate(token);
+    async getDataFromToken(token, otcVerification) {
+        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
         return tokenData;
     }
 }

@@ -649,6 +649,106 @@ module.exports = class RouterController {
         }
     }
 
+    async verifyOTC(req, res) {
+        const {otc, otcRef} = req.body;
+
+        if (!otc || !otcRef) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.badRequest),
+                context: 'OTC and otc_ref are required'
+            });
+        }
+
+        // Validate OTC format (6 digits)
+        if (!/^\d{6}$/.test(otc)) {
+            throw new errors.BadRequestError({
+                message: 'Invalid verification code format'
+            });
+        }
+
+        try {
+            // Get the token provider from magic link service
+            const tokenProvider = this._magicLinkService.tokenProvider;
+
+            if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
+                throw new errors.BadRequestError({
+                    message: 'OTC verification not supported'
+                });
+            }
+
+            // Verify the OTC
+            const isValidOTC = tokenProvider.verifyOTC(otcRef, otc);
+
+            if (!isValidOTC) {
+                res.writeHead(400, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    valid: false,
+                    message: 'Invalid verification code'
+                }));
+            }
+
+            const tokenValue = await tokenProvider.getTokenById(otcRef);
+            
+            const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
+            const redirectUrl = await this._buildRedirectUrl(req, tokenValue, otcVerificationHash);
+
+            res.writeHead(200, {'Content-Type': 'application/json'});
+            return res.end(JSON.stringify({
+                valid: true,
+                success: true,
+                redirectUrl,
+                message: 'OTC verification successful'
+            }));
+        } catch (err) {
+            logging.error(err);
+            throw new errors.BadRequestError({
+                message: 'Failed to verify code, please try again'
+            });
+        }
+    }
+
+    async _createHashFromOTCAndToken(otc, token) {
+        const crypto = require('crypto');
+
+        const hexSecret = this._settingsCache.get('members_email_auth_secret');
+        if (!hexSecret) {
+            throw new errors.BadRequestError({
+                message: 'Authentication secret not configured'
+            });
+        }
+
+        const secret = Buffer.from(hexSecret, 'hex');
+        if (secret.length < 64) {
+            throw new errors.BadRequestError({
+                message: 'Authentication secret not properly configured'
+            });
+        }
+
+        // Create timestamp for anti-replay protection (5 minute window)
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        // Create hash from OTC + token + timestamp
+        const dataToHash = `${otc}:${token}:${timestamp}`;
+        const hmac = crypto.createHmac('sha256', secret);
+        hmac.update(dataToHash);
+        const hash = hmac.digest('hex');
+
+        // Return timestamp:hash format for validation
+        return `${timestamp}:${hash}`;
+    }
+
+    async _buildRedirectUrl(req, token, otcVerificationHash) {
+        const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
+        const redirectUrl = new URL(siteUrl);
+
+        // Add required parameters for magic link compatibility
+        redirectUrl.searchParams.set('token', token);
+        redirectUrl.searchParams.set('otc_verification', otcVerificationHash);
+
+        // Return basic URL - frontend will add referrer and action
+        return redirectUrl.toString();
+    }
+
     async _handleSignup(req, normalizedEmail, referrer = null) {
         if (!this._allowSelfSignup()) {
             if (this._settingsCache.get('members_signup_access') === 'paid') {
