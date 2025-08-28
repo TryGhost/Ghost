@@ -173,4 +173,94 @@ describe('SingleUseTokenProvider', function () {
             sinon.assert.calledOnceWithExactly(mockModel.findOne, {token: testTokenValue});
         });
     });
+
+    describe('verifyOTC', function () {
+        const testToken = {
+            id: 'test-token-id',
+            token: 'test-token-value'
+        };
+
+        it('should return true for valid OTC', async function () {
+            const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
+            
+            mockModel.findOne.resolves({
+                get: sinon.stub().returns(testToken.token)
+            });
+
+            const result = await tokenProvider.verifyOTC(testToken.id, validOTC);
+
+            assert.equal(result, true);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {id: testToken.id});
+        });
+
+        it('should return false for invalid OTC', async function () {
+            const invalidOTC = '123456';
+            
+            mockModel.findOne.resolves({
+                get: sinon.stub().returns(testToken.token)
+            });
+
+            const result = await tokenProvider.verifyOTC(testToken.id, invalidOTC);
+
+            assert.equal(result, false);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {id: testToken.id});
+        });
+
+        it('should return false when token is not found', async function () {
+            const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
+            
+            mockModel.findOne.resolves(null);
+
+            const result = await tokenProvider.verifyOTC('nonexistent-id', validOTC);
+
+            assert.equal(result, false);
+            sinon.assert.calledOnceWithExactly(mockModel.findOne, {id: 'nonexistent-id'});
+        });
+
+        it('should return false when secret is not configured', async function () {
+            const providerNoSecret = new SingleUseTokenProvider({
+                SingleUseTokenModel: mockModel,
+                validityPeriod: 86400000,
+                validityPeriodAfterUsage: 3600000,
+                maxUsageCount: 3
+            });
+
+            const result = await providerNoSecret.verifyOTC(testToken.id, '123456');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(mockModel.findOne);
+        });
+
+        it('should return false when tokenId is missing', async function () {
+            const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
+
+            const result = await tokenProvider.verifyOTC(null, validOTC);
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(mockModel.findOne);
+        });
+
+        it('should return false when OTC is missing', async function () {
+            const result = await tokenProvider.verifyOTC(testToken.id, null);
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(mockModel.findOne);
+        });
+
+        it('should return false when tokenId is empty string', async function () {
+            const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
+
+            const result = await tokenProvider.verifyOTC('', validOTC);
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(mockModel.findOne);
+        });
+
+        it('should return false when OTC is empty string', async function () {
+            const result = await tokenProvider.verifyOTC(testToken.id, '');
+
+            assert.equal(result, false);
+            sinon.assert.notCalled(mockModel.findOne);
+        });
+    });
 });
