@@ -26,16 +26,16 @@ trap _term TERM INT
 
 # Set the TINYBIRD_TRACKER_TOKEN environment variable from the .env file
 # This file is created by the `tb-cli` service and mounted into the Analytics service container
-if [ -f /app/.env ]; then
-    . /app/.env
+if [ -f /mnt/shared-config/.env.tinybird ]; then
+    . /mnt/shared-config/.env.tinybird
     if [ -n "${TINYBIRD_TRACKER_TOKEN:-}" ]; then
         export TINYBIRD_TRACKER_TOKEN="$TINYBIRD_TRACKER_TOKEN"
         echo "Tinybird tracker token configured successfully"
     else
-        echo "WARNING: TINYBIRD_TRACKER_TOKEN not found in /app/.env" >&2
+        echo "WARNING: TINYBIRD_TRACKER_TOKEN not found in /mnt/shared-config/.env.tinybird" >&2
     fi
 else
-    echo "WARNING: /app/.env file not found - Tinybird tracking may not work" >&2
+    echo "WARNING: /mnt/shared-config/.env.tinybird file not found - Tinybird tracking may not work" >&2
 fi
 
 # Start the process in the background

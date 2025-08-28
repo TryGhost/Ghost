@@ -7,6 +7,7 @@ x-service-template: &service-template
     - ${SSH_AUTH_SOCK}:/ssh-agent
     - ${HOME}/.gitconfig:/root/.gitconfig:ro
     - ${HOME}/.yalc:/root/.yalc
+    - shared-config:/mnt/shared-config:ro
     - node_modules_yarn_lock_hash:/home/ghost/.yarnhash:delegated
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
@@ -103,6 +104,8 @@ services:
     volumes:
       - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
+    environment:
+      - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-analytics:3000}
     restart: always
 
   ghost:
@@ -184,7 +187,7 @@ services:
       retries: 120
     volumes:
       - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
-      - ./ghost/core/core/server/data/tinybird/.env:/app/.env:ro
+      - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
     depends_on:
@@ -206,6 +209,7 @@ services:
       - TB_LOCAL_HOST=tinybird-local
     volumes:
       - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - shared-config:/mnt/shared-config
     depends_on:
       tinybird-local:
         condition: service_healthy
@@ -268,6 +272,7 @@ services:
 volumes:
   mysql-data: {}
   redis-data: {}
+  shared-config: {}
   caddy_data: {}
   node_modules_yarn_lock_hash: {}
   node_modules_ghost_root: {}
