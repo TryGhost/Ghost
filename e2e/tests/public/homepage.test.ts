@@ -1,8 +1,9 @@
-import {test, expect} from '@playwright/test';
+import {test, expect} from '../../helpers/base-test';
 import {HomePage} from '../../helpers/pages/public';
 
 test.describe('Ghost Homepage', () => {
     test('loads correctly', async ({page}) => {
+        // ghostReset auto-fixture ensures clean database for every test
         const homePage = new HomePage(page);
 
         await homePage.goto();

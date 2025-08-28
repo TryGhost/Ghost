@@ -24,9 +24,14 @@ export class GhostUserSetup {
     }
 
     private async isSetupAlreadyCompleted(): Promise<boolean> {
-        const response = await this.makeRequest('GET');
-        const data = await response.json();
-        return data.setup?.[0]?.status === true;
+        try {
+            const response = await this.makeRequest('GET');
+            const data = await response.json();
+            return data.setup?.[0]?.status === true;
+        } catch (error) {
+            // If we get a 404 or error, setup is not completed
+            return false;
+        }
     }
 
     private async createUser(user: User): Promise<void> {

@@ -12,8 +12,8 @@
     "build:ts": "tsc",
     "prepare": "tsc",
     "test": "playwright test --project=main",
-    "test:parallel": "playwright test --project=main --workers=8",
     "test:factory": "playwright test --project=factories",
+    "test:debug": "DEBUG_GHOST=1 playwright test --project=main --debug",
     "test:types": "tsc --noEmit",
     "lint": "eslint . --ext .ts --cache"
   },
