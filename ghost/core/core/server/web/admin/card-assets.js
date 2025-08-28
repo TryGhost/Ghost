@@ -109,6 +109,7 @@ class AdminCardAssets {
         } catch (error) {
             logging.error('Failed to load admin card assets:', error);
             // Don't throw - allow admin to work without card assets
+            this.ready = true;
         }
     }
 

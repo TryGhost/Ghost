@@ -71,7 +71,7 @@ describe('AdminCardAssets', function () {
             await adminCardAssets.ensureDestDir();
 
             const stats = await fs.stat(adminCardAssets.dest);
-            stats.isDirectory().should.be.true;
+            should(stats.isDirectory()).be.true();
         });
 
         it('should not throw error if directory already exists', async function () {
@@ -82,7 +82,7 @@ describe('AdminCardAssets', function () {
             await adminCardAssets.ensureDestDir();
 
             const stats = await fs.stat(adminCardAssets.dest);
-            stats.isDirectory().should.be.true;
+            should(stats.isDirectory()).be.true();
         });
     });
 
@@ -218,8 +218,8 @@ describe('AdminCardAssets', function () {
             // Should not throw
             await adminCardAssets.load();
 
-            adminCardAssets.ready.should.be.true; // Should still mark as ready
-            logging.error.calledOnce.should.be.true;
+            adminCardAssets.ready.should.be.true(); // Should still mark as ready
+            logging.error.calledOnce.should.be.true();
         });
     });
 
@@ -227,9 +227,14 @@ describe('AdminCardAssets', function () {
         beforeEach(async function () {
             // Create test source files
             await fs.mkdir(path.join(testSrcDir, 'css'), {recursive: true});
+            await fs.mkdir(path.join(testSrcDir, 'js'), {recursive: true});
             await fs.writeFile(
                 path.join(testSrcDir, 'css', 'test.css'),
                 '.test { color: red; }'
+            );
+            await fs.writeFile(
+                path.join(testSrcDir, 'js', 'test.js'),
+                'console.log("test");'
             );
         });
 
@@ -251,8 +256,8 @@ describe('AdminCardAssets', function () {
             results[2].should.equal(adminCardAssets);
 
             // Load should only be called once despite multiple requests
-            loadSpy.calledOnce.should.be.true;
-            adminCardAssets.ready.should.be.true;
+            loadSpy.calledOnce.should.be.true();
+            adminCardAssets.ready.should.be.true();
         });
 
         it('should reset loading promise after successful load', async function () {
@@ -260,13 +265,13 @@ describe('AdminCardAssets', function () {
 
             // Loading promise should be null after completion
             should.equal(adminCardAssets._loadingPromise, null);
-            adminCardAssets.ready.should.be.true;
+            adminCardAssets.ready.should.be.true();
         });
 
         it('should handle subsequent calls after loading is complete', async function () {
             // First load
             await adminCardAssets.ensureLoaded();
-            adminCardAssets.ready.should.be.true;
+            adminCardAssets.ready.should.be.true();
 
             const loadSpy = sandbox.spy(adminCardAssets, 'load');
 
@@ -274,7 +279,7 @@ describe('AdminCardAssets', function () {
             const result = await adminCardAssets.ensureLoaded();
 
             result.should.equal(adminCardAssets);
-            loadSpy.called.should.be.false;
+            loadSpy.called.should.be.false();
         });
     });
 
@@ -318,9 +323,9 @@ describe('AdminCardAssets', function () {
             await adminCardAssets.load();
 
             // Verify assets were loaded
-            adminCardAssets.ready.should.be.true;
-            adminCardAssets.hasFile('admin-cards.min.css').should.be.true;
-            adminCardAssets.hasFile('admin-cards.min.js').should.be.true;
+            adminCardAssets.ready.should.be.true();
+            adminCardAssets.hasFile('admin-cards.min.css').should.be.true();
+            adminCardAssets.hasFile('admin-cards.min.js').should.be.true();
 
             middleware = adminCardAssets.serveMiddleware();
 
@@ -341,13 +346,13 @@ describe('AdminCardAssets', function () {
         it('should serve existing files with correct headers', async function () {
             await middleware(req, res, next);
 
-            res.set.calledOnce.should.be.true;
+            res.set.calledOnce.should.be.true();
             const setArgs = res.set.firstCall.args[0];
             setArgs.should.have.property('Cache-Control', 'public, max-age=3600');
             setArgs.should.have.property('ETag');
 
-            res.type.calledWith('text/css').should.be.true;
-            res.sendFile.calledOnce.should.be.true;
+            res.type.calledWith('text/css').should.be.true();
+            res.sendFile.calledOnce.should.be.true();
         });
 
         it('should return 304 for cached requests', async function () {
@@ -375,7 +380,7 @@ describe('AdminCardAssets', function () {
 
             await middleware(req, res, next);
 
-            res.type.calledWith('application/javascript').should.be.true;
+            res.type.calledWith('application/javascript').should.be.true();
         });
 
         it('should ensure assets are loaded before serving', async function () {
