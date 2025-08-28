@@ -1,32 +1,46 @@
 import {PersistenceAdapter} from '../adapter';
-import type {APIRequestContext, BrowserContext} from '@playwright/test';
+
+// HTTP client interface that matches Playwright's API but isn't coupled to it
+export interface HttpResponse {
+    ok(): boolean;
+    status(): number;
+    json(): Promise<unknown>;
+}
+
+// Generic HTTP client interface that works with any response type that has the required methods
+export interface HttpClient<TResponse extends HttpResponse = HttpResponse> {
+    get(url: string, options?: {headers?: Record<string, string>}): Promise<TResponse>;
+    post(url: string, options?: {data?: unknown; headers?: Record<string, string>}): Promise<TResponse>;
+    put(url: string, options?: {data?: unknown; headers?: Record<string, string>}): Promise<TResponse>;
+    delete(url: string, options?: {headers?: Record<string, string>}): Promise<TResponse>;
+}
 
 interface ApiAdapterOptions<TRequest = unknown, TResponse = unknown> {
-    context: BrowserContext;
+    httpClient: HttpClient;
     endpoint: string;
     queryParams?: Record<string, string>;
-    wrapRequest?: (data: TRequest) => unknown;
-    extractResponse?: (response: TResponse) => unknown;
+    transformRequest?: (data: TRequest) => unknown;
+    transformResponse?: (response: TResponse) => unknown;
 }
 
 /**
- * Generic API persistence adapter that works with Playwright's BrowserContext
- * Uses the context's .request property for making API calls
- * Can be extended for specific API implementations
+ * Generic API persistence adapter that works with any HTTP client
+ * Note: The HTTP client must handle authentication (cookies, tokens, etc.)
+ * For Playwright tests, the client should preserve the BrowserContext's auth state
  */
 export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> implements PersistenceAdapter {
-    protected apiContext: APIRequestContext;
+    protected httpClient: HttpClient;
     protected endpoint: string;
     protected queryParams: Record<string, string>;
-    protected wrapRequest: (data: TRequest) => unknown;
-    protected extractResponse: (response: TResponse) => unknown;
+    protected transformRequest: (data: TRequest) => unknown;
+    protected transformResponse: (response: TResponse) => unknown;
     
     constructor(options: ApiAdapterOptions<TRequest, TResponse>) {
-        this.apiContext = options.context.request;
+        this.httpClient = options.httpClient;
         this.endpoint = options.endpoint;
         this.queryParams = options.queryParams || {};
-        this.wrapRequest = options.wrapRequest || ((data: TRequest) => data as unknown);
-        this.extractResponse = options.extractResponse || ((response: TResponse) => response as unknown);
+        this.transformRequest = options.transformRequest || ((data: TRequest) => data as unknown);
+        this.transformResponse = options.transformResponse || ((response: TResponse) => response as unknown);
     }
     
     protected buildUrl(path?: string): string {
@@ -37,20 +51,22 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
     }
     
     async insert<T>(entityType: string, data: T): Promise<T> {
-        const response = await this.apiContext.post(this.buildUrl(), {
-            data: this.wrapRequest(data as unknown as TRequest)
+        const response = await this.httpClient.post(this.buildUrl(), {
+            data: this.transformRequest(data as unknown as TRequest)
         });
         
         if (!response.ok()) {
-            throw new Error(`Failed to create ${entityType}: ${response.status()}`);
+            const errorBody = await response.json().catch(() => null);
+            const errorMessage = errorBody ? JSON.stringify(errorBody) : '';
+            throw new Error(`Failed to create ${entityType}: ${response.status()} ${errorMessage}`);
         }
         
         const body = await response.json() as TResponse;
-        return this.extractResponse(body) as T;
+        return this.transformResponse(body) as T;
     }
     
     async findById<T>(entityType: string, id: string): Promise<T> {
-        const response = await this.apiContext.get(this.buildUrl(id));
+        const response = await this.httpClient.get(this.buildUrl(id));
         
         if (response.status() === 404) {
             throw new Error(`${entityType} with id ${id} not found`);
@@ -61,14 +77,14 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
         }
         
         const body = await response.json() as TResponse;
-        return this.extractResponse(body) as T;
+        return this.transformResponse(body) as T;
     }
     
     async update<T>(entityType: string, id: string, data: Partial<T>): Promise<T> {
         const existing = await this.findById<T>(entityType, id);
         
-        const response = await this.apiContext.put(this.buildUrl(id), {
-            data: this.wrapRequest({...existing, ...data} as unknown as TRequest)
+        const response = await this.httpClient.put(this.buildUrl(id), {
+            data: this.transformRequest({...existing, ...data} as unknown as TRequest)
         });
         
         if (!response.ok()) {
@@ -76,11 +92,11 @@ export class ApiPersistenceAdapter<TRequest = unknown, TResponse = unknown> impl
         }
         
         const body = await response.json() as TResponse;
-        return this.extractResponse(body) as T;
+        return this.transformResponse(body) as T;
     }
     
     async delete(entityType: string, id: string): Promise<void> {
-        const response = await this.apiContext.delete(this.buildUrl(id));
+        const response = await this.httpClient.delete(this.buildUrl(id));
         
         if (!response.ok() && response.status() !== 404) {
             throw new Error(`Failed to delete ${entityType}: ${response.status()}`);

@@ -12,7 +12,7 @@ import {Page} from '@playwright/test';
  */
 export function createPostFactory(page: Page): PostFactory {
     const adapter = new GhostAdminApiAdapter(
-        page.context(), 
+        page.request,
         'posts',
         {formats: 'mobiledoc,lexical,html'}
     );
