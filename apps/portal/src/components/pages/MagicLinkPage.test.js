@@ -59,7 +59,8 @@ const fillAndSubmitOTC = (utils, code = '123456', method = 'button') => {
         const submitButton = utils.getByRole('button', {name: 'Continue'});
         fireEvent.click(submitButton);
     } else {
-        fireEvent.keyDown(otcInput, {key: 'Enter'});
+        const form = otcInput.closest('form');
+        fireEvent.submit(form);
     }
     
     return otcInput;
@@ -167,7 +168,8 @@ describe('MagicLinkPage', () => {
             const utils = setupOTCTest();
             const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
             
-            fireEvent.keyDown(otcInput, {key: 'Enter', keyCode: 13});
+            const form = otcInput.closest('form');
+            fireEvent.submit(form);
             
             expect(utils.getByText(OTC_ERROR_REGEX)).toBeInTheDocument();
         });

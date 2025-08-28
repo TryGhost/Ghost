@@ -100,7 +100,12 @@ export default class MagicLinkPage extends React.Component {
 
     handleSubmit(e) {
         e.preventDefault();
-        this.doVerifyOTC();
+        const {action} = this.context;
+        const isRunning = (action === 'verifyOTC:running');
+        
+        if (!isRunning) {
+            this.doVerifyOTC();
+        }
     }
 
     doVerifyOTC() {
@@ -112,7 +117,7 @@ export default class MagicLinkPage extends React.Component {
                     required: true
                 }], t: this.context.t})
             };
-        }, async () => {
+        }, () => {
             // eslint-disable-next-line no-unused-vars
             const {otc, errors} = this.state;
             const {otcRef} = this.context;
@@ -132,18 +137,6 @@ export default class MagicLinkPage extends React.Component {
         this.setState({
             [fieldName]: e.target.value
         });
-    }
-
-    onKeyDown(e) {
-        // Handles submit on Enter press
-        if (e.key === 'Enter'){
-            const {action} = this.context;
-            const isRunning = (action === 'verifyOTC:running');
-            
-            if (!isRunning) {
-                this.handleSubmit(e);
-            }
-        }
     }
 
     renderOTCForm() {
@@ -173,7 +166,6 @@ export default class MagicLinkPage extends React.Component {
                         autoFocus={false}
                         maxlength={6}
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                        onKeyDown={e => this.onKeyDown(e, {name: OTC_FIELD_NAME})}
                     />
                 </section>
                 <footer className='gh-portal-signin-footer'>
