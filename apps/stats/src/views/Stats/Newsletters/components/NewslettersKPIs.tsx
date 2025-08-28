@@ -104,7 +104,7 @@ const NewsletterKPIs: React.FC<{
         navigate(`?${newSearchParams.toString()}`, {replace: true});
     };
 
-    // Sanitize subscribers data and convert deltas to cumulative values
+    // Sanitize subscribers data (API returns cumulative values, not deltas)
     const subscribersData = useMemo(() => {
         if (!allSubscribersData || allSubscribersData.length === 0) {
             return [];
@@ -113,34 +113,24 @@ const NewsletterKPIs: React.FC<{
         let sanitizedData: SubscribersDataItem[] = [];
 
         // First sanitize the data based on range
+        // Use 'exact' aggregation type since we have cumulative values
         sanitizedData = sanitizeChartData(allSubscribersData, range, 'value', 'exact');
 
-        // Convert from deltas to running count (backwards from total)
-        let runningTotal = totalSubscribers;
-        const cumulativeData = [...sanitizedData].reverse().map((item) => {
-            runningTotal -= item.value;
-            return {
-                ...item,
-                value: runningTotal + item.value // Current day's value is before the day's change
-            };
-        }).reverse();
-
-        // Map the data for display
-        const processedData = cumulativeData.map(item => ({
+        const processedData = sanitizedData.map(item => ({
             ...item,
             formattedValue: formatNumber(item.value),
             label: 'Total Subscribers'
         }));
 
         return processedData;
-    }, [allSubscribersData, range, totalSubscribers]);
+    }, [allSubscribersData, range]);
 
     const barChartConfig = {
         open_rate: {
             label: 'Open rate'
         }
     } satisfies ChartConfig;
-
+    
     const tabConfig = {
         'total-subscribers': {
             color: 'hsl(var(--chart-darkblue))',
@@ -155,7 +145,7 @@ const NewsletterKPIs: React.FC<{
             datakey: 'click_rate'
         }
     };
-
+    
     // Calculate dynamic domain and ticks based on current tab's data
     const {barDomain, barTicks} = useMemo(() => {
         if (!avgsData || avgsData.length === 0 || currentTab === 'total-subscribers') {

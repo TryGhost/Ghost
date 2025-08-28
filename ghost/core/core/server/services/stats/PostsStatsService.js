@@ -74,7 +74,7 @@ const {getDateBoundaries, applyDateFilter} = require('./utils/date-utils');
 /**
  * @typedef {Object} NewsletterSubscriberStats
  * @property {number} total - Total current subscriber count
- * @property {Array<{date: string, value: number}>} deltas - Daily subscription deltas
+ * @property {Array<{date: string, value: number}>} values - Daily subscription cumulative values
  */
 
 class PostsStatsService {
@@ -932,7 +932,7 @@ class PostsStatsService {
      * @param {string} [options.date_from] - Optional start date filter (YYYY-MM-DD)
      * @param {string} [options.date_to] - Optional end date filter (YYYY-MM-DD)
      * @param {string} [options.timezone] - Timezone to use for date interpretation
-     * @returns {Promise<{data: Array<{total: number, deltas: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats
+     * @returns {Promise<{data: Array<{total: number, values: Array<{date: string, value: number}>}>}>} The newsletter subscriber stats with cumulative values
      */
     async getNewsletterSubscriberStats(newsletterId, options = {}) {
         try {
@@ -956,25 +956,42 @@ class PostsStatsService {
             const totalValue = totalResult[0] ? totalResult[0].total : 0;
             const total = parseInt(String(totalValue), 10);
 
-            // Transform raw database results to properly typed objects
-            const deltas = [];
+            // Transform raw database results (daily changes) to cumulative values
+            const values = [];
+            let cumulativeTotal = 0;
+            
+            // First pass: collect all daily changes from database
+            const dailyChanges = [];
             for (const row of rawDeltas) {
                 if (row) {
                     // @ts-ignore
                     const dateValue = row.date || '';
                     // @ts-ignore
-                    const deltaValue = row.value || 0;
-                    deltas.push({
+                    const changeValue = row.value || 0;
+                    dailyChanges.push({
                         date: String(dateValue),
-                        value: parseInt(String(deltaValue), 10)
+                        change: parseInt(String(changeValue), 10)
                     });
                 }
+            }
+            
+            // Calculate the starting point by working backwards from the current total
+            const totalChange = dailyChanges.reduce((sum, item) => sum + item.change, 0);
+            cumulativeTotal = total - totalChange;
+            
+            // Second pass: build cumulative values from daily changes
+            for (const dayData of dailyChanges) {
+                cumulativeTotal += dayData.change;
+                values.push({
+                    date: dayData.date,
+                    value: cumulativeTotal
+                });
             }
 
             return {
                 data: [{
                     total,
-                    deltas
+                    values
                 }]
             };
         } catch (error) {
@@ -982,7 +999,7 @@ class PostsStatsService {
             return {
                 data: [{
                     total: 0,
-                    deltas: []
+                    values: []
                 }]
             };
         }

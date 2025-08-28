@@ -82,7 +82,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss'),
+            created_at: moment(createdAt).utc().toISOString(),
             source: 'member'
         });
     }
@@ -101,7 +101,7 @@ describe('PostsStatsService', function () {
             attribution_url: `/${postId.replace('post', 'post-')}/`,
             referrer_source: referrerSource,
             referrer_url: referrerSource ? `https://${referrerSource}` : null,
-            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
+            created_at: moment(createdAt).utc().toISOString()
         });
 
         await db('members_paid_subscription_events').insert({
@@ -109,7 +109,7 @@ describe('PostsStatsService', function () {
             member_id: memberId,
             subscription_id: subscriptionId,
             mrr_delta: mrr,
-            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
@@ -144,7 +144,7 @@ describe('PostsStatsService', function () {
             post_id: postId,
             from: `/r/${finalRedirectId}`,
             to: `https://example.com/external-link`,
-            created_at: new Date()
+            created_at: new Date().toISOString()
         });
         return finalRedirectId;
     }
@@ -156,7 +156,7 @@ describe('PostsStatsService', function () {
             id: clickEventId,
             member_id: memberId,
             redirect_id: redirectId,
-            created_at: moment(createdAt).utc().format('YYYY-MM-DD HH:mm:ss')
+            created_at: moment(createdAt).utc().toISOString()
         });
     }
 
@@ -173,6 +173,41 @@ describe('PostsStatsService', function () {
             post_id: postId,
             author_id: authorId,
             sort_order: sortOrder
+        });
+    }
+
+    async function _createNewsletterSubscription(newsletterId, memberId, subscribed, createdAt) {
+        eventIdCounter += 1;
+        const eventId = `newsletter_event_${eventIdCounter}`;
+        await db('members_subscribe_events').insert({
+            id: eventId,
+            newsletter_id: newsletterId,
+            member_id: memberId,
+            subscribed: subscribed ? 1 : 0,
+            created_at: createdAt.toISOString()
+        });
+    }
+
+    async function _createMember(memberId, emailDisabled = false, email = null) {
+        await db('members').insert({
+            id: memberId,
+            email: email || `${memberId}@test.com`,
+            email_disabled: emailDisabled ? 1 : 0
+        });
+    }
+
+    async function _createMemberNewsletterSubscription(memberId, newsletterId) {
+        await db('members_newsletters').insert({
+            id: `mn_${memberId}_${newsletterId}`,
+            member_id: memberId,
+            newsletter_id: newsletterId
+        });
+    }
+
+    async function _createNewsletter(newsletterId, name = null) {
+        await db('newsletters').insert({
+            id: newsletterId,
+            name: name || `Newsletter ${newsletterId}`
         });
     }
 
@@ -1585,6 +1620,259 @@ describe('PostsStatsService', function () {
             otherPosts.forEach((post) => {
                 assert.equal(post.views, 0, `Backfilled post ${post.post_id} should have 0 views`);
             });
+        });
+    });
+
+    describe('getNewsletterSubscriberStats', function () {
+        beforeEach(async function () {
+            // Create newsletters table
+            await db.schema.createTable('newsletters', function (table) {
+                table.string('id').primary();
+                table.string('name');
+            });
+
+            // Create members table
+            await db.schema.createTable('members', function (table) {
+                table.string('id').primary();
+                table.string('email');
+                table.boolean('email_disabled').defaultTo(false);
+            });
+
+            // Create members_newsletters table
+            await db.schema.createTable('members_newsletters', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+            });
+
+            // Create members_subscribe_events table
+            await db.schema.createTable('members_subscribe_events', function (table) {
+                table.string('id').primary();
+                table.string('member_id');
+                table.string('newsletter_id');
+                table.boolean('subscribed');
+                table.dateTime('created_at');
+            });
+        });
+
+        afterEach(async function () {
+            await db.schema.dropTableIfExists('members_subscribe_events');
+            await db.schema.dropTableIfExists('members_newsletters');
+            await db.schema.dropTableIfExists('members');
+            await db.schema.dropTableIfExists('newsletters');
+        });
+
+        it('should return cumulative values instead of deltas', async function () {
+            const newsletterId = 'newsletter1';
+            
+            // Create newsletter
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create members
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current subscriptions (total = 2)
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Subscribe/unsubscribe events
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-03T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-03T01:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data, 'Should have data property');
+            assert.equal(result.data.length, 1, 'Should return one stats object');
+            
+            const stats = result.data[0];
+            assert.equal(stats.total, 2, 'Total subscribers should be 2');
+            assert.ok(Array.isArray(stats.values), 'Should have values array');
+            assert.equal(stats.values.length, 3, 'Should have 3 days of data');
+
+            // Verify cumulative values (not deltas)
+            assert.equal(stats.values[0].date, '2024-01-01');
+            assert.equal(stats.values[0].value, 1, 'Day 1: cumulative total of 1');
+
+            assert.equal(stats.values[1].date, '2024-01-02');
+            assert.equal(stats.values[1].value, 2, 'Day 2: cumulative total of 2');
+
+            assert.equal(stats.values[2].date, '2024-01-03');
+            assert.equal(stats.values[2].value, 2, 'Day 3: cumulative total of 2 (one unsubscribe, one resubscribe)');
+        });
+
+        it('should handle empty date range', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-03',
+                timezone: 'UTC'
+            });
+
+            assert.ok(result.data);
+            assert.equal(result.data.length, 1);
+            assert.equal(result.data[0].total, 0);
+            assert.deepEqual(result.data[0].values, []);
+        });
+
+        it('should exclude email_disabled members', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1', false);
+            await _createMember('member2', true); // email_disabled
+
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Total should exclude email_disabled member');
+            assert.equal(stats.values.length, 1, 'Should only have data for enabled member');
+            assert.equal(stats.values[0].value, 1, 'Should show 1 cumulative subscriber');
+        });
+
+        it('should calculate correct starting point for historical data', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 5 members
+            for (let i = 1; i <= 5; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: all 5 are subscribers
+            for (let i = 1; i <= 5; i++) {
+                await _createMemberNewsletterSubscription(`member${i}`, newsletterId);
+            }
+
+            // Historical events showing growth from 3 to 5
+            await _createNewsletterSubscription(newsletterId, 'member4', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member5', true, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 5, 'Current total should be 5');
+            assert.equal(stats.values[0].value, 4, 'Day 1: should show 4 cumulative (3 initial + 1 new)');
+            assert.equal(stats.values[1].value, 5, 'Day 2: should show 5 cumulative (4 + 1 new)');
+        });
+
+        it('should handle negative growth correctly', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            // Create 3 members
+            for (let i = 1; i <= 3; i++) {
+                await _createMember(`member${i}`);
+            }
+
+            // Current state: only member1 is still subscribed
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+
+            // Historical events showing decline from 3 to 1
+            await _createNewsletterSubscription(newsletterId, 'member2', false, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-02T00:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-02',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.total, 1, 'Current total should be 1');
+            assert.equal(stats.values[0].value, 2, 'Day 1: should show 2 cumulative (3 initial - 1)');
+            assert.equal(stats.values[1].value, 1, 'Day 2: should show 1 cumulative (2 - 1)');
+        });
+
+        it('should handle multiple events on same day', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state: 2 subscribers
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+
+            // Multiple events on the same day
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T08:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-01T10:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-01T12:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', false, new Date('2024-01-01T14:00:00Z'));
+
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-01',
+                date_to: '2024-01-01',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 1, 'Should have one day of data');
+            assert.equal(stats.values[0].value, 2, 'Net change for the day: +3 -1 = +2, starting from 0 = 2');
+        });
+
+        it('should respect date filters', async function () {
+            const newsletterId = 'newsletter1';
+            
+            await _createNewsletter(newsletterId, 'Test Newsletter');
+
+            await _createMember('member1');
+            await _createMember('member2');
+            await _createMember('member3');
+
+            // Current state
+            await _createMemberNewsletterSubscription('member1', newsletterId);
+            await _createMemberNewsletterSubscription('member2', newsletterId);
+            await _createMemberNewsletterSubscription('member3', newsletterId);
+
+            // Events spanning multiple days
+            await _createNewsletterSubscription(newsletterId, 'member1', true, new Date('2024-01-01T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member2', true, new Date('2024-01-05T00:00:00Z'));
+            await _createNewsletterSubscription(newsletterId, 'member3', true, new Date('2024-01-10T00:00:00Z'));
+
+            // Request only middle date range
+            const result = await service.getNewsletterSubscriberStats(newsletterId, {
+                date_from: '2024-01-04',
+                date_to: '2024-01-06',
+                timezone: 'UTC'
+            });
+
+            const stats = result.data[0];
+            assert.equal(stats.values.length, 1, 'Should only have data for date range');
+            assert.equal(stats.values[0].date, '2024-01-05');
+            // Starting point: total (3) - changes in range (1) = 2
+            // Day value: 2 + 1 = 3
+            assert.equal(stats.values[0].value, 3, 'Should show correct cumulative value');
         });
     });
 });
