@@ -8,7 +8,7 @@ export interface Post {
     uuid: string;
     title: string;
     slug: string;
-    mobiledoc: string;
+    mobiledoc: string | null;
     lexical: string | null;
     html: string;
     comment_id: string;
@@ -48,14 +48,31 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
         const title = options.title || faker.lorem.sentence();
         const content = faker.lorem.paragraphs(3);
         
-        // Generate mobiledoc format
-        const mobiledoc = {
-            version: '0.3.1',
-            atoms: [],
-            cards: [],
-            markups: [],
-            sections: [[1, 'p', [[0, [], 0, content]]]],
-            ghostVersion: '5.0'
+        // Generate lexical format (Ghost's current editor)
+        const lexical = {
+            root: {
+                children: [{
+                    children: [{
+                        detail: 0,
+                        format: 0,
+                        mode: 'normal',
+                        style: '',
+                        text: content,
+                        type: 'text',
+                        version: 1
+                    }],
+                    direction: 'ltr',
+                    format: '',
+                    indent: 0,
+                    type: 'paragraph',
+                    version: 1
+                }],
+                direction: 'ltr',
+                format: '',
+                indent: 0,
+                type: 'root',
+                version: 1
+            }
         };
         
         // Create defaults object
@@ -64,8 +81,8 @@ export class PostFactory extends Factory<Partial<Post>, Post> {
             uuid: generateUuid(),
             title: title,
             slug: options.slug || generateSlug(title) + '-' + Date.now().toString(16),
-            mobiledoc: JSON.stringify(mobiledoc),
-            lexical: null,
+            mobiledoc: null,
+            lexical: JSON.stringify(lexical),
             html: `<p>${content}</p>`,
             comment_id: generateId(),
             plaintext: content,
