@@ -143,12 +143,12 @@ class CardAssetsFixtures {
         try {
             // Clean up source files
             if (this.srcPath) {
-                await fs.rmdir(this.srcPath, {recursive: true});
+                await fs.rm(this.srcPath, {recursive: true, force: true});
             }
-
+            
             // Clean up destination files
             if (this.destPath) {
-                await fs.rmdir(this.destPath, {recursive: true});
+                await fs.rm(this.destPath, {recursive: true, force: true});
             }
         } catch (err) {
             // Ignore errors during cleanup
