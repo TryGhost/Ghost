@@ -303,11 +303,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     try {
                         return await res.json();
                     } catch (e) {
-                        // fall through to text handling
+                        // fall through to response used pre-OTC
                     }
                 }
-                const text = (await res.text())?.trim();
-                return text || 'Success';
+                return 'Success';
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
                 if (humanError) {
