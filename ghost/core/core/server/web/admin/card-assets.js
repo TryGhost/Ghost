@@ -16,6 +16,7 @@ const config = require('../../../shared/config');
 const glob = require('tiny-glob');
 const CleanCSS = require('clean-css');
 const terser = require('terser');
+const errors = require('@tryghost/errors');
 
 class AdminCardAssets {
     constructor() {
@@ -155,7 +156,9 @@ class AdminCardAssets {
             const filename = path.basename(req.path);
 
             if (!self.hasFile(filename)) {
-                return next();
+                return next(new errors.NotFoundError({
+                    message: `Card asset not found: ${filename}`
+                }));
             }
 
             const file = self.getFile(filename);

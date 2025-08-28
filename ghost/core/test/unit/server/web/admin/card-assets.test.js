@@ -366,12 +366,15 @@ describe('AdminCardAssets', function () {
             res.sendFile.called.should.be.false();
         });
 
-        it('should call next() for unknown files', async function () {
+        it('should return 404 error for unknown files', async function () {
             req.path = '/unknown.css';
 
             await middleware(req, res, next);
 
             next.calledOnce.should.be.true();
+            const error = next.firstCall.args[0];
+            error.should.be.an.instanceOf(require('@tryghost/errors').NotFoundError);
+            error.message.should.equal('Card asset not found: unknown.css');
             res.sendFile.called.should.be.false();
         });
 
