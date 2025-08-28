@@ -288,6 +288,24 @@ describe('sendMagicLink', function () {
         });
     });
 
+    describe('signin email', function () {
+        it('matches snapshot', async function () {
+            const email = 'member1@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signin'
+                })
+                .expectStatus(201);
+
+            const mail = mockManager.assert.sentEmail({
+                to: email
+            });
+
+            should({mail}).matchSnapshot();
+        });
+    });
+
     describe('blocked email domains', function () {
         beforeEach(async function () {
             configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
