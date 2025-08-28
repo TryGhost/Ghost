@@ -124,9 +124,9 @@ export default class MagicLinkPage extends React.Component {
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
                 // @TODO: replace with verifyOTC action
-                // For now, just log the values for development
+                // For now, just log for development
                 // eslint-disable-next-line no-console
-                console.log(`token: ${otcRef} otc: ${otc}`);
+                console.log('otc_ref and otc submitted');
             }
         }
         );

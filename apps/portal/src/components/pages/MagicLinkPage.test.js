@@ -3,6 +3,7 @@ import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
 const OTC_ERROR_REGEX = /please enter otc/i;
+const OTC_SUBMISSION_LOG_MESSAGE = 'otc_ref and otc submitted';
 
 const setupTest = (options = {}) => {
     const {
@@ -204,7 +205,7 @@ describe('MagicLinkPage', () => {
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(submitButton);
             
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
+            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
         }));
 
         test('validation state persists across input changes until submission', () => {
@@ -234,7 +235,7 @@ describe('MagicLinkPage', () => {
             
             fillAndSubmitOTC(testUtils, '123456', 'button');
             
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 123456');
+            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
         }));
 
         test('submits via Enter key', withConsoleSpy((consoleSpy) => {
@@ -242,16 +243,7 @@ describe('MagicLinkPage', () => {
             
             fillAndSubmitOTC(testUtils, '654321', 'enter');
             
-            expect(consoleSpy).toHaveBeenCalledWith('token: test-otc-ref otc: 654321');
-        }));
-
-        test('includes correct context values in submission', withConsoleSpy((consoleSpy) => {
-            const customOtcRef = 'custom-test-ref-12345';
-            const testUtils = setupOTCTest({otcRef: customOtcRef});
-            
-            fillAndSubmitOTC(testUtils, '987654');
-            
-            expect(consoleSpy).toHaveBeenCalledWith(`token: ${customOtcRef} otc: 987654`);
+            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
         }));
 
         // @TODO: This test will have to be updated once the full OTC flow is implemented,
@@ -264,7 +256,7 @@ describe('MagicLinkPage', () => {
                 consoleSpy.mockClear();
                 fillAndSubmitOTC(testUtils, code);
                 
-                expect(consoleSpy).toHaveBeenCalledWith(`token: test-otc-ref otc: ${code}`);
+                expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
             });
         }));
     });
@@ -349,8 +341,8 @@ describe('MagicLinkPage', () => {
             fireEvent.click(submitButton);
             
             expect(consoleSpy).toHaveBeenCalledTimes(2);
-            expect(consoleSpy).toHaveBeenNthCalledWith(1, 'token: test-otc-ref otc: 111111');
-            expect(consoleSpy).toHaveBeenNthCalledWith(2, 'token: test-otc-ref otc: 222222');
+            expect(consoleSpy).toHaveBeenNthCalledWith(1, OTC_SUBMISSION_LOG_MESSAGE);
+            expect(consoleSpy).toHaveBeenNthCalledWith(2, OTC_SUBMISSION_LOG_MESSAGE);
         }));
     });
 });
