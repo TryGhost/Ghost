@@ -150,4 +150,77 @@ describe('Admin Routing', function () {
             res.headers.etag.should.equal('8793333e8e91cde411b1336c58ec6ef3');
         });
     });
+
+    describe('Card Assets', function () {
+        before(function () {
+            // Create test card asset fixtures
+            const cardAssetsFixtures = require('../utils/fixtures/card-assets');
+            cardAssetsFixtures.setup();
+        });
+
+        after(function () {
+            // Clean up test card asset fixtures
+            const cardAssetsFixtures = require('../utils/fixtures/card-assets');
+            cardAssetsFixtures.cleanup();
+        });
+
+        it('should serve admin card CSS with correct headers', async function () {
+            await request.get('/ghost/cards/admin-cards.min.css')
+                .expect('Content-Type', /text\/css/)
+                .expect('Cache-Control', /public, max-age=/)
+                .expect('ETag', /^[a-f0-9]{32}$/)
+                .expect(200)
+                .expect(assertCorrectHeaders);
+        });
+
+        it('should serve admin card JS with correct headers', async function () {
+            await request.get('/ghost/cards/admin-cards.min.js')
+                .expect('Content-Type', /application\/javascript/)
+                .expect('Cache-Control', /public, max-age=/)
+                .expect('ETag', /^[a-f0-9]{32}$/)
+                .expect(200)
+                .expect(assertCorrectHeaders);
+        });
+
+        it('should return 304 for cached requests', async function () {
+            // First request to get ETag
+            const firstRes = await request.get('/ghost/cards/admin-cards.min.css')
+                .expect(200);
+
+            const etag = firstRes.headers.etag;
+
+            // Second request with If-None-Match should return 304
+            await request.get('/ghost/cards/admin-cards.min.css')
+                .set('If-None-Match', etag)
+                .expect(304);
+        });
+
+        it('should return 404 for unknown card assets', async function () {
+            await request.get('/ghost/cards/unknown-file.css')
+                .expect(404);
+        });
+
+        it('should handle concurrent requests properly', async function () {
+            // Start multiple concurrent requests
+            const requests = [
+                request.get('/ghost/cards/admin-cards.min.css'),
+                request.get('/ghost/cards/admin-cards.min.js'),
+                request.get('/ghost/cards/admin-cards.min.css'),
+                request.get('/ghost/cards/admin-cards.min.js')
+            ];
+
+            const responses = await Promise.all(requests);
+
+            // All requests should succeed
+            responses.forEach((res) => {
+                res.status.should.equal(200);
+                should.exist(res.headers.etag);
+            });
+
+            // CSS requests should have same ETag
+            responses[0].headers.etag.should.equal(responses[2].headers.etag);
+            // JS requests should have same ETag
+            responses[1].headers.etag.should.equal(responses[3].headers.etag);
+        });
+    });
 });
