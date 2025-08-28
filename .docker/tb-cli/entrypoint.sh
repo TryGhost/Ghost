@@ -52,8 +52,8 @@ if [ -z "$TRACKER_TOKEN" ] || [ "$TRACKER_TOKEN" = "null" ]; then
 fi
 
 # Write environment variables to .env file
-ENV_FILE="/home/tinybird/.env"
-TMP_ENV_FILE="/home/tinybird/.env.tmp"
+ENV_FILE="/mnt/shared-config/.env.tinybird"
+TMP_ENV_FILE="/mnt/shared-config/.env.tinybird.tmp"
 
 echo "Writing Tinybird configuration to $ENV_FILE..."
 
