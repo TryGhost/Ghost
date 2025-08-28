@@ -12,6 +12,7 @@ Each ADR includes the following sections:
 - `Decision` – What was decided and why
 - `Guidelines` – (Optional) How the decision should be applied
 - `Example` – (Optional) Minimal working example to clarify intent
+- `References` - (Optional) - Lists documents, links, or resources that informed or support the decision
 
 ## Guidelines for contributing
 

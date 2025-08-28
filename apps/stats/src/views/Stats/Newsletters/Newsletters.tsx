@@ -198,7 +198,7 @@ const TopNewslettersTable: React.FC<{
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
     return (
-        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]'>
+        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-newsletters-card'>
             <CardContent>
                 <Table>
                     <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />
@@ -292,7 +292,7 @@ const Newsletters: React.FC = () => {
 
     // Create subscribers data from newsletter subscriber stats
     const subscribersData = useMemo(() => {
-        if (!subscriberStatsData?.stats?.[0]?.deltas || subscriberStatsData.stats[0].deltas.length === 0) {
+        if (!subscriberStatsData?.stats?.[0]?.values || subscriberStatsData.stats[0].values.length === 0) {
             // When there's no data, create zero points for each day spanning the range
             const {startDate, endDate} = getRangeDates(range);
 
@@ -310,11 +310,11 @@ const Newsletters: React.FC = () => {
             return dailyData;
         }
 
-        const deltas = subscriberStatsData.stats[0].deltas;
+        const values = subscriberStatsData.stats[0].values;
 
         // If we only have one data point, create two points spanning the range
-        if (deltas.length === 1) {
-            const singlePoint = deltas[0];
+        if (values.length === 1) {
+            const singlePoint = values[0];
             const now = new Date();
             const rangeInDays = range;
             const startDate = new Date(now.getTime() - (rangeInDays * 24 * 60 * 60 * 1000));
@@ -332,7 +332,7 @@ const Newsletters: React.FC = () => {
         }
 
         // Convert to the required format - already in the correct format
-        return deltas;
+        return values;
     }, [subscriberStatsData, range]);
 
     // Create avgsData from newsletter stats for the bar charts
@@ -374,7 +374,7 @@ const Newsletters: React.FC = () => {
             </StatsHeader>
             <StatsView isLoading={false} loadingComponent={<></>}>
                 <>
-                    <Card>
+                    <Card data-testid='newsletters-card'>
                         <CardContent>
                             <NewsletterKPIs
                                 avgsData={avgsData}

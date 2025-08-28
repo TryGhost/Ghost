@@ -7,26 +7,47 @@ const sandbox = sinon.createSandbox();
 const secret = crypto.randomBytes(64);
 
 describe('MagicLink', function () {
+    let mockSingleUseTokenProvider;
+
+    function buildOptions(overrides = {}) {
+        return {
+            tokenProvider: mockSingleUseTokenProvider,
+            getSigninURL: sandbox.stub().returns('FAKEURL'),
+            getText: sandbox.stub().returns('SOMETEXT'),
+            getHTML: sandbox.stub().returns('SOMEHTML'),
+            getSubject: sandbox.stub().returns('SOMESUBJECT'),
+            transporter: {
+                sendMail: sandbox.stub().resolves({messageId: 'test'})
+            },
+            config: {
+                get: sandbox.stub().resolves()
+            },
+            labsService: {
+                isSet: sandbox.stub().returns(false)
+            },
+            ...overrides
+        };
+    }
+
+    beforeEach(function () {
+        mockSingleUseTokenProvider = {
+            create: sandbox.stub().resolves('mock-token'),
+            getIdByToken: sandbox.stub().resolves('test-token-id-123'),
+            deriveOTC: sandbox.stub().returns('654321')
+        };
+    });
+
+    afterEach(function () {
+        sandbox.restore();
+    });
+
     it('Exports a function', function () {
         assert.equal(typeof MagicLink, 'function');
     });
 
     describe('#sendMagicLink', function () {
         it('Throws when passed comma separated emails', async function () {
-            const options = {
-                tokenProvider: new MagicLink.JWTTokenProvider(secret),
-                getSigninURL: sandbox.stub().returns('FAKEURL'),
-                getText: sandbox.stub().returns('SOMETEXT'),
-                getHTML: sandbox.stub().returns('SOMEHTML'),
-                getSubject: sandbox.stub().returns('SOMESUBJECT'),
-                transporter: {
-                    sendMail: sandbox.stub().resolves()
-                },
-                config: {
-                    get: sandbox.stub().resolves()
-                }
-            };
-            const service = new MagicLink(options);
+            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
 
             const args = {
                 email: 'one@email.com,two@email.com',
@@ -37,30 +58,11 @@ describe('MagicLink', function () {
                 referrer: 'https://whatever.com'
             };
 
-            let errored = false;
-            try {
-                await service.sendMagicLink(args);
-            } catch (err) {
-                errored = true;
-            } finally {
-                assert(errored, 'sendMagicLink should error when given comma separated emails');
-            }
+            assert.rejects(service.sendMagicLink(args));
         });
 
         it('Sends an email to the user with a link generated from getSigninURL(token, type)', async function () {
-            const options = {
-                tokenProvider: new MagicLink.JWTTokenProvider(secret),
-                getSigninURL: sandbox.stub().returns('FAKEURL'),
-                getText: sandbox.stub().returns('SOMETEXT'),
-                getHTML: sandbox.stub().returns('SOMEHTML'),
-                getSubject: sandbox.stub().returns('SOMESUBJECT'),
-                transporter: {
-                    sendMail: sandbox.stub().resolves()
-                },
-                config: {
-                    get: sandbox.stub().resolves()
-                }
-            };
+            const options = buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)});
             const service = new MagicLink(options);
 
             const args = {
@@ -95,19 +97,7 @@ describe('MagicLink', function () {
 
     describe('#getDataFromToken', function () {
         it('Returns the user data which from the token that was encoded by #sendMagicLink', async function () {
-            const options = {
-                tokenProvider: new MagicLink.JWTTokenProvider(secret),
-                getSigninURL: sandbox.stub().returns('FAKEURL'),
-                getText: sandbox.stub().returns('SOMETEXT'),
-                getHTML: sandbox.stub().returns('SOMEHTML'),
-                transporter: {
-                    sendMail: sandbox.stub().resolves()
-                },
-                config: {
-                    get: sandbox.stub().resolves()
-                }
-            };
-            const service = new MagicLink(options);
+            const service = new MagicLink(buildOptions({tokenProvider: new MagicLink.JWTTokenProvider(secret)}));
 
             const args = {
                 email: 'test@example.com',
@@ -120,6 +110,115 @@ describe('MagicLink', function () {
             const data = await service.getDataFromToken(token);
 
             assert.deepEqual(data.id, args.tokenData.id);
+        });
+    });
+
+    describe('#sendMagicLink with labsService', function () {
+        it('should return tokenId when labsService is provided and flag is enabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const service = new MagicLink(buildOptions({labsService}));
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, 'test-token-id-123');
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
+        });
+
+        it('should not return tokenId when labsService flag is disabled', async function () {
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
+            };
+
+            const service = new MagicLink(buildOptions({labsService}));
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+        });
+
+        it('should not return tokenId when labsService is not provided', async function () {
+            const service = new MagicLink(buildOptions({labsService: undefined}));
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            // Should not throw any errors
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
+        });
+
+        it('should work when tokenProvider does not have getIdByToken method', async function () {
+            // No getIdByToken method
+            delete mockSingleUseTokenProvider.getIdByToken;
+
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const options = buildOptions({labsService});
+            const service = new MagicLink(options);
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(options.transporter.sendMail.calledOnce);
+        });
+
+        it('should return tokenId as null when getIdByToken resolves to null', async function () {
+            mockSingleUseTokenProvider.getIdByToken.resolves(null);
+
+            const labsService = {
+                isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
+            };
+
+            const service = new MagicLink(buildOptions({labsService}));
+
+            const args = {
+                email: 'test@example.com',
+                tokenData: {
+                    id: '420'
+                }
+            };
+
+            const result = await service.sendMagicLink(args);
+
+            assert.equal(result.tokenId, null);
+            assert(labsService.isSet.calledWith('membersSigninOTC'));
+            assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
         });
     });
 });
