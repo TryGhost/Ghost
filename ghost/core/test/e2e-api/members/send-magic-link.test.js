@@ -387,7 +387,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            otc: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -405,7 +406,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            otc: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
