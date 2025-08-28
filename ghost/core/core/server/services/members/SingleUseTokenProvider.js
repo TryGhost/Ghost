@@ -37,16 +37,6 @@ class SingleUseTokenProvider {
         return model.get('token');
     }
 
-    /**
-     * @method getIdFromToken
-     *
-     * @param {string} token
-     * @returns {Promise<string>}
-     */
-    async getIdFromToken(token) {
-        const model = await this.model.findOne({token});
-        return model.get('id');
-    }
 
     /**
      * @method validate
