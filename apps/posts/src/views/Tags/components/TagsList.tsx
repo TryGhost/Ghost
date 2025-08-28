@@ -14,7 +14,7 @@ import {forwardRef, useRef} from 'react';
 import {useInfiniteVirtualScroll} from './VirtualTable/useInfiniteVirtualScroll';
 
 const SpacerRow = ({height}: { height: number }) => (
-    <tr className="flex lg:table-row">
+    <tr aria-hidden="true" className="flex lg:table-row">
         <td className="flex lg:table-cell" style={{height}} />
     </tr>
 );
@@ -28,6 +28,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
         <TableRow
             ref={ref}
             {...props}
+            aria-hidden="true"
             className="relative flex flex-col lg:table-row"
         >
             <TableCell className="relative z-10 h-24 animate-pulse">
@@ -62,7 +63,10 @@ function TagsList({
 
     return (
         <div ref={parentRef}>
-            <Table className="flex table-fixed flex-col lg:table">
+            <Table
+                className="flex table-fixed flex-col lg:table"
+                data-testid="tags-list"
+            >
                 <TableHeader className="hidden lg:!visible lg:!table-header-group">
                     <TableRow>
                         <TableHead className="w-auto px-4">
