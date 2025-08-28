@@ -81,7 +81,6 @@ services:
       - tinybird__stats__endpoint=http://tinybird-local:7181
       - tinybird__stats__endpointBrowser=http://localhost:7181
       - tinybird__tracker__endpoint=http://localhost/.ghost/analytics/api/v1/page_hit
-      - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-analytics:3000}
 
   admin:
     <<: *service-template
@@ -106,7 +105,7 @@ services:
       - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
     environment:
-      - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-}
+      - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-analytics:3000}
     restart: always
 
   ghost:
