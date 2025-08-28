@@ -290,6 +290,8 @@ describe('sendMagicLink', function () {
     });
 
     describe('signin email', function () {
+        const testEmail = 'member1@test.com';
+
         beforeEach(function () {
             mockManager.mockLabsDisabled();
         });
@@ -311,60 +313,56 @@ describe('sendMagicLink', function () {
             };
         }
 
-        it('matches snapshot', async function () {
-            const email = 'member1@test.com';
+        async function sendSigninRequest(options = {}) {
+            const body = {
+                email: testEmail,
+                emailType: 'signin',
+                ...options
+            };
+
             await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin'
-                })
+                .body(body)
                 .expectStatus(201);
 
-            const mail = mockManager.assert.sentEmail({
-                to: email
-            });
+            return mockManager.assert.sentEmail({to: testEmail});
+        }
 
+        it('matches snapshot', async function () {
+            const mail = await sendSigninRequest();
             const scrubbedEmail = scrubEmailContent(mail);
             should(scrubbedEmail).matchSnapshot();
         });
 
         it('matches non-OTC snapshot (membersSigninOTC enabled)', async function () {
             mockManager.mockLabsEnabled('membersSigninOTC');
-
-            const email = 'member1@test.com';
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin'
-                })
-                .expectStatus(201);
-
-            const mail = mockManager.assert.sentEmail({
-                to: email
-            });
-
+            const mail = await sendSigninRequest();
             const scrubbedEmail = scrubEmailContent(mail);
             should(scrubbedEmail).matchSnapshot();
         });
 
-        it('matches OTC snapshot (membersSigninOTC enabled)', async function () {
+        it('matches OTC snapshot and includes OTC (membersSigninOTC enabled)', async function () {
             mockManager.mockLabsEnabled('membersSigninOTC');
-
-            const email = 'member1@test.com';
-            await membersAgent.post('/api/send-magic-link')
-                .body({
-                    email,
-                    emailType: 'signin',
-                    otc: true
-                })
-                .expectStatus(201);
-
-            const mail = mockManager.assert.sentEmail({
-                to: email
-            });
-
+            const mail = await sendSigninRequest({otc: true});
             const scrubbedEmail = scrubEmailContent(mail);
             should(scrubbedEmail).matchSnapshot();
+        });
+
+        it('does not include OTC when not requested', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest();
+            const scrubbedEmail = scrubEmailContent(mail);
+
+            assert.ok(!scrubbedEmail.text.includes('<OTC>'), 'OTC should not be in the email text');
+            assert.ok(!scrubbedEmail.html.includes('<OTC>'), 'OTC should not be in the email html');
+        });
+
+        it('includes OTC when requested', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest({otc: true});
+            const scrubbedEmail = scrubEmailContent(mail);
+
+            assert.ok(scrubbedEmail.text.includes('<OTC>'), 'OTC should be in the email text');
+            assert.ok(scrubbedEmail.html.includes('<OTC>'), 'OTC should be in the email html');
         });
     });
 
