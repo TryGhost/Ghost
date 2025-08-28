@@ -116,6 +116,55 @@ async function signin({data, api, state}) {
     }
 }
 
+async function verifyOTC({data, api, state}) {
+    const {t} = state;
+
+    try {
+        const response = await api.member.verifyOTC(data);
+
+        if (response.valid && response.success) {
+            // Enhance the redirect URL with current page context
+            let finalRedirectUrl;
+
+            if (response.redirectUrl) {
+                // Parse the provided URL and add our referrer and action
+                const redirectUrl = new URL(response.redirectUrl);
+                redirectUrl.searchParams.set('r', window.location.href);
+                redirectUrl.searchParams.set('action', 'signin');
+                finalRedirectUrl = redirectUrl.href;
+            } else {
+                // Fallback: redirect to current page with success params
+                const fallbackUrl = new URL(window.location.href);
+                fallbackUrl.searchParams.set('success', 'true');
+                fallbackUrl.searchParams.set('action', 'signin');
+                finalRedirectUrl = fallbackUrl.href;
+            }
+
+            window.location.href = finalRedirectUrl;
+
+            return {
+                action: 'verifyOTC:success'
+            };
+        } else {
+            return {
+                action: 'verifyOTC:failed',
+                popupNotification: createPopupNotification({
+                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                    message: response.message || t('Invalid verification code')
+                })
+            };
+        }
+    } catch (e) {
+        return {
+            action: 'verifyOTC:failed',
+            popupNotification: createPopupNotification({
+                type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
+            })
+        };
+    }
+}
+
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
@@ -579,6 +628,7 @@ const Actions = {
     back,
     signout,
     signin,
+    verifyOTC,
     signup,
     updateSubscription,
     cancelSubscription,
