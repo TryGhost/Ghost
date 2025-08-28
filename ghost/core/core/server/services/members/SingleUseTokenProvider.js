@@ -43,6 +43,9 @@ class SingleUseTokenProvider {
      * If the token is invalid the returned Promise will reject.
      *
      * @param {string} token
+     * @param {Object} [options] - Optional configuration object
+     * @param {Object} [options.transacting] - Database transaction object
+     * @param {string} [options.otcVerification] - OTC verification hash for additional validation
      *
      * @returns {Promise<Object<string, any>>}
      */
@@ -56,6 +59,17 @@ class SingleUseTokenProvider {
             });
         }
 
+        // Validate OTC verification hash if provided
+        if (options.otcVerification) {
+            console.log(options.otcVerification, token);
+            const isValidOTCVerification = await this._validateOTCVerificationHash(options.otcVerification, token);
+            if (!isValidOTCVerification) {
+                throw new ValidationError({
+                    message: 'Invalid OTC verification hash'
+                });
+            }
+        }
+                
         const model = await this.model.findOne({token}, {transacting: options.transacting, forUpdate: true});
 
         if (!model) {
@@ -192,6 +206,96 @@ class SingleUseTokenProvider {
             return model ? model.get('id') : null;
         } catch (err) {
             return null;
+        }
+    }
+
+    /**
+     * @method getTokenById
+     * Retrieves the token associated with a given ID.
+     *
+     * @param {string} id - The ID to look up.
+     * @returns {Promise<string|null>} The token if found, or null if not found or on error.
+     */
+    async getTokenById(id) {
+        try {
+            const model = await this.model.findOne({id});
+            return model ? model.get('token') : null;
+        } catch (err) {
+            return null;
+        }
+    }
+
+    /**
+     * @private
+     * @method _validateOTCVerificationHash
+     * Validates OTC verification hash by recreating and comparing the hash
+     * 
+     * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
+     * @param {string} token - The token value
+     * @returns {Promise<boolean>} - True if hash is valid, false otherwise
+     */
+    async _validateOTCVerificationHash(otcVerificationHash, token) {
+        try {
+            if (!otcVerificationHash || !token) {
+                return false;
+            }
+
+            // Parse timestamp:hash format
+            const parts = otcVerificationHash.split(':');
+            if (parts.length !== 2) {
+                return false;
+            }
+
+            const timestamp = parseInt(parts[0], 10);
+            const providedHash = parts[1];
+
+            // Check if hash is expired (5 minute window)
+            const now = Math.floor(Date.now() / 1000);
+            const maxAge = 5 * 60; // 5 minutes in seconds
+            if (now - timestamp > maxAge) {
+                return false;
+            }
+
+            // Validate the secret is available
+            if (!this.secret) {
+                return false;
+            }
+
+            // Get the token ID to derive the OTC
+            const tokenId = await this.getIdByToken(token);
+            if (!tokenId) {
+                return false;
+            }
+
+            // Derive the original OTC that was used to create this hash
+            const otc = this.deriveOTC(tokenId, token);
+
+            // Recreate the hash using the same algorithm as RouterController
+            const dataToHash = `${otc}:${token}:${timestamp}`;
+
+            // Handle secret - it might be hex string or binary string depending on how it was passed
+            let secret;
+            if (Buffer.isBuffer(this.secret)) {
+                secret = this.secret;
+            } else if (typeof this.secret === 'string' && /^[0-9a-f]+$/i.test(this.secret)) {
+                // Hex string - convert to buffer like RouterController does
+                secret = Buffer.from(this.secret, 'hex');
+            } else {
+                // Binary string or other format
+                secret = Buffer.from(this.secret);
+            }
+
+            const hmac = crypto.createHmac('sha256', secret);
+            hmac.update(dataToHash);
+            const expectedHash = hmac.digest('hex');
+
+            // Compare the hashes using constant-time comparison to prevent timing attacks
+            return crypto.timingSafeEqual(
+                Buffer.from(providedHash, 'hex'),
+                Buffer.from(expectedHash, 'hex')
+            );
+        } catch (err) {
+            return false;
         }
     }
 }
