@@ -23,6 +23,7 @@ class AdminCardAssets {
         this.dest = path.join(config.get('paths').adminAssets, 'cards');
         this.ready = false;
         this.files = {};
+        this._loadingPromise = null;
     }
 
     async ensureDestDir() {
@@ -111,9 +112,23 @@ class AdminCardAssets {
         }
     }
 
+    _loadAssets() {
+        if (!this._loadingPromise) {
+            this._loadingPromise = this.load()
+                .then(() => {
+                    this._loadingPromise = null;
+                    return this;
+                });
+        }
+
+        return this._loadingPromise;
+    }
+
     async ensureLoaded() {
         if (!this.ready) {
-            await this.load();
+            return this._loadAssets();
+        } else {
+            return this;
         }
     }
 
