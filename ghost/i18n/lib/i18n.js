@@ -1,69 +1,73 @@
 const i18next = require('i18next');
 
-const SUPPORTED_LOCALES = [
-    'af', // Afrikaans
-    'ar', // Arabic
-    'bg', // Bulgarian
-    'bn', // Bengali
-    'bs', // Bosnian
-    'ca', // Catalan
-    'cs', // Czech
-    'da', // Danish
-    'de', // German
-    'de-CH', // Swiss German
-    'el', // Greek
-    'en', // English
-    'eo', // Esperanto
-    'es', // Spanish
-    'et', // Estonian
-    'eu', // Basque
-    'fa', // Persian/Farsi
-    'fi', // Finnish
-    'fr', // French
-    'gd', // Gaelic (Scottish)
-    'he', // Hebrew
-    'hi', // Hindi
-    'hr', // Croatian
-    'hu', // Hungarian
-    'id', // Indonesian
-    'is', // Icelandic
-    'it', // Italian
-    'ja', // Japanese
-    'ko', // Korean
-    'kz', // Kazach
-    'lt', // Lithuanian
-    'lv', // Latvian
-    'mk', // Macedonian
-    'mn', // Mongolian
-    'ms', // Malay
-    'nb', // Norwegian Bokmål
-    'ne', // Nepali
-    'nl', // Dutch
-    'nn', // Norwegian Nynorsk
-    'pa', // Punjabi (Gurmukhi, India)
-    'pl', // Polish
-    'pt', // Portuguese
-    'pt-BR', // Portuguese (Brazil)
-    'ro', // Romanian
-    'ru', // Russian
-    'si', // Sinhala
-    'sk', // Slovak
-    'sl', // Slovenian
-    'sq', // Albanian
-    'sr', // Serbian
-    'sr-Cyrl', // Serbian (Cyrillic)
-    'sv', // Swedish
-    'th', // Thai
-    'tr', // Turkish
-    'uk', // Ukrainian
-    'ur', // Urdu
-    'uz', // Uzbek
-    'vi', // Vietnamese
-    'zh', // Chinese
-    'zh-Hant', // Traditional Chinese
-    'sw', // Swahili
-    'ta' // Tamil
+// Locale data with both codes and human-readable labels
+const LOCALE_DATA = [
+    {code: 'af', label: 'Afrikaans'},
+    {code: 'ar', label: 'Arabic'},
+    {code: 'bg', label: 'Bulgarian'},
+    {code: 'bn', label: 'Bengali'},
+    {code: 'bs', label: 'Bosnian'},
+    {code: 'ca', label: 'Catalan'},
+    {code: 'cs', label: 'Czech'},
+    {code: 'da', label: 'Danish'},
+    {code: 'de', label: 'German'},
+    {code: 'de-CH', label: 'Swiss German'},
+    {code: 'el', label: 'Greek'},
+    {code: 'en', label: 'English'},
+    {code: 'eo', label: 'Esperanto'},
+    {code: 'es', label: 'Spanish'},
+    {code: 'et', label: 'Estonian'},
+    {code: 'eu', label: 'Basque'},
+    {code: 'fa', label: 'Persian/Farsi'},
+    {code: 'fi', label: 'Finnish'},
+    {code: 'fr', label: 'French'},
+    {code: 'gd', label: 'Gaelic (Scottish)'},
+    {code: 'he', label: 'Hebrew'},
+    {code: 'hi', label: 'Hindi'},
+    {code: 'hr', label: 'Croatian'},
+    {code: 'hu', label: 'Hungarian'},
+    {code: 'id', label: 'Indonesian'},
+    {code: 'is', label: 'Icelandic'},
+    {code: 'it', label: 'Italian'},
+    {code: 'ja', label: 'Japanese'},
+    {code: 'ko', label: 'Korean'},
+    {code: 'kz', label: 'Kazakh'},
+    {code: 'lt', label: 'Lithuanian'},
+    {code: 'lv', label: 'Latvian'},
+    {code: 'mk', label: 'Macedonian'},
+    {code: 'mn', label: 'Mongolian'},
+    {code: 'ms', label: 'Malay'},
+    {code: 'nb', label: 'Norwegian Bokmål'},
+    {code: 'ne', label: 'Nepali'},
+    {code: 'nl', label: 'Dutch'},
+    {code: 'nn', label: 'Norwegian Nynorsk'},
+    {code: 'pa', label: 'Punjabi'},
+    {code: 'pl', label: 'Polish'},
+    {code: 'pt', label: 'Portuguese'},
+    {code: 'pt-BR', label: 'Portuguese (Brazil)'},
+    {code: 'ro', label: 'Romanian'},
+    {code: 'ru', label: 'Russian'},
+    {code: 'si', label: 'Sinhala'},
+    {code: 'sk', label: 'Slovak'},
+    {code: 'sl', label: 'Slovenian'},
+    {code: 'sq', label: 'Albanian'},
+    {code: 'sr', label: 'Serbian'},
+    {code: 'sr-Cyrl', label: 'Serbian (Cyrillic)'},
+    {code: 'sv', label: 'Swedish'},
+    {code: 'sw', label: 'Swahili'},
+    {code: 'ta', label: 'Tamil'},
+    {code: 'th', label: 'Thai'},
+    {code: 'tr', label: 'Turkish'},
+    {code: 'uk', label: 'Ukrainian'},
+    {code: 'ur', label: 'Urdu'},
+    {code: 'uz', label: 'Uzbek'},
+    {code: 'vi', label: 'Vietnamese'},
+    {code: 'zh', label: 'Chinese'},
+    {code: 'zh-Hant', label: 'Traditional Chinese'}
 ];
+
+// Export just the locale codes
+const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
 
 function generateResources(locales, ns) {
     return locales.reduce((acc, locale) => {
@@ -126,4 +130,5 @@ module.exports = (lng = 'en', ns = 'portal') => {
 };
 
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
+module.exports.LOCALE_DATA = LOCALE_DATA;
 module.exports.generateResources = generateResources;
