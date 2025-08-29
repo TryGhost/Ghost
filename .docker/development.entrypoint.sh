@@ -27,8 +27,8 @@ set -euo pipefail
 )
 
 # Configure Ghost to use Tinybird Local
-if [ -f /home/ghost/ghost/core/core/server/data/tinybird/.env ]; then
-    source /home/ghost/ghost/core/core/server/data/tinybird/.env
+if [ -f /mnt/shared-config/.env.tinybird ]; then
+    source /mnt/shared-config/.env.tinybird
     if [ -n "${TINYBIRD_WORKSPACE_ID:-}" ] && [ -n "${TINYBIRD_ADMIN_TOKEN:-}" ]; then
         export tinybird__workspaceId="$TINYBIRD_WORKSPACE_ID"
         export tinybird__adminToken="$TINYBIRD_ADMIN_TOKEN"

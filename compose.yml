@@ -7,11 +7,13 @@ x-service-template: &service-template
     - ${SSH_AUTH_SOCK}:/ssh-agent
     - ${HOME}/.gitconfig:/root/.gitconfig:ro
     - ${HOME}/.yalc:/root/.yalc
+    - shared-config:/mnt/shared-config:ro
     - node_modules_yarn_lock_hash:/home/ghost/.yarnhash:delegated
     - node_modules_ghost_root:/home/ghost/node_modules:delegated
     - node_modules_ghost_admin:/home/ghost/ghost/admin/node_modules:delegated
     - node_modules_ghost_core:/home/ghost/ghost/core/node_modules:delegated
     - node_modules_ghost_i18n:/home/ghost/ghost/i18n/node_modules:delegated
+    - node_modules_e2e:/home/ghost/e2e/node_modules:delegated
     - node_modules_apps_admin-x-activitypub:/home/ghost/apps/admin-x-activitypub/node_modules:delegated
     - node_modules_apps_admin-x-design-system:/home/ghost/apps/admin-x-design-system/node_modules:delegated
     - node_modules_apps_admin-x-framework:/home/ghost/apps/admin-x-framework/node_modules:delegated
@@ -48,7 +50,7 @@ services:
     command: [ "yarn", "dev" ]
     ports:
       - "2368:2368"
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
     depends_on:
       mysql:
@@ -89,19 +91,21 @@ services:
     ports:
       - "4200:4200"
       - "4201:4201"
-    profiles: [ split ]
+    profiles: [ split, all ]
     tty: true
 
   caddy:
     image: caddy:latest
     container_name: ghost-caddy
-    profiles: [ split ]
+    profiles: [ split, all ]
     ports:
       - "80:80"
       - "443:443"
     volumes:
       - ./.docker/caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
+    environment:
+      - ANALYTICS_PROXY_TARGET=${ANALYTICS_PROXY_TARGET:-analytics:3000}
     restart: always
 
   ghost:
@@ -124,7 +128,7 @@ services:
       - "6174:6174" # Signup form
       - "7173:7173" # Comments
       - "7174:7174" # Comments HTTPS
-    profiles: [ ghost ]
+    profiles: [ ghost, all]
     tty: true
     depends_on:
       mysql:
@@ -169,7 +173,7 @@ services:
       retries: 120
 
   analytics:
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     image: ghost/traffic-analytics:1
     platform: linux/amd64
     command: ["node", "--enable-source-maps", "dist/server.js"]
@@ -183,7 +187,7 @@ services:
       retries: 120
     volumes:
       - ./.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
-      - ./ghost/core/core/server/data/tinybird/.env:/app/.env:ro
+      - shared-config:/mnt/shared-config:ro
     environment:
       - PROXY_TARGET=http://tinybird-local:7181/v0/events
     depends_on:
@@ -196,7 +200,7 @@ services:
     build:
       context: .
       dockerfile: ./.docker/tb-cli/Dockerfile
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     working_dir: /home/tinybird
     tty: true
     container_name: ghost-tb-cli
@@ -205,12 +209,13 @@ services:
       - TB_LOCAL_HOST=tinybird-local
     volumes:
       - ./ghost/core/core/server/data/tinybird:/home/tinybird
+      - shared-config:/mnt/shared-config
     depends_on:
       tinybird-local:
         condition: service_healthy
 
   tinybird-local:
-    profiles: [ analytics ]
+    profiles: [ analytics, all ]
     image: tinybirdco/tinybird-local:latest
     platform: linux/amd64
     ports:
@@ -223,7 +228,7 @@ services:
       retries: 120
 
   prometheus:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: prom/prometheus:v2.55.1
     container_name: ghost-prometheus
     ports:
@@ -233,7 +238,7 @@ services:
       - ./.docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
 
   grafana:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: grafana/grafana:8.5.27
     container_name: ghost-grafana
     ports:
@@ -248,7 +253,7 @@ services:
       - ./.docker/grafana/dashboards:/var/lib/grafana/dashboards
 
   pushgateway:
-    profiles: [ monitoring ]
+    profiles: [ monitoring, all ]
     image: prom/pushgateway:v1.11.1
     container_name: ghost-pushgateway
     ports:
@@ -258,7 +263,7 @@ services:
     image: mailhog/mailhog:latest
     platform: linux/amd64
     container_name: ghost-mailhog
-    profiles: [ ghost, split ]
+    profiles: [ ghost, split, all ]
     ports:
       - "1025:1025" # SMTP server
       - "8025:8025" # Web interface
@@ -267,12 +272,14 @@ services:
 volumes:
   mysql-data: {}
   redis-data: {}
+  shared-config: {}
   caddy_data: {}
   node_modules_yarn_lock_hash: {}
   node_modules_ghost_root: {}
   node_modules_ghost_admin: {}
   node_modules_ghost_core: {}
   node_modules_ghost_i18n: {}
+  node_modules_e2e: {}
   node_modules_apps_admin-x-activitypub: {}
   node_modules_apps_admin-x-design-system: {}
   node_modules_apps_admin-x-framework: {}

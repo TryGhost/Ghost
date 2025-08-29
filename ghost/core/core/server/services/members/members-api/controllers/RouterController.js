@@ -626,7 +626,12 @@ module.exports = class RouterController {
             if (emailType === 'signup' || emailType === 'subscribe') {
                 await this._handleSignup(req, normalizedEmail, referrer);
             } else {
-                await this._handleSignin(req, normalizedEmail, referrer);
+                const signIn = await this._handleSignin(req, normalizedEmail, referrer);
+
+                if (this.labsService.isSet('membersSigninOTC') && signIn.tokenId) {
+                    res.writeHead(201, {'Content-Type': 'application/json'});
+                    return res.end(JSON.stringify({otc_ref: signIn.tokenId}));
+                }
             }
 
             res.writeHead(201);
@@ -679,7 +684,13 @@ module.exports = class RouterController {
     }
 
     async _handleSignin(req, normalizedEmail, referrer = null) {
-        const {emailType} = req.body;
+        const {emailType, otc} = req.body;
+
+        let includeOTC = false;
+
+        if (this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
+            includeOTC = true;
+        }
 
         const member = await this._memberRepository.get({email: normalizedEmail});
 
@@ -690,7 +701,7 @@ module.exports = class RouterController {
         }
 
         const tokenData = {};
-        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
+        return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer, includeOTC});
     }
 
     /**

@@ -1,10 +1,14 @@
-module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain, siteUrl}) => `
+/* eslint-disable indent */
+module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteDomain, siteUrl}) => `
 <!doctype html>
 <html>
   <head>
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <title>🔑 ${t('Secure sign in link for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>
+    ${otc
+        ? `<title>🔑 ${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`
+        : `<title>🔑 ${t('Secure sign in link for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`
+    }
     <style>
     /* -------------------------------------
         RESPONSIVE AND MOBILE FRIENDLY STYLES
@@ -117,7 +121,36 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 24px; margin: 0; margin-bottom: 15px;">${t('Hey there,')}</p>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 32px;">${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}</p>
+                        ${otc ?
+                        `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t(`Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours`, {siteTitle, interpolation: {escapeValue: false}})}:</p>
+                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box; margin-bottom: 32px;">
+                          <tbody>
+                            <tr>
+                              <td style="padding: 16px; background-color: #F4F5F6; border-radius: 8px; text-align: center; vertical-align: middle;" valign="middle">
+                                <h2 style="text-align: center; vertical-align: center; letter-spacing: 5px; font-size: 24px; color: #15212A; font-weight: 600; line-height: 24px; margin: 0;">${otc}</h2>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t('Or, skip the code and log in directly')}:</p>
+                        <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
+                          <tbody>
+                            <tr>
+                              <td align="center" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; padding-bottom: 35px;">
+                                <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;">
+                                  <tbody>
+                                    <tr>
+                                      <td align="center" style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; vertical-align: top; background-color: ${accentColor}; border-radius: 5px; text-align: center;"> <a href="${url}" target="_blank" style="display: inline-block; color: #ffffff; background-color: ${accentColor}; border: solid 1px ${accentColor}; border-radius: 5px; box-sizing: border-box; cursor: pointer; text-decoration: none; font-size: 16px; font-weight: normal; margin: 0; padding: 9px 22px 10px; border-color: ${accentColor};">${t('Sign in now')}</a> </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </td>
+                            </tr>
+                          </tbody>
+                        </table>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px;">${t('Alternatively you can copy and paste this URL to your browser')}:</p>`
+                        :
+                        `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 32px;">${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}</p>
                         <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
                           <tbody>
                             <tr>
@@ -136,7 +169,8 @@ module.exports = ({t, siteTitle, email, url, accentColor = '#15212A', siteDomain
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 11px;">${t('For your security, the link will expire in 24 hours time.')}</p>
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; line-height: 24px; margin: 0; margin-bottom: 30px;">${t('See you soon!')}</p>
                         <hr/>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px;">${t('You can also copy & paste this URL into your browser:')}</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px;">${t('You can also copy & paste this URL into your browser:')}</p>`
+                        }
                         <p style="word-break: break-all; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; line-height: 22px; margin-top:0; color: #3A464C;">${url}</p>
                       </td>
                     </tr>

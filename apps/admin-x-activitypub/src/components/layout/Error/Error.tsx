@@ -66,6 +66,19 @@ const Error = ({statusCode, errorCode}: {statusCode?: number, errorCode?: string
         );
     }
 
+    if (statusCode === 410 && errorCode === 'INVALID_VERSION') {
+        return (
+            <EmptyViewIndicator className='mt-[50vh] -translate-y-1/2'>
+                <EmptyViewIcon><LucideIcon.DownloadCloud /></EmptyViewIcon>
+                <H4 className='-mb-4'>New version available</H4>
+                <div>We&apos;ve made some updates! Refresh your page to see what&apos;s new</div>
+                <Button asChild>
+                    <button type='button' onClick={() => window.location.reload()}>Refresh your page</button>
+                </Button>
+            </EmptyViewIndicator>
+        );
+    }
+
     return (
         <div className="admin-x-container-error">
             <div className="admin-x-error max-w-xl">
