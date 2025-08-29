@@ -901,17 +901,21 @@ describe('RouterController', function () {
                 routerController._handleSignin = handleSigninStub;
             });
 
-            it('should return otc_ref when flag is enabled and tokenId exists', async function () {
-                routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
-                handleSigninStub.resolves({tokenId: 'test-token-123'});
+            [true, 'true'].forEach((otcValue) => {
+                it(`should return otc_ref when flag is enabled and otc is ${typeof otcValue} ${otcValue}`, async function () {
+                    req.body.otc = otcValue;
+                    routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+                    handleSigninStub.resolves({tokenId: 'test-token-123'});
 
-                await routerController.sendMagicLink(req, res);
+                    await routerController.sendMagicLink(req, res);
 
-                res.writeHead.calledWith(201, {'Content-Type': 'application/json'}).should.be.true();
-                res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})).should.be.true();
+                    res.writeHead.calledWith(201, {'Content-Type': 'application/json'}).should.be.true();
+                    res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})).should.be.true();
+                });
             });
 
             it('should not return otc_ref when flag is disabled', async function () {
+                req.body.otc = true;
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(false);
                 handleSigninStub.resolves({tokenId: 'test-token-123'});
 
@@ -921,7 +925,8 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but no tokenId', async function () {
+            it('should not return otc_ref when flag is enabled and req.body.otc === true, but no tokenId', async function () {
+                req.body.otc = true;
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
                 handleSigninStub.resolves({tokenId: null});
 
@@ -931,7 +936,8 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but tokenId is undefined', async function () {
+            it('should not return otc_ref when flag is enabled and req.body.otc === true, but tokenId is undefined', async function () {
+                req.body.otc = true;
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
                 handleSigninStub.resolves({});
 
@@ -939,6 +945,23 @@ describe('RouterController', function () {
 
                 res.writeHead.calledWith(201).should.be.true();
                 res.end.calledWith('Created.').should.be.true();
+            });
+
+            [false, 'false', undefined].forEach((otcValue) => {
+                it(`should not return otc_ref when flag is enabled but otc is ${otcValue === undefined ? 'undefined' : otcValue}`, async function () {
+                    // For undefined case, don't set req.body.otc at all
+                    if (otcValue !== undefined) {
+                        req.body.otc = otcValue;
+                    }
+                    
+                    routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
+                    handleSigninStub.resolves({tokenId: 'test-token-789'});
+
+                    await routerController.sendMagicLink(req, res);
+
+                    res.writeHead.calledWith(201).should.be.true();
+                    res.end.calledWith('Created.').should.be.true();
+                });
             });
         });
     });

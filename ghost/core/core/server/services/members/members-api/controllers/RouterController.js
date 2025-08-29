@@ -628,7 +628,7 @@ module.exports = class RouterController {
             } else {
                 const signIn = await this._handleSignin(req, normalizedEmail, referrer);
 
-                if (this.labsService.isSet('membersSigninOTC') && signIn.tokenId) {
+                if (this._shouldIncludeOTC(req.body.otc) && signIn.tokenId) {
                     res.writeHead(201, {'Content-Type': 'application/json'});
                     return res.end(JSON.stringify({otc_ref: signIn.tokenId}));
                 }
@@ -683,14 +683,18 @@ module.exports = class RouterController {
         return await this._sendEmailWithMagicLink({email: normalizedEmail, tokenData, requestedType: emailType, referrer});
     }
 
+    /**
+     * @param {*} otc - The otc value from request body
+     * @returns {boolean} Whether OTC should be included
+     */
+    _shouldIncludeOTC(otc) {
+        return this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true');
+    }
+
     async _handleSignin(req, normalizedEmail, referrer = null) {
         const {emailType, otc} = req.body;
 
-        let includeOTC = false;
-
-        if (this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
-            includeOTC = true;
-        }
+        const includeOTC = this._shouldIncludeOTC(otc);
 
         const member = await this._memberRepository.get({email: normalizedEmail});
 
