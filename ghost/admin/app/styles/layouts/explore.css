@@ -239,4 +239,8 @@
     .explore-permissions > div span svg {
         width: 1.8rem;
     }
+
+    .gh-explore {
+        z-index: var(--z-index-iframe-mobile);
+    }
 }
