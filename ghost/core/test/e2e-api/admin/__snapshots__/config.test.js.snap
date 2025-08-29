@@ -25,6 +25,7 @@ Object {
       "membersSigninOTC": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
+      "tagsX": true,
       "themeErrorsNotification": true,
       "urlCache": true,
       "webmentions": true,
