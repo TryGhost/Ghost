@@ -7,6 +7,7 @@ const {routerManager} = require('../');
 const themeEngine = require('../../theme-engine');
 const renderer = require('../../rendering');
 const dataService = require('../../data');
+const config = require('../../../../shared/config');
 
 const messages = {
     pageNotFound: 'Page not found.'
@@ -22,8 +23,10 @@ const messages = {
 module.exports = function collectionController(req, res, next) {
     debug('collectionController beging', req.params, res.routerOptions);
 
+    const pageParam = config.get('pagination:pageParameter');
+
     const pathOptions = {
-        page: req.params.page !== undefined ? req.params.page : 1,
+        page: req.params[pageParam] !== undefined ? req.params[pageParam] : 1,
         slug: req.params.slug ? security.string.safe(req.params.slug) : undefined
     };
 
