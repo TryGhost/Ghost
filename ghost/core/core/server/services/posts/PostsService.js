@@ -4,7 +4,9 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const ObjectId = require('bson-objectid').default;
 const pick = require('lodash/pick');
+const _ = require('lodash');
 const DomainEvents = require('@tryghost/domain-events');
+const events = require('../../../server/lib/common/events');
 
 const messages = {
     invalidVisibilityFilter: 'Invalid visibility filter.',
@@ -264,8 +266,34 @@ class PostsService {
         await options.transacting('posts_tags').insert(postTags);
         await this.models.Post.addActions('edited', postRows.map(p => p.id), options);
 
+        // Fire model events synchronously to trigger URL service updates
+        // This ensures routing gets recalculated when tags are added in bulk
+        const editIds = postRows.map(p => p.id);
+        
+        // Process in chunks to avoid memory issues with large bulk operations
+        const CHUNK_SIZE = 100;
+        
+        for (const idChunk of _.chunk(editIds, CHUNK_SIZE)) {
+            // Fetch the updated posts with their relationships
+            const updatedPosts = await this.models.Post.findAll({
+                filter: `id:[${idChunk.join(',')}]`,
+                withRelated: ['tags', 'authors'],
+                transacting: options.transacting
+            });
+            
+            // Emit events for each post - these are the same events that fire during normal edits
+            for (const postModel of updatedPosts.models) {
+                // For published posts, emit the published.edited event which the URL service listens to
+                if (postModel.get('status') === 'published') {
+                    events.emit('post.published.edited', postModel);
+                }
+                // Emit tag.attached for each tag to update tag-based routing
+                events.emit('tag.attached', postModel);
+            }
+        }
+
         return {
-            editIds: postRows.map(p => p.id),
+            editIds,
             successful: postRows.length,
             unsuccessful: 0
         };
@@ -422,6 +450,48 @@ class PostsService {
         }
 
         result.editIds = editIds;
+
+        // Fire model events synchronously to trigger URL service updates
+        const statusChange = data.status || null;
+        const actionName = options.actionName || 'edited';
+        
+        // Process in chunks to avoid memory issues with large bulk operations
+        const CHUNK_SIZE = 100;
+        
+        for (const idChunk of _.chunk(editIds, CHUNK_SIZE)) {
+            // Fetch the updated posts with their relationships
+            const updatedPosts = await this.models.Post.findAll({
+                filter: `id:[${idChunk.join(',')}]`,
+                withRelated: ['tags', 'authors'],
+                transacting: options.transacting
+            });
+            
+            // Emit events for each post
+            for (const postModel of updatedPosts.models) {
+                const currentStatus = postModel.get('status');
+                
+                // Handle status-specific events that URL service listens to
+                if (currentStatus === 'published') {
+                    // For published posts, always emit published.edited
+                    events.emit('post.published.edited', postModel);
+                }
+                
+                // Handle status change events
+                if (statusChange) {
+                    if (statusChange === 'draft' && actionName === 'unpublished') {
+                        // Post was unpublished
+                        events.emit('post.unpublished', postModel);
+                    } else if (statusChange === 'published') {
+                        // Post was published
+                        events.emit('post.published', postModel);
+                    }
+                }
+                
+                // For any bulk edit, also emit the generic edited event
+                // This ensures webhooks and other listeners are notified
+                events.emit('post.edited', postModel);
+            }
+        }
 
         return result;
     }
