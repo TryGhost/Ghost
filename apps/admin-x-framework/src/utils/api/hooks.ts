@@ -104,7 +104,7 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
 
 type InfiniteQueryOptions<ResponseData> = Omit<QueryOptions<ResponseData>, 'returnData'> & {
     returnData: NonNullable<QueryOptions<ResponseData>['returnData']>
-    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string>;
+    defaultNextPageParams?: (data: ResponseData, params: Record<string, string>) => Record<string, string> | undefined;
 }
 
 type InfiniteQueryHookOptions<ResponseData> = UseInfiniteQueryOptions<ResponseData> & {
