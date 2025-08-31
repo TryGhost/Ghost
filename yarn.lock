@@ -1612,14 +1612,6 @@
   dependencies:
     statuses "^2.0.1"
 
-"@bundled-es-modules/tough-cookie@^0.1.6":
-  version "0.1.6"
-  resolved "https://registry.yarnpkg.com/@bundled-es-modules/tough-cookie/-/tough-cookie-0.1.6.tgz#fa9cd3cedfeecd6783e8b0d378b4a99e52bde5d3"
-  integrity sha512-dvMHbL464C0zI+Yqxbz6kZ5TOEp7GLW+pry/RWndAR8MJQAXZ2rPmIs8tziTZjeIyhSNZgZbCePtfSbdWqStJw==
-  dependencies:
-    "@types/tough-cookie" "^4.0.5"
-    tough-cookie "^4.1.4"
-
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -9391,11 +9383,6 @@
   integrity sha512-SBwbxYoyPIvxHbeHxTZX2Pe/74F/tX2/D3mMvzabdeJ25bBojfW0TyB8BHrbq/9zaaKICJZjLP+8r6AeZMFCuQ==
   dependencies:
     "@types/jest" "*"
-
-"@types/tough-cookie@^4.0.5":
-  version "4.0.5"
-  resolved "https://registry.yarnpkg.com/@types/tough-cookie/-/tough-cookie-4.0.5.tgz#cb6e2a691b70cb177c6e3ae9c1d2e8b2ea8cd304"
-  integrity sha512-/Ad8+nIOV7Rl++6f1BdKxFSMgmoqEoYbHRpPcx3JEfv8VRsQe9Z4mCXeJBzxs7mbHY/XOZZuXlRNfhpVPbs6ZA==
 
 "@types/trusted-types@^2.0.7":
   version "2.0.7"
@@ -24550,14 +24537,13 @@ ms@2.1.3, ms@^2.0.0, ms@^2.1.1, ms@^2.1.2, ms@^2.1.3:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.3.tgz#574c8138ce1d2b5861f0b44579dbadd60c6615b2"
   integrity sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==
 
-msw@2.11.0:
-  version "2.11.0"
-  resolved "https://registry.yarnpkg.com/msw/-/msw-2.11.0.tgz#be5a0414ed54d1e9ebf3608052bd4057a5922005"
-  integrity sha512-jEqa5J5B1OMD1jHu0gasCb5YriIDiWGdoS22Ie8CNNrl1iGRzCVfok3zuerdfb7GNFeIbYePXDA5c2bwRKMpBA==
+msw@2.11.1:
+  version "2.11.1"
+  resolved "https://registry.yarnpkg.com/msw/-/msw-2.11.1.tgz#77f7c5c60ffd08e4bc351cca4608418db15e5ac2"
+  integrity sha512-dGSRx0AJmQVQfpGXTsAAq4JFdwdhOBdJ6sJS/jnN0ac3s0NZB6daacHF1z5Pefx+IejmvuiLWw260RlyQOf3sQ==
   dependencies:
     "@bundled-es-modules/cookie" "^2.0.1"
     "@bundled-es-modules/statuses" "^1.0.1"
-    "@bundled-es-modules/tough-cookie" "^0.1.6"
     "@inquirer/confirm" "^5.0.0"
     "@mswjs/interceptors" "^0.39.1"
     "@open-draft/deferred-promise" "^2.2.0"
@@ -24571,6 +24557,7 @@ msw@2.11.0:
     path-to-regexp "^6.3.0"
     picocolors "^1.1.1"
     strict-event-emitter "^0.5.1"
+    tough-cookie "^6.0.0"
     type-fest "^4.26.1"
     yargs "^17.7.2"
 
@@ -31249,6 +31236,18 @@ tldts-core@^6.1.30:
   resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-6.1.30.tgz#96ea6ae4064bee4611795bf28bdcfba347a95baa"
   integrity sha512-CPlL58/oIvnovk5KTHIho/B0bMuvPkZrcC7f4pfQH+BBPY/mMz6CekiIdhjFxk9XZZJNirbwh1rRTSo4e5KXQA==
 
+tldts-core@^7.0.12:
+  version "7.0.12"
+  resolved "https://registry.yarnpkg.com/tldts-core/-/tldts-core-7.0.12.tgz#b471e773dc23ff881a9d187ec145e36edde57c27"
+  integrity sha512-3K76aXywJFduGRsOYoY5JzINLs/WMlOkeDwPL+8OCPq2Rh39gkSDtWAxdJQlWjpun/xF/LHf29yqCi6VC/rHDA==
+
+tldts@^7.0.5:
+  version "7.0.12"
+  resolved "https://registry.yarnpkg.com/tldts/-/tldts-7.0.12.tgz#e11008e9a3f27448e7aecb8d0fa51f929ec9549d"
+  integrity sha512-M9ZQBPp6FyqhMcl233vHYyYRkxXOA1SKGlnq13S0mJdUhRSwr2w6I8rlchPL73wBwRlyIZpFvpu2VcdSMWLYXw==
+  dependencies:
+    tldts-core "^7.0.12"
+
 tldts@~6.1.24:
   version "6.1.30"
   resolved "https://registry.yarnpkg.com/tldts/-/tldts-6.1.30.tgz#75d6481e9729dd779f67ce7e7e68f8eddfd26d74"
@@ -31390,6 +31389,13 @@ tough-cookie@^4.0.0, tough-cookie@^4.1.4:
     punycode "^2.1.1"
     universalify "^0.2.0"
     url-parse "^1.5.3"
+
+tough-cookie@^6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/tough-cookie/-/tough-cookie-6.0.0.tgz#11e418b7864a2c0d874702bc8ce0f011261940e5"
+  integrity sha512-kXuRi1mtaKMrsLUxz3sQYvVl37B0Ns6MzfrtV5DvJceE9bPyspOqk9xxv7XbZWcfLWbFmm997vl83qUWVJA64w==
+  dependencies:
+    tldts "^7.0.5"
 
 tough-cookie@~2.5.0:
   version "2.5.0"
