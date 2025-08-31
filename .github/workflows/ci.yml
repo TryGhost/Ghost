@@ -1144,7 +1144,7 @@ jobs:
         include:
           - package_name: '@tryghost/admin-x-activitypub'
             package_path: 'apps/admin-x-activitypub'
-            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@1/dist/admin-x-activitypub.js'
           - package_name: '@tryghost/portal'
             package_path: 'apps/portal'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
