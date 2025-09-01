@@ -5,6 +5,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const {createOTCVerificationHash} = require('../../otc-hash-utils');
 
 const messages = {
     emailRequired: 'Email is required.',
