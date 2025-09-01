@@ -59,7 +59,6 @@ class SingleUseTokenProvider {
             });
         }
 
-        // Validate OTC verification hash if provided
         if (options.otcVerification) {
             const isValidOTCVerification = await this._validateOTCVerificationHash(options.otcVerification, token);
             if (!isValidOTCVerification) {
@@ -235,7 +234,7 @@ class SingleUseTokenProvider {
      */
     async _validateOTCVerificationHash(otcVerificationHash, token) {
         try {
-            if (!otcVerificationHash || !token) {
+            if (!this.secret || !otcVerificationHash || !token) {
                 return false;
             }
 
@@ -255,12 +254,6 @@ class SingleUseTokenProvider {
                 return false;
             }
 
-            // Validate the secret is available
-            if (!this.secret) {
-                return false;
-            }
-
-            // Get the token ID to derive the OTC
             const tokenId = await this.getIdByToken(token);
             if (!tokenId) {
                 return false;
