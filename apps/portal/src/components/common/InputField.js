@@ -116,8 +116,8 @@ function InputField({
     let autocomplete = '';
     let autocorrect = '';
     let autocapitalize = '';
-    let inputMode = '';
-    let pattern = '';
+    let inputMode;
+    let pattern;
     switch (id) {
     case 'input-email':
         autocomplete = 'off';
