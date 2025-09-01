@@ -5,6 +5,7 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
+const {createOTCVerificationHash} = require('../../otc-hash-utils');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -708,30 +709,12 @@ module.exports = class RouterController {
     }
 
     async _createHashFromOTCAndToken(otc, token) {
-        const crypto = require('crypto');
-
         const hexSecret = this._settingsCache.get('members_email_auth_secret');
-        if (!hexSecret) {
-            throw new errors.BadRequestError({
-                message: 'Authentication secret not configured'
-            });
-        }
-
-        const secret = Buffer.from(hexSecret, 'hex');
-        if (secret.length < 64) {
-            throw new errors.BadRequestError({
-                message: 'Authentication secret not properly configured'
-            });
-        }
-
+        
         // Create timestamp for anti-replay protection (5 minute window)
         const timestamp = Math.floor(Date.now() / 1000);
 
-        // Create hash from OTC + token + timestamp
-        const dataToHash = `${otc}:${token}:${timestamp}`;
-        const hmac = crypto.createHmac('sha256', secret);
-        hmac.update(dataToHash);
-        const hash = hmac.digest('hex');
+        const hash = createOTCVerificationHash(otc, token, timestamp, hexSecret);
 
         // Return timestamp:hash format for validation
         return `${timestamp}:${hash}`;

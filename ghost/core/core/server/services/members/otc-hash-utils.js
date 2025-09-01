@@ -1,0 +1,38 @@
+const crypto = require('crypto');
+const {ValidationError} = require('@tryghost/errors');
+
+const REQUIRED_SECRET_LENGTH = 64;
+
+/**
+ * Creates an OTC verification hash using HMAC-SHA256
+ * 
+ * @param {string} otc - The one-time code
+ * @param {string} token - The token value
+ * @param {number} timestamp - Unix timestamp in seconds
+ * @param {string} hexSecret - Hex-encoded secret key
+ * @returns {string} The HMAC digest as hex string
+ */
+function createOTCVerificationHash(otc, token, timestamp, hexSecret) {
+    if (!hexSecret) {
+        throw new ValidationError({
+            message: 'Authentication secret not configured'
+        });
+    }
+
+    const secret = Buffer.from(hexSecret, 'hex');
+    if (secret.length < REQUIRED_SECRET_LENGTH) {
+        throw new ValidationError({
+            message: 'Authentication secret not properly configured'
+        });
+    }
+
+    const dataToHash = `${otc}:${token}:${timestamp}`;
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(dataToHash);
+    return hmac.digest('hex');
+}
+
+module.exports = {
+    createOTCVerificationHash,
+    REQUIRED_SECRET_LENGTH
+};
