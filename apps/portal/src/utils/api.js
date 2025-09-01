@@ -298,14 +298,6 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
-                const contentType = (res.headers.get('content-type') || '').toLowerCase();
-                if (contentType.includes('application/json')) {
-                    try {
-                        return await res.json();
-                    } catch (e) {
-                        // fall through to response used pre-OTC
-                    }
-                }
                 return 'Success';
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
