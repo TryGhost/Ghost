@@ -656,19 +656,18 @@ module.exports = class RouterController {
         if (!otc || !otcRef) {
             throw new errors.BadRequestError({
                 message: tpl(messages.badRequest),
-                context: 'OTC and otc_ref are required'
+                context: 'otc and otc_ref are required'
             });
         }
 
         // Validate OTC format (6 digits)
         if (!/^\d{6}$/.test(otc)) {
             throw new errors.BadRequestError({
-                message: 'Invalid verification code format'
+                message: 'Invalid verification code'
             });
         }
 
         try {
-            // Get the token provider from magic link service
             const tokenProvider = this._magicLinkService.tokenProvider;
 
             if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
@@ -677,7 +676,6 @@ module.exports = class RouterController {
                 });
             }
 
-            // Verify the OTC
             const isValidOTC = tokenProvider.verifyOTC(otcRef, otc);
 
             if (!isValidOTC) {
@@ -691,7 +689,7 @@ module.exports = class RouterController {
             const tokenValue = await tokenProvider.getTokenById(otcRef);
             
             const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
-            const redirectUrl = await this._buildRedirectUrl(req, tokenValue, otcVerificationHash);
+            const redirectUrl = await this._buildRedirectUrl(tokenValue, otcVerificationHash);
 
             res.writeHead(200, {'Content-Type': 'application/json'});
             return res.end(JSON.stringify({
@@ -711,24 +709,23 @@ module.exports = class RouterController {
     async _createHashFromOTCAndToken(otc, token) {
         const hexSecret = this._settingsCache.get('members_email_auth_secret');
         
-        // Create timestamp for anti-replay protection (5 minute window)
+        // timestamp for anti-replay protection (5 minute window)
         const timestamp = Math.floor(Date.now() / 1000);
 
         const hash = createOTCVerificationHash(otc, token, timestamp, hexSecret);
 
-        // Return timestamp:hash format for validation
         return `${timestamp}:${hash}`;
     }
 
-    async _buildRedirectUrl(req, token, otcVerificationHash) {
+    async _buildRedirectUrl(token, otcVerificationHash) {
         const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
         const redirectUrl = new URL(siteUrl);
 
-        // Add required parameters for magic link compatibility
+        // required params for magic link compatibility
         redirectUrl.searchParams.set('token', token);
         redirectUrl.searchParams.set('otc_verification', otcVerificationHash);
 
-        // Return basic URL - frontend will add referrer and action
+        // basic URL - frontend will add referrer and action
         return redirectUrl.toString();
     }
 
