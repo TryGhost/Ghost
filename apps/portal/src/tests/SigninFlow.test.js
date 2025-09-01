@@ -178,7 +178,7 @@ describe('Signin', () => {
                 email: 'jamie@example.com',
                 emailType: 'signin',
                 integrityToken: 'testtoken',
-                otc: true
+                includeOTC: true
             });
         });
 
@@ -361,7 +361,7 @@ describe('OTC Integration Flow', () => {
 
         // Mock sendMagicLink to return otcRef for OTC flow or fallback
         ghostApi.member.sendMagicLink = jest.fn(() => {
-            return returnOtcRef 
+            return returnOtcRef
                 ? Promise.resolve({success: true, otc_ref: otcRef})
                 : Promise.resolve({success: true});
         });
@@ -401,10 +401,10 @@ describe('OTC Integration Flow', () => {
     const performCompleteOTCFlow = async (popupIframeDocument, email = 'jamie@example.com') => {
         const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
         const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-        
+
         fireEvent.change(emailInput, {target: {value: email}});
         fireEvent.click(submitButton);
-        
+
         const magicLinkText = await within(popupIframeDocument).findByText(/Now check your email/i);
         return {magicLinkText};
     };
@@ -414,7 +414,7 @@ describe('OTC Integration Flow', () => {
             email,
             emailType: 'signin',
             integrityToken: 'testtoken',
-            otc: true
+            includeOTC: true
         });
     };
 
@@ -422,16 +422,16 @@ describe('OTC Integration Flow', () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
         });
-        
+
         const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
-        
+
         expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
         const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-        
+
         expect(otcInput).toBeInTheDocument();
         expect(verifyButton).toBeInTheDocument();
 
@@ -472,7 +472,7 @@ describe('OTC Integration Flow', () => {
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
 
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        
+
         expect(otcInput).toBeInTheDocument();
     });
 });
