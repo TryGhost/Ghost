@@ -1,15 +1,12 @@
 const models = require('../../models');
 const configService = require('../../../shared/config');
 const settingsCache = require('../../../shared/settings-cache');
-const MailgunClient = require('../lib/MailgunClient');
 const MailgunEmailSuppressionList = require('./MailgunEmailSuppressionList');
+const EmailService = require('../email-service/');
 
-const mailgunClient = new MailgunClient({
-    config: configService,
-    settings: settingsCache
-});
+const mailClient = EmailService.getMailClient(settingsCache, configService);
 
 module.exports = new MailgunEmailSuppressionList({
     Suppression: models.Suppression,
-    apiClient: mailgunClient
+    apiClient: mailClient
 });

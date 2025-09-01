@@ -1,11 +1,11 @@
-const MailgunEmailProvider = require('../../../../../core/server/services/email-service/MailgunEmailProvider');
+const BulkEmailProvider = require('../../../../../core/server/services/email-service/BulkEmailProvider');
 const sinon = require('sinon');
 const should = require('should');
 const assert = require('assert/strict');
 
-describe('Mailgun Email Provider', function () {
+describe('Bulk Email Provider', function () {
     describe('send', function () {
-        let mailgunClient;
+        let mailClient;
         let sendStub;
 
         beforeEach(function () {
@@ -13,7 +13,7 @@ describe('Mailgun Email Provider', function () {
                 id: 'provider-123'
             });
 
-            mailgunClient = {
+            mailClient = {
                 send: sendStub
             };
         });
@@ -23,14 +23,14 @@ describe('Mailgun Email Provider', function () {
         });
 
         it('calls mailgun client with correct data', async function () {
-            const mailgunEmailProvider = new MailgunEmailProvider({
-                mailgunClient,
+            const bulkEmailProvider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
 
             const deliveryTime = new Date();
 
-            const response = await mailgunEmailProvider.send({
+            const response = await bulkEmailProvider.send({
                 subject: 'Hi',
                 html: '<html><body>Hi {{name}}</body></html>',
                 plaintext: 'Hi',
@@ -89,16 +89,16 @@ describe('Mailgun Email Provider', function () {
                 messageData: {}
             });
 
-            mailgunClient = {
+            mailClient = {
                 send: sendStub
             };
 
-            const mailgunEmailProvider = new MailgunEmailProvider({
-                mailgunClient,
+            const bulkEmailProvider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                const response = await bulkEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -137,16 +137,16 @@ describe('Mailgun Email Provider', function () {
             const mailgunErr = new Error('Unknown Error');
             sendStub = sinon.stub().throws(mailgunErr);
 
-            mailgunClient = {
+            mailClient = {
                 send: sendStub
             };
 
-            const mailgunEmailProvider = new MailgunEmailProvider({
-                mailgunClient,
+            const bulkEmailProvider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                const response = await bulkEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -184,16 +184,16 @@ describe('Mailgun Email Provider', function () {
             const mailgunErr = new Error('');
             sendStub = sinon.stub().throws(mailgunErr);
 
-            mailgunClient = {
+            mailClient = {
                 send: sendStub
             };
 
-            const mailgunEmailProvider = new MailgunEmailProvider({
-                mailgunClient,
+            const bulkEmailProvider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             try {
-                const response = await mailgunEmailProvider.send({
+                const response = await bulkEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -229,18 +229,18 @@ describe('Mailgun Email Provider', function () {
     });
 
     describe('getMaximumRecipients', function () {
-        let mailgunClient;
+        let mailClient;
         let getBatchSizeStub;
 
         it('returns 1000', function () {
             getBatchSizeStub = sinon.stub().returns(1000);
 
-            mailgunClient = {
+            mailClient = {
                 getBatchSize: getBatchSizeStub
             };
 
-            const provider = new MailgunEmailProvider({
-                mailgunClient,
+            const provider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             assert.equal(provider.getMaximumRecipients(), 1000);
@@ -248,18 +248,18 @@ describe('Mailgun Email Provider', function () {
     });
 
     describe('getTargetDeliveryWindow', function () {
-        let mailgunClient;
+        let mailClient;
         let getTargetDeliveryWindowStub;
 
         it('returns the configured target delivery window', function () {
             getTargetDeliveryWindowStub = sinon.stub().returns(0);
 
-            mailgunClient = {
+            mailClient = {
                 getTargetDeliveryWindow: getTargetDeliveryWindowStub
             };
 
-            const provider = new MailgunEmailProvider({
-                mailgunClient,
+            const provider = new BulkEmailProvider({
+                mailClient,
                 errorHandler: () => {}
             });
             assert.equal(provider.getTargetDeliveryWindow(), 0);
