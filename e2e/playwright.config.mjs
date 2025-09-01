@@ -16,7 +16,7 @@ const config = {
         browserName: 'chromium'
     },
     testDir: './',
-    testMatch: ['tests/**/*.test.{js,ts}', 'data-factory/*.test.{js,ts}'],
+    testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
         // Main tests - run after setup with authentication
         {
