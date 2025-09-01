@@ -81,7 +81,7 @@ async function signout({api, state}) {
 async function signin({data, api, state}) {
     const {t, labs} = state;
 
-    const includeOTC = labs.membersSigninOTC ? true : undefined;
+    const includeOTC = labs?.membersSigninOTC ? true : undefined;
 
     try {
         const integrityToken = await api.member.getIntegrityToken();
