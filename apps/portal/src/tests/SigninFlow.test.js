@@ -425,15 +425,11 @@ describe('OTC Integration Flow', () => {
             return Promise.resolve('testtoken');
         });
 
-        // Mock verifyOTC action
-        // @TODO: update when this is implemented
         ghostApi.member.verifyOTC = jest.fn(() => {
             return Promise.resolve({
+                valid: true,
                 success: true,
-                member: {
-                    email: 'jamie@example.com',
-                    id: 'test-member-id'
-                }
+                redirectUrl: 'https://example.com/welcome?success=true'
             });
         });
 
@@ -490,11 +486,25 @@ describe('OTC Integration Flow', () => {
         expect(otcInput).toBeInTheDocument();
         expect(verifyButton).toBeInTheDocument();
 
+        // Mock window.location for redirect test
+        const originalLocation = window.location;
+        delete window.location;
+        window.location = {
+            href: 'https://portal.localhost/#/portal/signin',
+            hash: '#/portal/signin'
+        };
+
         fireEvent.change(otcInput, {target: {value: '123456'}});
         fireEvent.click(verifyButton);
 
-        // assert form submission occurs (currently via console.log)
-        // note: When verifyOTC action is implemented, this should verify the API call
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '123456',
+            otcRef: 'test-otc-ref-123'
+        });
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
+
+        // Restore window.location
+        window.location = originalLocation;
     });
 
     test('OTC flow without otcRef falls back to regular magic link', async () => {
@@ -529,5 +539,61 @@ describe('OTC Integration Flow', () => {
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
 
         expect(otcInput).toBeInTheDocument();
+    });
+
+    test('OTC verification with invalid code shows error', async () => {
+        const {ghostApi, popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        // Mock verifyOTC to return validation error
+        ghostApi.member.verifyOTC.mockResolvedValueOnce({
+            valid: false,
+            success: false,
+            message: 'Invalid verification code'
+        });
+
+        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        expect(magicLinkText).toBeInTheDocument();
+
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+
+        fireEvent.change(otcInput, {target: {value: '000000'}});
+        fireEvent.click(verifyButton);
+
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '000000',
+            otcRef: 'test-otc-ref-123'
+        });
+
+        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        expect(errorNotification).toBeInTheDocument();
+    });
+
+    test('OTC verification with API error shows error message', async () => {
+        const {ghostApi, popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        // Mock verifyOTC to throw API error
+        ghostApi.member.verifyOTC.mockRejectedValueOnce(new Error('Network error'));
+
+        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        expect(magicLinkText).toBeInTheDocument();
+
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+
+        fireEvent.change(otcInput, {target: {value: '123456'}});
+        fireEvent.click(verifyButton);
+
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '123456',
+            otcRef: 'test-otc-ref-123'
+        });
+
+        const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code, please try again/i);
+        expect(errorNotification).toBeInTheDocument();
     });
 });

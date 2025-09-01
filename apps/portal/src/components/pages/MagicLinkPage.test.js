@@ -3,7 +3,6 @@ import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
 const OTC_ERROR_REGEX = /please enter otc/i;
-const OTC_SUBMISSION_LOG_MESSAGE = 'otc_ref and otc submitted';
 
 const setupTest = (options = {}) => {
     const {
@@ -38,18 +37,6 @@ const setupOTCTest = (options = {}) => {
         otcRef: 'test-otc-ref',
         ...options
     });
-};
-
-// @TODO: - temporary until full OTC functionality is implemented
-const withConsoleSpy = (testFn) => {
-    return () => {
-        const consoleSpy = jest.spyOn(console, 'log').mockImplementation();
-        try {
-            return testFn(consoleSpy);
-        } finally {
-            consoleSpy.mockRestore();
-        }
-    };
 };
 
 const fillAndSubmitOTC = (utils, code = '123456', method = 'button') => {
@@ -191,22 +178,25 @@ describe('MagicLinkPage', () => {
             expect(otcInput).not.toHaveClass('error');
         });
 
-        test('validation blocks submission and allows valid submission', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest();
+        test('validation blocks submission and allows valid submission', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest();
             const submitButton = testUtils.getByRole('button', {name: 'Continue'});
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
             
             // empty submission should be blocked
             fireEvent.click(submitButton);
             
-            expect(consoleSpy).not.toHaveBeenCalled();
+            expect(mockOnActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
             
             // valid submission should proceed
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(submitButton);
             
-            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
-        }));
+            expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '123456',
+                otcRef: 'test-otc-ref'
+            });
+        });
 
         test('validation state persists across input changes until submission', () => {
             const utils = setupOTCTest();
@@ -230,35 +220,42 @@ describe('MagicLinkPage', () => {
     });
 
     describe('OTC form submission', () => {
-        test('submits via button click', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest();
+        test('submits via button click', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest();
             
             fillAndSubmitOTC(testUtils, '123456', 'button');
             
-            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
-        }));
+            expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '123456',
+                otcRef: 'test-otc-ref'
+            });
+        });
 
-        test('submits via Enter key', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest();
+        test('submits via Enter key', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest();
             
             fillAndSubmitOTC(testUtils, '654321', 'enter');
             
-            expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
-        }));
+            expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '654321',
+                otcRef: 'test-otc-ref'
+            });
+        });
 
-        // @TODO: This test will have to be updated once the full OTC flow is implemented,
-        // because we can't just clear the form and submit again
-        test('handles different valid OTC formats', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest();
+        test('handles different valid OTC formats', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest();
             const testCodes = ['000000', '123456', '999999'];
             
             testCodes.forEach((code) => {
-                consoleSpy.mockClear();
+                mockOnActionFn.mockClear();
                 fillAndSubmitOTC(testUtils, code);
                 
-                expect(consoleSpy).toHaveBeenCalledWith(OTC_SUBMISSION_LOG_MESSAGE);
+                expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                    otc: code,
+                    otcRef: 'test-otc-ref'
+                });
             });
-        }));
+        });
     });
 
     describe('OTC button states', () => {
@@ -287,24 +284,24 @@ describe('MagicLinkPage', () => {
             expect(submitButton).toHaveTextContent('Continue');
         });
 
-        test('button click is blocked during loading state', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest({action: 'verifyOTC:running'});
+        test('button click is blocked during loading state', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest({action: 'verifyOTC:running'});
             const loadingButton = testUtils.getByRole('button');
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
             
             fireEvent.change(otcInput, {target: {value: '123456'}});
             fireEvent.click(loadingButton);
             
-            expect(consoleSpy).not.toHaveBeenCalled();
-        }));
+            expect(mockOnActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
+        });
 
-        test('Enter key submission is blocked during loading state', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest({action: 'verifyOTC:running'});
+        test('Enter key submission is blocked during loading state', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest({action: 'verifyOTC:running'});
             
             fillAndSubmitOTC(testUtils, '123456', 'enter');
             
-            expect(consoleSpy).not.toHaveBeenCalled();
-        }));
+            expect(mockOnActionFn).not.toHaveBeenCalledWith('verifyOTC', expect.anything());
+        });
 
         test('validation works during error state', () => {
             const utils = setupOTCTest({action: 'verifyOTC:failed'});
@@ -328,9 +325,8 @@ describe('MagicLinkPage', () => {
             expect(utils.getByRole('button', {name: 'Close'})).toBeInTheDocument();
         });
 
-        // @TODO: - when full OTC flow is implemented these will have to be invalid values
-        test('supports multiple submission attempts with different values', withConsoleSpy((consoleSpy) => {
-            const testUtils = setupOTCTest();
+        test('supports multiple submission attempts with different values', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest();
             const otcInput = testUtils.getByLabelText(OTC_LABEL_REGEX);
             const submitButton = testUtils.getByRole('button', {name: 'Continue'});
             
@@ -340,9 +336,15 @@ describe('MagicLinkPage', () => {
             fireEvent.change(otcInput, {target: {value: '222222'}});
             fireEvent.click(submitButton);
             
-            expect(consoleSpy).toHaveBeenCalledTimes(2);
-            expect(consoleSpy).toHaveBeenNthCalledWith(1, OTC_SUBMISSION_LOG_MESSAGE);
-            expect(consoleSpy).toHaveBeenNthCalledWith(2, OTC_SUBMISSION_LOG_MESSAGE);
-        }));
+            expect(mockOnActionFn).toHaveBeenCalledTimes(2);
+            expect(mockOnActionFn).toHaveBeenNthCalledWith(1, 'verifyOTC', {
+                otc: '111111',
+                otcRef: 'test-otc-ref'
+            });
+            expect(mockOnActionFn).toHaveBeenNthCalledWith(2, 'verifyOTC', {
+                otc: '222222',
+                otcRef: 'test-otc-ref'
+            });
+        });
     });
 });
