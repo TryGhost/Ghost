@@ -342,7 +342,7 @@ describe('sendMagicLink', function () {
 
         it('matches OTC snapshot (membersSigninOTC enabled)', async function () {
             mockManager.mockLabsEnabled('membersSigninOTC');
-            const mail = await sendSigninRequest({otc: true});
+            const mail = await sendSigninRequest({includeOTC: true});
             const scrubbedEmail = scrubEmailContent(mail);
             should(scrubbedEmail).matchSnapshot();
         });
@@ -420,7 +420,7 @@ describe('sendMagicLink', function () {
                         .body({
                             email,
                             emailType: 'signin',
-                            otc: true
+                            includeOTC: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -439,7 +439,7 @@ describe('sendMagicLink', function () {
                         .body({
                             email,
                             emailType: 'signin',
-                            otc: true
+                            includeOTC: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -807,7 +807,7 @@ describe('sendMagicLink', function () {
         function sendMagicLinkRequest(email, emailType = 'signin', otc = false) {
             const body = {email, emailType};
             if (otc) {
-                body.otc = otc;
+                body.includeOTC = otc;
             }
 
             return membersAgent
@@ -901,7 +901,7 @@ describe('sendMagicLink', function () {
                     const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
                         .expectStatus(201);
 
-                    assert(response.body.otc_ref, `Response should contain otc_ref for otc=${otcValue}`);
+                    assert(response.body.otc_ref, `Response should contain otc_ref for includeOTC=${otcValue}`);
 
                     const mail = mockManager.assert.sentEmail({
                         to: 'member1@test.com'
@@ -916,7 +916,7 @@ describe('sendMagicLink', function () {
                     const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
                         .expectStatus(201);
 
-                    assert(!response.body.otc_ref, `Response should not contain otc_ref for otc=${otcValue}`);
+                    assert(!response.body.otc_ref, `Response should not contain otc_ref for includeOTC=${otcValue}`);
 
                     const mail = mockManager.assert.sentEmail({
                         to: 'member1@test.com'

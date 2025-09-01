@@ -176,7 +176,7 @@ describe('Signin', () => {
                 email: 'jamie@example.com',
                 emailType: 'signin',
                 integrityToken: 'testtoken',
-                otc: true
+                includeOTC: true
             });
         });
 
