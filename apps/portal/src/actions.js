@@ -85,7 +85,22 @@ async function signin({data, api, state}) {
 
     try {
         const integrityToken = await api.member.getIntegrityToken();
-        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken, includeOTC});
+        const payload = {
+            ...data,
+            emailType: 'signin',
+            integrityToken,
+            ...(includeOTC ? {includeOTC: true} : {})
+        };
+        const response = await api.member.sendMagicLink(payload);
+
+        if (includeOTC && response?.otc_ref) {
+            return {
+                page: 'magiclink',
+                lastPage: 'signin',
+                otcRef: response.otc_ref
+            };
+        }
+
         return {
             page: 'magiclink',
             lastPage: 'signin'

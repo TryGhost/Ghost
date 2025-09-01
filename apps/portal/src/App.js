@@ -959,7 +959,7 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir, scrollbarWidth} = this.state;
+        const {site, member, action, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, t, dir, scrollbarWidth, labs, otcRef} = this.state;
         const contextPage = this.getContextPage({site, page, member});
         const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
         return {
@@ -978,6 +978,8 @@ export default class App extends React.Component {
             t,
             dir,
             scrollbarWidth,
+            labs,
+            otcRef,
             onAction: (_action, data) => this.dispatchAction(_action, data)
         };
     }
