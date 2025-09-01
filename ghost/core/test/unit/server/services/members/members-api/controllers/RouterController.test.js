@@ -873,7 +873,7 @@ describe('RouterController', function () {
                     end: sinon.stub()
                 };
                 handleSigninStub = sinon.stub();
-                
+
                 routerController = new RouterController({
                     allowSelfSignup: sinon.stub().returns(true),
                     memberAttributionService: {
@@ -897,13 +897,13 @@ describe('RouterController', function () {
                     sentry: {},
                     urlUtils: {}
                 });
-                
+
                 routerController._handleSignin = handleSigninStub;
             });
 
-            it('should return otc_ref when flag is enabled and tokenId exists', async function () {
+            it('should return otc_ref when flag is enabled and otcRef exists', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
-                handleSigninStub.resolves({tokenId: 'test-token-123'});
+                handleSigninStub.resolves({otcRef: 'test-token-123'});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -913,7 +913,7 @@ describe('RouterController', function () {
 
             it('should not return otc_ref when flag is disabled', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(false);
-                handleSigninStub.resolves({tokenId: 'test-token-123'});
+                handleSigninStub.resolves({otcRef: 'test-token-123'});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -921,9 +921,9 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but no tokenId', async function () {
+            it('should not return otc_ref when flag is enabled but no otcRef', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
-                handleSigninStub.resolves({tokenId: null});
+                handleSigninStub.resolves({otcRef: null});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -931,7 +931,7 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but tokenId is undefined', async function () {
+            it('should not return otc_ref when flag is enabled but otcRef is undefined', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
                 handleSigninStub.resolves({});
 
