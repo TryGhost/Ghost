@@ -2,12 +2,24 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 
 const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
+const {ValidationError} = require('@tryghost/errors');
 
 describe('SingleUseTokenProvider', function () {
     let tokenProvider;
     let mockMembersConfig;
     let mockModel;
     const testAuthSecret = 'abc123';
+
+    const COMMON_TEST_TOKEN = {
+        id: 'test-token-id',
+        token: 'test-token-value'
+    };
+
+    const ERROR_MESSAGES = {
+        INVALID_TOKEN: 'Invalid token provided',
+        TOKEN_EXPIRED: 'Token expired',
+        INVALID_OTC_HASH: 'Invalid OTC verification hash'
+    };
 
     beforeEach(function () {
         mockMembersConfig = {
@@ -17,14 +29,15 @@ describe('SingleUseTokenProvider', function () {
         mockModel = {
             add: sinon.stub(),
             findOne: sinon.stub(),
-            transaction: sinon.stub()
+            transaction: sinon.stub(),
+            save: sinon.stub()
         };
 
         tokenProvider = new SingleUseTokenProvider({
             SingleUseTokenModel: mockModel,
             validityPeriod: 86400000, // 24 hours
             validityPeriodAfterUsage: 3600000, // 1 hour
-            maxUsageCount: 3,
+            maxUsageCount: 7,
             secret: mockMembersConfig.getAuthSecret()
         });
     });
@@ -34,10 +47,7 @@ describe('SingleUseTokenProvider', function () {
     });
 
     describe('deriveOTC', function () {
-        const testToken = {
-            id: 'test-token-id',
-            token: 'test-token-value'
-        };
+        const testToken = COMMON_TEST_TOKEN;
 
         it('should generate a 6-digit code', function () {
             const code = tokenProvider.deriveOTC(testToken.id, testToken.token);
@@ -175,10 +185,7 @@ describe('SingleUseTokenProvider', function () {
     });
 
     describe('verifyOTC', function () {
-        const testToken = {
-            id: 'test-token-id',
-            token: 'test-token-value'
-        };
+        const testToken = COMMON_TEST_TOKEN;
 
         it('should return true for valid OTC', async function () {
             const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
@@ -261,6 +268,244 @@ describe('SingleUseTokenProvider', function () {
 
             assert.equal(result, false);
             sinon.assert.notCalled(mockModel.findOne);
+        });
+    });
+
+    describe('validate', function () {
+        let clock;
+        const testToken = COMMON_TEST_TOKEN.token;
+        const testData = {user: 'test-user', email: 'test@example.com'};
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers();
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        function createMockModel({
+            id = COMMON_TEST_TOKEN.id,
+            token = testToken,
+            data = JSON.stringify(testData),
+            usedCount = 0,
+            firstUsedAt = null,
+            createdAt = new Date()
+        } = {}) {
+            return {
+                get: sinon.stub().callsFake((field) => {
+                    switch (field) {
+                    case 'id': return id;
+                    case 'token': return token;
+                    case 'data': return data;
+                    case 'used_count': return usedCount;
+                    case 'first_used_at': return firstUsedAt;
+                    case 'created_at': return createdAt;
+                    default: return null;
+                    }
+                }),
+                save: sinon.stub().resolves()
+            };
+        }
+
+        function setupMockModelForValidation(mockModelInstance, options = {}) {
+            const transactionId = options.transactionId || 'test-transaction';
+            mockModelInstance.transaction = sinon.stub().callsFake(callback => callback(transactionId));
+            mockModelInstance.findOne = sinon.stub().resolves(mockModelInstance);
+            tokenProvider.model = mockModelInstance;
+            return mockModelInstance;
+        }
+
+        it('should validate a fresh token and return parsed data', async function () {
+            const freshMockModel = createMockModel();
+            setupMockModelForValidation(freshMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, testData);
+            sinon.assert.calledWith(freshMockModel.findOne, {token: testToken}, {transacting: 'test-transaction', forUpdate: true});
+            sinon.assert.calledOnce(freshMockModel.save);
+        });
+
+        it('should throw ValidationError when token is not found', async function () {
+            const notFoundMockModel = createMockModel();
+            setupMockModelForValidation(notFoundMockModel);
+            notFoundMockModel.findOne = sinon.stub().resolves(null);
+
+            await assert.rejects(
+                tokenProvider.validate(testToken),
+                ValidationError,
+                ERROR_MESSAGES.INVALID_TOKEN
+            );
+        });
+
+        it('should throw ValidationError when token has reached max usage count', async function () {
+            const maxUsageMockModel = createMockModel({usedCount: 7});
+            setupMockModelForValidation(maxUsageMockModel);
+
+            await assert.rejects(
+                tokenProvider.validate(testToken),
+                ValidationError,
+                ERROR_MESSAGES.TOKEN_EXPIRED
+            );
+        });
+
+        it('should throw ValidationError when token is expired by lifetime', async function () {
+            const oldDate = new Date(Date.now() - 86400001);
+            const expiredMockModel = createMockModel({createdAt: oldDate});
+            setupMockModelForValidation(expiredMockModel);
+
+            await assert.rejects(
+                tokenProvider.validate(testToken),
+                ValidationError,
+                ERROR_MESSAGES.TOKEN_EXPIRED
+            );
+        });
+
+        it('should throw ValidationError when token is expired after usage', async function () {
+            const oldUsageDate = new Date(Date.now() - 3600001);
+            const usageExpiredMockModel = createMockModel({
+                usedCount: 1,
+                firstUsedAt: oldUsageDate
+            });
+            setupMockModelForValidation(usageExpiredMockModel);
+
+            await assert.rejects(
+                tokenProvider.validate(testToken),
+                ValidationError,
+                ERROR_MESSAGES.TOKEN_EXPIRED
+            );
+        });
+
+        it('should increment usage count for previously used token', async function () {
+            const firstUsedDate = new Date(Date.now() - 1800000);
+            const usedMockModel = createMockModel({
+                usedCount: 1,
+                firstUsedAt: firstUsedDate
+            });
+            setupMockModelForValidation(usedMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, testData);
+            sinon.assert.calledWith(usedMockModel.save, sinon.match({
+                used_count: 2,
+                updated_at: sinon.match.date
+            }), sinon.match({autoRefresh: false, patch: true, transacting: 'test-transaction'}));
+        });
+
+        it('should set first_used_at on first usage', async function () {
+            const firstUsageMockModel = createMockModel();
+            setupMockModelForValidation(firstUsageMockModel);
+
+            await tokenProvider.validate(testToken);
+
+            sinon.assert.calledWith(firstUsageMockModel.save, sinon.match({
+                first_used_at: sinon.match.date,
+                updated_at: sinon.match.date,
+                used_count: 1
+            }), sinon.match({autoRefresh: false, patch: true, transacting: 'test-transaction'}));
+        });
+
+        it('should return empty object when data is invalid JSON', async function () {
+            const invalidJsonMockModel = createMockModel({data: 'invalid-json'});
+            setupMockModelForValidation(invalidJsonMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, {});
+        });
+
+        it('should use provided transaction when passed in options', async function () {
+            const transactionMockModel = createMockModel();
+            transactionMockModel.transaction = sinon.stub();
+            tokenProvider.model = transactionMockModel;
+            transactionMockModel.findOne = sinon.stub().resolves(transactionMockModel);
+
+            const providedTransaction = {transacting: 'provided-transaction'};
+            await tokenProvider.validate(testToken, providedTransaction);
+
+            sinon.assert.calledWith(transactionMockModel.findOne, {token: testToken}, {transacting: 'provided-transaction', forUpdate: true});
+            sinon.assert.notCalled(transactionMockModel.transaction);
+        });
+
+        describe('OTC verification integration', function () {
+            function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
+                const otc = tokenProvider.deriveOTC(tokenId, token);
+                const timestamp = timestampOverride || Math.floor(Date.now() / 1000);
+                const dataToHash = `${otc}:${token}:${timestamp}`;
+                const crypto = require('crypto');
+                
+                // Match the secret handling logic from _validateOTCVerificationHash
+                let secret;
+                if (Buffer.isBuffer(testAuthSecret)) {
+                    secret = testAuthSecret;
+                } else if (typeof testAuthSecret === 'string' && /^[0-9a-f]+$/i.test(testAuthSecret)) {
+                    secret = Buffer.from(testAuthSecret, 'hex');
+                } else {
+                    secret = Buffer.from(testAuthSecret);
+                }
+                
+                const hmac = crypto.createHmac('sha256', secret);
+                hmac.update(dataToHash);
+                const hash = hmac.digest('hex');
+                return `${timestamp}:${hash}`;
+            }
+
+            it('should validate token with realistic OTC verification hash', async function () {
+                const testTokenId = COMMON_TEST_TOKEN.id;
+                const otcMockModel = createMockModel({id: testTokenId});
+                setupMockModelForValidation(otcMockModel);
+
+                // Need to mock getIdByToken since _validateOTCVerificationHash calls it
+                sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
+                
+                const validOtcVerification = createOtcVerificationHash(testTokenId, testToken);
+
+                const result = await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                assert.deepEqual(result, testData);
+                tokenProvider.getIdByToken.restore();
+            });
+
+            it('should throw ValidationError with malformed OTC verification hash', async function () {
+                const malformedMockModel = createMockModel();
+                setupMockModelForValidation(malformedMockModel);
+
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: 'malformed-hash'}),
+                    ValidationError,
+                    ERROR_MESSAGES.INVALID_OTC_HASH
+                );
+            });
+
+            it('should throw ValidationError with expired OTC verification hash', async function () {
+                const testTokenId = COMMON_TEST_TOKEN.id;
+                const expiredMockModel = createMockModel({id: testTokenId});
+                setupMockModelForValidation(expiredMockModel);
+
+                sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
+
+                const expiredTimestamp = Math.floor(Date.now() / 1000) - (6 * 60); // 6 minutes ago
+                const expiredOtcVerification = createOtcVerificationHash(testTokenId, testToken, expiredTimestamp);
+
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: expiredOtcVerification}),
+                    ValidationError,
+                    ERROR_MESSAGES.INVALID_OTC_HASH
+                );
+
+                tokenProvider.getIdByToken.restore();
+            });
+
+            it('should skip OTC verification when not provided', async function () {
+                const noOtcMockModel = createMockModel();
+                setupMockModelForValidation(noOtcMockModel);
+
+                const result = await tokenProvider.validate(testToken);
+
+                assert.deepEqual(result, testData);
+            });
         });
     });
 });

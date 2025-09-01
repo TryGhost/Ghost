@@ -61,7 +61,6 @@ class SingleUseTokenProvider {
 
         // Validate OTC verification hash if provided
         if (options.otcVerification) {
-            console.log(options.otcVerification, token);
             const isValidOTCVerification = await this._validateOTCVerificationHash(options.otcVerification, token);
             if (!isValidOTCVerification) {
                 throw new ValidationError({
