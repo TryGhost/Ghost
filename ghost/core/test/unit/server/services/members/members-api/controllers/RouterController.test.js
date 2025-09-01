@@ -1097,4 +1097,442 @@ describe('RouterController', function () {
             }
         });
     });
+
+    describe('verifyOTC', function () {
+        let routerController;
+        let mockMagicLinkService;
+        let mockSettingsCache;
+        let mockUrlUtils;
+        let req;
+        let res;
+
+        // Constants for verifyOTC tests
+        const OTC_TEST_CONSTANTS = {
+            VALID_OTC: '123456',
+            INVALID_OTC_5_DIGITS: '12345',
+            INVALID_OTC_NON_DIGITS: '12345a',
+            DIFFERENT_OTC: '654321',
+            TOKEN_ID: 'test-token-id',
+            TOKEN_VALUE: 'test-token-value',
+            VALID_SECRET: 'a'.repeat(128),
+            SHORT_SECRET: 'a'.repeat(64),
+            SITE_URL: 'http://example.com',
+            MEMBERS_URL: 'http://example.com/members/',
+            ERROR_MESSAGES: {
+                BAD_REQUEST: 'Bad Request.',
+                OTC_REQUIRED: 'OTC and otc_ref are required',
+                INVALID_FORMAT: 'Invalid verification code format',
+                FAILED_VERIFY: 'Failed to verify code, please try again',
+                INVALID_CODE: 'Invalid verification code'
+            }
+        };
+
+        beforeEach(function () {
+            // Mock dependencies
+            mockMagicLinkService = {
+                tokenProvider: {
+                    verifyOTC: sinon.stub(),
+                    getTokenById: sinon.stub()
+                }
+            };
+
+            mockSettingsCache = {
+                get: sinon.stub()
+            };
+
+            mockUrlUtils = {
+                urlFor: sinon.stub().returns(OTC_TEST_CONSTANTS.MEMBERS_URL),
+                getSiteUrl: sinon.stub().returns(OTC_TEST_CONSTANTS.SITE_URL)
+            };
+
+            // Create controller instance
+            routerController = new RouterController({
+                offersAPI,
+                paymentsService,
+                tiersService,
+                memberRepository: {},
+                StripePrice: {},
+                allowSelfSignup: () => true,
+                magicLinkService: mockMagicLinkService,
+                stripeAPIService,
+                tokenService: {},
+                memberAttributionService: {},
+                sendEmailWithMagicLink: sinon.stub(),
+                labsService,
+                newslettersService: {},
+                sentry: undefined,
+                settingsCache: mockSettingsCache,
+                urlUtils: mockUrlUtils
+            });
+
+            // Mock request and response
+            req = {
+                body: {
+                    otc: OTC_TEST_CONSTANTS.VALID_OTC,
+                    otcRef: OTC_TEST_CONSTANTS.TOKEN_ID
+                }
+            };
+
+            res = {
+                writeHead: sinon.stub(),
+                end: sinon.stub()
+            };
+        });
+
+        describe('input validation', function () {
+            it('should throw BadRequestError when otc is missing', async function () {
+                req.body.otc = undefined;
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Bad Request.');
+                    assert.equal(error.context, 'OTC and otc_ref are required');
+                }
+            });
+
+            it('should throw BadRequestError when otcRef is missing', async function () {
+                req.body.otcRef = undefined;
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Bad Request.');
+                    assert.equal(error.context, 'OTC and otc_ref are required');
+                }
+            });
+
+            it('should throw BadRequestError when both otc and otcRef are missing', async function () {
+                req.body.otc = undefined;
+                req.body.otcRef = undefined;
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Bad Request.');
+                    assert.equal(error.context, 'OTC and otc_ref are required');
+                }
+            });
+
+            it('should throw BadRequestError when otc is not 6 digits', async function () {
+                req.body.otc = '12345'; // 5 digits
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Invalid verification code format');
+                }
+            });
+
+            it('should throw BadRequestError when otc contains non-digits', async function () {
+                req.body.otc = '12345a';
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Invalid verification code format');
+                }
+            });
+
+            it('should accept valid 6-digit OTC', async function () {
+                req.body.otc = '123456';
+                
+                // Setup for successful verification
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128));
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+            });
+        });
+
+        describe('token provider integration', function () {
+            beforeEach(function () {
+                // Setup valid OTC format
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+            });
+
+            it('should throw BadRequestError when tokenProvider is missing', async function () {
+                mockMagicLinkService.tokenProvider = undefined;
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Failed to verify code, please try again');
+                }
+            });
+
+            it('should throw BadRequestError when verifyOTC method is missing', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC = undefined;
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Failed to verify code, please try again');
+                }
+            });
+
+            it('should return error response when verifyOTC returns false', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(false);
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 400, {'Content-Type': 'application/json'});
+                sinon.assert.calledWith(res.end, JSON.stringify({
+                    valid: false,
+                    message: 'Invalid verification code'
+                }));
+            });
+
+            it('should handle tokenProvider.getTokenById throwing error', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.rejects(new Error('Database error'));
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Failed to verify code, please try again');
+                }
+            });
+        });
+
+        describe('settings cache integration', function () {
+            beforeEach(function () {
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+            });
+
+            it('should throw BadRequestError when members_email_auth_secret is missing', async function () {
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(null);
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Failed to verify code, please try again');
+                }
+            });
+
+            it('should throw BadRequestError when secret is too short', async function () {
+                // 32 bytes = 64 hex chars, but we need 64 bytes = 128 hex chars
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(64));
+
+                try {
+                    await routerController.verifyOTC(req, res);
+                    assert.fail('Expected BadRequestError to be thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.message, 'Failed to verify code, please try again');
+                }
+            });
+
+            it('should work with valid hex secret', async function () {
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128)); // 64 bytes
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+            });
+        });
+
+        describe('hash creation integration', function () {
+            beforeEach(function () {
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128));
+            });
+
+            it('should create hash in timestamp:hash format', async function () {
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+                
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                
+                assert(responseData.redirectUrl.includes('otc_verification='));
+                
+                // Extract otc_verification parameter
+                const url = new URL(responseData.redirectUrl);
+                const otcVerification = url.searchParams.get('otc_verification');
+                
+                // Should be in timestamp:hash format
+                assert(otcVerification.includes(':'));
+                const parts = otcVerification.split(':');
+                assert.equal(parts.length, 2);
+                
+                // Timestamp should be a number
+                assert(!isNaN(parseInt(parts[0])));
+                
+                // Hash should be hex string
+                assert(/^[a-f0-9]+$/i.test(parts[1]));
+            });
+
+            it('should create different hashes for different OTCs', async function () {
+                // First OTC
+                await routerController.verifyOTC(req, res);
+                const firstResponse = JSON.parse(res.end.getCall(0).args[0]);
+                const firstUrl = new URL(firstResponse.redirectUrl);
+                const firstHash = firstUrl.searchParams.get('otc_verification');
+
+                // Reset mocks
+                res.writeHead.resetHistory();
+                res.end.resetHistory();
+
+                // Second OTC
+                req.body.otc = '654321';
+                await routerController.verifyOTC(req, res);
+                const secondResponse = JSON.parse(res.end.getCall(0).args[0]);
+                const secondUrl = new URL(secondResponse.redirectUrl);
+                const secondHash = secondUrl.searchParams.get('otc_verification');
+
+                // Hashes should be different (ignoring potential timestamp differences)
+                const firstHashPart = firstHash.split(':')[1];
+                const secondHashPart = secondHash.split(':')[1];
+                assert.notEqual(firstHashPart, secondHashPart);
+            });
+        });
+
+        describe('URL building integration', function () {
+            beforeEach(function () {
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128));
+            });
+
+            it('should include token parameter in redirect URL', async function () {
+                await routerController.verifyOTC(req, res);
+
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                const url = new URL(responseData.redirectUrl);
+                
+                assert.equal(url.searchParams.get('token'), 'test-token-value');
+            });
+
+            it('should include otc_verification parameter in redirect URL', async function () {
+                await routerController.verifyOTC(req, res);
+
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                const url = new URL(responseData.redirectUrl);
+                
+                assert(url.searchParams.has('otc_verification'));
+                assert(url.searchParams.get('otc_verification').length > 0);
+            });
+
+            it('should use correct site URL base', async function () {
+                await routerController.verifyOTC(req, res);
+
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                const url = new URL(responseData.redirectUrl);
+                
+                assert(url.href.startsWith('http://example.com/members/'));
+                sinon.assert.calledWith(mockUrlUtils.urlFor, {relativeUrl: '/members/'}, true);
+            });
+        });
+
+        describe('success flow integration', function () {
+            beforeEach(function () {
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128));
+            });
+
+            it('should return success response with valid inputs', async function () {
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+                
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                
+                assert.equal(responseData.valid, true);
+                assert.equal(responseData.success, true);
+                assert.equal(responseData.message, 'OTC verification successful');
+                assert(responseData.redirectUrl);
+            });
+
+            it('should call dependencies in correct order', async function () {
+                await routerController.verifyOTC(req, res);
+
+                // Verify call order
+                assert(mockMagicLinkService.tokenProvider.verifyOTC.calledBefore(mockMagicLinkService.tokenProvider.getTokenById));
+                assert(mockMagicLinkService.tokenProvider.getTokenById.calledBefore(mockSettingsCache.get));
+                
+                sinon.assert.calledWith(mockMagicLinkService.tokenProvider.verifyOTC, 'test-token-id', '123456');
+                sinon.assert.calledWith(mockMagicLinkService.tokenProvider.getTokenById, 'test-token-id');
+                sinon.assert.calledWith(mockSettingsCache.get, 'members_email_auth_secret');
+            });
+        });
+
+        describe('response format validation', function () {
+            beforeEach(function () {
+                req.body.otc = '123456';
+                req.body.otcRef = 'test-token-id';
+                mockSettingsCache.get.withArgs('members_email_auth_secret').returns('a'.repeat(128));
+            });
+
+            it('should return correct success response structure', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.getTokenById.resolves('test-token-value');
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+                
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                
+                assert(responseData.hasOwnProperty('valid'));
+                assert(responseData.hasOwnProperty('success'));
+                assert(responseData.hasOwnProperty('redirectUrl'));
+                assert(responseData.hasOwnProperty('message'));
+            });
+
+            it('should return correct error response structure', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.returns(false);
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledWith(res.writeHead, 400, {'Content-Type': 'application/json'});
+                
+                const responseCall = res.end.getCall(0);
+                const responseData = JSON.parse(responseCall.args[0]);
+                
+                assert.equal(responseData.valid, false);
+                assert.equal(responseData.message, 'Invalid verification code');
+                assert(!responseData.hasOwnProperty('redirectUrl'));
+            });
+        });
+    });
 });
