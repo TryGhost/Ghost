@@ -265,7 +265,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, otc}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -281,7 +281,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 honeypot: phonenumber,
                 token,
                 autoRedirect,
-                otc
+                includeOTC
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
