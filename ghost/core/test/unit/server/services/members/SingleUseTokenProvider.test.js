@@ -8,7 +8,7 @@ describe('SingleUseTokenProvider', function () {
     let tokenProvider;
     let mockMembersConfig;
     let mockModel;
-    const testAuthSecret = 'abc123';
+    const testAuthSecret = 'a'.repeat(128);
 
     const COMMON_TEST_TOKEN = {
         id: 'test-token-id',
@@ -431,24 +431,10 @@ describe('SingleUseTokenProvider', function () {
 
         describe('OTC verification integration', function () {
             function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
+                const {createOTCVerificationHash} = require('../../../../../core/server/services/members/otc-hash-utils');
                 const otc = tokenProvider.deriveOTC(tokenId, token);
                 const timestamp = timestampOverride || Math.floor(Date.now() / 1000);
-                const dataToHash = `${otc}:${token}:${timestamp}`;
-                const crypto = require('crypto');
-                
-                // Match the secret handling logic from _validateOTCVerificationHash
-                let secret;
-                if (Buffer.isBuffer(testAuthSecret)) {
-                    secret = testAuthSecret;
-                } else if (typeof testAuthSecret === 'string' && /^[0-9a-f]+$/i.test(testAuthSecret)) {
-                    secret = Buffer.from(testAuthSecret, 'hex');
-                } else {
-                    secret = Buffer.from(testAuthSecret);
-                }
-                
-                const hmac = crypto.createHmac('sha256', secret);
-                hmac.update(dataToHash);
-                const hash = hmac.digest('hex');
+                const hash = createOTCVerificationHash(otc, token, timestamp, testAuthSecret);
                 return `${timestamp}:${hash}`;
             }
 

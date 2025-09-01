@@ -2,6 +2,7 @@
 const {ValidationError} = require('@tryghost/errors');
 const crypto = require('node:crypto');
 const {hotp} = require('otplib');
+const {createOTCVerificationHash} = require('./otc-hash-utils');
 
 class SingleUseTokenProvider {
     /**
@@ -244,7 +245,7 @@ class SingleUseTokenProvider {
                 return false;
             }
 
-            const timestamp = parseInt(parts[0], 10);
+            const timestamp = parseInt(parts[0]);
             const providedHash = parts[1];
 
             // Check if hash is expired (5 minute window)
@@ -262,24 +263,7 @@ class SingleUseTokenProvider {
             // Derive the original OTC that was used to create this hash
             const otc = this.deriveOTC(tokenId, token);
 
-            // Recreate the hash using the same algorithm as RouterController
-            const dataToHash = `${otc}:${token}:${timestamp}`;
-
-            // Handle secret - it might be hex string or binary string depending on how it was passed
-            let secret;
-            if (Buffer.isBuffer(this.secret)) {
-                secret = this.secret;
-            } else if (typeof this.secret === 'string' && /^[0-9a-f]+$/i.test(this.secret)) {
-                // Hex string - convert to buffer like RouterController does
-                secret = Buffer.from(this.secret, 'hex');
-            } else {
-                // Binary string or other format
-                secret = Buffer.from(this.secret);
-            }
-
-            const hmac = crypto.createHmac('sha256', secret);
-            hmac.update(dataToHash);
-            const expectedHash = hmac.digest('hex');
+            const expectedHash = createOTCVerificationHash(otc, token, timestamp, this.secret);
 
             // Compare the hashes using constant-time comparison to prevent timing attacks
             return crypto.timingSafeEqual(
