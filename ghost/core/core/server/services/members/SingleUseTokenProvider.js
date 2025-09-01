@@ -152,6 +152,34 @@ class SingleUseTokenProvider {
     }
 
     /**
+     * @method verifyOTC
+     * Verifies an OTC (one-time code) by looking up the token and performing HOTP verification
+     *
+     * @param {string} otcRef - Reference for the one-time code
+     * @param {string} otc - The one-time code to verify
+     * @returns {Promise<boolean>} Returns true if the OTC is valid, false otherwise
+     */
+    async verifyOTC(otcRef, otc) {
+        if (!this.secret || !otcRef || !otc) {
+            return false;
+        }
+
+        try {
+            const model = await this.model.findOne({id: otcRef});
+
+            if (!model) {
+                return false;
+            }
+
+            const tokenValue = model.get('token');
+            const counter = this.deriveCounter(otcRef, tokenValue);
+            return hotp.verify({token: otc, secret: this.secret, counter});
+        } catch (err) {
+            return false;
+        }
+    }
+        
+    /**
      * @method getIdByToken
      * Retrieves the ID associated with a given token.
      *
