@@ -116,6 +116,8 @@ function InputField({
     let autocomplete = '';
     let autocorrect = '';
     let autocapitalize = '';
+    let inputMode;
+    let pattern;
     switch (id) {
     case 'input-email':
         autocomplete = 'off';
@@ -125,6 +127,15 @@ function InputField({
     case 'input-name':
         autocomplete = 'off';
         autocorrect = 'off';
+        break;
+    case 'input-otc':
+        autocomplete = 'one-time-code';
+        autocorrect = 'off';
+        autocapitalize = 'off';
+        inputMode = 'numeric';
+        pattern = '[0-9]*';
+        placeholder ??= '• • • • • •';
+
         break;
     default:
         break;
@@ -159,6 +170,8 @@ function InputField({
                 autoCorrect={autocorrect}
                 autoCapitalize={autocapitalize}
                 aria-label={label}
+                inputMode={inputMode}
+                pattern={pattern}
             />
         </section>
     );
