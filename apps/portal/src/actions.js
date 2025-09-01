@@ -81,11 +81,11 @@ async function signout({api, state}) {
 async function signin({data, api, state}) {
     const {t, labs} = state;
 
-    const otc = labs.membersSigninOTC ? true : undefined;
+    const includeOTC = labs?.membersSigninOTC ? true : undefined;
 
     try {
         const integrityToken = await api.member.getIntegrityToken();
-        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken, otc});
+        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken, includeOTC});
         return {
             page: 'magiclink',
             lastPage: 'signin'

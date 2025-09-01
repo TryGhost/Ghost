@@ -684,11 +684,11 @@ module.exports = class RouterController {
     }
 
     async _handleSignin(req, normalizedEmail, referrer = null) {
-        const {emailType, otc} = req.body;
+        const {emailType, includeOTC: reqIncludeOTC} = req.body;
 
         let includeOTC = false;
 
-        if (this.labsService.isSet('membersSigninOTC') && (otc === true || otc === 'true')) {
+        if (this.labsService.isSet('membersSigninOTC') && (reqIncludeOTC === true || reqIncludeOTC === 'true')) {
             includeOTC = true;
         }
 
