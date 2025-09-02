@@ -213,6 +213,14 @@ describe('SingleUseTokenProvider', function () {
             sinon.assert.calledOnceWithExactly(mockModel.findOne, {id: testToken.id});
         });
 
+        it('should return false for non-numeric OTC', async function () {
+            mockModel.findOne.resolves({get: sinon.stub().returns(testToken.token)});
+
+            const result = await tokenProvider.verifyOTC(testToken.id, '12ab56');
+
+            assert.equal(result, false);
+        });
+
         it('should return false when token is not found', async function () {
             const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
             

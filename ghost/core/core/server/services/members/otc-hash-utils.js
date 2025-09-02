@@ -1,6 +1,7 @@
 const crypto = require('crypto');
 const {ValidationError} = require('@tryghost/errors');
 
+// Minimum secret length in bytes; hexSecret must be at least 2x this in hex chars
 const REQUIRED_SECRET_LENGTH = 64;
 
 /**
@@ -16,6 +17,13 @@ function createOTCVerificationHash(otc, token, timestamp, hexSecret) {
     if (!hexSecret) {
         throw new ValidationError({
             message: 'Authentication secret not configured'
+        });
+    }
+
+    // Validate that the secret is a valid hex string of sufficient length
+    if (typeof hexSecret !== 'string' || !/^[0-9a-fA-F]+$/.test(hexSecret) || (hexSecret.length % 2 !== 0) || (hexSecret.length < REQUIRED_SECRET_LENGTH * 2)) {
+        throw new ValidationError({
+            message: 'Authentication secret not properly configured'
         });
     }
 
