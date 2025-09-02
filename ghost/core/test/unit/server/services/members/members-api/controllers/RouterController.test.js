@@ -1133,7 +1133,7 @@ describe('RouterController', function () {
             mockMagicLinkService = {
                 tokenProvider: {
                     verifyOTC: sinon.stub(),
-                    getTokenById: sinon.stub()
+                    getTokenByRef: sinon.stub()
                 }
             };
 
@@ -1239,9 +1239,9 @@ describe('RouterController', function () {
 
             it('should accept valid 6-digit OTC', async function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
-                
+
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
 
                 await routerController.verifyOTC(req, res);
@@ -1311,7 +1311,7 @@ describe('RouterController', function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
 
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
 
                 await routerController.verifyOTC(req, res);
@@ -1319,9 +1319,9 @@ describe('RouterController', function () {
                 sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
             });
 
-            it('should handle tokenProvider.getTokenById throwing error', async function () {
+            it('should handle tokenProvider.getTokenByRef throwing error', async function () {
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenById.rejects(new Error('Database error'));
+                mockMagicLinkService.tokenProvider.getTokenByRef.rejects(new Error('Database error'));
 
                 try {
                     await routerController.verifyOTC(req, res);
@@ -1338,7 +1338,7 @@ describe('RouterController', function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
             });
 
             it('should throw BadRequestError when members_email_auth_secret is missing', async function () {
@@ -1379,7 +1379,7 @@ describe('RouterController', function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
             });
 
@@ -1387,10 +1387,10 @@ describe('RouterController', function () {
                 await routerController.verifyOTC(req, res);
 
                 sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
-                
+
                 const responseCall = res.end.getCall(0);
                 const responseData = JSON.parse(responseCall.args[0]);
-                
+
                 assert.equal(responseData.valid, true);
                 assert.equal(responseData.success, true);
                 assert.equal(responseData.message, OTC_TEST_CONSTANTS.SUCCESS_MESSAGES.OTC_VERIFICATION_SUCCESSFUL);

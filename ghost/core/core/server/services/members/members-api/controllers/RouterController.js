@@ -688,7 +688,7 @@ module.exports = class RouterController {
                 }));
             }
 
-            const tokenValue = await tokenProvider.getTokenById(otcRef);
+            const tokenValue = await tokenProvider.getTokenByRef(otcRef);
             if (!tokenValue) {
                 res.writeHead(400, {'Content-Type': 'application/json'});
                 return res.end(JSON.stringify({
@@ -696,7 +696,7 @@ module.exports = class RouterController {
                     message: tpl(messages.invalidCode)
                 }));
             }
-            
+
             const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
             const redirectUrl = await this._buildRedirectUrl(tokenValue, otcVerificationHash);
 
@@ -720,7 +720,7 @@ module.exports = class RouterController {
         if (!hexSecret || typeof hexSecret !== 'string' || hexSecret.length < 128) {
             throw new errors.BadRequestError({message: 'Failed to verify code, please try again'});
         }
-        
+
         // timestamp for anti-replay protection (5 minute window)
         const timestamp = Math.floor(Date.now() / 1000);
 
