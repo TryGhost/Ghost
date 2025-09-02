@@ -30,26 +30,13 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method getOTCDigits
-     * Returns the number of digits expected for an OTC based on the HOTP configuration
-     * @returns {number}
-     */
-    getOTCDigits() {
-        try {
-            return hotp.options?.digits ?? 6;
-        } catch (err) {
-            return 6;
-        }
-    }
-
-    /**
      * @method isOTCFormatValid
      * Validates whether the provided OTC string matches the expected numeric length
      * @param {string} otc
      * @returns {boolean}
      */
     isOTCFormatValid(otc) {
-        const digits = this.getOTCDigits();
+        const digits = hotp.options?.digits ?? 6;
         const regex = new RegExp(`^\\d{${digits}}$`);
         return typeof otc === 'string' && regex.test(otc);
     }

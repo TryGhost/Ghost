@@ -660,11 +660,9 @@ module.exports = class RouterController {
             });
         }
 
-        // Validate OTC format using provider (fallback to 6 digits if unavailable)
         const tokenProvider = this._magicLinkService.tokenProvider;
-        const isFormatValid = (tokenProvider && typeof tokenProvider.isOTCFormatValid === 'function')
-            ? tokenProvider.isOTCFormatValid(otc)
-            : /^\d{6}$/.test(otc);
+        // Validate OTC format using provider (fallback to 6 digits if unavailable)
+        const isFormatValid = tokenProvider?.isOTCFormatValid?.(otc) ?? /^\d{6}$/.test(otc);
 
         if (!isFormatValid) {
             throw new errors.BadRequestError({
