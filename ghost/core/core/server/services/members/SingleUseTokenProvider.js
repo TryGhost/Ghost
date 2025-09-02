@@ -1,8 +1,12 @@
 // @ts-check
 const {ValidationError} = require('@tryghost/errors');
+const tpl = require('@tryghost/tpl');
 const crypto = require('node:crypto');
 const {hotp} = require('otplib');
-const {createOTCVerificationHash} = require('./otc-hash-utils');
+
+const messages = {
+    OTC_SECRET_NOT_CONFIGURED: 'OTC secret not configured'
+};
 
 class SingleUseTokenProvider {
     /**
@@ -150,7 +154,8 @@ class SingleUseTokenProvider {
     deriveOTC(tokenId, tokenValue) {
         if (!this.secret) {
             throw new ValidationError({
-                message: 'Cannot derive OTC: secret not configured'
+                message: messages.OTC_SECRET_NOT_CONFIGURED,
+                code: 'OTC_SECRET_NOT_CONFIGURED'
             });
         }
 
@@ -225,9 +230,39 @@ class SingleUseTokenProvider {
     }
 
     /**
+     * @method createOTCVerificationHash
+     * Creates an OTC verification hash for a given token and one-time code.
+     *
+     * @param {string} otc - The one-time code
+     * @param {string} token - The token value
+     * @param {number} [timestamp] - Optional timestamp to use for the hash, defaults to current time
+     * @returns {string} The OTC verification hash
+     */
+    createOTCVerificationHash(otc, token, timestamp) {
+        if (!this.secret) {
+            throw new ValidationError({
+                message: tpl(messages.OTC_SECRET_NOT_CONFIGURED),
+                code: 'OTC_SECRET_NOT_CONFIGURED'
+            });
+        }
+
+        // timestamp allows us to restrict the hash's lifetime window
+        timestamp ??= Math.floor(Date.now() / 1000);
+
+        const dataToHash = `${otc}:${token}:${timestamp}`;
+
+        const secret = Buffer.from(this.secret, 'hex');
+        const hmac = crypto.createHmac('sha256', secret);
+        hmac.update(dataToHash);
+
+        return hmac.digest('hex');
+    }
+
+    /**
      * @private
      * @method _validateOTCVerificationHash
-     * Validates OTC verification hash by recreating and comparing the hash
+     * Validates OTC verification hash by recreating and comparing the hash.
+     * Private because it's only used internally by the public validate method.
      *
      * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
      * @param {string} token - The token value
@@ -263,7 +298,7 @@ class SingleUseTokenProvider {
             // Derive the original OTC that was used to create this hash
             const otc = this.deriveOTC(tokenId, token);
 
-            const expectedHash = createOTCVerificationHash(otc, token, timestamp, this.secret);
+            const expectedHash = this.createOTCVerificationHash(otc, token, timestamp);
 
             // Compare the hashes using constant-time comparison to prevent timing attacks
             return crypto.timingSafeEqual(
