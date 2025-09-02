@@ -80,7 +80,7 @@ class SingleUseTokenProvider {
                 });
             }
         }
-                
+
         const model = await this.model.findOne({token}, {transacting: options.transacting, forUpdate: true});
 
         if (!model) {
@@ -203,7 +203,7 @@ class SingleUseTokenProvider {
             return false;
         }
     }
-        
+
     /**
      * @method getIdByToken
      * Retrieves the ID associated with a given token.
@@ -221,15 +221,15 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method getTokenById
-     * Retrieves the token associated with a given ID.
+     * @method getTokenByRef
+     * Retrieves the token associated with a given reference.
      *
-     * @param {string} id - The ID to look up.
+     * @param {string} ref - The reference to look up.
      * @returns {Promise<string|null>} The token if found, or null if not found or on error.
      */
-    async getTokenById(id) {
+    async getTokenByRef(ref) {
         try {
-            const model = await this.model.findOne({id});
+            const model = await this.model.findOne({id: ref});
             return model ? model.get('token') : null;
         } catch (err) {
             return null;
@@ -240,7 +240,7 @@ class SingleUseTokenProvider {
      * @private
      * @method _validateOTCVerificationHash
      * Validates OTC verification hash by recreating and comparing the hash
-     * 
+     *
      * @param {string} otcVerificationHash - The hash to validate (timestamp:hash format)
      * @param {string} token - The token value
      * @returns {Promise<boolean>} - True if hash is valid, false otherwise
