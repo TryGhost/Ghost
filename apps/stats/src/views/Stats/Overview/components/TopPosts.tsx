@@ -63,12 +63,13 @@ const TopPosts: React.FC<TopPostsProps> = ({
 
     // Show open rate if newsletters are enabled and email tracking is enabled
     const showWebAnalytics = appSettings?.analytics.webAnalytics;
-    const showOpenRate = appSettings?.newslettersEnabled && appSettings?.analytics.emailTrackOpens;
+    const showClickTracking = appSettings?.analytics.emailTrackClicks;
+    const showOpenTracking = appSettings?.analytics.emailTrackOpens;
 
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
     return (
-        <Card className='group/card w-full lg:col-span-2'>
+        <Card className='group/card w-full lg:col-span-2' data-testid='top-posts-card'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium  leading-snug text-muted-foreground'>
                     Top posts {getPeriodText(range)}
@@ -106,7 +107,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                         </div>
                                         <div className='z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
                                             {showWebAnalytics &&
-                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
+                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-visitors' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/web`, {crossApp: true});
                                                 }}>
@@ -126,7 +127,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     </div>
                                                 </div>
                                             }
-                                            {showOpenRate && post.sent_count !== null &&
+                                            {post.sent_count !== null &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/newsletter`, {crossApp: true});
@@ -134,32 +135,61 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     <PostListTooltip
                                                         className={`${!appSettings?.analytics.membersTrackSources ? 'left-auto right-0 translate-x-0' : ''}`}
                                                         metrics={[
+                                                            // Always show sent
                                                             {
                                                                 icon: <LucideIcon.Send className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
                                                                 label: 'Sent',
                                                                 metric: formatNumber(post.sent_count || 0)
                                                             },
-                                                            {
+                                                            // Only show opens if open tracking is enabled
+                                                            ...(showOpenTracking ? [{
                                                                 icon: <LucideIcon.MailOpen className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
                                                                 label: 'Opens',
                                                                 metric: formatNumber(post.opened_count || 0)
-                                                            },
-                                                            {
+                                                            }] : []),
+                                                            // Only show clicks if click tracking is enabled
+                                                            ...(showClickTracking ? [{
                                                                 icon: <LucideIcon.MousePointer className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,
                                                                 label: 'Clicks',
                                                                 metric: formatNumber(post.clicked_count || 0)
-                                                            }
+                                                            }] : [])
                                                         ]}
                                                         title='Newsletter performance'
                                                     />
                                                     <div className={metricClass}>
-                                                        <LucideIcon.MailOpen className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
-                                                        {post.open_rate ? `${Math.round(post.open_rate)}%` : <>0</>}
+                                                        {(() => {
+                                                            // If clicks and opens are enabled, show open rate %
+                                                            // If clicks are disabled but opens enabled, show open rate %
+                                                            if (showOpenTracking) {
+                                                                return (
+                                                                    <>
+                                                                        <LucideIcon.MailOpen className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
+                                                                        {post.open_rate ? `${Math.round(post.open_rate)}%` : '0%'}
+                                                                    </>
+                                                                );
+                                                            } else if (showClickTracking) {
+                                                                // If open rate is disabled but clicks enabled, show click rate %
+                                                                return (
+                                                                    <>
+                                                                        <LucideIcon.MousePointer className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
+                                                                        {post.click_rate ? `${Math.round(post.click_rate)}%` : '0%'}
+                                                                    </>
+                                                                );
+                                                            } else {
+                                                                // If both are disabled, show sent count
+                                                                return (
+                                                                    <>
+                                                                        <LucideIcon.Send className='text-muted-foreground group-hover:text-foreground' size={16} strokeWidth={1.5} />
+                                                                        {abbreviateNumber(post.sent_count || 0)}
+                                                                    </>
+                                                                );
+                                                            }
+                                                        })()}
                                                     </div>
                                                 </div>
                                             }
                                             {appSettings?.analytics.membersTrackSources &&
-                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
+                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-members' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
                                                 }}>

@@ -3,11 +3,12 @@ on:
   pull_request:
     types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
+    # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+    # Run on pushes to main, release branches, and previous/future major version branches
     branches:
       - main
-      - 'v5.*'
-      - '5.x'
-      - '6.x'
+      - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
+      - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
 
 env:
   FORCE_COLOR: 1
@@ -16,6 +17,7 @@ env:
     ${{ github.workspace }}/node_modules
     ${{ github.workspace }}/apps/*/node_modules
     ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
     ~/.cache/ms-playwright/
   NX_REJECT_UNKNOWN_LOCAL_CACHE: 0
   NODE_VERSION: 22.13.1
@@ -803,7 +805,7 @@ jobs:
     name: E2E tests
     env:
       CI: true
-      database__client: mysql
+      database__client: mysql2
       database__connection__host: localhost
       database__connection__port: 3306
       database__connection__user: ghost
@@ -1154,6 +1156,12 @@ jobs:
           - package_name: '@tryghost/comments-ui'
             package_path: 'apps/comments-ui'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/comments-ui@~CURRENT_MINOR/umd/comments-ui.min.js'
+          - package_name: '@tryghost/signup-form'
+            package_path: 'apps/signup-form'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/signup-form@~CURRENT_MINOR/umd/signup-form.min.js'
+          - package_name: '@tryghost/announcement-bar'
+            package_path: 'apps/announcement-bar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

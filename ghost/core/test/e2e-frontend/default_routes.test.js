@@ -184,6 +184,84 @@ describe('Default Frontend routing', function () {
         });
     });
 
+    describe('/ghost/ redirects', function () {
+        describe('with separate admin and admin:redirects=false', function () {
+            before(async function () {
+                configUtils.set('admin:redirects', false);
+                configUtils.set('admin:url', 'http://localhost:9999');
+
+                await testUtils.startGhost();
+                request = supertest.agent(configUtils.config.get('url'));
+            });
+
+            after(async function () {
+                await configUtils.restore();
+
+                await testUtils.startGhost();
+                request = supertest.agent(configUtils.config.get('url'));
+            });
+
+            it('/ghost/ should NOT redirect', async function () {
+                await request.get('/ghost/')
+                    .expect('Cache-Control', testUtils.cacheRules.noCache)
+                    .expect(404)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+
+            it('/ghost/api/settings/site/ should NOT redirect', async function () {
+                await request.get('/ghost/api/settings/site/')
+                    .expect('Cache-Control', testUtils.cacheRules.noCache)
+                    .expect(404)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+        });
+
+        describe('with separate admin and admin:redirects=true', function () {
+            before(async function () {
+                configUtils.set('admin:redirects', true);
+                configUtils.set('admin:url', 'http://localhost:9999');
+
+                await testUtils.startGhost();
+                request = supertest.agent(configUtils.config.get('url'));
+            });
+
+            after(async function () {
+                await configUtils.restore();
+
+                await testUtils.startGhost();
+                request = supertest.agent(configUtils.config.get('url'));
+            });
+
+            it('/ghost should redirect to external admin SPA', async function () {
+                await request.get('/ghost')
+                    .expect('Location', 'http://localhost:9999/ghost/')
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+
+            it('/ghost/ should redirect to external admin SPA', async function () {
+                await request.get('/ghost/')
+                    .expect('Location', 'http://localhost:9999/ghost/')
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+
+            it('/ghost/api/admin/site/ (known path) should redirect to external admin API route', async function () {
+                await request.get('/ghost/api/admin/site/')
+                    .expect('Location', 'http://localhost:9999/ghost/api/admin/site/')
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+
+            it('/ghost/api/new-endpoint/ (unknown path) should redirect to external admin API route', async function () {
+                await request.get('/ghost/api/new-endpoint/')
+                    .expect('Location', 'http://localhost:9999/ghost/api/new-endpoint/')
+                    .expect(301)
+                    .expect(assertCorrectFrontendHeaders);
+            });
+        });
+    });
+
     describe('AMP post', function () {
         // AMP is no longer supported as of v6.0, so we only check the case in which it's disabled
         describe('AMP Disabled', function () {

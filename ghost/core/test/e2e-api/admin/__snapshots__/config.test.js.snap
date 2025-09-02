@@ -22,8 +22,10 @@ Object {
       "importMemberTier": true,
       "lexicalIndicators": true,
       "members": true,
+      "membersSigninOTC": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
+      "tagsX": true,
       "themeErrorsNotification": true,
       "urlCache": true,
       "webmentions": true,
@@ -35,7 +37,7 @@ Object {
     },
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
-      "version": "0.2",
+      "version": "0.3",
     },
     "stripeDirect": false,
     "tenor": Object {

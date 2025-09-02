@@ -98,7 +98,7 @@ const Overview: React.FC = () => {
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
     useEffect(() => {
         if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics) {
-            navigate(`/analytics/${postId}/growth`);
+            navigate(`/posts/analytics/${postId}/growth`);
         }
     }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId]);
 
@@ -131,8 +131,8 @@ const Overview: React.FC = () => {
                             post={post as Post}
                         />
                     )}
-                    <Card className='group col-span-2 overflow-hidden p-0'>
-                        <div className='relative flex items-center justify-between gap-6' data-testid='growth'>
+                    <Card className='group col-span-2 overflow-hidden p-0' data-testid='growth'>
+                        <div className='relative flex items-center justify-between gap-6'>
                             <CardHeader>
                                 <CardTitle className='flex items-center gap-1.5 text-lg'>
                                     <LucideIcon.Sprout size={16} strokeWidth={1.5} />
@@ -140,7 +140,7 @@ const Overview: React.FC = () => {
                                 </CardTitle>
                             </CardHeader>
                             <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                                navigate(`/analytics/${postId}/growth`);
+                                navigate(`/posts/analytics/${postId}/growth`);
                             }}>View more</Button>
                         </div>
                         <CardContent className='flex flex-col gap-8 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>

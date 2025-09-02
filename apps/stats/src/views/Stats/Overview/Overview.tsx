@@ -140,8 +140,8 @@ const Overview: React.FC = () => {
         // Then map the sanitized data to the final format
         const processedData: GhAreaChartDataItem[] = sanitizedData.map(item => ({
             date: item.date,
-            value: item.free + item.paid + item.comped,
-            formattedValue: formatNumber(item.free + item.paid + item.comped),
+            value: item.free + item.paid,
+            formattedValue: formatNumber(item.free + item.paid),
             label: 'Members'
         }));
 

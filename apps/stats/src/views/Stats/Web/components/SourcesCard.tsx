@@ -128,7 +128,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     }
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist' data-testid='top-sources-card'>
             <div className='flex items-center justify-between gap-6 p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{title}</CardTitle>

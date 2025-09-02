@@ -67,7 +67,8 @@ function getMembersHelper(data, frontendKey, excludeList) {
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en'
+            locale: settingsCache.get('locale') || 'en',
+            'members-signin-otc': labs.isSet('membersSigninOTC') // html.dataset converts dash-attrs to camelCase
         };
         if (colorString) {
             attributes['accent-color'] = colorString;
@@ -175,7 +176,7 @@ function getTinybirdTrackerScript(dataRoot) {
     const tbParams = _.map({
         site_uuid: settingsCache.get('site_uuid'),
         post_uuid: dataRoot.post?.uuid,
-        post_type: dataRoot.context.includes('post') ? 'post' : dataRoot.context.includes('page') ? 'page' : null,
+        post_type: dataRoot.context?.includes('post') ? 'post' : dataRoot.context?.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status
     }, (value, key) => `tb_${key}="${value}"`).join(' ');

@@ -13,6 +13,7 @@ describe('Instagram URL validation', () => {
         assert.equal(validateInstagramUrl('instagram.com/john_smith_123'), 'https://www.instagram.com/john_smith_123');
         assert.equal(validateInstagramUrl('@johnsmith'), 'https://www.instagram.com/johnsmith');
         assert.equal(validateInstagramUrl('johnsmith'), 'https://www.instagram.com/johnsmith');
+        assert.equal(validateInstagramUrl('_john_smith_'), 'https://www.instagram.com/_john_smith_');
     });
 
     it('should reject URLs from other domains', () => {
@@ -35,7 +36,7 @@ describe('Instagram handle to URL conversion', () => {
         assert.equal(instagramHandleToUrl('johnsmith'), 'https://www.instagram.com/johnsmith');
         assert.equal(instagramHandleToUrl('@johnsmith'), 'https://www.instagram.com/johnsmith');
         assert.equal(instagramHandleToUrl('john.smith'), 'https://www.instagram.com/john.smith');
-        assert.equal(instagramHandleToUrl('john_smith_123'), 'https://www.instagram.com/john_smith_123');
+        assert.equal(instagramHandleToUrl('_john_smith_123_'), 'https://www.instagram.com/_john_smith_123_');
     });
 
     it('should reject invalid Instagram handles', () => {
