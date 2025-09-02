@@ -105,7 +105,11 @@ export function renderFeedAttachment(
                     const imageClassName = `size-full rounded-md outline outline-1 -outline-offset-1 outline-black/10 ${attachmentCount === 3 && index === 0 ? 'row-span-2' : ''}`;
 
                     if (brokenImages && brokenImages.has(item.url)) {
-                        return renderImagePlaceholder(imageClassName, attachmentCount === 1);
+                        return (
+                            <React.Fragment key={item.url}>
+                                renderImagePlaceholder(imageClassName, attachmentCount === 1);
+                            </React.Fragment>
+                        );
                     }
 
                     return (
