@@ -1,14 +1,15 @@
-import React, {useEffect, useRef} from 'react';
+import React from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {H4, LucideIcon} from '@tryghost/shade';
 
 import APAvatar from '../../global/APAvatar';
 import FeedItemStats from '../FeedItemStats';
-import getUsername from '../../../utils/get-username';
-import {handleProfileClick} from '../../../utils/handle-profile-click';
-import {openLinksInNewTab} from '../../../utils/content-formatters';
+import getUsername from '@utils/get-username';
+import {handleProfileClick} from '@utils/handle-profile-click';
+import {openLinksInNewTab} from '@utils/content-formatters';
 import {renderFeedAttachment} from '../common/FeedItemAttachment';
-import {renderTimestamp} from '../../../utils/render-timestamp';
+import {renderTimestamp} from '@utils/render-timestamp';
+import {useFeedItemActions} from '@hooks/use-feed-item-actions';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface ModalLayoutProps {
@@ -53,35 +54,12 @@ const ModalLayout: React.FC<ModalLayoutProps> = ({
     isPending = false
 }) => {
     const navigate = useNavigate();
-    const contentRef = useRef<HTMLDivElement>(null);
 
-    useEffect(() => {
-        const element = contentRef.current;
-        if (!element) {
-            return;
-        }
-
-        const handleProfileLinkClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            const link = target.closest('a[data-profile]');
-
-            if (link) {
-                const handle = link.getAttribute('data-profile')?.trim();
-                const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
-
-                if (isValidHandle && handle) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleProfileClick(handle, navigate);
-                }
-            }
-        };
-
-        element.addEventListener('click', handleProfileLinkClick);
-        return () => {
-            element.removeEventListener('click', handleProfileLinkClick);
-        };
-    }, [navigate, object?.content]);
+    const {contentRef} = useFeedItemActions({
+        author,
+        object,
+        enableProfileLinkHandling: true
+    });
 
     return (
         <div data-object-id={object.id}>

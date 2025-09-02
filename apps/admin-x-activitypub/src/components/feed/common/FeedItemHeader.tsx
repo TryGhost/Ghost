@@ -36,7 +36,7 @@ const FeedItemHeader: React.FC<FeedItemHeaderProps> = ({
     const navigate = useNavigate();
 
     return (
-        <div className={`flex min-w-0 items-center gap-3 ${className}`}>
+        <div className={`flex min-w-0 grow items-center gap-3 ${className}`}>
             {showAvatar && (
                 <APAvatar
                     author={author}

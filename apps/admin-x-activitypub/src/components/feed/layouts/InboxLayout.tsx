@@ -1,18 +1,17 @@
-import React, {useState} from 'react';
+import React from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon, Skeleton} from '@tryghost/shade';
-import {toast} from 'sonner';
 
 import APAvatar from '../../global/APAvatar';
 import FeedItemMenu from '../FeedItemMenu';
 import FeedItemStats from '../FeedItemStats';
-import getReadingTime from '../../../utils/get-reading-time';
-import getUsername from '../../../utils/get-username';
+import getReadingTime from '@utils/get-reading-time';
+import getUsername from '@utils/get-username';
 import {FeedItemAttachment} from '../common/FeedItemAttachment';
-import {handleProfileClick} from '../../../utils/handle-profile-click';
-import {renderTimestamp} from '../../../utils/render-timestamp';
-import {stripHtml} from '../../../utils/content-formatters';
-import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../../hooks/use-activity-pub-queries';
+import {handleProfileClick} from '@utils/handle-profile-click';
+import {renderTimestamp} from '@utils/render-timestamp';
+import {stripHtml} from '@utils/content-formatters';
+import {useFeedItemActions} from '@hooks/use-feed-item-actions';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface InboxLayoutProps {
@@ -55,56 +54,19 @@ const InboxLayout: React.FC<InboxLayoutProps> = ({
     showStats = true
 }) => {
     const navigate = useNavigate();
-    const [, setIsCopied] = useState(false);
 
-    const deleteMutation = useDeleteMutationForUser('index');
-    const followMutation = useFollowMutationForUser(
-        'index',
-        () => {
-            toast.success(`Followed ${author?.name}`);
-        },
-        () => {
-            toast.error('Failed to follow');
+    const {
+        actions: {
+            handleDelete,
+            handleCopyLink,
+            handleFollow,
+            handleUnfollow
         }
-    );
-
-    const unfollowMutation = useUnfollowMutationForUser(
-        'index',
-        () => {
-            toast.info(`Unfollowed ${author?.name}`);
-        },
-        () => {
-            toast.error('Failed to unfollow');
-        }
-    );
-
-    const handleDelete = () => {
-        deleteMutation.mutate({id: object.id, parentId});
-        onDelete?.();
-    };
-
-    const handleCopyLink = async () => {
-        if (object?.url) {
-            await navigator.clipboard.writeText(object.url);
-            setIsCopied(true);
-            toast.success('Link copied');
-            setTimeout(() => setIsCopied(false), 2000);
-        }
-    };
-
-    const authorHandle = author ? getUsername(author) : null;
-
-    const handleFollow = () => {
-        if (authorHandle) {
-            followMutation.mutate(authorHandle);
-        }
-    };
-
-    const handleUnfollow = () => {
-        if (authorHandle) {
-            unfollowMutation.mutate(authorHandle);
-        }
-    };
+    } = useFeedItemActions({
+        author,
+        object,
+        parentId
+    });
 
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md text-gray-900 hover:text-gray-900 dark:bg-black dark:text-gray-600 dark:hover:bg-gray-950 dark:hover:text-gray-600 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
@@ -176,7 +138,7 @@ const InboxLayout: React.FC<InboxLayoutProps> = ({
                             layout='inbox'
                             trigger={UserMenuTrigger}
                             onCopyLink={handleCopyLink}
-                            onDelete={handleDelete}
+                            onDelete={() => handleDelete(onDelete)}
                             onFollow={handleFollow}
                             onUnfollow={handleUnfollow}
                         />

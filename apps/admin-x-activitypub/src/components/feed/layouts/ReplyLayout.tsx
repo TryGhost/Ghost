@@ -1,17 +1,16 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, H4, LucideIcon} from '@tryghost/shade';
-import {toast} from 'sonner';
 
 import APAvatar from '../../global/APAvatar';
 import FeedItemMenu from '../FeedItemMenu';
 import FeedItemStats from '../FeedItemStats';
-import getUsername from '../../../utils/get-username';
-import {handleProfileClick} from '../../../utils/handle-profile-click';
-import {openLinksInNewTab} from '../../../utils/content-formatters';
+import getUsername from '@utils/get-username';
+import {handleProfileClick} from '@utils/handle-profile-click';
+import {openLinksInNewTab} from '@utils/content-formatters';
 import {renderFeedAttachment} from '../common/FeedItemAttachment';
-import {renderTimestamp} from '../../../utils/render-timestamp';
-import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../../hooks/use-activity-pub-queries';
+import {renderTimestamp} from '@utils/render-timestamp';
+import {useFeedItemActions} from '@hooks/use-feed-item-actions';
 import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface ReplyLayoutProps {
@@ -62,85 +61,21 @@ const ReplyLayout: React.FC<ReplyLayoutProps> = ({
     showStats = true
 }) => {
     const navigate = useNavigate();
-    const contentRef = useRef<HTMLDivElement>(null);
-    const [, setIsCopied] = useState(false);
 
-    const deleteMutation = useDeleteMutationForUser('index');
-    const followMutation = useFollowMutationForUser(
-        'index',
-        () => {
-            toast.success(`Followed ${author?.name}`);
-        },
-        () => {
-            toast.error('Failed to follow');
+    const {
+        contentRef,
+        actions: {
+            handleDelete,
+            handleCopyLink,
+            handleFollow,
+            handleUnfollow
         }
-    );
-
-    const unfollowMutation = useUnfollowMutationForUser(
-        'index',
-        () => {
-            toast.info(`Unfollowed ${author?.name}`);
-        },
-        () => {
-            toast.error('Failed to unfollow');
-        }
-    );
-
-    useEffect(() => {
-        const element = contentRef.current;
-        if (!element) {
-            return;
-        }
-
-        const handleProfileLinkClick = (e: MouseEvent) => {
-            const target = e.target as HTMLElement;
-            const link = target.closest('a[data-profile]');
-
-            if (link) {
-                const handle = link.getAttribute('data-profile')?.trim();
-                const isValidHandle = /^@([\w.-]+)@([\w-]+\.[\w.-]+[a-zA-Z])$/.test(handle || '');
-
-                if (isValidHandle && handle) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    handleProfileClick(handle, navigate);
-                }
-            }
-        };
-
-        element.addEventListener('click', handleProfileLinkClick);
-        return () => {
-            element.removeEventListener('click', handleProfileLinkClick);
-        };
-    }, [navigate, object?.content]);
-
-    const handleDelete = () => {
-        deleteMutation.mutate({id: object.id, parentId});
-        onDelete?.();
-    };
-
-    const handleCopyLink = async () => {
-        if (object?.url) {
-            await navigator.clipboard.writeText(object.url);
-            setIsCopied(true);
-            toast.success('Link copied');
-            setTimeout(() => setIsCopied(false), 2000);
-        }
-    };
-
-    const authorHandle = author ? getUsername(author) : null;
-
-    const handleFollow = () => {
-        if (authorHandle) {
-            followMutation.mutate(authorHandle);
-        }
-    };
-
-    const handleUnfollow = () => {
-        if (authorHandle) {
-            unfollowMutation.mutate(authorHandle);
-        }
-    };
+    } = useFeedItemActions({
+        author,
+        object,
+        parentId,
+        enableProfileLinkHandling: true
+    });
 
     const UserMenuTrigger = (
         <Button className={`relative z-10 size-[34px] rounded-md text-gray-900 hover:text-gray-900 dark:bg-black dark:text-gray-600 dark:hover:bg-gray-950 dark:hover:text-gray-600 [&_svg]:size-5`} data-testid="menu-button" variant='ghost'>
@@ -177,7 +112,7 @@ const ReplyLayout: React.FC<ReplyLayoutProps> = ({
                             layout='reply'
                             trigger={UserMenuTrigger}
                             onCopyLink={handleCopyLink}
-                            onDelete={handleDelete}
+                            onDelete={() => handleDelete(onDelete)}
                             onFollow={handleFollow}
                             onUnfollow={handleUnfollow}
                         />}

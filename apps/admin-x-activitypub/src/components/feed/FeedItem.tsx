@@ -76,10 +76,6 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    // const authorHandle = type === 'Announce'
-    //     ? (author ? getUsername(author) : null)
-    //     : (actor ? getUsername(actor) : null);
-
     const followedByMe = type === 'Announce'
         ? (typeof object.attributedTo === 'object' && object.attributedTo && !Array.isArray(object.attributedTo) && 'followedByMe' in object.attributedTo ? object.attributedTo.followedByMe : false)
         : (actor?.followedByMe || false);
