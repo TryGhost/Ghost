@@ -1101,7 +1101,6 @@ describe('RouterController', function () {
     describe('verifyOTC', function () {
         let routerController;
         let mockMagicLinkService;
-        let mockSettingsCache;
         let mockUrlUtils;
         let req;
         let res;
@@ -1113,8 +1112,7 @@ describe('RouterController', function () {
             DIFFERENT_OTC: '654321',
             TOKEN_ID: 'test-token-id',
             TOKEN_VALUE: 'test-token-value',
-            VALID_SECRET: 'a'.repeat(128),
-            SHORT_SECRET: 'a'.repeat(64),
+            OTC_VERIFICATION_HASH: 'c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4',
             SITE_URL: 'http://example.com',
             MEMBERS_URL: 'http://example.com/members/',
             ERROR_MESSAGES: {
@@ -1133,13 +1131,10 @@ describe('RouterController', function () {
             mockMagicLinkService = {
                 tokenProvider: {
                     verifyOTC: sinon.stub(),
-                    getTokenByRef: sinon.stub()
+                    getTokenByRef: sinon.stub(),
+                    createOTCVerificationHash: sinon.stub().returns(OTC_TEST_CONSTANTS.OTC_VERIFICATION_HASH)
                 },
                 getSigninURL: sinon.stub().returns(OTC_TEST_CONSTANTS.MEMBERS_URL)
-            };
-
-            mockSettingsCache = {
-                get: sinon.stub()
             };
 
             mockUrlUtils = {
@@ -1162,7 +1157,6 @@ describe('RouterController', function () {
                 labsService,
                 newslettersService: {},
                 sentry: undefined,
-                settingsCache: mockSettingsCache,
                 urlUtils: mockUrlUtils
             });
 
@@ -1233,7 +1227,6 @@ describe('RouterController', function () {
 
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
 
                 await routerController.verifyOTC(req, res);
 
@@ -1297,61 +1290,18 @@ describe('RouterController', function () {
             });
         });
 
-        describe('settings cache integration', function () {
-            beforeEach(function () {
-                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
-                req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
-                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
-            });
-
-            it('should throw BadRequestError when members_email_auth_secret is missing', async function () {
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(null);
-
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.FAILED_VERIFY);
-                }
-            });
-
-            it('should throw BadRequestError when secret is too short', async function () {
-                // 32 bytes = 64 hex chars, but we need 64 bytes = 128 hex chars
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.SHORT_SECRET);
-
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.FAILED_VERIFY);
-                }
-            });
-
-            it('should work with valid hex secret', async function () {
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET); // 64 bytes
-
-                await routerController.verifyOTC(req, res);
-
-                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
-            });
-        });
-
         describe('success flow integration', function () {
             beforeEach(function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
             });
 
             it('should return success response with valid inputs', async function () {
                 // use a fake time so we get a stable OTC verification hash for our mocked token/secret
                 sinon.useFakeTimers(new Date('2021-01-01'));
-                const TEST_OTC_VERIFICATION_HASH = '1609459200:c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4';
+                const TIMESTAMP_AND_OTC_VERIFICATION_HASH = `1609459200:${OTC_TEST_CONSTANTS.OTC_VERIFICATION_HASH}`;
 
                 await routerController.verifyOTC(req, res);
 
@@ -1365,7 +1315,13 @@ describe('RouterController', function () {
                 assert.equal(responseData.message, OTC_TEST_CONSTANTS.SUCCESS_MESSAGES.OTC_VERIFICATION_SUCCESSFUL);
                 assert(responseData.redirectUrl);
 
-                sinon.assert.calledWith(mockMagicLinkService.getSigninURL.firstCall, OTC_TEST_CONSTANTS.TOKEN_VALUE, 'signin', null, TEST_OTC_VERIFICATION_HASH);
+                sinon.assert.calledWith(
+                    mockMagicLinkService.getSigninURL.firstCall,
+                    OTC_TEST_CONSTANTS.TOKEN_VALUE, 
+                    'signin', 
+                    null, 
+                    TIMESTAMP_AND_OTC_VERIFICATION_HASH
+                );
             });
         });
     });

@@ -5,7 +5,6 @@ const {BadRequestError, NoPermissionError, UnauthorizedError, DisabledFeatureErr
 const errors = require('@tryghost/errors');
 const {isEmail} = require('@tryghost/validator');
 const normalizeEmail = require('../utils/normalize-email');
-const {createOTCVerificationHash} = require('../../otc-hash-utils');
 
 const messages = {
     emailRequired: 'Email is required.',
@@ -708,15 +707,10 @@ module.exports = class RouterController {
     }
 
     async _createHashFromOTCAndToken(otc, token) {
-        const hexSecret = this._settingsCache.get('members_email_auth_secret');
-        if (!hexSecret || typeof hexSecret !== 'string' || hexSecret.length < 128) {
-            throw new errors.BadRequestError({message: 'Failed to verify code, please try again'});
-        }
-
         // timestamp for anti-replay protection (5 minute window)
         const timestamp = Math.floor(Date.now() / 1000);
 
-        const hash = createOTCVerificationHash(otc, token, timestamp, hexSecret);
+        const hash = this._magicLinkService.tokenProvider.createOTCVerificationHash(otc, token, timestamp);
 
         return `${timestamp}:${hash}`;
     }
