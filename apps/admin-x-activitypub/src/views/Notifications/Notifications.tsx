@@ -13,7 +13,7 @@ import NotificationIcon from './components/NotificationIcon';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/EmptyViewIndicator';
 import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
-import {renderFeedAttachment} from '@components/feed/FeedItem';
+import {renderFeedAttachment} from '@components/feed/common/FeedItemAttachment';
 import {renderTimestamp} from '@src/utils/render-timestamp';
 import {stripHtml} from '@src/utils/content-formatters';
 import {useNavigate} from '@tryghost/admin-x-framework';
