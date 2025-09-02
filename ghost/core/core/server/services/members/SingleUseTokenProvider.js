@@ -22,18 +22,6 @@ class SingleUseTokenProvider {
     }
 
     /**
-     * @method isOTCFormatValid
-     * Validates whether the provided OTC string matches the expected numeric length
-     * @param {string} otc
-     * @returns {boolean}
-     */
-    isOTCFormatValid(otc) {
-        const digits = hotp.options?.digits ?? 6;
-        const regex = new RegExp(`^\\d{${digits}}$`);
-        return typeof otc === 'string' && regex.test(otc);
-    }
-
-    /**
      * @method create
      * Creates and stores a token, with the passed data associated with it.
      * Returns the created token value.
