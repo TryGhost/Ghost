@@ -322,6 +322,111 @@ describe('SingleUseTokenProvider', function () {
             return setupMockModelForValidation(model);
         }
 
+        it('should validate a fresh token and return parsed data', async function () {
+            const freshMockModel = createMockModel();
+            setupMockModelForValidation(freshMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, testData);
+            sinon.assert.calledWith(freshMockModel.findOne, {token: testToken}, {transacting: 'test-transaction', forUpdate: true});
+            sinon.assert.calledOnce(freshMockModel.save);
+        });
+
+        it('should throw ValidationError when token is not found', async function () {
+            const notFoundMockModel = buildModel();
+            notFoundMockModel.findOne = sinon.stub().resolves(null);
+
+            await assert.rejects(
+                tokenProvider.validate(testToken),
+                ValidationError,
+                ERROR_MESSAGES.INVALID_TOKEN
+            );
+        });
+
+        describe('expiration scenarios', function () {
+            it('should throw ValidationError when token has reached max usage count', async function () {
+                buildModel({usedCount: 7});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
+            });
+
+            it('should throw ValidationError when token is expired by lifetime', async function () {
+                const oldDate = new Date(Date.now() - 86400001);
+                buildModel({createdAt: oldDate});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
+            });
+
+            it('should throw ValidationError when token is expired after usage', async function () {
+                const oldUsageDate = new Date(Date.now() - 3600001);
+                buildModel({usedCount: 1, firstUsedAt: oldUsageDate});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
+            });
+        });
+
+        it('should increment usage count for previously used token', async function () {
+            const firstUsedDate = new Date(Date.now() - 1800000);
+            const usedMockModel = createMockModel({
+                usedCount: 1,
+                firstUsedAt: firstUsedDate
+            });
+            setupMockModelForValidation(usedMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, testData);
+            sinon.assert.calledWith(usedMockModel.save, sinon.match({
+                used_count: 2,
+                updated_at: sinon.match.date
+            }), sinon.match({autoRefresh: false, patch: true, transacting: 'test-transaction'}));
+        });
+
+        it('should set first_used_at on first usage', async function () {
+            const firstUsageMockModel = createMockModel();
+            setupMockModelForValidation(firstUsageMockModel);
+
+            await tokenProvider.validate(testToken);
+
+            sinon.assert.calledWith(firstUsageMockModel.save, sinon.match({
+                first_used_at: sinon.match.date,
+                updated_at: sinon.match.date,
+                used_count: 1
+            }), sinon.match({autoRefresh: false, patch: true, transacting: 'test-transaction'}));
+        });
+
+        it('should return empty object when data is invalid JSON', async function () {
+            const invalidJsonMockModel = createMockModel({data: 'invalid-json'});
+            setupMockModelForValidation(invalidJsonMockModel);
+
+            const result = await tokenProvider.validate(testToken);
+
+            assert.deepEqual(result, {});
+        });
+
+        it('should use provided transaction when passed in options', async function () {
+            const transactionMockModel = createMockModel();
+            transactionMockModel.transaction = sinon.stub();
+            tokenProvider.model = transactionMockModel;
+            transactionMockModel.findOne = sinon.stub().resolves(transactionMockModel);
+
+            const providedTransaction = {transacting: 'provided-transaction'};
+            await tokenProvider.validate(testToken, providedTransaction);
+
+            sinon.assert.calledWith(transactionMockModel.findOne, {token: testToken}, {transacting: 'provided-transaction', forUpdate: true});
+            sinon.assert.notCalled(transactionMockModel.transaction);
+        });
+
         describe('OTC verification integration', function () {
             function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
                 const otc = tokenProvider.deriveOTC(tokenId, token);
