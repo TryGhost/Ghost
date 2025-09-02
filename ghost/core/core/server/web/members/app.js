@@ -87,7 +87,7 @@ module.exports = function setupMembersApp() {
     );
     membersApp.post(
         '/api/verify-otc', 
-        bodyParser.json({limit: '5mb'}),
+        bodyParser.json(),
         middleware.verifyIntegrityToken, 
         function lazyVerifyOTCMw(req, res, next) {
             return membersService.api.middleware.verifyOTC(req, res, next);
