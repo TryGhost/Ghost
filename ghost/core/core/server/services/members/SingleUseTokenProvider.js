@@ -5,7 +5,11 @@ const crypto = require('node:crypto');
 const {hotp} = require('otplib');
 
 const messages = {
-    OTC_SECRET_NOT_CONFIGURED: 'OTC secret not configured'
+    OTC_SECRET_NOT_CONFIGURED: 'OTC secret not configured',
+    INVALID_OTC_VERIFICATION_HASH: 'Invalid OTC verification hash',
+    INVALID_TOKEN: 'Invalid token provided',
+    TOKEN_EXPIRED: 'Token expired',
+    DERIVE_OTC_MISSING_INPUT: 'tokenId and tokenValue are required'
 };
 
 class SingleUseTokenProvider {
@@ -68,7 +72,8 @@ class SingleUseTokenProvider {
             const isValidOTCVerification = await this._validateOTCVerificationHash(options.otcVerification, token);
             if (!isValidOTCVerification) {
                 throw new ValidationError({
-                    message: 'Invalid OTC verification hash'
+                    message: tpl(messages.INVALID_OTC_VERIFICATION_HASH),
+                    code: 'INVALID_OTC_VERIFICATION_HASH'
                 });
             }
         }
@@ -77,13 +82,15 @@ class SingleUseTokenProvider {
 
         if (!model) {
             throw new ValidationError({
-                message: 'Invalid token provided'
+                message: tpl(messages.INVALID_TOKEN),
+                code: 'INVALID_TOKEN'
             });
         }
 
         if (model.get('used_count') >= this.maxUsageCount) {
             throw new ValidationError({
-                message: 'Token expired'
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
             });
         }
 
@@ -96,7 +103,8 @@ class SingleUseTokenProvider {
 
             if (timeSinceFirstUsage > this.validityPeriodAfterUsage) {
                 throw new ValidationError({
-                    message: 'Token expired'
+                    message: tpl(messages.TOKEN_EXPIRED),
+                    code: 'TOKEN_EXPIRED'
                 });
             }
         }
@@ -104,7 +112,8 @@ class SingleUseTokenProvider {
 
         if (tokenLifetimeMilliseconds > this.validityPeriod) {
             throw new ValidationError({
-                message: 'Token expired'
+                message: tpl(messages.TOKEN_EXPIRED),
+                code: 'TOKEN_EXPIRED'
             });
         }
 
@@ -154,14 +163,15 @@ class SingleUseTokenProvider {
     deriveOTC(tokenId, tokenValue) {
         if (!this.secret) {
             throw new ValidationError({
-                message: messages.OTC_SECRET_NOT_CONFIGURED,
+                message: tpl(messages.OTC_SECRET_NOT_CONFIGURED),
                 code: 'OTC_SECRET_NOT_CONFIGURED'
             });
         }
 
         if (!tokenId || !tokenValue) {
             throw new ValidationError({
-                message: 'Cannot derive OTC: tokenId and tokenValue are required'
+                message: tpl(messages.DERIVE_OTC_MISSING_INPUT),
+                code: 'DERIVE_OTC_MISSING_INPUT'
             });
         }
 

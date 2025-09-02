@@ -2,7 +2,6 @@ const sinon = require('sinon');
 const assert = require('assert/strict');
 
 const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
-const {ValidationError} = require('@tryghost/errors');
 
 describe('SingleUseTokenProvider', function () {
     let tokenProvider;
@@ -13,12 +12,6 @@ describe('SingleUseTokenProvider', function () {
     const COMMON_TEST_TOKEN = {
         id: 'test-token-id',
         token: 'test-token-value'
-    };
-
-    const ERROR_MESSAGES = {
-        INVALID_TOKEN: 'Invalid token provided',
-        TOKEN_EXPIRED: 'Token expired',
-        INVALID_OTC_HASH: 'Invalid OTC verification hash'
     };
 
     beforeEach(function () {
@@ -102,12 +95,12 @@ describe('SingleUseTokenProvider', function () {
             });
             assert.throws(() => {
                 providerNoSecret.deriveOTC('id', 'value');
-            }, /secret not configured/i);
+            }, {code: 'OTC_SECRET_NOT_CONFIGURED'});
         });
 
         it('throws if tokenId or tokenValue is missing', function () {
-            assert.throws(() => tokenProvider.deriveOTC('', 'value'), /tokenId and tokenValue are required/i);
-            assert.throws(() => tokenProvider.deriveOTC('id', ''), /tokenId and tokenValue are required/i);
+            assert.throws(() => tokenProvider.deriveOTC('', 'value'), {code: 'DERIVE_OTC_MISSING_INPUT'});
+            assert.throws(() => tokenProvider.deriveOTC('id', ''), {code: 'DERIVE_OTC_MISSING_INPUT'});
         });
     });
 
@@ -357,8 +350,7 @@ describe('SingleUseTokenProvider', function () {
                 buildModel();
                 await assert.rejects(
                     tokenProvider.validate(testToken, {otcVerification: 'malformed-hash'}),
-                    ValidationError,
-                    ERROR_MESSAGES.INVALID_OTC_HASH
+                    {code: 'INVALID_OTC_VERIFICATION_HASH'}
                 );
             });
 
@@ -373,8 +365,7 @@ describe('SingleUseTokenProvider', function () {
 
                 await assert.rejects(
                     tokenProvider.validate(testToken, {otcVerification: expiredOtcVerification}),
-                    ValidationError,
-                    ERROR_MESSAGES.INVALID_OTC_HASH
+                    {code: 'INVALID_OTC_VERIFICATION_HASH'}
                 );
 
                 tokenProvider.getIdByToken.restore();
