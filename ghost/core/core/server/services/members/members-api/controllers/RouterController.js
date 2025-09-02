@@ -657,7 +657,7 @@ module.exports = class RouterController {
         if (!otc || !otcRef) {
             throw new errors.BadRequestError({
                 message: tpl(messages.badRequest),
-                context: 'otc and otc_ref are required'
+                context: 'otc and otcRef are required'
             });
         }
 

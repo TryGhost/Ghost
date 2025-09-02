@@ -1119,7 +1119,7 @@ describe('RouterController', function () {
             MEMBERS_URL: 'http://example.com/members/',
             ERROR_MESSAGES: {
                 BAD_REQUEST: 'Bad Request.',
-                OTC_REQUIRED: 'otc and otc_ref are required',
+                OTC_REQUIRED: 'otc and otcRef are required',
                 INVALID_FORMAT: 'Invalid verification code',
                 FAILED_VERIFY: 'Failed to verify code, please try again',
                 INVALID_CODE: 'Invalid verification code'
