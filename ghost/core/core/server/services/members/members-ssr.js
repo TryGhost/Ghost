@@ -156,6 +156,7 @@ class MembersSSR {
      * @method _getMemberDataFromToken
      *
      * @param {JWT} token
+     * @param {string} [otcVerification]
      *
      * @returns {Promise<Member>} member
      */
