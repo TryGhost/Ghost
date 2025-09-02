@@ -316,6 +316,11 @@ describe('SingleUseTokenProvider', function () {
             return mockModelInstance;
         }
 
+        function buildModel(options = {}) {
+            const model = createMockModel(options);
+            return setupMockModelForValidation(model);
+        }
+
         it('should validate a fresh token and return parsed data', async function () {
             const freshMockModel = createMockModel();
             setupMockModelForValidation(freshMockModel);
@@ -328,8 +333,7 @@ describe('SingleUseTokenProvider', function () {
         });
 
         it('should throw ValidationError when token is not found', async function () {
-            const notFoundMockModel = createMockModel();
-            setupMockModelForValidation(notFoundMockModel);
+            const notFoundMockModel = buildModel();
             notFoundMockModel.findOne = sinon.stub().resolves(null);
 
             await assert.rejects(
@@ -339,42 +343,35 @@ describe('SingleUseTokenProvider', function () {
             );
         });
 
-        it('should throw ValidationError when token has reached max usage count', async function () {
-            const maxUsageMockModel = createMockModel({usedCount: 7});
-            setupMockModelForValidation(maxUsageMockModel);
-
-            await assert.rejects(
-                tokenProvider.validate(testToken),
-                ValidationError,
-                ERROR_MESSAGES.TOKEN_EXPIRED
-            );
-        });
-
-        it('should throw ValidationError when token is expired by lifetime', async function () {
-            const oldDate = new Date(Date.now() - 86400001);
-            const expiredMockModel = createMockModel({createdAt: oldDate});
-            setupMockModelForValidation(expiredMockModel);
-
-            await assert.rejects(
-                tokenProvider.validate(testToken),
-                ValidationError,
-                ERROR_MESSAGES.TOKEN_EXPIRED
-            );
-        });
-
-        it('should throw ValidationError when token is expired after usage', async function () {
-            const oldUsageDate = new Date(Date.now() - 3600001);
-            const usageExpiredMockModel = createMockModel({
-                usedCount: 1,
-                firstUsedAt: oldUsageDate
+        describe('expiration scenarios', function () {
+            it('should throw ValidationError when token has reached max usage count', async function () {
+                buildModel({usedCount: 7});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
             });
-            setupMockModelForValidation(usageExpiredMockModel);
 
-            await assert.rejects(
-                tokenProvider.validate(testToken),
-                ValidationError,
-                ERROR_MESSAGES.TOKEN_EXPIRED
-            );
+            it('should throw ValidationError when token is expired by lifetime', async function () {
+                const oldDate = new Date(Date.now() - 86400001);
+                buildModel({createdAt: oldDate});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
+            });
+
+            it('should throw ValidationError when token is expired after usage', async function () {
+                const oldUsageDate = new Date(Date.now() - 3600001);
+                buildModel({usedCount: 1, firstUsedAt: oldUsageDate});
+                await assert.rejects(
+                    tokenProvider.validate(testToken),
+                    ValidationError,
+                    ERROR_MESSAGES.TOKEN_EXPIRED
+                );
+            });
         });
 
         it('should increment usage count for previously used token', async function () {
@@ -455,9 +452,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError with malformed OTC verification hash', async function () {
-                const malformedMockModel = createMockModel();
-                setupMockModelForValidation(malformedMockModel);
-
+                buildModel();
                 await assert.rejects(
                     tokenProvider.validate(testToken, {otcVerification: 'malformed-hash'}),
                     ValidationError,
@@ -467,8 +462,7 @@ describe('SingleUseTokenProvider', function () {
 
             it('should throw ValidationError with expired OTC verification hash', async function () {
                 const testTokenId = COMMON_TEST_TOKEN.id;
-                const expiredMockModel = createMockModel({id: testTokenId});
-                setupMockModelForValidation(expiredMockModel);
+                buildModel({id: testTokenId});
 
                 sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
 
