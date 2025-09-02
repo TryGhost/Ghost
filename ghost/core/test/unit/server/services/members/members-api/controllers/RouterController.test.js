@@ -1134,7 +1134,8 @@ describe('RouterController', function () {
                 tokenProvider: {
                     verifyOTC: sinon.stub(),
                     getTokenByRef: sinon.stub()
-                }
+                },
+                getSigninURL: sinon.stub().returns(OTC_TEST_CONSTANTS.MEMBERS_URL)
             };
 
             mockSettingsCache = {
@@ -1374,6 +1375,7 @@ describe('RouterController', function () {
                 sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
             });
         });
+
         describe('success flow integration', function () {
             beforeEach(function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
@@ -1384,6 +1386,10 @@ describe('RouterController', function () {
             });
 
             it('should return success response with valid inputs', async function () {
+                // use a fake time so we get a stable OTC verification hash for our mocked token/secret
+                sinon.useFakeTimers(new Date('2021-01-01'));
+                const TEST_OTC_VERIFICATION_HASH = '1609459200:c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4';
+
                 await routerController.verifyOTC(req, res);
 
                 sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
@@ -1396,12 +1402,7 @@ describe('RouterController', function () {
                 assert.equal(responseData.message, OTC_TEST_CONSTANTS.SUCCESS_MESSAGES.OTC_VERIFICATION_SUCCESSFUL);
                 assert(responseData.redirectUrl);
 
-                const url = new URL(responseData.redirectUrl);
-                assert(url.href.startsWith(OTC_TEST_CONSTANTS.MEMBERS_URL));
-                sinon.assert.calledWith(mockUrlUtils.urlFor, {relativeUrl: '/members/'}, true);
-                assert.equal(url.searchParams.get('token'), OTC_TEST_CONSTANTS.TOKEN_VALUE);
-                assert(url.searchParams.has('otc_verification'));
-                assert(url.searchParams.get('otc_verification').length > 0);
+                sinon.assert.calledWith(mockMagicLinkService.getSigninURL.firstCall, OTC_TEST_CONSTANTS.TOKEN_VALUE, 'signin', null, TEST_OTC_VERIFICATION_HASH);
             });
         });
     });

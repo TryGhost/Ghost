@@ -698,7 +698,8 @@ module.exports = class RouterController {
             }
 
             const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
-            const redirectUrl = await this._buildRedirectUrl(tokenValue, otcVerificationHash);
+            // TODO: obtain and pass through referrer here
+            const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', null, otcVerificationHash);
 
             res.writeHead(200, {'Content-Type': 'application/json'});
             return res.end(JSON.stringify({
@@ -727,18 +728,6 @@ module.exports = class RouterController {
         const hash = createOTCVerificationHash(otc, token, timestamp, hexSecret);
 
         return `${timestamp}:${hash}`;
-    }
-
-    async _buildRedirectUrl(token, otcVerificationHash) {
-        const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
-        const redirectUrl = new URL(siteUrl);
-
-        // required params for magic link compatibility
-        redirectUrl.searchParams.set('token', token);
-        redirectUrl.searchParams.set('otc_verification', otcVerificationHash);
-
-        // basic URL - frontend will add referrer and action
-        return redirectUrl.toString();
     }
 
     async _handleSignup(req, normalizedEmail, referrer = null) {

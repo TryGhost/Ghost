@@ -32,7 +32,7 @@ class MagicLink {
      * @param {object} options
      * @param {MailTransporter} options.transporter
      * @param {TokenProvider<Token, TokenData>} options.tokenProvider
-     * @param {(token: Token, type: string, referrer?: string) => URL} options.getSigninURL
+     * @param {(token: Token, type: string, referrer?: string, otcVerification?: string) => URL} options.getSigninURL
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
