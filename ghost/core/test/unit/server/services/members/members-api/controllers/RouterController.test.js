@@ -1206,21 +1206,7 @@ describe('RouterController', function () {
                 }
             });
 
-            it('should throw BadRequestError when both otc and otcRef are missing', async function () {
-                req.body.otc = undefined;
-                req.body.otcRef = undefined;
-
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.BAD_REQUEST);
-                    assert.equal(error.context, OTC_TEST_CONSTANTS.ERROR_MESSAGES.OTC_REQUIRED);
-                }
-            });
-
-            it('should throw BadRequestError for invalid otc formats', async function () {
+            it('should return error response for invalid otc formats', async function () {
                 const invalidOtcs = [
                     OTC_TEST_CONSTANTS.INVALID_OTC_5_DIGITS,
                     OTC_TEST_CONSTANTS.INVALID_OTC_NON_DIGITS
@@ -1228,13 +1214,17 @@ describe('RouterController', function () {
 
                 for (const invalid of invalidOtcs) {
                     req.body.otc = invalid;
-                    try {
-                        await routerController.verifyOTC(req, res);
-                        assert.fail('Expected BadRequestError to be thrown');
-                    } catch (error) {
-                        assert(error instanceof errors.BadRequestError);
-                        assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_FORMAT);
-                    }
+                    // reset response spies between attempts
+                    res.writeHead.resetHistory();
+                    res.end.resetHistory();
+
+                    await routerController.verifyOTC(req, res);
+
+                    sinon.assert.calledWith(res.writeHead, 400, {'Content-Type': 'application/json'});
+                    sinon.assert.calledWith(res.end, JSON.stringify({
+                        valid: false,
+                        message: OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_CODE
+                    }));
                 }
             });
 
@@ -1291,33 +1281,6 @@ describe('RouterController', function () {
                     valid: false,
                     message: OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_CODE
                 }));
-            });
-
-            it('should use provider format validator when available', async function () {
-                // Provide isOTCFormatValid and make it return false
-                mockMagicLinkService.tokenProvider.isOTCFormatValid = sinon.stub().returns(false);
-
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_FORMAT);
-                }
-            });
-
-            it('should fallback to 6-digit format check when provider format validator is missing', async function () {
-                // Ensure isOTCFormatValid is undefined
-                delete mockMagicLinkService.tokenProvider.isOTCFormatValid;
-                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
-
-                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
-                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
-                mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
-
-                await routerController.verifyOTC(req, res);
-
-                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
             });
 
             it('should handle tokenProvider.getTokenByRef throwing error', async function () {

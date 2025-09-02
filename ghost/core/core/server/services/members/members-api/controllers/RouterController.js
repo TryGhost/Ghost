@@ -660,18 +660,9 @@ module.exports = class RouterController {
                 context: 'otc and otcRef are required'
             });
         }
-
-        const tokenProvider = this._magicLinkService.tokenProvider;
-        // Validate OTC format using provider (fallback to 6 digits if unavailable)
-        const isFormatValid = tokenProvider?.isOTCFormatValid?.(otc) ?? /^\d{6}$/.test(otc);
-
-        if (!isFormatValid) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.invalidCode)
-            });
-        }
-
+        
         try {
+            const tokenProvider = this._magicLinkService.tokenProvider;
             if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
                 throw new errors.BadRequestError({
                     message: 'OTC verification not supported'
