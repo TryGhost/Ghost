@@ -165,10 +165,13 @@ class MagicLink {
      * getDataFromToken
      *
      * @param {Token} token - The token to decode
+     * @param {string} [otcVerification] - Optional "timestamp:hash" to bind token usage to an OTC verification window
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
     async getDataFromToken(token, otcVerification) {
-        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
+        const tokenData = otcVerification
+            ? await this.tokenProvider.validate(token, {otcVerification})
+            : await this.tokenProvider.validate(token);
         return tokenData;
     }
 }

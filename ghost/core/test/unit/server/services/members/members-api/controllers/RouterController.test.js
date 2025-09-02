@@ -1240,7 +1240,7 @@ describe('RouterController', function () {
             it('should accept valid 6-digit OTC', async function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
 
@@ -1281,7 +1281,7 @@ describe('RouterController', function () {
             });
 
             it('should return error response when verifyOTC returns false', async function () {
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(false);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
                 await routerController.verifyOTC(req, res);
 
@@ -1310,7 +1310,7 @@ describe('RouterController', function () {
                 delete mockMagicLinkService.tokenProvider.isOTCFormatValid;
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
 
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
 
@@ -1320,7 +1320,7 @@ describe('RouterController', function () {
             });
 
             it('should handle tokenProvider.getTokenById throwing error', async function () {
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenById.rejects(new Error('Database error'));
 
                 try {
@@ -1337,7 +1337,7 @@ describe('RouterController', function () {
             beforeEach(function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
             });
 
@@ -1378,7 +1378,7 @@ describe('RouterController', function () {
             beforeEach(function () {
                 req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
                 req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
-                mockMagicLinkService.tokenProvider.verifyOTC.returns(true);
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenById.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
                 mockSettingsCache.get.withArgs('members_email_auth_secret').returns(OTC_TEST_CONSTANTS.VALID_SECRET);
             });

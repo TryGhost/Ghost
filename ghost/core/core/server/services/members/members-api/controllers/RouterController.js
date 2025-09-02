@@ -26,7 +26,8 @@ const messages = {
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
-    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
+    invalidCode: 'Invalid verification code'
 };
 
 module.exports = class RouterController {
@@ -666,7 +667,7 @@ module.exports = class RouterController {
 
         if (!isFormatValid) {
             throw new errors.BadRequestError({
-                message: 'Invalid verification code'
+                message: tpl(messages.invalidCode)
             });
         }
 
@@ -677,17 +678,24 @@ module.exports = class RouterController {
                 });
             }
 
-            const isValidOTC = tokenProvider.verifyOTC(otcRef, otc);
+            const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
 
             if (!isValidOTC) {
                 res.writeHead(400, {'Content-Type': 'application/json'});
                 return res.end(JSON.stringify({
                     valid: false,
-                    message: 'Invalid verification code'
+                    message: tpl(messages.invalidCode)
                 }));
             }
 
             const tokenValue = await tokenProvider.getTokenById(otcRef);
+            if (!tokenValue) {
+                res.writeHead(400, {'Content-Type': 'application/json'});
+                return res.end(JSON.stringify({
+                    valid: false,
+                    message: tpl(messages.invalidCode)
+                }));
+            }
             
             const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
             const redirectUrl = await this._buildRedirectUrl(tokenValue, otcVerificationHash);
@@ -709,6 +717,9 @@ module.exports = class RouterController {
 
     async _createHashFromOTCAndToken(otc, token) {
         const hexSecret = this._settingsCache.get('members_email_auth_secret');
+        if (!hexSecret || typeof hexSecret !== 'string' || hexSecret.length < 128) {
+            throw new errors.BadRequestError({message: 'Failed to verify code, please try again'});
+        }
         
         // timestamp for anti-replay protection (5 minute window)
         const timestamp = Math.floor(Date.now() / 1000);
