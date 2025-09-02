@@ -1109,19 +1109,11 @@ describe('RouterController', function () {
             VALID_OTC: '123456',
             INVALID_OTC_5_DIGITS: '12345',
             INVALID_OTC_NON_DIGITS: '12345a',
-            DIFFERENT_OTC: '654321',
             TOKEN_ID: 'test-token-id',
             TOKEN_VALUE: 'test-token-value',
             OTC_VERIFICATION_HASH: 'c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4',
             SITE_URL: 'http://example.com',
             MEMBERS_URL: 'http://example.com/members/',
-            ERROR_MESSAGES: {
-                BAD_REQUEST: 'Bad Request.',
-                OTC_REQUIRED: 'otc and otcRef are required',
-                INVALID_FORMAT: 'Invalid verification code',
-                FAILED_VERIFY: 'Failed to verify code, please try again',
-                INVALID_CODE: 'Invalid verification code'
-            },
             SUCCESS_MESSAGES: {
                 OTC_VERIFICATION_SUCCESSFUL: 'OTC verification successful'
             }
@@ -1177,30 +1169,22 @@ describe('RouterController', function () {
             it('should throw BadRequestError when otc is missing', async function () {
                 req.body.otc = undefined;
 
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.BAD_REQUEST);
-                    assert.equal(error.context, OTC_TEST_CONSTANTS.ERROR_MESSAGES.OTC_REQUIRED);
-                }
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_MISSING_PARAMS'}
+                );
             });
 
             it('should throw BadRequestError when otcRef is missing', async function () {
                 req.body.otcRef = undefined;
 
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.BAD_REQUEST);
-                    assert.equal(error.context, OTC_TEST_CONSTANTS.ERROR_MESSAGES.OTC_REQUIRED);
-                }
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_MISSING_PARAMS'}
+                );
             });
 
-            it('should return error response for invalid otc formats', async function () {
+            it('should throw BadRequestError for invalid otc formats', async function () {
                 const invalidOtcs = [
                     OTC_TEST_CONSTANTS.INVALID_OTC_5_DIGITS,
                     OTC_TEST_CONSTANTS.INVALID_OTC_NON_DIGITS
@@ -1208,17 +1192,12 @@ describe('RouterController', function () {
 
                 for (const invalid of invalidOtcs) {
                     req.body.otc = invalid;
-                    // reset response spies between attempts
-                    res.writeHead.resetHistory();
-                    res.end.resetHistory();
+                    mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
-                    await routerController.verifyOTC(req, res);
-
-                    sinon.assert.calledWith(res.writeHead, 400, {'Content-Type': 'application/json'});
-                    sinon.assert.calledWith(res.end, JSON.stringify({
-                        valid: false,
-                        message: OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_CODE
-                    }));
+                    await assert.rejects(
+                        routerController.verifyOTC(req, res),
+                        {code: 'INVALID_OTC'}
+                    );
                 }
             });
 
@@ -1243,50 +1222,48 @@ describe('RouterController', function () {
             it('should throw BadRequestError when tokenProvider is missing', async function () {
                 mockMagicLinkService.tokenProvider = undefined;
 
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.FAILED_VERIFY);
-                }
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_NOT_SUPPORTED'}
+                );
             });
 
             it('should throw BadRequestError when verifyOTC method is missing', async function () {
                 mockMagicLinkService.tokenProvider.verifyOTC = undefined;
 
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.FAILED_VERIFY);
-                }
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_NOT_SUPPORTED'}
+                );
             });
 
-            it('should return error response when verifyOTC returns false', async function () {
+            it('should throw BadRequestError when verifyOTC returns false', async function () {
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
 
-                await routerController.verifyOTC(req, res);
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'INVALID_OTC'}
+                );
+            });
 
-                sinon.assert.calledWith(res.writeHead, 400, {'Content-Type': 'application/json'});
-                sinon.assert.calledWith(res.end, JSON.stringify({
-                    valid: false,
-                    message: OTC_TEST_CONSTANTS.ERROR_MESSAGES.INVALID_CODE
-                }));
+            it('should throw BadRequestError when getTokenByRef returns null', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(null);
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'INVALID_OTC_REF'}
+                );
             });
 
             it('should handle tokenProvider.getTokenByRef throwing error', async function () {
                 mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
                 mockMagicLinkService.tokenProvider.getTokenByRef.rejects(new Error('Database error'));
 
-                try {
-                    await routerController.verifyOTC(req, res);
-                    assert.fail('Expected BadRequestError to be thrown');
-                } catch (error) {
-                    assert(error instanceof errors.BadRequestError);
-                    assert.equal(error.message, OTC_TEST_CONSTANTS.ERROR_MESSAGES.FAILED_VERIFY);
-                }
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    Error
+                );
             });
         });
 

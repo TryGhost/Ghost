@@ -26,7 +26,9 @@ const messages = {
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
-    invalidCode: 'Invalid verification code'
+    otcNotSupported: 'OTC verification not supported.',
+    invalidCode: 'Invalid verification code.',
+    failedToVerifyCode: 'Failed to verify code, please try again.'
 };
 
 module.exports = class RouterController {
@@ -656,54 +658,53 @@ module.exports = class RouterController {
         if (!otc || !otcRef) {
             throw new errors.BadRequestError({
                 message: tpl(messages.badRequest),
-                context: 'otc and otcRef are required'
+                context: 'otc and otcRef are required',
+                code: 'OTC_VERIFICATION_MISSING_PARAMS'
             });
         }
         
-        try {
-            const tokenProvider = this._magicLinkService.tokenProvider;
-            if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
-                throw new errors.BadRequestError({
-                    message: 'OTC verification not supported'
-                });
-            }
-
-            const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
-
-            if (!isValidOTC) {
-                res.writeHead(400, {'Content-Type': 'application/json'});
-                return res.end(JSON.stringify({
-                    valid: false,
-                    message: tpl(messages.invalidCode)
-                }));
-            }
-
-            const tokenValue = await tokenProvider.getTokenByRef(otcRef);
-            if (!tokenValue) {
-                res.writeHead(400, {'Content-Type': 'application/json'});
-                return res.end(JSON.stringify({
-                    valid: false,
-                    message: tpl(messages.invalidCode)
-                }));
-            }
-
-            const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
-            // TODO: obtain and pass through referrer here
-            const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', null, otcVerificationHash);
-
-            res.writeHead(200, {'Content-Type': 'application/json'});
-            return res.end(JSON.stringify({
-                valid: true,
-                success: true,
-                redirectUrl,
-                message: 'OTC verification successful'
-            }));
-        } catch (err) {
-            logging.error(err);
+        const tokenProvider = this._magicLinkService.tokenProvider;
+        if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
             throw new errors.BadRequestError({
-                message: 'Failed to verify code, please try again'
+                message: tpl(messages.otcNotSupported),
+                code: 'OTC_NOT_SUPPORTED'
             });
         }
+
+        const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
+        if (!isValidOTC) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC'
+            });
+        }
+
+        const tokenValue = await tokenProvider.getTokenByRef(otcRef);
+        if (!tokenValue) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC_REF'
+            });
+        }
+
+        const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
+        if (!otcVerificationHash) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
+
+        // TODO: obtain and pass through referrer here
+        const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', null, otcVerificationHash);
+
+        res.writeHead(200, {'Content-Type': 'application/json'});
+        return res.end(JSON.stringify({
+            valid: true,
+            success: true,
+            redirectUrl,
+            message: 'OTC verification successful'
+        }));
     }
 
     async _createHashFromOTCAndToken(otc, token) {
