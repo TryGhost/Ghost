@@ -19,28 +19,30 @@ const config = {
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
-        // Main tests - run after setup with authentication
+        // Global environment setup - runs first
+        {
+            name: 'global-setup',
+            testMatch: /global\.setup\.ts/,
+            testDir: './',
+            teardown: 'global-teardown'
+        },
+        // Main tests - run after global setup
         {
             name: 'main',
-            testIgnore: ['**/auth.setup.ts'], // Exclude setup files
+            testIgnore: ['**/*.setup.ts'], // Exclude setup files
             testDir: './tests',
             use: {
                 // Use authentication state for all tests by default
                 storageState: path.resolve(import.meta.dirname, './playwright/.auth/user.json'),
                 viewport: {width: 1920, height: 1080}
             },
-            dependencies: ['setup']
+            dependencies: ['global-setup']
         },
-        // Factory tests
+        // Global environment teardown - runs independently (no dependencies to ensure it always runs)
         {
-            name: 'factories',
-            testDir: './data-factory/tests'
-        },
-        // Setup project - runs first
-        {
-            name: 'setup',
-            testMatch: /.*\.setup\.ts/,
-            testDir: './tests'
+            name: 'global-teardown',
+            testMatch: /global\.teardown\.ts/,
+            testDir: './'
         }
     ]
 };
