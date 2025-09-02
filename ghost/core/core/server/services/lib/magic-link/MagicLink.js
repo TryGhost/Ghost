@@ -174,7 +174,9 @@ class MagicLink {
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
     async getDataFromToken(token, otcVerification) {
-        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
+        const tokenData = otcVerification
+            ? await this.tokenProvider.validate(token, {otcVerification})
+            : await this.tokenProvider.validate(token);
         return tokenData;
     }
 }
