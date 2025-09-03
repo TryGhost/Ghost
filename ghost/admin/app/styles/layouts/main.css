@@ -139,7 +139,10 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .gh-nav-hidden .gh-toggle-nav-menu {
     width: 60px;
+    max-height: 400px;
+    top: 50%;
     right: -60px;
+    transform: translateY(-50%);
 }
 
 .gh-nav:hover .gh-toggle-nav-menu,
