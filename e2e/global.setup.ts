@@ -8,20 +8,20 @@ import debug from 'debug';
 
 const log = debug('e2e:global-setup');
 
-setup('global environment setup', { timeout: 300000 }, async ({}) => {
+setup('global environment setup', async () => {
     log('Starting global environment setup...');
-    
+
     const containerState = new ContainerState();
     const dockerManager = new DockerManager();
-    
+
     // Clean up any existing state
     containerState.cleanupAll();
-    
+
     try {
         // 1. Create Docker network
         log('Creating Docker network...');
         const network = await new Network().start();
-        
+
         const networkState = {
             networkId: network.getId(),
             networkName: network.getName()
@@ -34,6 +34,7 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
         const mysql = await new MySqlContainer('mysql:8.0')
             .withNetwork(network)
             .withNetworkAliases('mysql')
+            .withReuse()
             .withTmpFs({'/var/lib/mysql': 'rw,noexec,nosuid,size=1024m'})
             .withDatabase('ghost-test-initial')
             .start();
@@ -91,6 +92,7 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
         const tinybirdContainer = await new GenericContainer('tinybirdco/tinybird-local:latest')
             .withNetwork(network)
             .withNetworkAliases('tinybird-local')
+            .withReuse()
             .withExposedPorts(7181)
             .withWaitStrategy(Wait.forHttp('/v0/health', 7181))
             .start();
@@ -104,11 +106,11 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
             host: 'localhost'
         };
         containerState.saveTinybirdState(tinybirdState);
-        
+
         // 7. Deploy Tinybird schema using tb-cli
         const tinybirdDataPath = path.resolve(process.cwd(), '../ghost/core/core/server/data/tinybird');
         log('Deploying Tinybird schema from:', tinybirdDataPath);
-        
+
         const tbCliContainer = await new GenericContainer('ghost-tb-cli:latest')
             .withNetwork(network)
             .withBindMounts([
@@ -128,13 +130,15 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
                 'TB_HOST': 'http://tinybird-local:7181',
                 'TB_LOCAL_HOST': 'tinybird-local'
             })
+            .withLabels({'ghost-e2e': 'tb-cli-deploy'})
+            .withAutoRemove(true)
             .withEntrypoint(['sh'])
             .withCommand(['-c', 'ls -la /home/tinybird && tb --local build'])
             .withWaitStrategy(Wait.forOneShotStartup())
             .start();
 
         log('Tinybird schema deployment completed');
-        
+
         // 8. Extract Tinybird configuration using tb-cli
         log('Extracting Tinybird configuration...');
         const tbInfoContainer = await new GenericContainer('ghost-tb-cli:latest')
@@ -156,6 +160,8 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
                 'TB_HOST': 'http://tinybird-local:7181',
                 'TB_LOCAL_HOST': 'tinybird-local'
             })
+            .withLabels({'ghost-e2e': 'tb-cli-info'})
+            .withAutoRemove(true)
             .withEntrypoint(['sh'])
             .withCommand(['-c', 'tb --output json info'])
             .withWaitStrategy(Wait.forOneShotStartup())
@@ -164,7 +170,7 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
         // Get workspace info from container logs
         const tbInfoLogs = await tbInfoContainer.logs();
         let tbInfoString = '';
-        
+
         // Handle Docker stream format
         if (tbInfoLogs && typeof tbInfoLogs.on === 'function') {
             // It's a stream
@@ -178,11 +184,11 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
             // It's already a string or buffer
             tbInfoString = tbInfoLogs.toString();
         }
-        
+
         // Clean up any extra characters and parse JSON
         const cleanJson = tbInfoString.replace(/^.*?{/, '{').replace(/}.*$/, '}');
         const tbInfo = JSON.parse(cleanJson);
-        
+
         const workspaceId = tbInfo.local.workspace_id;
         const workspaceToken = tbInfo.local.token;
 
@@ -209,9 +215,9 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
         };
         containerState.saveTinybirdState(updatedTinybirdState);
         log('Tinybird setup completed and state saved');
-        
+
         log('Global environment setup completed successfully');
-        
+
     } catch (error) {
         log('Global environment setup failed:', error);
         // Clean up on failure
@@ -223,4 +229,3 @@ setup('global environment setup', { timeout: 300000 }, async ({}) => {
         throw error;
     }
 });
-
