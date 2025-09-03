@@ -339,9 +339,10 @@ describe('SingleUseTokenProvider', function () {
 
             await assert.rejects(
                 tokenProvider.validate(testToken),
-                ValidationError,
-                ERROR_MESSAGES.INVALID_TOKEN
+                {code: 'INVALID_TOKEN'}
             );
+
+            sinon.assert.calledWith(notFoundMockModel.findOne, {token: testToken}, {transacting: 'test-transaction', forUpdate: true});
         });
 
         describe('expiration scenarios', function () {
@@ -349,8 +350,7 @@ describe('SingleUseTokenProvider', function () {
                 buildModel({usedCount: 7});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
-                    ValidationError,
-                    ERROR_MESSAGES.TOKEN_EXPIRED
+                    {code: 'TOKEN_EXPIRED'}
                 );
             });
 
@@ -359,8 +359,7 @@ describe('SingleUseTokenProvider', function () {
                 buildModel({createdAt: oldDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
-                    ValidationError,
-                    ERROR_MESSAGES.TOKEN_EXPIRED
+                    {code: 'TOKEN_EXPIRED'}
                 );
             });
 
@@ -369,8 +368,7 @@ describe('SingleUseTokenProvider', function () {
                 buildModel({usedCount: 1, firstUsedAt: oldUsageDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
-                    ValidationError,
-                    ERROR_MESSAGES.TOKEN_EXPIRED
+                    {code: 'TOKEN_EXPIRED'}
                 );
             });
         });
