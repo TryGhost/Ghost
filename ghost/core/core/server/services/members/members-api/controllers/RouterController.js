@@ -661,7 +661,7 @@ module.exports = class RouterController {
     }
 
     async verifyOTC(req, res) {
-        const {otc, otcRef, redirect} = req.body;
+        const {otc, otcRef} = req.body;
 
         if (!otc || !otcRef) {
             throw new errors.BadRequestError({
