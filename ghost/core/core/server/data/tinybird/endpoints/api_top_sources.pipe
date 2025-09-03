@@ -5,7 +5,40 @@ SQL >
     %
     select
         source,
-        count() as visits
+        count() as visits,
+        -- Fast deterministic UTM data using string length
+        multiIf(
+            length(source) % 6 = 0, '',
+            length(source) % 6 = 1, 'email',
+            length(source) % 6 = 2, 'social',
+            length(source) % 6 = 3, 'cpc',
+            length(source) % 6 = 4, 'organic',
+            'referral'
+        ) as utm_medium,
+        multiIf(
+            (length(source) + 1) % 6 = 0, '',
+            (length(source) + 1) % 6 = 1, 'newsletter',
+            (length(source) + 1) % 6 = 2, 'twitter',
+            (length(source) + 1) % 6 = 3, 'google',
+            (length(source) + 1) % 6 = 4, 'facebook',
+            'linkedin'
+        ) as utm_source,
+        multiIf(
+            (length(source) + 2) % 6 = 0, '',
+            (length(source) + 2) % 6 = 1, 'header_cta',
+            (length(source) + 2) % 6 = 2, 'sidebar_banner',
+            (length(source) + 2) % 6 = 3, 'footer_link',
+            (length(source) + 2) % 6 = 4, 'inline_text',
+            'popup_modal'
+        ) as utm_content,
+        multiIf(
+            (length(source) + 3) % 6 = 0, '',
+            (length(source) + 3) % 6 = 1, 'ghost_blog',
+            (length(source) + 3) % 6 = 2, 'analytics_tool',
+            (length(source) + 3) % 6 = 3, 'content_management',
+            (length(source) + 3) % 6 = 4, 'publishing_platform',
+            'website_builder'
+        ) as utm_term
     from mv_session_data sd
       inner join filtered_sessions fs
          on fs.session_id = sd.session_id
