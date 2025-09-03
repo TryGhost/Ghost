@@ -2,14 +2,17 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
 
+// Disable testcontainers resource reaper since we handle cleanup ourselves
+process.env.TESTCONTAINERS_RYUK_DISABLED = 'true';
+
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
     timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
     expect: {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
-    retries: 1, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: process.env.CI ? 2 : 4, // Enable parallelism with 4 workers locally, 2 in CI
+    retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
+    workers: process.env.CI ? 2 : 10, // Enable parallelism with 4 workers locally, 2 in CI
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         // Base URL will be set dynamically per test via fixture
@@ -25,13 +28,7 @@ const config = {
             name: 'global-setup',
             testMatch: /global\.setup\.ts/,
             testDir: './',
-            teardown: 'global-teardown'
-        },
-        // Global environment teardown
-        {
-            name: 'global-teardown',
-            testMatch: /global\.teardown\.ts/,
-            testDir: './'
+            timeout: 300000 // 5 minute timeout for setup phase
         },
         // Main tests - run after global setup
         {
@@ -42,6 +39,13 @@ const config = {
                 viewport: {width: 1920, height: 1080}
             },
             dependencies: ['global-setup']
+        },
+        // Global environment teardown - runs after all tests complete
+        {
+            name: 'global-teardown',
+            testMatch: /global\.teardown\.ts/,
+            testDir: './',
+            dependencies: ['main'] // Run after main tests complete
         }
     ]
 };
