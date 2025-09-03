@@ -6,7 +6,6 @@
  *
  **/
 
-console.log('hello from ghost.js!!!!!');
 // Don't allow NODE_ENV to be null
 process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
@@ -15,12 +14,12 @@ const mode = argv[2];
 
 // Switch between boot modes
 switch (mode) {
-    case 'repl':
-    case 'timetravel':
-    case 'generate-data':
-        require('./core/cli/command').run(mode);
-        break;
-    default:
-        // New boot sequence
-        require('./core/boot')();
+case 'repl':
+case 'timetravel':
+case 'generate-data':
+    require('./core/cli/command').run(mode);
+    break;
+default:
+    // New boot sequence
+    require('./core/boot')();
 }
