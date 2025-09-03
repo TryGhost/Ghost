@@ -1113,10 +1113,7 @@ describe('RouterController', function () {
             TOKEN_VALUE: 'test-token-value',
             OTC_VERIFICATION_HASH: 'c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4',
             SITE_URL: 'http://example.com',
-            MEMBERS_URL: 'http://example.com/members/',
-            SUCCESS_MESSAGES: {
-                OTC_VERIFICATION_SUCCESSFUL: 'OTC verification successful'
-            }
+            MEMBERS_URL: 'http://example.com/members/'
         };
 
         beforeEach(function () {
