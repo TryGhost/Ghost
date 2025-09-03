@@ -31,6 +31,25 @@ const messages = {
     failedToVerifyCode: 'Failed to verify code, please try again.'
 };
 
+// helper utility for logic shared between sendMagicLink and verifyOTC
+function extractRefererOrRedirect(req) {
+    const {autoRedirect, redirect} = req.body;
+
+    if (autoRedirect === false) {
+        return null;
+    }
+
+    if (redirect) {
+        try {
+            return new URL(redirect).href;
+        } catch (e) {
+            logging.warn(e);
+        }
+    }
+
+    return req.get('referer') || null;
+}
+
 module.exports = class RouterController {
     /**
      * RouterController
@@ -561,21 +580,10 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, honeypot, autoRedirect} = req.body;
-        let {emailType, redirect} = req.body;
+        const {email, honeypot} = req.body;
+        let {emailType} = req.body;
 
-        let referrer = req.get('referer');
-        if (autoRedirect === false){
-            referrer = null;
-        }
-        if (redirect) {
-            try {
-                // Validate URL
-                referrer = new URL(redirect).href;
-            } catch (e) {
-                logging.warn(e);
-            }
-        }
+        const referrer = extractRefererOrRedirect(req);
 
         if (!email) {
             throw new errors.BadRequestError({
@@ -653,7 +661,7 @@ module.exports = class RouterController {
     }
 
     async verifyOTC(req, res) {
-        const {otc, otcRef} = req.body;
+        const {otc, otcRef, redirect} = req.body;
 
         if (!otc || !otcRef) {
             throw new errors.BadRequestError({
@@ -662,7 +670,7 @@ module.exports = class RouterController {
                 code: 'OTC_VERIFICATION_MISSING_PARAMS'
             });
         }
-        
+
         const tokenProvider = this._magicLinkService.tokenProvider;
         if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
             throw new errors.BadRequestError({
@@ -695,8 +703,9 @@ module.exports = class RouterController {
             });
         }
 
-        // TODO: obtain and pass through referrer here
-        const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', null, otcVerificationHash);
+        const referrer = extractRefererOrRedirect(req);
+
+        const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', referrer, otcVerificationHash);
         if (!redirectUrl) {
             throw new errors.BadRequestError({
                 message: tpl(messages.failedToVerifyCode),

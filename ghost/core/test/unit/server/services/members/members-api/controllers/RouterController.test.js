@@ -1156,7 +1156,8 @@ describe('RouterController', function () {
                 body: {
                     otc: OTC_TEST_CONSTANTS.VALID_OTC,
                     otcRef: OTC_TEST_CONSTANTS.TOKEN_ID
-                }
+                },
+                get: sinon.stub()
             };
 
             res = {
@@ -1302,11 +1303,63 @@ describe('RouterController', function () {
 
                 sinon.assert.calledWith(
                     mockMagicLinkService.getSigninURL,
-                    OTC_TEST_CONSTANTS.TOKEN_VALUE, 
-                    'signin', 
-                    null, 
+                    OTC_TEST_CONSTANTS.TOKEN_VALUE,
+                    'signin',
+                    null,
                     TIMESTAMP_AND_OTC_VERIFICATION_HASH
                 );
+            });
+        });
+
+        describe('referer passthrough', function () {
+            beforeEach(function () {
+                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
+                req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                req.get = sinon.stub();
+                sinon.useFakeTimers(new Date('2021-01-01'));
+            });
+
+            async function assertReferrerPassedToGetSigninURL(expectedReferrer) {
+                await routerController.verifyOTC(req, res);
+                const referrerArg = mockMagicLinkService.getSigninURL.getCall(0).args[2];
+                assert.equal(referrerArg, expectedReferrer);
+            }
+
+            it('should pass referer header', async function () {
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/page');
+            });
+
+            it('should prioritize redirect body parameter', async function () {
+                req.body.redirect = 'https://example.com/custom-redirect';
+                req.get.withArgs('referer').returns('https://example.com/other-page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/custom-redirect');
+            });
+
+            it('should pass null when autoRedirect is false', async function () {
+                req.body.autoRedirect = false;
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL(null);
+            });
+
+            it('should fallback to referer when redirect URL is invalid', async function () {
+                req.body.redirect = 'invalid-url';
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/page');
+            });
+
+            it('should pass null when no referer or redirect', async function () {
+                req.get.withArgs('referer').returns(undefined);
+                await assertReferrerPassedToGetSigninURL(null);
+            });
+
+            it('should pass null when autoRedirect false overrides redirect', async function () {
+                req.body.autoRedirect = false;
+                req.body.redirect = 'https://example.com/custom-redirect';
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL(null);
             });
         });
     });
