@@ -13,11 +13,16 @@ const messages = {
  */
 
 /**
+ * @typedef {Object} TokenValidateOptions
+ * @prop {string} [otcVerification] - "timestamp:hash" string used to verify an OTC-bound token
+ */
+
+/**
  * @template T
  * @template D
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
- * @prop {(token: T, options?: Object) => Promise<D>} validate
+ * @prop {(token: T, options?: TokenValidateOptions) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
  * @prop {(otcRef: string, tokenValue: T) => string} [deriveOTC]
  */
@@ -169,9 +174,7 @@ class MagicLink {
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
     async getDataFromToken(token, otcVerification) {
-        const tokenData = otcVerification
-            ? await this.tokenProvider.validate(token, {otcVerification})
-            : await this.tokenProvider.validate(token);
+        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
         return tokenData;
     }
 }
