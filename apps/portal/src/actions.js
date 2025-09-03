@@ -120,7 +120,8 @@ async function verifyOTC({data, api, state}) {
     const {t} = state;
 
     try {
-        const response = await api.member.verifyOTC(data);
+        const integrityToken = await api.member.getIntegrityToken();
+        const response = await api.member.verifyOTC({...data, integrityToken});
 
         if (response.redirectUrl) {
             return window.location.assign(response.redirectUrl);
