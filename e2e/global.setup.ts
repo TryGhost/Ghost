@@ -3,11 +3,12 @@ import {Network, GenericContainer, Wait} from 'testcontainers';
 import {MySqlContainer} from '@testcontainers/mysql';
 import {ContainerState} from './helpers/environment/ContainerState';
 import {DockerManager} from './helpers/environment/DockerManager';
+import * as path from 'path';
 import debug from 'debug';
 
 const log = debug('e2e:global-setup');
 
-setup('global environment setup', async ({}) => {
+setup('global environment setup', { timeout: 300000 }, async ({}) => {
     log('Starting global environment setup...');
     
     const containerState = new ContainerState();
@@ -33,7 +34,6 @@ setup('global environment setup', async ({}) => {
         const mysql = await new MySqlContainer('mysql:8.0')
             .withNetwork(network)
             .withNetworkAliases('mysql')
-            .withReuse()
             .withTmpFs({'/var/lib/mysql': 'rw,noexec,nosuid,size=1024m'})
             .withDatabase('ghost-test-initial')
             .start();
@@ -85,6 +85,130 @@ setup('global environment setup', async ({}) => {
 
         // 5. Stop migration container (we don't need it anymore)
         await migrationContainer.stop();
+
+        // 6. Setup Tinybird Local for analytics
+        log('Setting up Tinybird Local for analytics...');
+        const tinybirdContainer = await new GenericContainer('tinybirdco/tinybird-local:latest')
+            .withNetwork(network)
+            .withNetworkAliases('tinybird-local')
+            .withExposedPorts(7181)
+            .withWaitStrategy(Wait.forHttp('/v0/health', 7181))
+            .start();
+
+        const tinybirdState = {
+            containerId: tinybirdContainer.getId(),
+            workspaceId: 'placeholder_workspace_id', // Will be updated after schema deployment
+            adminToken: 'placeholder_admin_token',
+            trackerToken: 'placeholder_tracker_token',
+            mappedPort: tinybirdContainer.getMappedPort(7181),
+            host: 'localhost'
+        };
+        containerState.saveTinybirdState(tinybirdState);
+        
+        // 7. Deploy Tinybird schema using tb-cli
+        const tinybirdDataPath = path.resolve(process.cwd(), '../ghost/core/core/server/data/tinybird');
+        log('Deploying Tinybird schema from:', tinybirdDataPath);
+        
+        const tbCliContainer = await new GenericContainer('ghost-tb-cli:latest')
+            .withNetwork(network)
+            .withBindMounts([
+                {
+                    source: tinybirdDataPath,
+                    target: '/home/tinybird',
+                    mode: 'ro'
+                },
+                {
+                    source: '/var/run/docker.sock',
+                    target: '/var/run/docker.sock',
+                    mode: 'rw'
+                }
+            ])
+            .withWorkingDir('/home/tinybird')
+            .withEnvironment({
+                'TB_HOST': 'http://tinybird-local:7181',
+                'TB_LOCAL_HOST': 'tinybird-local'
+            })
+            .withEntrypoint(['sh'])
+            .withCommand(['-c', 'ls -la /home/tinybird && tb --local build'])
+            .withWaitStrategy(Wait.forOneShotStartup())
+            .start();
+
+        log('Tinybird schema deployment completed');
+        
+        // 8. Extract Tinybird configuration using tb-cli
+        log('Extracting Tinybird configuration...');
+        const tbInfoContainer = await new GenericContainer('ghost-tb-cli:latest')
+            .withNetwork(network)
+            .withBindMounts([
+                {
+                    source: tinybirdDataPath,
+                    target: '/home/tinybird',
+                    mode: 'ro'
+                },
+                {
+                    source: '/var/run/docker.sock',
+                    target: '/var/run/docker.sock',
+                    mode: 'rw'
+                }
+            ])
+            .withWorkingDir('/home/tinybird')
+            .withEnvironment({
+                'TB_HOST': 'http://tinybird-local:7181',
+                'TB_LOCAL_HOST': 'tinybird-local'
+            })
+            .withEntrypoint(['sh'])
+            .withCommand(['-c', 'tb --output json info'])
+            .withWaitStrategy(Wait.forOneShotStartup())
+            .start();
+
+        // Get workspace info from container logs
+        const tbInfoLogs = await tbInfoContainer.logs();
+        let tbInfoString = '';
+        
+        // Handle Docker stream format
+        if (tbInfoLogs && typeof tbInfoLogs.on === 'function') {
+            // It's a stream
+            await new Promise((resolve) => {
+                tbInfoLogs.on('data', (chunk: Buffer) => {
+                    tbInfoString += chunk.toString();
+                });
+                tbInfoLogs.on('end', resolve);
+            });
+        } else {
+            // It's already a string or buffer
+            tbInfoString = tbInfoLogs.toString();
+        }
+        
+        // Clean up any extra characters and parse JSON
+        const cleanJson = tbInfoString.replace(/^.*?{/, '{').replace(/}.*$/, '}');
+        const tbInfo = JSON.parse(cleanJson);
+        
+        const workspaceId = tbInfo.local.workspace_id;
+        const workspaceToken = tbInfo.local.token;
+
+        // Get admin and tracker tokens via API call
+        const tokensResult = await dockerManager.executeInContainer(tinybirdState.containerId, [
+            'curl', '-s', '-H', `Authorization: Bearer ${workspaceToken}`,
+            'http://localhost:7181/v0/tokens'
+        ]);
+
+        const tokensData = JSON.parse(tokensResult.stdout);
+        const adminToken = tokensData.tokens.find((t: any) => t.name === 'admin token')?.token;
+        const trackerToken = tokensData.tokens.find((t: any) => t.name === 'tracker')?.token;
+
+        if (!adminToken || !trackerToken) {
+            throw new Error('Failed to extract admin or tracker tokens');
+        }
+
+        // Update Tinybird state with real values
+        const updatedTinybirdState = {
+            ...tinybirdState,
+            workspaceId,
+            adminToken,
+            trackerToken
+        };
+        containerState.saveTinybirdState(updatedTinybirdState);
+        log('Tinybird setup completed and state saved');
         
         log('Global environment setup completed successfully');
         
