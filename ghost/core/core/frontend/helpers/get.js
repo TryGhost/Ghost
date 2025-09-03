@@ -41,7 +41,7 @@ const RESOURCES = {
     }
 };
 
-// Short forms of paths which we should understand // comment
+// Short forms of paths which we should understand
 const pathAliases = {
     'post.tags': 'post.tags[*].slug',
     'post.author': 'post.author.slug'
