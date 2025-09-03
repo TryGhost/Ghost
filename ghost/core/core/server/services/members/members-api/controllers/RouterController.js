@@ -670,6 +670,7 @@ module.exports = class RouterController {
                 code: 'OTC_VERIFICATION_MISSING_PARAMS'
             });
         }
+
         const tokenProvider = this._magicLinkService.tokenProvider;
         if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
             throw new errors.BadRequestError({
