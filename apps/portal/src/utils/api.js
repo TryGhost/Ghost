@@ -316,11 +316,12 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        async verifyOTC({otc, otcRef}) {
+        async verifyOTC({otc, otcRef, redirect}) {
             const url = endpointFor({type: 'members', resource: 'verify-otc'});
             const body = {
                 otc,
-                otcRef
+                otcRef,
+                redirect
             };
 
             const res = await makeRequest({

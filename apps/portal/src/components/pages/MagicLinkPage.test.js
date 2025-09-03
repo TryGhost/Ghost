@@ -347,4 +347,34 @@ describe('MagicLinkPage', () => {
             });
         });
     });
+
+    describe('redirect parameter handling', () => {
+        test('passes redirect parameter from pageData to verifyOTC action', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest({
+                pageData: { redirect: 'https://example.com/custom-redirect' }
+            });
+            
+            fillAndSubmitOTC(testUtils, '123456');
+            
+            expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '123456',
+                otcRef: 'test-otc-ref',
+                redirect: 'https://example.com/custom-redirect'
+            });
+        });
+
+        test('verifyOTC action works without redirect parameter', () => {
+            const {mockOnActionFn, ...testUtils} = setupOTCTest({
+                pageData: {} // no redirect
+            });
+            
+            fillAndSubmitOTC(testUtils, '123456');
+            
+            expect(mockOnActionFn).toHaveBeenCalledWith('verifyOTC', {
+                otc: '123456',
+                otcRef: 'test-otc-ref',
+                redirect: undefined
+            });
+        });
+    });
 });

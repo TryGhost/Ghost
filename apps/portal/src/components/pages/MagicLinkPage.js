@@ -102,7 +102,7 @@ export default class MagicLinkPage extends React.Component {
         e.preventDefault();
         const {action} = this.context;
         const isRunning = (action === 'verifyOTC:running');
-        
+
         if (!isRunning) {
             this.doVerifyOTC();
         }
@@ -120,9 +120,10 @@ export default class MagicLinkPage extends React.Component {
         }, () => {
             const {otc, errors} = this.state;
             const {otcRef} = this.context;
+            const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
-                this.context.onAction('verifyOTC', {otc, otcRef});
+                this.context.onAction('verifyOTC', {otc, otcRef, redirect});
             }
         }
         );

@@ -241,6 +241,10 @@ describe('Signin', () => {
 });
 
 describe('Signin', () => {
+    afterEach(() => {
+        window.location = realLocation;
+    });
+
     describe('on multi tier site', () => {
         beforeEach(() => {
             // Mock window.location
@@ -249,9 +253,7 @@ describe('Signin', () => {
                 writable: true
             });
         });
-        afterEach(() => {
-            window.location = realLocation;
-        });
+
         test('with default settings', async () => {
             const {ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton,
                 popupIframeDocument} = await multiTierSetup({
@@ -404,6 +406,7 @@ describe('OTC Integration Flow', () => {
             writable: true
         });
     });
+
     afterEach(() => {
         window.location = realLocation;
         jest.restoreAllMocks();
@@ -451,7 +454,7 @@ describe('OTC Integration Flow', () => {
         };
     };
 
-    const performCompleteOTCFlow = async (popupIframeDocument, email = 'jamie@example.com') => {
+    const submitSigninForm = async (popupIframeDocument, email = 'jamie@example.com') => {
         const emailInput = within(popupIframeDocument).getByLabelText(/email/i);
         const submitButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
 
@@ -459,7 +462,15 @@ describe('OTC Integration Flow', () => {
         fireEvent.click(submitButton);
 
         const magicLinkText = await within(popupIframeDocument).findByText(/Now check your email/i);
-        return {magicLinkText};
+        expect(magicLinkText).toBeInTheDocument();
+    };
+
+    const submitOTCForm = (popupIframeDocument, code = '123456') => {
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+
+        fireEvent.change(otcInput, {target: {value: code}});
+        fireEvent.click(verifyButton);
     };
 
     const expectOTCEnabledApiCall = (ghostApi, email) => {
@@ -476,25 +487,18 @@ describe('OTC Integration Flow', () => {
             site: FixtureSite.singleTier.basic
         });
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
-        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-
-        expect(otcInput).toBeInTheDocument();
-        expect(verifyButton).toBeInTheDocument();
-
-        fireEvent.change(otcInput, {target: {value: '123456'}});
-        fireEvent.click(verifyButton);
+        submitOTCForm(popupIframeDocument, '123456');
 
         await waitFor(() => {
             expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
                 otc: '123456',
-                otcRef: 'test-otc-ref-123'
+                otcRef: 'test-otc-ref-123',
+                redirect: undefined
             });
         });
 
@@ -509,9 +513,8 @@ describe('OTC Integration Flow', () => {
             returnOtcRef: false
         });
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
         expect(ghostApi.member.sendMagicLink).toHaveBeenCalledTimes(1);
 
@@ -527,9 +530,8 @@ describe('OTC Integration Flow', () => {
             site: FixtureSite.multipleTiers.basic
         });
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        expect(magicLinkText).toBeInTheDocument();
         expectOTCEnabledApiCall(ghostApi, 'jamie@example.com');
 
         const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
@@ -549,18 +551,13 @@ describe('OTC Integration Flow', () => {
             message: 'Invalid verification code'
         });
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
-        expect(magicLinkText).toBeInTheDocument();
-
-        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-
-        fireEvent.change(otcInput, {target: {value: '000000'}});
-        fireEvent.click(verifyButton);
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+        submitOTCForm(popupIframeDocument, '000000');
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
             otc: '000000',
-            otcRef: 'test-otc-ref-123'
+            otcRef: 'test-otc-ref-123',
+            redirect: undefined
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
@@ -574,18 +571,13 @@ describe('OTC Integration Flow', () => {
 
         ghostApi.member.verifyOTC.mockResolvedValueOnce({});
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
-        expect(magicLinkText).toBeInTheDocument();
-
-        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-
-        fireEvent.change(otcInput, {target: {value: '654321'}});
-        fireEvent.click(verifyButton);
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+        submitOTCForm(popupIframeDocument, '654321');
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
             otc: '654321',
-            otcRef: 'test-otc-ref-123'
+            otcRef: 'test-otc-ref-123',
+            redirect: undefined
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
@@ -600,21 +592,57 @@ describe('OTC Integration Flow', () => {
         // Mock verifyOTC to throw API error
         ghostApi.member.verifyOTC.mockRejectedValueOnce(new Error('Network error'));
 
-        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
-        expect(magicLinkText).toBeInTheDocument();
-
-        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
-        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
-
-        fireEvent.change(otcInput, {target: {value: '123456'}});
-        fireEvent.click(verifyButton);
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+        submitOTCForm(popupIframeDocument, '123456');
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
             otc: '123456',
-            otcRef: 'test-otc-ref-123'
+            otcRef: 'test-otc-ref-123',
+            redirect: undefined
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code, please try again/i);
         expect(errorNotification).toBeInTheDocument();
+    });
+
+    describe('OTC redirect parameter handling', () => {
+        test('passes redirect parameter from pageData to verifyOTC', async () => {
+            Object.defineProperty(window, 'location', {
+                value: new URL('https://portal.localhost/#/feedback/12345/1'),
+                writable: true
+            });
+
+            const {ghostApi, popupIframeDocument} = await setupOTCFlow({
+                site: FixtureSite.singleTier.basic
+            });
+
+            await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+            submitOTCForm(popupIframeDocument, '123456');
+
+            await waitFor(() => {
+                expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                    otc: '123456',
+                    otcRef: 'test-otc-ref-123',
+                    redirect: expect.stringContaining('#/feedback/12345/1')
+                });
+            });
+        });
+
+        test('verifyOTC works without redirect parameter', async () => {
+            const {ghostApi, popupIframeDocument} = await setupOTCFlow({
+                site: FixtureSite.singleTier.basic
+            });
+
+            await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+            submitOTCForm(popupIframeDocument, '123456');
+
+            await waitFor(() => {
+                expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                    otc: '123456',
+                    otcRef: 'test-otc-ref-123',
+                    redirect: undefined
+                });
+            });
+        });
     });
 });
