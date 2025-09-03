@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import path from 'path';
 dotenv.config();
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
@@ -9,7 +8,7 @@ const config = {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: process.env.CI ? 2 : 10, // Enable parallelism with 4 workers locally, 2 in CI
+    workers: process.env.CI ? 2 : 10,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         // Base URL will be set dynamically per test via fixture
