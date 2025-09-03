@@ -39,8 +39,8 @@ RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/publ
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 WORKDIR /home/ghost
-# COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
-# RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
+COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
+RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
 
 # --------------------
 # Development Base
