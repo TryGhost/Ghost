@@ -316,6 +316,34 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
+        async verifyOTC({otc, otcRef, redirect}) {
+            const url = endpointFor({type: 'members', resource: 'verify-otc'});
+            const body = {
+                otc,
+                otcRef,
+                redirect
+            };
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                return await res.json();
+            } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to verify code');
+            }
+        },
+
         signout(all = false) {
             const url = endpointFor({type: 'members', resource: 'session'});
             return makeRequest({
