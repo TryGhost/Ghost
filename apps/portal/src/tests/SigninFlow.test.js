@@ -498,10 +498,10 @@ describe('OTC Integration Flow', () => {
         await waitFor(() => {
             expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
                 otc: '123456',
-                otcRef: 'test-otc-ref-123'
+                otcRef: 'test-otc-ref-123',
+                integrityToken: 'testtoken',
+                redirect: undefined
             });
-            const [args] = ghostApi.member.verifyOTC.mock.lastCall;
-            expect(args.redirect).toBeUndefined();
         });
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
@@ -556,10 +556,13 @@ describe('OTC Integration Flow', () => {
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
         submitOTCForm(popupIframeDocument, '000000');
 
-        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
-            otc: '000000',
-            otcRef: 'test-otc-ref-123',
-            redirect: undefined
+        await waitFor(() => {
+            expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                otc: '000000',
+                otcRef: 'test-otc-ref-123',
+                redirect: undefined,
+                integrityToken: 'testtoken'
+            });
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
@@ -576,10 +579,13 @@ describe('OTC Integration Flow', () => {
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
         submitOTCForm(popupIframeDocument, '654321');
 
-        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
-            otc: '654321',
-            otcRef: 'test-otc-ref-123',
-            redirect: undefined
+        await waitFor(() => {
+            expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                otc: '654321',
+                otcRef: 'test-otc-ref-123',
+                redirect: undefined,
+                integrityToken: 'testtoken'
+            });
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
@@ -597,10 +603,13 @@ describe('OTC Integration Flow', () => {
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
         submitOTCForm(popupIframeDocument, '123456');
 
-        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
-            otc: '123456',
-            otcRef: 'test-otc-ref-123',
-            redirect: undefined
+        await waitFor(() => {
+            expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                otc: '123456',
+                otcRef: 'test-otc-ref-123',
+                redirect: undefined,
+                integrityToken: 'testtoken'
+            });
         });
 
         const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code, please try again/i);
@@ -625,7 +634,8 @@ describe('OTC Integration Flow', () => {
                 expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
                     otc: '123456',
                     otcRef: 'test-otc-ref-123',
-                    redirect: expect.stringContaining('#/feedback/12345/1')
+                    redirect: expect.stringContaining('#/feedback/12345/1'),
+                    integrityToken: 'testtoken'
                 });
             });
         });
@@ -642,7 +652,8 @@ describe('OTC Integration Flow', () => {
                 expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
                     otc: '123456',
                     otcRef: 'test-otc-ref-123',
-                    redirect: undefined
+                    redirect: undefined,
+                    integrityToken: 'testtoken'
                 });
             });
         });
