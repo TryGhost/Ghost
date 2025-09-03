@@ -957,6 +957,36 @@ describe('sendMagicLink', function () {
                 // Should still process the request normally for non-existent members
                 assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
             });
+
+            it('Can verify provided OTC using /verify-otc endpoint', async function () {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                    .expectStatus(201);
+
+                const mail = mockManager.assert.sentEmail({
+                    to: 'member1@test.com'
+                });
+
+                const otcRef = response.body.otc_ref;
+                const otc = mail.text.match(/\d{6}/)[0];
+
+                const verifyResponse = await membersAgent.post('/api/verify-otc')
+                    .body({
+                        otcRef,
+                        otc
+                    })
+                    .expectStatus(200);
+
+                assert(verifyResponse.body.redirectUrl, 'Response should contain redirectUrl');
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert(redirectUrl.pathname.endsWith('members/'), 'Redirect URL should end with /members');
+
+                const token = redirectUrl.searchParams.get('token');
+                const otcVerification = redirectUrl.searchParams.get('otc_verification');
+
+                assert(token, 'Redirect URL should contain token');
+                assert(otcVerification, 'Redirect URL should contain otc_verification');
+            });
         });
     });
 });
