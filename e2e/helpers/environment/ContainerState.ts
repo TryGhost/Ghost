@@ -1,5 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import debug from 'debug';
 
 const log = debug('e2e:ContainerState');
@@ -26,10 +27,20 @@ export interface GhostInstanceState {
     baseUrl: string;
 }
 
+export interface TinybirdState {
+    containerId: string;
+    workspaceId: string;
+    adminToken: string;
+    trackerToken: string;
+    mappedPort: number;
+    host: string;
+}
+
 export class ContainerState {
     private static readonly STATE_DIR = path.join(process.cwd(), '.playwright-containers');
     private static readonly NETWORK_FILE = path.join(ContainerState.STATE_DIR, 'network.json');
     private static readonly MYSQL_FILE = path.join(ContainerState.STATE_DIR, 'mysql.json');
+    private static readonly TINYBIRD_FILE = path.join(ContainerState.STATE_DIR, 'tinybird.json');
     private static readonly DUMP_FILE = path.join(ContainerState.STATE_DIR, 'dump.sql');
 
     constructor() {
@@ -104,6 +115,33 @@ export class ContainerState {
         }
     }
 
+    // Tinybird state management
+    saveTinybirdState(state: TinybirdState): void {
+        try {
+            this.ensureStateDirectory();
+            fs.writeFileSync(ContainerState.TINYBIRD_FILE, JSON.stringify(state, null, 2));
+            log('Tinybird state saved:', state);
+        } catch (error) {
+            log('Failed to save Tinybird state:', error);
+            throw new Error(`Failed to save Tinybird state: ${error}`);
+        }
+    }
+
+    loadTinybirdState(): TinybirdState {
+        try {
+            if (!fs.existsSync(ContainerState.TINYBIRD_FILE)) {
+                throw new Error('Tinybird state file does not exist');
+            }
+            const data = fs.readFileSync(ContainerState.TINYBIRD_FILE, 'utf8');
+            const state = JSON.parse(data) as TinybirdState;
+            log('Tinybird state loaded:', state);
+            return state;
+        } catch (error) {
+            log('Failed to load Tinybird state:', error);
+            throw new Error(`Failed to load Tinybird state: ${error}`);
+        }
+    }
+
     // Database dump management
     saveDatabaseDump(dumpContent: string): void {
         try {
@@ -146,6 +184,10 @@ export class ContainerState {
         return fs.existsSync(ContainerState.DUMP_FILE);
     }
 
+    hasTinybirdState(): boolean {
+        return fs.existsSync(ContainerState.TINYBIRD_FILE);
+    }
+
     // Cleanup
     cleanupAll(): void {
         try {
@@ -173,5 +215,10 @@ export class ContainerState {
 
     static generateUniquePort(workerId: number, basePort: number = 2368): number {
         return basePort + workerId;
+    }
+
+    static generateSiteUuid(): string {
+        // Generate a UUID v4 for the site_uuid
+        return crypto.randomUUID();
     }
 }

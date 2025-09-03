@@ -1,6 +1,6 @@
 import {ContainerState} from './ContainerState';
 import {DockerManager, GhostContainerConfig} from './DockerManager';
-import type {MySQLState, NetworkState, GhostInstanceState} from './ContainerState';
+import type {MySQLState, NetworkState, GhostInstanceState, TinybirdState} from './ContainerState';
 import debug from 'debug';
 
 const log = debug('e2e:EnvironmentManager');
@@ -10,6 +10,7 @@ export interface GhostInstance {
     database: string;
     port: number;
     baseUrl: string;
+    siteUuid: string;
 }
 
 export class EnvironmentManager {
@@ -32,16 +33,18 @@ export class EnvironmentManager {
             // Load shared infrastructure state
             const networkState = this.containerState.loadNetworkState();
             const mysqlState = this.containerState.loadMySQLState();
+            const tinybirdState = this.containerState.loadTinybirdState();
 
             // Generate unique identifiers for this test
             const database = ContainerState.generateDatabaseName(workerId, testId);
             const networkAlias = ContainerState.generateNetworkAlias(workerId, testId);
             const port = ContainerState.generateUniquePort(workerId);
+            const siteUuid = ContainerState.generateSiteUuid();
 
             log('Generated test-specific identifiers:', { database, networkAlias, port });
 
             // Create and restore database
-            await this.setupTestDatabase(mysqlState, database);
+            await this.setupTestDatabase(mysqlState, database, siteUuid);
 
             // Create Ghost container
             const ghostConfig: GhostContainerConfig = {
@@ -53,6 +56,12 @@ export class EnvironmentManager {
                 mysqlUser: 'root',
                 mysqlPassword: mysqlState.rootPassword,
                 exposedPort: port,
+                siteUuid: siteUuid,
+                tinybirdConfig: {
+                    workspaceId: tinybirdState.workspaceId,
+                    adminToken: tinybirdState.adminToken,
+                    trackerToken: tinybirdState.trackerToken
+                },
                 workingDir: '/home/ghost/ghost/core',
                 command: ['yarn', 'dev']
             };
@@ -63,7 +72,8 @@ export class EnvironmentManager {
                 containerId,
                 database,
                 port,
-                baseUrl: `http://localhost:${port}`
+                baseUrl: `http://localhost:${port}`,
+                siteUuid
             };
 
             log('Ghost instance setup completed:', ghostInstance);
@@ -100,14 +110,19 @@ export class EnvironmentManager {
     /**
      * Create and restore a database for a test
      */
-    private async setupTestDatabase(mysqlState: MySQLState, database: string): Promise<void> {
+    private async setupTestDatabase(mysqlState: MySQLState, database: string, siteUuid: string): Promise<void> {
         try {
             log('Setting up test database:', database);
 
             // Create and restore database from the dump file inside the MySQL container
             await this.dockerManager.restoreDatabaseFromDump(mysqlState, database);
 
-            log('Test database setup completed:', database);
+            // Update site_uuid in the database settings
+            await this.dockerManager.executeMySQLCommand(mysqlState, 
+                `UPDATE ${database}.settings SET value='${siteUuid}' WHERE \`key\`='site_uuid'`
+            );
+
+            log('Test database setup completed:', database, 'with site_uuid:', siteUuid);
 
         } catch (error) {
             log('Failed to setup test database:', error);
@@ -154,7 +169,8 @@ export class EnvironmentManager {
      */
     public isEnvironmentReady(): boolean {
         return this.containerState.hasNetworkState() && 
-               this.containerState.hasMySQLState();
+               this.containerState.hasMySQLState() &&
+               this.containerState.hasTinybirdState();
     }
 
     /**
@@ -163,7 +179,8 @@ export class EnvironmentManager {
     public getEnvironmentStatus() {
         return {
             networkReady: this.containerState.hasNetworkState(),
-            mysqlReady: this.containerState.hasMySQLState()
+            mysqlReady: this.containerState.hasMySQLState(),
+            tinybirdReady: this.containerState.hasTinybirdState()
         };
     }
 }

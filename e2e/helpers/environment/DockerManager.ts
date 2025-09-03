@@ -1,6 +1,6 @@
 import Docker from 'dockerode';
 import debug from 'debug';
-import type { MySQLState, NetworkState } from './ContainerState';
+import type { MySQLState, NetworkState, TinybirdState } from './ContainerState';
 
 const log = debug('e2e:DockerManager');
 
@@ -19,6 +19,12 @@ export interface GhostContainerConfig {
     mysqlUser: string;
     mysqlPassword: string;
     exposedPort: number;
+    siteUuid: string;
+    tinybirdConfig: {
+        workspaceId: string;
+        adminToken: string;
+        trackerToken: string;
+    };
     workingDir?: string;
     command?: string[];
 }
@@ -157,7 +163,16 @@ export class DockerManager {
                 database__connection__user: config.mysqlUser,
                 database__connection__password: config.mysqlPassword,
                 database__connection__database: config.database,
-                NODE_ENV: 'development'
+                NODE_ENV: 'development',
+                // Tinybird configuration
+                TB_HOST: 'http://tinybird-local:7181',
+                TB_LOCAL_HOST: 'tinybird-local',
+                tinybird__stats__endpoint: 'http://tinybird-local:7181',
+                tinybird__stats__endpointBrowser: 'http://localhost:7181',
+                tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
+                tinybird__workspaceId: config.tinybirdConfig.workspaceId,
+                tinybird__adminToken: config.tinybirdConfig.adminToken,
+                tinybird__trackerToken: config.tinybirdConfig.trackerToken
             };
 
             const containerConfig = {
@@ -190,6 +205,8 @@ export class DockerManager {
                 database: config.database,
                 port: config.exposedPort
             });
+
+            log('Ghost environment variables:', JSON.stringify(environment, null, 2));
 
             log('Full Docker container config:', JSON.stringify(containerConfig, null, 2));
 
@@ -234,7 +251,7 @@ export class DockerManager {
                 
                 log('Ghost not ready yet, status:', response.status);
             } catch (error) {
-                log('Ghost health check failed, retrying...', error.message);
+                log('Ghost health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
             
             // Wait 200ms before next check
@@ -319,5 +336,194 @@ export class DockerManager {
             log('Network cleanup failed:', error);
             throw new Error(`Network cleanup failed: ${error}`);
         }
+    }
+
+    /**
+     * Create and start a Tinybird Local container
+     */
+    async createTinybirdContainer(networkId: string): Promise<string> {
+        try {
+            const containerConfig = {
+                Image: 'tinybirdco/tinybird-local:latest',
+                NetworkingConfig: {
+                    EndpointsConfig: {
+                        [networkId]: {
+                            Aliases: ['tinybird-local']
+                        }
+                    }
+                },
+                ExposedPorts: {
+                    '7181/tcp': {}
+                },
+                HostConfig: {
+                    PortBindings: {
+                        '7181/tcp': [{ HostPort: '7181' }]
+                    }
+                },
+                Healthcheck: {
+                    Test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health'],
+                    Interval: 1000000000, // 1 second in nanoseconds
+                    Timeout: 5000000000,  // 5 seconds in nanoseconds
+                    Retries: 120
+                }
+            };
+
+            log('Creating Tinybird Local container...');
+            const container = await this.docker.createContainer(containerConfig);
+            await container.start();
+
+            // Wait for health check to pass
+            await this.waitForTinybirdReady(7181);
+
+            log('Tinybird Local container started successfully:', container.id);
+            return container.id;
+        } catch (error) {
+            log('Failed to create Tinybird container:', error);
+            throw new Error(`Failed to create Tinybird container: ${error}`);
+        }
+    }
+
+    /**
+     * Deploy Tinybird schema using tb-cli container
+     */
+    async deployTinybirdSchema(networkId: string, tinybirdPath: string): Promise<void> {
+        try {
+            const containerConfig = {
+                Image: 'ghost-tb-cli', // Assumes we've built this image
+                NetworkingConfig: {
+                    EndpointsConfig: {
+                        [networkId]: {}
+                    }
+                },
+                Env: [
+                    'TB_HOST=http://tinybird-local:7181',
+                    'TB_LOCAL_HOST=tinybird-local'
+                ],
+                HostConfig: {
+                    Binds: [
+                        `${tinybirdPath}:/home/tinybird:ro`
+                    ]
+                },
+                WorkingDir: '/home/tinybird',
+                Cmd: ['tb', '--local', 'build']
+            };
+
+            log('Deploying Tinybird schema...');
+            const container = await this.docker.createContainer(containerConfig);
+            await container.start();
+
+            // Wait for container to complete
+            await container.wait();
+
+            // Get logs to check for errors
+            const logs = await container.logs({
+                stdout: true,
+                stderr: true
+            });
+
+            log('Tinybird schema deployment completed');
+            await container.remove();
+
+        } catch (error) {
+            log('Failed to deploy Tinybird schema:', error);
+            throw new Error(`Failed to deploy Tinybird schema: ${error}`);
+        }
+    }
+
+    /**
+     * Extract Tinybird tokens using tb-cli
+     */
+    async extractTinybirdTokens(networkId: string, tinybirdPath: string): Promise<{workspaceId: string, adminToken: string, trackerToken: string}> {
+        try {
+            const containerConfig = {
+                Image: 'ghost-tb-cli',
+                NetworkingConfig: {
+                    EndpointsConfig: {
+                        [networkId]: {}
+                    }
+                },
+                Env: [
+                    'TB_HOST=http://tinybird-local:7181',
+                    'TB_LOCAL_HOST=tinybird-local'
+                ],
+                HostConfig: {
+                    Binds: [
+                        `${tinybirdPath}:/home/tinybird:ro`
+                    ]
+                },
+                WorkingDir: '/home/tinybird',
+                Cmd: ['tb', '--output', 'json', 'info']
+            };
+
+            log('Extracting Tinybird configuration...');
+            const container = await this.docker.createContainer(containerConfig);
+            await container.start();
+            await container.wait();
+
+            // Get the tb info output
+            const logs = await container.logs({
+                stdout: true,
+                stderr: false
+            });
+
+            const tbInfoJson = logs.toString();
+            const tbInfo = JSON.parse(tbInfoJson);
+            
+            const workspaceId = tbInfo.local.workspace_id;
+            const workspaceToken = tbInfo.local.token;
+
+            await container.remove();
+
+            // Now get admin and tracker tokens via API
+            const tokensResult = await this.executeInContainer('tinybird-local', [
+                'curl', '-s', '-H', `Authorization: Bearer ${workspaceToken}`,
+                'http://localhost:7181/v0/tokens'
+            ]);
+
+            const tokensData = JSON.parse(tokensResult.stdout);
+            const adminToken = tokensData.tokens.find((t: any) => t.name === 'admin token')?.token;
+            const trackerToken = tokensData.tokens.find((t: any) => t.name === 'tracker')?.token;
+
+            if (!adminToken || !trackerToken) {
+                throw new Error('Failed to extract admin or tracker tokens');
+            }
+
+            log('Tinybird tokens extracted successfully');
+            return { workspaceId, adminToken, trackerToken };
+
+        } catch (error) {
+            log('Failed to extract Tinybird tokens:', error);
+            throw new Error(`Failed to extract Tinybird tokens: ${error}`);
+        }
+    }
+
+    /**
+     * Wait for Tinybird to be ready by checking health endpoint
+     */
+    private async waitForTinybirdReady(port: number, timeoutMs: number = 60000): Promise<void> {
+        const startTime = Date.now();
+        const healthUrl = `http://localhost:${port}/v0/health`;
+        
+        while (Date.now() - startTime < timeoutMs) {
+            try {
+                const response = await fetch(healthUrl, {
+                    method: 'GET',
+                    signal: AbortSignal.timeout(5000)
+                });
+                
+                if (response.ok) {
+                    log('Tinybird is ready, responded with status:', response.status);
+                    return;
+                }
+                
+                log('Tinybird not ready yet, status:', response.status);
+            } catch (error) {
+                log('Tinybird health check failed, retrying...', error instanceof Error ? error.message : String(error));
+            }
+            
+            await new Promise(resolve => setTimeout(resolve, 200));
+        }
+        
+        throw new Error(`Timeout waiting for Tinybird to start on port ${port}`);
     }
 }
