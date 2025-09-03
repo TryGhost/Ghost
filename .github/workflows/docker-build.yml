@@ -64,7 +64,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          # On PRs: use both main cache and PR-specific cache
+          # On main: only use main cache
           cache-from: |
-            type=registry,ref=ghcr.io/tryghost/ghost-test:buildcache
+            type=gha,scope=main
+            ${{ github.event_name == 'pull_request' && format('type=gha,scope=pr-{0}', github.event.pull_request.number) || '' }}
           cache-to: |
-            type=registry,ref=ghcr.io/tryghost/ghost-test:buildcache,mode=max
+            type=gha,scope=${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
