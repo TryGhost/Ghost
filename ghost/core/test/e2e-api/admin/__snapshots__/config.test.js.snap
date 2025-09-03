@@ -28,6 +28,7 @@ Object {
       "tagsX": true,
       "themeErrorsNotification": true,
       "urlCache": true,
+      "utmTracking": true,
       "webmentions": true,
     },
     "mail": "",

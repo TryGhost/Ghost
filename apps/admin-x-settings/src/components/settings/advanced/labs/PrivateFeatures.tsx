@@ -35,8 +35,11 @@ const features: Feature[] = [{
     title: 'Tags X',
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
-}
-];
+}, {
+    title: 'UTM tracking',
+    description: 'Enables UTM tracking for web traffic and member attribution',
+    flag: 'utmTracking'
+}];
 
 const AlphaFeatures: React.FC = () => {
     const limiter = useLimiter();
