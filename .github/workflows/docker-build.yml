@@ -65,8 +65,6 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: |
-            type=gha,scope=buildkit
             type=registry,ref=ghcr.io/tryghost/ghost-test:buildcache
           cache-to: |
-            type=gha,mode=max,scope=buildkit
             type=registry,ref=ghcr.io/tryghost/ghost-test:buildcache,mode=max
