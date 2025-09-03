@@ -410,6 +410,7 @@ describe('OTC Integration Flow', () => {
     afterEach(() => {
         window.location = realLocation;
         jest.restoreAllMocks();
+        locationAssignMock.mockReset();
     });
 
     const setupOTCFlow = async ({site, otcRef = 'test-otc-ref-123', returnOtcRef = true}) => {
@@ -497,9 +498,10 @@ describe('OTC Integration Flow', () => {
         await waitFor(() => {
             expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
                 otc: '123456',
-                otcRef: 'test-otc-ref-123',
-                redirect: undefined
+                otcRef: 'test-otc-ref-123'
             });
+            const [args] = ghostApi.member.verifyOTC.mock.lastCall;
+            expect(args.redirect).toBeUndefined();
         });
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
