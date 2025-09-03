@@ -412,6 +412,8 @@ interface ReaderProps {
     onClose?: () => void;
 }
 
+const scrollPositionCache = new Map<string, number>();
+
 export const Reader: React.FC<ReaderProps> = ({
     postId = null,
     onClose
@@ -431,6 +433,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const modalRef = useRef<HTMLElement>(null);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
+    const scrollPositionSavedRef = useRef(false);
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
@@ -698,6 +701,32 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const navigate = useNavigate();
 
+    // Save scroll position when navigating away
+    useEffect(() => {
+        const container = modalRef.current;
+        return () => {
+            // Save scroll position when component unmounts
+            if (container && postId && !scrollPositionSavedRef.current) {
+                scrollPositionCache.set(postId, container.scrollTop);
+                scrollPositionSavedRef.current = true;
+            }
+        };
+    }, [postId]);
+
+    // Restore scroll position after content loads
+    useEffect(() => {
+        if (!isLoading && !isLoadingContent && postId && modalRef.current) {
+            const savedPosition = scrollPositionCache.get(postId);
+            if (savedPosition !== undefined && savedPosition > 0) {
+                setTimeout(() => {
+                    if (modalRef.current) {
+                        modalRef.current.scrollTop = savedPosition;
+                    }
+                }, 100);
+            }
+        }
+    }, [isLoading, isLoadingContent, postId]);
+
     if (isLoadingContent) {
         return (
             <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
@@ -905,6 +934,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
+                                                                const container = modalRef.current;
+                                                                if (container && postId) {
+                                                                    scrollPositionCache.set(postId, container.scrollTop);
+                                                                }
                                                                 navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
@@ -926,6 +959,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
+                                                                    const container = modalRef.current;
+                                                                    if (container && postId) {
+                                                                        scrollPositionCache.set(postId, container.scrollTop);
+                                                                    }
                                                                     navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
@@ -953,6 +990,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
+                                                                        const container = modalRef.current;
+                                                                        if (container && postId) {
+                                                                            scrollPositionCache.set(postId, container.scrollTop);
+                                                                        }
                                                                         navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}
