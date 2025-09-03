@@ -27,3 +27,5 @@ compose.yml
 .docker
 !.docker/**/*.entrypoint.sh
 !.docker/**/*entrypoint.sh
+
+ghost/core/core/built/admin
