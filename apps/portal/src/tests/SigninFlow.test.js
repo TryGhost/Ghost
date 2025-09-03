@@ -336,6 +336,61 @@ describe('Signin', () => {
             });
         });
     });
+
+    describe('redirect parameter handling', () => {
+        afterEach(() => {
+            window.location = realLocation;
+        });
+
+        // Helper function to open location and complete signin flow
+        async function openLocationAndCompleteSigninFlow() {
+            const {ghostApi, popupIframeDocument, emailInput, submitButton} = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: null // No member to trigger signin requirement
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(submitButton);
+
+            const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+            expect(magicLink).toBeInTheDocument();
+
+            return {ghostApi, popupIframeDocument};
+        }
+
+        test('passes redirect parameter to sendMagicLink when pageData.redirect is set', async () => {
+            // Mock the window.location to simulate feedback URL that sets redirect
+            Object.defineProperty(window, 'location', {
+                value: new URL('https://portal.localhost/#/feedback/12345/1'),
+                writable: true
+            });
+
+            // opens /#/feedback/12345/1 which redirects to /#/signin,
+            // setting pageData.redirect in the process
+            const {ghostApi} = await openLocationAndCompleteSigninFlow();
+
+            expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith(
+                expect.objectContaining({
+                    // redirect parameter contains original feedback URL not current URL
+                    redirect: expect.stringContaining('#/feedback/12345/1')
+                })
+            );
+        });
+
+        test('redirect parameter is not passed to sendMagicLink when pageData.redirect is not set', async () => {
+            // Reset location to regular signin URL so there's no explicit setting of pageData.redirect
+            Object.defineProperty(window, 'location', {
+                value: new URL('https://portal.localhost/#/portal/signin'),
+                writable: true
+            });
+
+            const {ghostApi} = await openLocationAndCompleteSigninFlow();
+
+            // Verify redirect is not included in the sendMagicLink call
+            const lastCall = ghostApi.member.sendMagicLink.mock.calls[ghostApi.member.sendMagicLink.mock.calls.length - 1][0];
+            expect(lastCall.redirect).toBeUndefined();
+        });
+    });
 });
 
 describe('OTC Integration Flow', () => {
