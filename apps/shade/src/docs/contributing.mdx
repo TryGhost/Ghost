@@ -1,0 +1,241 @@
+import { Meta } from '@storybook/blocks';
+
+<Meta title="Contributing" />
+
+<div className="sb-doc">
+
+# Contributing to Shade
+
+<p className="excerpt">This guide explains how to contribute to the Shade design system, including adding or modifying components and documentation.</p>
+
+## Repository Layout
+
+```
+/apps/shade/
+  .storybook/                 # Storybook config
+  src/
+    components/
+      ui/                     # Base ShadCN/UI primitives
+      <feature>/             # Shade-composed components
+    tokens/
+      shade.tokens.json       # (optional) design tokens
+```
+
+## Naming Conventions
+
+- **File names:** kebab-case
+  ```
+  button.tsx
+  button.stories.tsx
+  button.mdx
+  button.meta.json
+  fixtures/button.fixtures.ts
+  ```
+- **Storybook titles:** `Components/<kebab-name>` (e.g., `Components/button`)
+- **Component folders:**
+  - ShadCN primitives under `/apps/shade/src/components/ui/`
+  - Composed Shade components under `/apps/shade/src/components/<feature>/`
+
+## File Set Per Component
+
+Each documented component requires:
+
+```
+/apps/shade/src/components/ui/button.tsx          # Component (source)
+/apps/shade/src/components/ui/button.stories.tsx  # Stories (CSF)
+/apps/shade/src/components/ui/button.mdx          # Docs page (MDX)
+
+# Optional, AI-friendly metadata & fixtures
+/apps/shade/src/components/ui/button.meta.json    # Machine-readable metadata
+/apps/shade/src/components/ui/button.a11y.yml     # A11y checklist
+/apps/shade/src/components/ui/fixtures/button.fixtures.ts
+```
+
+## Component Documentation
+
+### MDX Template
+
+```mdx
+import { Meta, Story, ArgsTable } from '@storybook/blocks';
+import { Button } from './button';
+
+<Meta title="Components/button" component={Button} />
+
+# Button
+
+## What & When
+Short description: when to use a button vs a link, primary vs secondary actions.
+
+## Anatomy
+- **root** — container element
+- **icon** — optional leading icon
+- **label** — text node
+- **badge** — optional counter/status
+
+## Variants
+- `solid`, `outline`, `ghost`; tones: `default`, `danger`, `success`.
+
+## Props
+<ArgsTable of={Button} />
+
+## States
+Default, hover, focus (visible ring), active/pressed, loading, disabled.
+
+## Accessibility
+- Keyboard: Enter/Space activates
+- `aria-disabled` when disabled; maintain focus order
+- Contrast: text ≥ 4.5:1; focus indicator ≥ 3:1
+
+## Examples
+<Story id="components-button--default" />
+<Story id="components-button--with-icon" />
+
+## Do & Don't
+- ✅ Clear labels; sentence case
+- ❌ Don't pair conflicting tones
+
+## Integration Notes
+Works in forms; respects reduced motion; RTL-safe padding for icons.
+```
+
+### Story File Structure
+
+```tsx
+import { Meta, StoryObj } from '@storybook/react';
+import { Button } from './button';
+
+const meta: Meta<typeof Button> = {
+    title: 'Components/button',
+    component: Button,
+    tags: ['autodocs'],
+};
+export default meta;
+
+type Story = StoryObj<typeof Button>;
+
+export const Default: Story = {
+    args: { children: 'Continue' },
+    parameters: { intent: 'primary action' },
+};
+
+export const WithIcon: Story = {
+    render: () => (
+        <Button>
+            <span aria-hidden className="mr-2"><Trash size={16} /></span>
+            <span>Delete</span>
+        </Button>
+    ),
+    parameters: { intent: 'destructive action with icon' },
+};
+```
+
+## Component Implementation
+
+### Using ShadCN/UI
+
+1. **Install Component**
+   ```bash
+   npx shadcn@latest add button
+   ```
+
+2. **Customize Implementation**
+
+   > ⚠️ Always use the `cn` utility to combine classNames and `cva` for component variants. This ensures consistent class merging and variant handling across the design system.
+
+   ```tsx
+   import { cn } from "@/utils"
+   import { cva, type VariantProps } from "class-variance-authority"
+
+   // Define variants using cva
+   const buttonVariants = cva(
+       // Base styles applied to all variants
+       "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors",
+       {
+           variants: {
+               variant: {
+                   solid: "bg-primary text-primary-foreground hover:bg-primary/90",
+                   outline: "border border-input bg-background hover:bg-accent",
+                   ghost: "hover:bg-accent hover:text-accent-foreground"
+               },
+               size: {
+                   sm: "h-9 px-3",
+                   md: "h-10 px-4",
+                   lg: "h-11 px-8"
+               }
+           },
+           defaultVariants: {
+               variant: "solid",
+               size: "md"
+           }
+       }
+   );
+
+   // Extract variant props type
+   interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+       VariantProps<typeof buttonVariants> {}
+
+   // Use cn to combine variants with custom classes
+   export function Button({ className, variant, size, ...props }: ButtonProps) {
+       return (
+           <button
+               className={cn(buttonVariants({ variant, size }), className)}
+               {...props}
+           />
+       );
+   }
+   ```
+
+   **Key Points:**
+   - Use `cn` to merge component variants with custom className props
+   - Define variants with `cva` for type-safe variant combinations
+   - Extract variant props using `VariantProps` type
+   - Always provide sensible default variants
+   - Include hover/focus states in variant definitions
+
+### Creating Custom Components
+
+1. **File Structure**
+   ```
+   src/components/<feature>/
+   ├── custom-component.tsx
+   ├── custom-component.stories.tsx
+   └── custom-component.mdx
+   ```
+
+2. **Implementation Pattern**
+   ```tsx
+   import { cn } from "@/utils"
+
+   interface CustomComponentProps {
+       className?: string;
+   }
+
+   export function CustomComponent({ className }: CustomComponentProps) {
+       return (
+           <div className={cn("base-styles", className)}>
+               {/* Component content */}
+           </div>
+       );
+   }
+   ```
+
+## Acceptance Checklist
+
+For each component:
+
+- [ ] Component follows design system principles
+- [ ] `*.stories.tsx` includes Default + variant stories
+- [ ] `*.mdx` includes all required sections:
+  - What & When
+  - Anatomy
+  - Variants
+  - Props (ArgsTable)
+  - States
+  - Accessibility
+  - Examples
+- [ ] Slots are listed in Anatomy and demonstrated
+- [ ] Accessibility items include keyboard, ARIA, and contrast
+- [ ] (Optional) `*.meta.json` present and valid
+- [ ] (Optional) `*.a11y.yml` checklist included
+
+</div>
