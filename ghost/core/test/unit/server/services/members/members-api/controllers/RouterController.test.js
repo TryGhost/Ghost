@@ -1160,8 +1160,7 @@ describe('RouterController', function () {
             };
 
             res = {
-                writeHead: sinon.stub(),
-                end: sinon.stub()
+                json: sinon.stub()
             };
         });
 
@@ -1209,7 +1208,9 @@ describe('RouterController', function () {
 
                 await routerController.verifyOTC(req, res);
 
-                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+                sinon.assert.calledOnce(res.json);
+                const responseData = res.json.firstCall.args[0];
+                assert(responseData.redirectUrl);
             });
         });
 
@@ -1265,6 +1266,17 @@ describe('RouterController', function () {
                     Error
                 );
             });
+
+            it('should throw BadRequestError when getSigninURL returns null', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.getSigninURL.returns(null);
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_FAILED'}
+                );
+            });
         });
 
         describe('success flow integration', function () {
@@ -1282,18 +1294,14 @@ describe('RouterController', function () {
 
                 await routerController.verifyOTC(req, res);
 
-                sinon.assert.calledWith(res.writeHead, 200, {'Content-Type': 'application/json'});
+                sinon.assert.calledOnce(res.json);
+                const responseData = res.json.firstCall.args[0];
 
-                const responseCall = res.end.getCall(0);
-                const responseData = JSON.parse(responseCall.args[0]);
-
-                assert.equal(responseData.valid, true);
-                assert.equal(responseData.success, true);
-                assert.equal(responseData.message, OTC_TEST_CONSTANTS.SUCCESS_MESSAGES.OTC_VERIFICATION_SUCCESSFUL);
                 assert(responseData.redirectUrl);
+                assert.equal(responseData.redirectUrl, OTC_TEST_CONSTANTS.MEMBERS_URL);
 
                 sinon.assert.calledWith(
-                    mockMagicLinkService.getSigninURL.firstCall,
+                    mockMagicLinkService.getSigninURL,
                     OTC_TEST_CONSTANTS.TOKEN_VALUE, 
                     'signin', 
                     null, 

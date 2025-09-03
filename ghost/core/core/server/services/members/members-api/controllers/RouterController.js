@@ -697,14 +697,14 @@ module.exports = class RouterController {
 
         // TODO: obtain and pass through referrer here
         const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', null, otcVerificationHash);
+        if (!redirectUrl) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
 
-        res.writeHead(200, {'Content-Type': 'application/json'});
-        return res.end(JSON.stringify({
-            valid: true,
-            success: true,
-            redirectUrl,
-            message: 'OTC verification successful'
-        }));
+        return res.json({redirectUrl});
     }
 
     async _createHashFromOTCAndToken(otc, token) {
