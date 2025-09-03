@@ -156,12 +156,13 @@ class MembersSSR {
      * @method _getMemberDataFromToken
      *
      * @param {JWT} token
+     * @param {string} [otcVerification]
      *
      * @returns {Promise<Member>} member
      */
-    async _getMemberDataFromToken(token) {
+    async _getMemberDataFromToken(token, otcVerification) {
         const api = await this._getMembersApi();
-        return api.getMemberDataFromMagicLinkToken(token);
+        return api.getMemberDataFromMagicLinkToken(token, otcVerification);
     }
 
     /**
@@ -234,7 +235,8 @@ class MembersSSR {
         }
 
         const token = Array.isArray(query.token) ? query.token[0] : query.token;
-        const member = await this._getMemberDataFromToken(token);
+        const otcVerification = Array.isArray(query.otc_verification) ? query.otc_verification[0] : query.otc_verification;
+        const member = await this._getMemberDataFromToken(token, otcVerification);
 
         if (!member) {
             // The member doesn't exist any longer (could be a sign in token for a member that was deleted)

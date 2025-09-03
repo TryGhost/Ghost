@@ -337,7 +337,6 @@ describe('SingleUseTokenProvider', function () {
 
                 // Need to mock getIdByToken since _validateOTCVerificationHash calls it
                 sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
-
                 const validOtcVerification = createOtcVerificationHash(testTokenId, testToken);
 
                 const result = await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
