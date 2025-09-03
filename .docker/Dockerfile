@@ -165,12 +165,14 @@ RUN cd apps/admin-x-activitypub && yarn build
 FROM development-base AS admin-ember-builder
 WORKDIR /home/ghost
 COPY ghost/admin ghost/admin
-COPY ghost/core ghost/core
+# Admin's asset-delivery pipeline needs the ghost module to resolve
+COPY ghost/core/package.json ghost/core/package.json
+COPY ghost/core/index.js ghost/core/index.js
 COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
 COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
 COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
 COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
-RUN cd ghost/admin && yarn build
+RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 
 # --------------------
 # Development

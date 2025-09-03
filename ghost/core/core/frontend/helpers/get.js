@@ -17,7 +17,7 @@ const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
     invalidResource: 'Invalid "{resource}" resource given to get helper'
 };
-
+//comment
 const createFrame = hbs.handlebars.createFrame;
 
 const RESOURCES = {
@@ -41,7 +41,7 @@ const RESOURCES = {
     }
 };
 
-// Short forms of paths which we should understand
+// Short forms of paths which we should understand // comment
 const pathAliases = {
     'post.tags': 'post.tags[*].slug',
     'post.author': 'post.author.slug'
