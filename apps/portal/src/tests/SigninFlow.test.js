@@ -1,5 +1,5 @@
 import App from '../App.js';
-import {fireEvent, appRender, within} from '../utils/test-utils';
+import {fireEvent, appRender, within, waitFor} from '../utils/test-utils';
 import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
@@ -394,15 +394,19 @@ describe('Signin', () => {
 });
 
 describe('OTC Integration Flow', () => {
+    const locationAssignMock = jest.fn();
+
     beforeEach(() => {
-        // Mock window.location
+        const mockLocation = new URL('https://portal.localhost/#/portal/signin');
+        mockLocation.assign = locationAssignMock;
         Object.defineProperty(window, 'location', {
-            value: new URL('https://portal.localhost/#/portal/signin'),
+            value: mockLocation,
             writable: true
         });
     });
     afterEach(() => {
         window.location = realLocation;
+        jest.restoreAllMocks();
     });
 
     const setupOTCFlow = async ({site, otcRef = 'test-otc-ref-123', returnOtcRef = true}) => {
@@ -427,9 +431,7 @@ describe('OTC Integration Flow', () => {
 
         ghostApi.member.verifyOTC = jest.fn(() => {
             return Promise.resolve({
-                valid: true,
-                success: true,
-                redirectUrl: 'https://example.com/welcome?success=true'
+                redirectUrl: 'https://example.com/welcome'
             });
         });
 
@@ -486,25 +488,19 @@ describe('OTC Integration Flow', () => {
         expect(otcInput).toBeInTheDocument();
         expect(verifyButton).toBeInTheDocument();
 
-        // Mock window.location for redirect test
-        const originalLocation = window.location;
-        delete window.location;
-        window.location = {
-            href: 'https://portal.localhost/#/portal/signin',
-            hash: '#/portal/signin'
-        };
-
         fireEvent.change(otcInput, {target: {value: '123456'}});
         fireEvent.click(verifyButton);
 
-        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
-            otc: '123456',
-            otcRef: 'test-otc-ref-123'
+        await waitFor(() => {
+            expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+                otc: '123456',
+                otcRef: 'test-otc-ref-123'
+            });
         });
-        expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
 
-        // Restore window.location
-        window.location = originalLocation;
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledTimes(1);
+        expect(locationAssignMock).toHaveBeenCalledWith('https://example.com/welcome');
+        expect(locationAssignMock).toHaveBeenCalledTimes(1);
     });
 
     test('OTC flow without otcRef falls back to regular magic link', async () => {
@@ -564,6 +560,31 @@ describe('OTC Integration Flow', () => {
 
         expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
             otc: '000000',
+            otcRef: 'test-otc-ref-123'
+        });
+
+        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        expect(errorNotification).toBeInTheDocument();
+    });
+
+    test('OTC verification without redirectUrl shows default error', async () => {
+        const {ghostApi, popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        ghostApi.member.verifyOTC.mockResolvedValueOnce({});
+
+        const {magicLinkText} = await performCompleteOTCFlow(popupIframeDocument, 'jamie@example.com');
+        expect(magicLinkText).toBeInTheDocument();
+
+        const otcInput = within(popupIframeDocument).getByLabelText(OTC_LABEL_REGEX);
+        const verifyButton = within(popupIframeDocument).getByRole('button', {name: 'Continue'});
+
+        fireEvent.change(otcInput, {target: {value: '654321'}});
+        fireEvent.click(verifyButton);
+
+        expect(ghostApi.member.verifyOTC).toHaveBeenCalledWith({
+            otc: '654321',
             otcRef: 'test-otc-ref-123'
         });
 

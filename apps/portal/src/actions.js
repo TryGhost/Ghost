@@ -122,29 +122,8 @@ async function verifyOTC({data, api, state}) {
     try {
         const response = await api.member.verifyOTC(data);
 
-        if (response.valid && response.success) {
-            // Enhance the redirect URL with current page context
-            let finalRedirectUrl;
-
-            if (response.redirectUrl) {
-                // Parse the provided URL and add our referrer and action
-                const redirectUrl = new URL(response.redirectUrl);
-                redirectUrl.searchParams.set('r', window.location.href);
-                redirectUrl.searchParams.set('action', 'signin');
-                finalRedirectUrl = redirectUrl.href;
-            } else {
-                // Fallback: redirect to current page with success params
-                const fallbackUrl = new URL(window.location.href);
-                fallbackUrl.searchParams.set('success', 'true');
-                fallbackUrl.searchParams.set('action', 'signin');
-                finalRedirectUrl = fallbackUrl.href;
-            }
-
-            window.location.href = finalRedirectUrl;
-
-            return {
-                action: 'verifyOTC:success'
-            };
+        if (response.redirectUrl) {
+            return window.location.assign(response.redirectUrl);
         } else {
             return {
                 action: 'verifyOTC:failed',
