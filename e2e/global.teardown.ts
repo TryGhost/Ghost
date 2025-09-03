@@ -1,6 +1,6 @@
-import { test as teardown } from '@playwright/test';
-import { ContainerState } from './helpers/environment/ContainerState';
-import { DockerManager } from './helpers/environment/DockerManager';
+import {test as teardown} from '@playwright/test';
+import {ContainerState} from './helpers/environment/ContainerState';
+import {DockerManager} from './helpers/environment/DockerManager';
 import debug from 'debug';
 
 const log = debug('e2e:global-teardown');
@@ -13,9 +13,11 @@ teardown('global environment cleanup', async ({}) => {
 
     try {
         // Check if we have state to clean up
-        const hasState = containerState.hasNetworkState() || containerState.hasMySQLState();
-        
-        if (!hasState) {
+        const hasNetworkState = containerState.hasNetworkState();
+        const hasMySQLState = containerState.hasMySQLState();
+        const hasTinybirdState = containerState.hasTinybirdState();
+
+        if (!hasNetworkState && !hasMySQLState && !hasTinybirdState) {
             log('No container state found, nothing to clean up');
             return;
         }

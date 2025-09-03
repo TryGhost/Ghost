@@ -2,9 +2,6 @@ import dotenv from 'dotenv';
 import path from 'path';
 dotenv.config();
 
-// Disable testcontainers resource reaper since we handle cleanup ourselves
-process.env.TESTCONTAINERS_RYUK_DISABLED = 'true';
-
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
 const config = {
     timeout: process.env.CI ? 60 * 1000 : 30 * 1000,
@@ -23,29 +20,26 @@ const config = {
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
-        // Global environment setup - runs first, teardown runs after
         {
             name: 'global-setup',
             testMatch: /global\.setup\.ts/,
             testDir: './',
-            timeout: 300000 // 5 minute timeout for setup phase
+            teardown: 'global-teardown',
+            timeout: 60 * 1000 // 60 seconds for setup
         },
-        // Main tests - run after global setup
         {
             name: 'main',
-            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'], // Exclude setup/teardown files
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
             testDir: './tests',
             use: {
                 viewport: {width: 1920, height: 1080}
             },
             dependencies: ['global-setup']
         },
-        // Global environment teardown - runs after all tests complete
         {
             name: 'global-teardown',
             testMatch: /global\.teardown\.ts/,
-            testDir: './',
-            dependencies: ['main'] // Run after main tests complete
+            testDir: './'
         }
     ]
 };
