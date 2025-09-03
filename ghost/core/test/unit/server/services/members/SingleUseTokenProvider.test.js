@@ -355,7 +355,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError when token is expired by lifetime', async function () {
-                const oldDate = new Date(Date.now() - 86400001);
+                const oldDate = new Date(Date.now() - 86400001); // 24 hours + 1 ms ago (exceeds lifetime)
                 buildModel({createdAt: oldDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
@@ -364,7 +364,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError when token is expired after usage', async function () {
-                const oldUsageDate = new Date(Date.now() - 3600001);
+                const oldUsageDate = new Date(Date.now() - 3600001); // 1 hour + 1 ms ago (exceeds post-usage validity)
                 buildModel({usedCount: 1, firstUsedAt: oldUsageDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
@@ -374,7 +374,7 @@ describe('SingleUseTokenProvider', function () {
         });
 
         it('should increment usage count for previously used token', async function () {
-            const firstUsedDate = new Date(Date.now() - 1800000);
+            const firstUsedDate = new Date(Date.now() - 1800000); // 30 minutes ago (within 1-hour window)
             const usedMockModel = createMockModel({
                 usedCount: 1,
                 firstUsedAt: firstUsedDate
