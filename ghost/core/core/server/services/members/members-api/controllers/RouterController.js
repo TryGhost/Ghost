@@ -25,8 +25,30 @@ const messages = {
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
-    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}'
+    archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
+    otcNotSupported: 'OTC verification not supported.',
+    invalidCode: 'Invalid verification code.',
+    failedToVerifyCode: 'Failed to verify code, please try again.'
 };
+
+// helper utility for logic shared between sendMagicLink and verifyOTC
+function extractRefererOrRedirect(req) {
+    const {autoRedirect, redirect} = req.body;
+
+    if (autoRedirect === false) {
+        return null;
+    }
+
+    if (redirect) {
+        try {
+            return new URL(redirect).href;
+        } catch (e) {
+            logging.warn(e);
+        }
+    }
+
+    return req.get('referer') || null;
+}
 
 module.exports = class RouterController {
     /**
@@ -558,21 +580,10 @@ module.exports = class RouterController {
     }
 
     async sendMagicLink(req, res) {
-        const {email, honeypot, autoRedirect} = req.body;
-        let {emailType, redirect} = req.body;
+        const {email, honeypot} = req.body;
+        let {emailType} = req.body;
 
-        let referrer = req.get('referer');
-        if (autoRedirect === false){
-            referrer = null;
-        }
-        if (redirect) {
-            try {
-                // Validate URL
-                referrer = new URL(redirect).href;
-            } catch (e) {
-                logging.warn(e);
-            }
-        }
+        const referrer = extractRefererOrRedirect(req);
 
         if (!email) {
             throw new errors.BadRequestError({
@@ -647,6 +658,71 @@ module.exports = class RouterController {
             // Let the normal error middleware handle this error
             throw err;
         }
+    }
+
+    async verifyOTC(req, res) {
+        const {otc, otcRef} = req.body;
+
+        if (!otc || !otcRef) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.badRequest),
+                context: 'otc and otcRef are required',
+                code: 'OTC_VERIFICATION_MISSING_PARAMS'
+            });
+        }
+
+        const tokenProvider = this._magicLinkService.tokenProvider;
+        if (!tokenProvider || typeof tokenProvider.verifyOTC !== 'function') {
+            throw new errors.BadRequestError({
+                message: tpl(messages.otcNotSupported),
+                code: 'OTC_NOT_SUPPORTED'
+            });
+        }
+
+        const isValidOTC = await tokenProvider.verifyOTC(otcRef, otc);
+        if (!isValidOTC) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC'
+            });
+        }
+
+        const tokenValue = await tokenProvider.getTokenByRef(otcRef);
+        if (!tokenValue) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.invalidCode),
+                code: 'INVALID_OTC_REF'
+            });
+        }
+
+        const otcVerificationHash = await this._createHashFromOTCAndToken(otc, tokenValue);
+        if (!otcVerificationHash) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
+
+        const referrer = extractRefererOrRedirect(req);
+
+        const redirectUrl = this._magicLinkService.getSigninURL(tokenValue, 'signin', referrer, otcVerificationHash);
+        if (!redirectUrl) {
+            throw new errors.BadRequestError({
+                message: tpl(messages.failedToVerifyCode),
+                code: 'OTC_VERIFICATION_FAILED'
+            });
+        }
+
+        return res.json({redirectUrl});
+    }
+
+    async _createHashFromOTCAndToken(otc, token) {
+        // timestamp for anti-replay protection (5 minute window)
+        const timestamp = Math.floor(Date.now() / 1000);
+
+        const hash = this._magicLinkService.tokenProvider.createOTCVerificationHash(otc, token, timestamp);
+
+        return `${timestamp}:${hash}`;
     }
 
     async _handleSignup(req, normalizedEmail, referrer = null) {
