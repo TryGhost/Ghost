@@ -70,7 +70,7 @@ jobs:
           # On PRs: use both main cache and PR-specific cache
           # On main: only use main cache
           cache-from: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/ghost-test:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref=ghcr.io/{0}/ghost-test:cache-pr-{1}', github.repository_owner, github.event.pull_request.number) || '' }}
+            type=registry,ref=ghcr.io/${{ toLower(github.repository_owner) }}/ghost-test:cache-main
+            ${{ github.event_name == 'pull_request' && format('type=registry,ref=ghcr.io/{0}/ghost-test:cache-pr-{1}', toLower(github.repository_owner), github.event.pull_request.number) || '' }}
           cache-to: |
-            type=registry,ref=ghcr.io/${{ github.repository_owner }}/ghost-test:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
+            type=registry,ref=ghcr.io/${{ toLower(github.repository_owner) }}/ghost-test:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
