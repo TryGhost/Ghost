@@ -11,7 +11,6 @@
     "e2e",
     "apps/*"
   ],
-  "test": false,
   "monorepo": {
     "public": false,
     "internalPackages": true,
