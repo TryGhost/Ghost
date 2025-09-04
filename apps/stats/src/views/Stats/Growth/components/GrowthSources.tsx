@@ -1,5 +1,6 @@
 import React, {useState} from 'react';
 import SortButton from '../../components/SortButton';
+import SourceIcon from '../../components/SourceIcon';
 import {Button, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow, centsToDollars, formatNumber} from '@tryghost/shade';
 import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -37,18 +38,11 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
                 <TableRow key={row.source} className='last:border-none'>
                     <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                            {row.displayName.trim().toLowerCase().endsWith('newsletter') ? (
-                                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
-                            ) : (
-                                <img
-                                    alt=""
-                                    className="size-4"
-                                    src={row.iconSrc}
-                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                        e.currentTarget.src = defaultSourceIconUrl;
-                                    }}
-                                />
-                            )}
+                            <SourceIcon
+                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                displayName={row.displayName}
+                                iconSrc={row.iconSrc}
+                            />
                             {row.linkUrl ? (
                                 <a
                                     className="hover:underline"

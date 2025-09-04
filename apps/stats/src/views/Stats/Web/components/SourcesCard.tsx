@@ -1,4 +1,5 @@
 import React from 'react';
+import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -12,31 +13,6 @@ interface SourcesTableProps {
     defaultSourceIconUrl?: string;
     tableHeader: boolean;
 }
-
-interface SourceIconProps {
-    displayName: string;
-    iconSrc: string;
-    defaultSourceIconUrl: string;
-}
-
-const SourceIcon: React.FC<SourceIconProps> = ({displayName, iconSrc, defaultSourceIconUrl}) => {
-    return (
-        <>
-            {displayName.trim().toLowerCase().endsWith('newsletter') ? (
-                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
-            ) : (
-                <img
-                    alt=""
-                    className="size-4"
-                    src={iconSrc}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                        e.currentTarget.src = defaultSourceIconUrl;
-                    }}
-                />
-            )}
-        </>
-    );
-};
 
 const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
