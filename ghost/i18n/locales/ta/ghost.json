@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "அனைத்து நல்வாழ்த்துக்களும்!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "",
     "Comment": "",
@@ -61,7 +60,7 @@
     "View comments": "",
     "View in browser": "",
     "Welcome back to {siteTitle}!": "{siteTitle} க்கு மீண்டும் வருக!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "மீண்டும் வருக! உங்கள் {siteTitle} கணக்கில் பாதுகாப்பாக உள்நுழைய இந்த இணைப்பைப் பயன்படுத்தவும்:",
     "When:": "",
     "Where:": "",

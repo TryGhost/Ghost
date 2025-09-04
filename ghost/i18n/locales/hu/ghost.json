@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Üdvözlettel,",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Legyél fizető tag {site} oldalon, hogy hozzáférj minden prémium tartalomhoz.",
     "By {authors}": "{authors}",
     "Comment": "Hozzászólás",
@@ -61,7 +60,7 @@
     "View comments": "Hozzászólások megtekintése",
     "View in browser": "Megnyitás a böngészőben",
     "Welcome back to {siteTitle}!": "{siteTitle} - Üdv újra!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Üdv újra itt! Használd az alábbi linket, hogy biztonságosan bejelentkezz a(z) {siteTitle} fiókodba:",
     "When:": "Mikor:",
     "Where:": "Hol:",

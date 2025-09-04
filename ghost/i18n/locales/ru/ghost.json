@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Всего наилучшего!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Станьте платным участником {site}, чтобы получить доступ ко всему премиум-контенту.",
     "By {authors}": "От {authors}",
     "Comment": "Комментарий",
@@ -61,7 +60,7 @@
     "View comments": "Посмотреть комментарии",
     "View in browser": "Просмотреть в браузере",
     "Welcome back to {siteTitle}!": "Добро пожаловать на {siteTitle}, с возвращением!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "С возвращением! Используйте эту ссылку для безопасного входа в свою учётную запись на {siteTitle}:",
     "When:": "Когда:",
     "Where:": "Где:",

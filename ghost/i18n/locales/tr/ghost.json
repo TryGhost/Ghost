@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "En iyi dileklerimizle!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Tüm premium içeriklere erişebilmek için {site} ücretli üyesi olun.",
     "By {authors}": "Ekleyen {authors}",
     "Comment": "Yorum",
@@ -61,7 +60,7 @@
     "View comments": "Yorumları görüntüle",
     "View in browser": "Tarayıcıda görüntüle",
     "Welcome back to {siteTitle}!": "{siteTitle} sitesine tekrar hoş geldin!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Tekrar hoş geldin! {siteTitle} hesabına güvenli bir şekilde giriş yapmak için bu linki kullan:",
     "When:": "Ne zaman:",
     "Where:": "Nerede:",

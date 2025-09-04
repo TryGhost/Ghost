@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "ਸ਼ੁਭਕਾਮਨਾਵਾਂ!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "{site} ਦੇ ਸਹਿਯੋਗੀ ਮੈਂਬਰ ਬਣ ਕੇ ਸਾਰੀ ਪ੍ਰੀਮੀਅਮ ਸਮੱਗਰੀ ਤੱਕ ਪਹੁੰਚ ਪ੍ਰਾਪਤ ਕਰੋ।",
     "By {authors}": "{authors} ਦੁਆਰਾ",
     "Comment": "ਟਿੱਪਣੀ",
@@ -61,7 +60,7 @@
     "View comments": "ਟਿੱਪਣੀਆਂ ਵੇਖੋ",
     "View in browser": "ਬਰਾਊਜ਼ਰ ਵਿੱਚ ਦੇਖੋ",
     "Welcome back to {siteTitle}!": "{siteTitle} 'ਤੇ ਵਾਪਸ ਆਉਣ 'ਤੇ ਸੁਆਗਤ ਹੈ!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "ਵਾਪਸ ਆਉਣ 'ਤੇ ਸੁਆਗਤ ਹੈ! ਆਪਣੇ {siteTitle} ਖਾਤੇ ਵਿੱਚ ਸੁਰੱਖਿਅਤ ਢੰਗ ਨਾਲ ਸਾਈਨ ਇਨ ਕਰਨ ਲਈ ਇਸ ਲਿੰਕ ਦੀ ਵਰਤੋਂ ਕਰੋ:",
     "When:": "ਕਦੋਂ:",
     "Where:": "ਕਿੱਥੇ:",

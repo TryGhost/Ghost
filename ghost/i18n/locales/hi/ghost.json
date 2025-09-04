@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "सभी को शुभकामनाएं!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "{site} का सशुल्क सदस्य बनें ताकि आपको सभी प्रीमियम सामग्री तक पहुंच मिल सके।",
     "By {authors}": "{authors} द्वारा",
     "Comment": "टिप्पणी",
@@ -61,7 +60,7 @@
     "View comments": "टिप्पणियां देखें",
     "View in browser": "ब्राउज़र में देखें",
     "Welcome back to {siteTitle}!": "{siteTitle} में फिर से स्वागत है!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "फिर से स्वागत है! अपने {siteTitle} खाते में सुरक्षित रूप से साइन इन करने के लिए इस लिंक का उपयोग करें:",
     "When:": "कब:",
     "Where:": "कहाँ:",

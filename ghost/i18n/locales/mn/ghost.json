@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Баярлалаа!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "{site}-н бүх премиум контентод хандах эрхтэй болохын тулд төлбөртэй гишүүн болно уу.",
     "By {authors}": "Нийтэлсэн: {authors}",
     "Comment": "Сэтгэгдэл",
@@ -61,7 +60,7 @@
     "View comments": "",
     "View in browser": "Хөтөч дээр харах",
     "Welcome back to {siteTitle}!": "{siteTitle}-д тавтай морилно уу!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Дахин тавтай морилно уу! Энэхүү холбоосыг ашиглан {siteTitle}-д нэвтрэнэ үү:",
     "When:": "Хэзээ:",
     "Where:": "Хаана:",

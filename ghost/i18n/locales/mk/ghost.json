@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Сѐ најдобро!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "",
     "Comment": "",
@@ -61,7 +60,7 @@
     "View comments": "",
     "View in browser": "",
     "Welcome back to {siteTitle}!": "Добредојдовте назад на {siteTitle}!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Добредојдовте назад! Искористете го овој линк за безбедно да се најавите на вашата сметка за {siteTitle}:",
     "When:": "",
     "Where:": "",

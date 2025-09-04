@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Chúc bạn mọi điều tốt đẹp nhất!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Trở thành thành viên trả phí của {site} để truy cập toàn bộ nội dung cao cấp.",
     "By {authors}": "Viết bởi {authors}",
     "Comment": "Bình luận",
@@ -61,7 +60,7 @@
     "View comments": "Xem bình luận",
     "View in browser": "Xem bằng trình duyệt",
     "Welcome back to {siteTitle}!": "Chào mừng quay lại {siteTitle}!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Chào mừng quay lại! Sử dụng liên kết này để đăng nhập an toàn vào tài khoản {siteTitle} của bạn:",
     "When:": "Thời gian:",
     "Where:": "Địa điểm:",

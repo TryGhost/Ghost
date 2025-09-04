@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "ขอให้โชคดี!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "",
     "Comment": "",
@@ -61,7 +60,7 @@
     "View comments": "",
     "View in browser": "",
     "Welcome back to {siteTitle}!": "ยินดีต้อนรับกลับสู่ {siteTitle}!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "ยินดีต้อนรับกลับ! ใช้ลิงก์นี้เพื่อลงชื่อเข้าใช้บัญชีของคุณบน {siteTitle} อย่างปลอดภัย:",
     "When:": "",
     "Where:": "",

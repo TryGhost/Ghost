@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Até breve!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Torne-se um membro pago do {site} para ter acesso a todo o conteúdo premium.",
     "By {authors}": "Por {authors}",
     "Comment": "Comentar",
@@ -61,7 +60,7 @@
     "View comments": "Ver comentários",
     "View in browser": "Ver no navegador",
     "Welcome back to {siteTitle}!": "Bem-vindo de volta ao site {siteTitle}!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Bem-vindo novamente! Use este link para entrar automaticamente na sua conta do site {siteTitle}:",
     "When:": "Quando:",
     "Where:": "Onde:",

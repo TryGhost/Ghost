@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "Zorte on!",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "Egin zaitez ordainpeko kide {site}(e)ko primerako eduki guztira sarbidea izateko.",
     "By {authors}": "{authors}(r)en eskutik",
     "Comment": "Egin iruzkina",
@@ -61,7 +60,7 @@
     "View comments": "Ikusi iruzkinak",
     "View in browser": "Ikusi nabigatzailean",
     "Welcome back to {siteTitle}!": "Ongi etorri {siteTitle}(e)ra!",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "Ongi etorri! Erabili honako esteka modu seguruan {siteTitle}(e)ko zure kontuan saioa hasteko:",
     "When:": "Noiz",
     "Where:": "Non",

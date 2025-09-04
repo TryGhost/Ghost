@@ -1,7 +1,6 @@
 {
     "{date}": "{date}",
     "All the best!": "祝您有個美好的一天！",
-    "Alternatively you can copy and paste this URL to your browser": "",
     "Become a paid member of {site} to get access to all premium content.": "",
     "By {authors}": "作者：{authors}",
     "Comment": "留言",
@@ -61,7 +60,7 @@
     "View comments": "",
     "View in browser": "由瀏覽器閱讀",
     "Welcome back to {siteTitle}!": "歡迎回到{siteTitle}！",
-    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours": "",
+    "Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours": "",
     "Welcome back! Use this link to securely sign in to your {siteTitle} account:": "歡迎回來！請使用此連結安全地登入您的{siteTitle}帳號：",
     "When:": "",
     "Where:": "",
