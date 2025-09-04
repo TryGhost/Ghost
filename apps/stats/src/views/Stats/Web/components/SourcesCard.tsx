@@ -1,6 +1,6 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, SourceTabs, TabType, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -87,6 +87,9 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
     isLoading
 }) => {
+    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
+
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
         return processSources({
@@ -137,6 +140,14 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
+                <div className='mb-2'>
+                    <SourceTabs
+                        selectedCampaign={selectedCampaign}
+                        selectedTab={selectedTab}
+                        onCampaignChange={setSelectedCampaign}
+                        onTabChange={setSelectedTab}
+                    />
+                </div>
                 <Separator />
                 {topSources.length > 0 ? (
                     <SourcesTable
