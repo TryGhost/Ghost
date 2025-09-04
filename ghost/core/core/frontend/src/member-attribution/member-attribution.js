@@ -1,7 +1,7 @@
 /* eslint-env browser */
 /* eslint-disable no-console */
 const urlAttribution = require('../utils/url-attribution');
-const parseReferrer = urlAttribution.parseReferrer;
+const parseReferrerData = urlAttribution.parseReferrerData;
 const getReferrer = urlAttribution.getReferrer;
 
 // Location where we want to store the history in sessionStorage
@@ -79,10 +79,10 @@ const LIMIT = 15;
             history = [];
         }
 
-        // Get detailed referrer information using parseReferrer
+        // Get detailed referrer information using parseReferrerData
         let referrerData;
         try {
-            referrerData = parseReferrer(window.location.href);
+            referrerData = parseReferrerData(window.location.href);
         } catch (e) {
             console.error('[Member Attribution] Parsing referrer failed', e);
             referrerData = {source: null, medium: null, url: null};
@@ -98,7 +98,7 @@ const LIMIT = 15;
         try {
             referrerUrl = getReferrer(window.location.href);
             // If no referrer value returned by getReferrer but we have a document.referrer,
-            // use the original URL from parseReferrer
+            // use the original URL from parseReferrerData
             if (!referrerUrl && referrerData.url) {
                 referrerUrl = referrerData.url;
             }

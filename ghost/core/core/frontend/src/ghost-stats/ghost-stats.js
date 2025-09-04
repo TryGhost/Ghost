@@ -1,5 +1,5 @@
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { getReferrer, parseReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrerData } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -161,7 +161,7 @@ export class GhostStats {
         const navigator = this.browser.getNavigator();
         const location = this.browser.getLocation();
 
-        const referrerData = parseReferrer(location?.href);
+        const referrerData = parseReferrerData(location?.href);
         referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
 
         // Debounce tracking to avoid duplicates and ensure page has settled

@@ -103,6 +103,3 @@ export function getReferrer(url) {
     const referrerData = parseReferrerData(url);
     return selectPrimaryReferrer(referrerData);
 }
-
-// Legacy export name for backward compatibility
-export const parseReferrer = parseReferrerData;
