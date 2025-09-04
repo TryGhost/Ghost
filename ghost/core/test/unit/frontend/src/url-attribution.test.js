@@ -78,11 +78,11 @@ describe('URL Attribution Utils', function () {
         it('should extract all UTM parameters', function () {
             const result = parseReferrerData('https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
             should.exist(result);
-            should.equal(result.utm_source, 'google');
-            should.equal(result.utm_medium, 'cpc');
-            should.equal(result.utm_campaign, 'summer');
-            should.equal(result.utm_term, 'ghost');
-            should.equal(result.utm_content, 'banner');
+            should.equal(result.utmSource, 'google');
+            should.equal(result.utmMedium, 'cpc');
+            should.equal(result.utmCampaign, 'summer');
+            should.equal(result.utmTerm, 'ghost');
+            should.equal(result.utmContent, 'banner');
             should.equal(result.source, 'google'); // source should be utm_source
         });
     });
@@ -104,11 +104,11 @@ describe('URL Attribution Utils', function () {
         it('should extract all UTM parameters from portal hash', function () {
             const result = parseReferrerData('https://example.com/#/portal/signup?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
             should.exist(result);
-            should.equal(result.utm_source, 'google');
-            should.equal(result.utm_medium, 'cpc');
-            should.equal(result.utm_campaign, 'summer');
-            should.equal(result.utm_term, 'ghost');
-            should.equal(result.utm_content, 'banner');
+            should.equal(result.utmSource, 'google');
+            should.equal(result.utmMedium, 'cpc');
+            should.equal(result.utmCampaign, 'summer');
+            should.equal(result.utmTerm, 'ghost');
+            should.equal(result.utmContent, 'banner');
             should.equal(result.source, 'google'); // source should be utm_source
         });
     });
