@@ -90,7 +90,7 @@ function createApiInstance(config) {
                 case 'signin':
                 default:
                     if (otc) {
-                        return `🔑 ${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}`;
+                        return `🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}`;
                     } else {
                         return `🔑 ${t(`Secure sign in link for {siteTitle}`, {siteTitle, interpolation: {escapeValue: false}})}`;
                     }
