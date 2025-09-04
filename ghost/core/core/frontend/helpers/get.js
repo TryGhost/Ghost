@@ -17,7 +17,7 @@ const messages = {
     mustBeCalledAsBlock: 'The {\\{{helperName}}} helper must be called as a block. E.g. {{#{helperName}}}...{{/{helperName}}}',
     invalidResource: 'Invalid "{resource}" resource given to get helper'
 };
-
+// comment
 const createFrame = hbs.handlebars.createFrame;
 
 const RESOURCES = {
