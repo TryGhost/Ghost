@@ -72,9 +72,9 @@ jobs:
           context: .
           file: .docker/Dockerfile
           # Only push on main branch or PRs from the main repo (not forks)
-          push: ${{ github.event_name != 'pull_request' || github.pull_request.head.repo.fork == false }}
+          push: ${{ github.event_name != 'pull_request' || github.pull_request.head.repo.fork == "false" }}
           # Only load image on PRs from forks (to allow testing without pushing)
-          load: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == true }}
+          load: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == "true" }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
@@ -88,11 +88,11 @@ jobs:
     outputs:
       image-tags: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
-      is-fork: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == true }}
+      is-fork: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == "true" }}
   test:
     needs: build
     runs-on: ubuntu-latest-16-cores
-    
+
     steps:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -142,7 +142,7 @@ jobs:
           echo "Testing container..."
           # Run a basic test - replace with your actual tests
           docker run --rm ${{ steps.image.outputs.tag }} node --version
-          
+
           # Example: Run your application's health check or tests
           # docker run --rm -p 2368:2368 ${{ steps.image.outputs.tag }} &
           # sleep 5
