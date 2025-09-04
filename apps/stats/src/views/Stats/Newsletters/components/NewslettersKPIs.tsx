@@ -91,19 +91,6 @@ const NewsletterKPIs: React.FC<{
 
     const {totalSubscribers, avgOpenRate, avgClickRate} = totals;
 
-    // Update current tab if initialTab changes
-    useEffect(() => {
-        setCurrentTab(initialTab);
-    }, [initialTab]);
-
-    // Function to update tab and URL
-    const handleTabChange = (tabValue: string) => {
-        setCurrentTab(tabValue);
-        const newSearchParams = new URLSearchParams(searchParams);
-        newSearchParams.set('tab', tabValue);
-        navigate(`?${newSearchParams.toString()}`, {replace: true});
-    };
-
     // Sanitize subscribers data (API returns cumulative values, not deltas)
     const subscribersData = useMemo(() => {
         if (!allSubscribersData || allSubscribersData.length === 0) {
@@ -125,13 +112,58 @@ const NewsletterKPIs: React.FC<{
         return processedData;
     }, [allSubscribersData, range]);
 
+    const subscribersDiff = useMemo(() => {
+        if (!subscribersData || subscribersData.length <= 1) {
+            return {
+                direction: 'same' as const,
+                value: '0%'
+            };
+        }
+
+        const prev = subscribersData[subscribersData.length - 2]?.value ?? 0;
+        const curr = subscribersData[subscribersData.length - 1]?.value ?? 0;
+
+        // Calculate direction
+        let direction: 'up' | 'down' | 'same' = 'same';
+        if (curr > prev) {
+            direction = 'up';
+        } else if (curr < prev) {
+            direction = 'down';
+        }
+
+        // Calculate percentage difference
+        let value: string;
+        if (prev === 0) {
+            value = curr === 0 ? '0%' : '+100%';
+        } else {
+            const diff = ((curr - prev) / prev) * 100;
+            const rounded = Math.round(diff * 10) / 10;
+            value = `${diff >= 0 ? '+' : ''}${rounded}%`;
+        }
+
+        return {direction, value};
+    }, [subscribersData]);
+
+    // Update current tab if initialTab changes
+    useEffect(() => {
+        setCurrentTab(initialTab);
+    }, [initialTab]);
+
+    // Function to update tab and URL
+    const handleTabChange = (tabValue: string) => {
+        setCurrentTab(tabValue);
+        const newSearchParams = new URLSearchParams(searchParams);
+        newSearchParams.set('tab', tabValue);
+        navigate(`?${newSearchParams.toString()}`, {replace: true});
+    };
+
     const barChartConfig = {
         open_rate: {
             label: 'Open rate'
         }
     } satisfies ChartConfig;
-    
-    const tabConfig = {
+
+    const tabConfig = useMemo(() => ({
         'total-subscribers': {
             color: 'hsl(var(--chart-darkblue))',
             datakey: 'value'
@@ -144,8 +176,8 @@ const NewsletterKPIs: React.FC<{
             color: 'hsl(var(--chart-teal))',
             datakey: 'click_rate'
         }
-    };
-    
+    }), []);
+
     // Calculate dynamic domain and ticks based on current tab's data
     const {barDomain, barTicks} = useMemo(() => {
         if (!avgsData || avgsData.length === 0 || currentTab === 'total-subscribers') {
@@ -179,7 +211,7 @@ const NewsletterKPIs: React.FC<{
             barDomain: [finalMin, finalMax],
             barTicks: [finalMin, finalMax]
         };
-    }, [avgsData, currentTab]);
+    }, [avgsData, currentTab, tabConfig]);
 
     if (isLoading) {
         return (
@@ -208,6 +240,8 @@ const NewsletterKPIs: React.FC<{
                 }}>
                     <KpiTabValue
                         color={tabConfig['total-subscribers'].color}
+                        diffDirection={subscribersDiff.direction}
+                        diffValue={subscribersDiff.value}
                         label="Total subscribers"
                         value={formatNumber(totalSubscribers)}
                     />
