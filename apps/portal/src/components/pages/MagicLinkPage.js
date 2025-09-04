@@ -110,9 +110,10 @@ export default class MagicLinkPage extends React.Component {
     doVerifyOTC() {
         this.setState((state) => {
             const {t} = this.context;
+            const code = (state.otc || '').trim();
             return {
                 errors: {
-                    [OTC_FIELD_NAME]: !state.otc ? t('Enter code below') : ''
+                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
                 }
             };
         }, () => {
