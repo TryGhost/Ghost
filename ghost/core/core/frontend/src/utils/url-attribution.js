@@ -7,11 +7,11 @@
  * @property {string|null} source - Primary attribution source (ref || source || utm_source)
  * @property {string|null} medium - UTM medium parameter
  * @property {string|null} url - Browser's document.referrer
- * @property {string|null} utm_source - UTM source parameter
- * @property {string|null} utm_medium - UTM medium parameter
- * @property {string|null} utm_term - UTM term/keyword parameter
- * @property {string|null} utm_campaign - UTM campaign parameter
- * @property {string|null} utm_content - UTM content/variant parameter
+ * @property {string|null} utmSource - UTM source parameter
+ * @property {string|null} utmMedium - UTM medium parameter
+ * @property {string|null} utmTerm - UTM term/keyword parameter
+ * @property {string|null} utmCampaign - UTM campaign parameter
+ * @property {string|null} utmContent - UTM content/variant parameter
  */
 
 /**
@@ -36,11 +36,11 @@ function extractParams(searchParams) {
         source: referrerSource,
         medium: utmMediumParam || null,
         url: window.document.referrer || null,
-        utm_source: utmSourceParam || null,
-        utm_medium: utmMediumParam || null,
-        utm_term: utmTermParam || null,
-        utm_campaign: utmCampaignParam || null,
-        utm_content: utmContentParam || null
+        utmSource: utmSourceParam || null,
+        utmMedium: utmMediumParam || null,
+        utmTerm: utmTermParam || null,
+        utmCampaign: utmCampaignParam || null,
+        utmContent: utmContentParam || null
     };
 }
 
