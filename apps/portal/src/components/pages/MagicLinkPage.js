@@ -161,7 +161,6 @@ export default class MagicLinkPage extends React.Component {
                         autoFocus={false}
                         maxlength={6}
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                        required
                     />
                 </section>
                 <footer className='gh-portal-signin-footer'>

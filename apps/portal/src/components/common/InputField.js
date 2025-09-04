@@ -97,7 +97,6 @@ function InputField({
     tabindex,
     maxlength,
     autoFocus,
-    required = false,
     errorMessage
 }) {
     const fieldNode = useRef(null);
@@ -173,7 +172,6 @@ function InputField({
                 aria-label={label}
                 inputMode={inputMode}
                 pattern={pattern}
-                required={required}
             />
         </section>
     );
