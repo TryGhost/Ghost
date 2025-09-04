@@ -88,9 +88,17 @@ const LIMIT = 15;
             referrerData = {source: null, medium: null, url: null};
         }
 
-        // Get referrer components from the parsed data
-        const referrerSource = referrerData.source;
-        const referrerMedium = referrerData.medium;
+        // Store all attribution data together
+        // We'll spread this object when creating history entries
+        const attributionData = {
+            referrerSource: referrerData.source,
+            referrerMedium: referrerData.medium,
+            utmSource: referrerData.utmSource,
+            utmMedium: referrerData.utmMedium,
+            utmCampaign: referrerData.utmCampaign,
+            utmTerm: referrerData.utmTerm,
+            utmContent: referrerData.utmContent
+        };
         
         // Use the getReferrer helper to handle same-domain referrer filtering
         // This will return null if the referrer is from the same domain
@@ -117,8 +125,7 @@ const LIMIT = 15;
                     time: currentTime,
                     id: params.get('attribution_id'),
                     type: params.get('attribution_type'),
-                    referrerSource,
-                    referrerMedium,
+                    ...attributionData,
                     referrerUrl
                 });
 
@@ -138,19 +145,22 @@ const LIMIT = 15;
             history.push({
                 path: currentPath,
                 time: currentTime,
-                referrerSource,
-                referrerMedium,
+                ...attributionData,
                 referrerUrl
             });
         } else if (history.length > 0) {
-            history[history.length - 1].time = currentTime;
-            // Update referrer information for same path if available (e.g. when opening a link on same path via external referrer)
-            if (referrerSource) {
-                history[history.length - 1].referrerSource = referrerSource;
-                history[history.length - 1].referrerMedium = referrerMedium;
-            }
+            const lastEntry = history[history.length - 1];
+            lastEntry.time = currentTime;
+            
+            // Update with any new attribution data (filters out null/undefined values)
+            Object.entries(attributionData).forEach(([key, value]) => {
+                if (value) {
+                    lastEntry[key] = value;
+                }
+            });
+            
             if (referrerUrl) {
-                history[history.length - 1].referrerUrl = referrerUrl;
+                lastEntry.referrerUrl = referrerUrl;
             }
         }
 
