@@ -1,35 +1,11 @@
 import React from 'react';
+import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
-
-interface SourceIconProps {
-    displayName: string;
-    iconSrc: string;
-    defaultSourceIconUrl: string;
-}
-
-const SourceIcon: React.FC<SourceIconProps> = ({defaultSourceIconUrl, displayName, iconSrc}) => {
-    return (
-        <>
-            {displayName.trim().toLowerCase().endsWith('newsletter') ? (
-                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
-            ) : (
-                <img
-                    alt=""
-                    className="size-4"
-                    src={iconSrc}
-                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                        e.currentTarget.src = defaultSourceIconUrl;
-                    }}
-                />
-            )}
-        </>
-    );
-};
 
 interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
