@@ -16,8 +16,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest-16-cores
-    if: |
-      (github.event_name != 'pull_request') ||
 
     steps:
       - name: Checkout repository
