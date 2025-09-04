@@ -32,7 +32,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
             className="relative flex flex-col lg:table-row"
         >
             <TableCell className="relative z-10 h-24 animate-pulse">
-                <div className="h-full rounded-md bg-muted" />
+                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
             </TableCell>
         </TableRow>
     );
