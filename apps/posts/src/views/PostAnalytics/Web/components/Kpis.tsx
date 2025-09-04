@@ -100,6 +100,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                             data={chartData}
                             id={currentMetric.dataKey}
                             range={range}
+                            showHours={true}
                             syncId="overview-charts"
                         />
                     </div>
