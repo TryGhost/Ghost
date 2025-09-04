@@ -13,6 +13,31 @@ interface SourcesTableProps {
     tableHeader: boolean;
 }
 
+interface SourceIconProps {
+    displayName: string;
+    iconSrc: string;
+    defaultSourceIconUrl: string;
+}
+
+const SourceIcon: React.FC<SourceIconProps> = ({displayName, iconSrc, defaultSourceIconUrl}) => {
+    return (
+        <>
+            {displayName.trim().toLowerCase().endsWith('newsletter') ? (
+                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
+            ) : (
+                <img
+                    alt=""
+                    className="size-4"
+                    src={iconSrc}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        e.currentTarget.src = defaultSourceIconUrl;
+                    }}
+                />
+            )}
+        </>
+    );
+};
+
 const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL}) => {
     return (
         <DataList>
@@ -34,22 +59,20 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
                                     <div className='truncate font-medium'>
                                         {row.linkUrl ?
                                             <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span className='group-hover/link:underline'>{row.displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span>{row.displayName}</span>
                                             </span>
                                         }
