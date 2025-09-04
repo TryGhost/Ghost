@@ -245,7 +245,7 @@ describe('User API', function () {
     });
 
     it('Can edit user with empty roles data and does not change the role', async function () {
-        await agent.put('users/me?include=roles')
+        await agent.put('users/me/?include=roles')
             .body({
                 users: [{
                     roles: []
@@ -269,7 +269,7 @@ describe('User API', function () {
 
     it('Cannot edit user with invalid roles data', async function () {
         const userId = fixtureManager.get('users', 1).id;
-        await agent.put(`users/${userId}?include=roles`)
+        await agent.put(`users/${userId}/?include=roles`)
             .body({
                 users: [{
                     roles: ['Invalid Role Name']
@@ -285,7 +285,7 @@ describe('User API', function () {
 
     it('Can edit user roles by name', async function () {
         const userId = fixtureManager.get('users', 1).id;
-        await agent.put(`users/${userId}?include=roles`)
+        await agent.put(`users/${userId}/?include=roles`)
             .body({
                 users: [{
                     roles: ['Administrator']
@@ -409,7 +409,7 @@ describe('User API', function () {
         const initialUserPostCount = userPostsAuthorsModels.length;
 
         // Delete the user
-        const deleteRes = await agent.delete(`users/${userId}`)
+        const deleteRes = await agent.delete(`users/${userId}/`)
             .expectStatus(200)
             .expect(({body}) => {
                 assert.ok(body.meta.filename);
@@ -456,7 +456,7 @@ describe('User API', function () {
         const originalOwnerId = fixtureManager.get('users', 0).id;
         const newOwnerId = fixtureManager.get('users', 1).id;
 
-        await agent.put('users/owner')
+        await agent.put('users/owner/')
             .body({
                 owner: [{
                     id: newOwnerId
@@ -486,7 +486,7 @@ describe('User API', function () {
     });
 
     it('Can change password and retain the session', async function () {
-        await agent.put('users/password')
+        await agent.put('users/password/')
             .body({
                 password: [{
                     newPassword: '1234abcde!!',
