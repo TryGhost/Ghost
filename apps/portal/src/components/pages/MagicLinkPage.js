@@ -4,7 +4,6 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
-import {ValidateInputForm} from '../../utils/form';
 import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
@@ -110,12 +109,11 @@ export default class MagicLinkPage extends React.Component {
 
     doVerifyOTC() {
         this.setState((state) => {
+            const {t} = this.context;
             return {
-                errors: ValidateInputForm({fields: [{
-                    name: OTC_FIELD_NAME,
-                    value: state.otc,
-                    required: true
-                }], t: this.context.t})
+                errors: {
+                    [OTC_FIELD_NAME]: !state.otc ? t('Enter code below') : ''
+                }
             };
         }, () => {
             const {otc, errors} = this.state;
@@ -163,6 +161,7 @@ export default class MagicLinkPage extends React.Component {
                         autoFocus={false}
                         maxlength={6}
                         onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
+                        required
                     />
                 </section>
                 <footer className='gh-portal-signin-footer'>
