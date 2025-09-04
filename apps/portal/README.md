@@ -20,7 +20,7 @@ The `data-ghost` attribute expects the URL for your Ghost site, which is the onl
 
 By default, the script adds a default floating trigger button on the bottom right of your page which is used to trigger the popup on screen.
 
-Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/ghost/portal/src/pages.js#L13-L22) to open from it by using it as `data-portal=signup`.
+Its possible to add custom trigger button of your own by adding data attribute `data-portal` to any HTML tag on page, and also specify a specific [page](https://github.com/TryGhost/Ghost/blob/main/apps/portal/src/pages.js#L24-L44) to open from it by using it as `data-portal=signup`.
 
 The script also adds custom class names to this element for open and close state of popup - `gh-portal-open` and `gh-portal-close`, allowing devs to update its UI based on popup state.
 
