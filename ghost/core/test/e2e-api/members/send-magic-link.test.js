@@ -302,12 +302,12 @@ describe('sendMagicLink', function () {
 
         function scrubEmailContent(mail) {
             const scrub = s => s && s
-                .replace(/([?&])token=[^&\s'"]+/gi, '$1token=<TOKEN>')
+                .replace(/([?&])token=[^&\s'\"]+/gi, '$1token=<TOKEN>')
                 .replace(/\d{6}/g, '<OTC>');
 
             return {
                 to: mail.to,
-                subject: mail.subject,
+                subject: scrub(mail.subject),
                 html: scrub(mail.html),
                 text: scrub(mail.text)
             };
