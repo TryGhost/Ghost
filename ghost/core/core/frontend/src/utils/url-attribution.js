@@ -3,10 +3,22 @@
  */
 
 /**
+ * @typedef {Object} AttributionData
+ * @property {string|null} source - Primary attribution source (ref || source || utm_source)
+ * @property {string|null} medium - UTM medium parameter
+ * @property {string|null} url - Browser's document.referrer
+ * @property {string|null} utm_source - UTM source parameter
+ * @property {string|null} utm_medium - UTM medium parameter
+ * @property {string|null} utm_term - UTM term/keyword parameter
+ * @property {string|null} utm_campaign - UTM campaign parameter
+ * @property {string|null} utm_content - UTM content/variant parameter
+ */
+
+/**
  * Extracts attribution parameters from URL search params
  * @private
  * @param {URLSearchParams} searchParams - The search params to parse
- * @returns {Object} Parsed attribution data with all UTM parameters
+ * @returns {AttributionData} Parsed attribution data with all UTM parameters
  */
 function extractParams(searchParams) {
     const refParam = searchParams.get('ref');
@@ -36,7 +48,7 @@ function extractParams(searchParams) {
  * Parses URL parameters to extract attribution information
  * 
  * @param {string} url - The URL to parse
- * @returns {Object} Parsed attribution data
+ * @returns {AttributionData} Parsed attribution data
  */
 export function parseReferrer(url) {
     // Extract current URL parameters
@@ -55,7 +67,7 @@ export function parseReferrer(url) {
 /**
  * Gets the final referrer value based on parsed data
  * 
- * @param {Object} referrerData - Parsed referrer data
+ * @param {AttributionData} referrerData - Parsed referrer data
  * @returns {string|null} Final referrer value or null
  */
 export function getFinalReferrer(referrerData) {
