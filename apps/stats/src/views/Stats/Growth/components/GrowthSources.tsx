@@ -37,14 +37,18 @@ const GrowthSourcesTableBody: React.FC<GrowthSourcesTableProps> = ({data, curren
                 <TableRow key={row.source} className='last:border-none'>
                     <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                            <img
-                                alt=""
-                                className="size-4"
-                                src={row.iconSrc}
-                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                    e.currentTarget.src = defaultSourceIconUrl;
-                                }}
-                            />
+                            {row.displayName.trim().toLowerCase().endsWith('newsletter') ? (
+                                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
+                            ) : (
+                                <img
+                                    alt=""
+                                    className="size-4"
+                                    src={row.iconSrc}
+                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                        e.currentTarget.src = defaultSourceIconUrl;
+                                    }}
+                                />
+                            )}
                             {row.linkUrl ? (
                                 <a
                                     className="hover:underline"
