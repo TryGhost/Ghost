@@ -72,7 +72,7 @@ jobs:
           context: .
           file: .docker/Dockerfile
           # Only push on main branch or PRs from the main repo (not forks)
-          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+          push: ${{ github.event_name != 'pull_request' || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) }}
           # Only load image on PRs from forks (to allow testing without pushing)
           load: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
           tags: ${{ steps.meta.outputs.tags }}
