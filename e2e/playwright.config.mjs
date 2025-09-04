@@ -1,5 +1,4 @@
 import dotenv from 'dotenv';
-import path from 'path';
 dotenv.config();
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
@@ -8,10 +7,11 @@ const config = {
     expect: {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
-    retries: 1, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: 1, // One worker for now in the interest of stability. Parallelism leads to flaky tests when not done carefully.
+    retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
+    workers: process.env.CI ? 2 : 10,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
+        // Base URL will be set dynamically per test via fixture
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
         browserName: 'chromium'
@@ -19,28 +19,26 @@ const config = {
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
-        // Main tests - run after setup with authentication
+        {
+            name: 'global-setup',
+            testMatch: /global\.setup\.ts/,
+            testDir: './',
+            teardown: 'global-teardown',
+            timeout: 60 * 1000 // 60 seconds for setup
+        },
         {
             name: 'main',
-            testIgnore: ['**/auth.setup.ts'], // Exclude setup files
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts'],
             testDir: './tests',
             use: {
-                // Use authentication state for all tests by default
-                storageState: path.resolve(import.meta.dirname, './playwright/.auth/user.json'),
                 viewport: {width: 1920, height: 1080}
             },
-            dependencies: ['setup']
+            dependencies: ['global-setup']
         },
-        // Factory tests
         {
-            name: 'factories',
-            testDir: './data-factory/tests'
-        },
-        // Setup project - runs first
-        {
-            name: 'setup',
-            testMatch: /.*\.setup\.ts/,
-            testDir: './tests'
+            name: 'global-teardown',
+            testMatch: /global\.teardown\.ts/,
+            testDir: './'
         }
     ]
 };

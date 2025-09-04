@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test';
+import {test, expect} from '../helpers/fixtures/ghost-instance';
 import {createPostFactory} from '../data-factory';
 import type {PostFactory} from '../data-factory';
 
@@ -6,7 +6,9 @@ test.describe('Post Factory API Integration', () => {
     let postFactory: PostFactory;
     
     test.beforeEach(async ({page}) => {
+        // Create post factory - page is already authenticated and configured
         postFactory = createPostFactory(page);
+        page.setDefaultNavigationTimeout(30000);
     });
     
     test('should create a post and view it on the frontend', async ({page}) => {
@@ -19,8 +21,8 @@ test.describe('Post Factory API Integration', () => {
         expect(post.slug).toBeTruthy();
         expect(post.status).toBe('published');
         
-        // TODO: Replace this with a Post page object
-        await page.goto(`http://localhost:2368/${post.slug}/`);
+        // Navigate to the post - baseURL is automatically set to Ghost instance
+        await page.goto(`/${post.slug}/`);
         await expect(page.locator('h1.gh-article-title')).toContainText('Test Post from Factory');
     });
     
@@ -31,8 +33,8 @@ test.describe('Post Factory API Integration', () => {
             status: 'published'
         });
         
-        // TODO: Replace with PostsList page object
-        await page.goto('http://localhost:2368/ghost/#/posts');
+        // Navigate to admin - baseURL is automatically set to Ghost instance
+        await page.goto('/ghost/#/posts');
         await expect(page.locator(`text="${post.title}"`).first()).toBeVisible();
     });
     
@@ -45,8 +47,8 @@ test.describe('Post Factory API Integration', () => {
         expect(draftPost.status).toBe('draft');
         expect(draftPost.published_at).toBeNull();
         
-        // TODO: Replace this with a 404 page object
-        const response = await page.goto(`http://localhost:2368/${draftPost.slug}/`, {
+        // Navigate to draft post - should return 404
+        const response = await page.goto(`/${draftPost.slug}/`, {
             waitUntil: 'domcontentloaded'
         });
         expect(response?.status()).toBe(404);
