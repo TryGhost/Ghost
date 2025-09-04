@@ -3,6 +3,10 @@ const assert = require('assert/strict');
 
 const SingleUseTokenProvider = require('../../../../../core/server/services/members/SingleUseTokenProvider');
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+const HOUR_MS = 60 * 60 * 1000;
+const HALF_HOUR_MS = 30 * 60 * 1000;
+
 describe('SingleUseTokenProvider', function () {
     let tokenProvider;
     let mockMembersConfig;
@@ -28,8 +32,8 @@ describe('SingleUseTokenProvider', function () {
 
         tokenProvider = new SingleUseTokenProvider({
             SingleUseTokenModel: mockModel,
-            validityPeriod: 86400000, // 24 hours
-            validityPeriodAfterUsage: 3600000, // 1 hour
+            validityPeriod: DAY_MS,
+            validityPeriodAfterUsage: HOUR_MS,
             maxUsageCount: 7,
             secret: mockMembersConfig.getAuthSecret()
         });
@@ -89,8 +93,8 @@ describe('SingleUseTokenProvider', function () {
         it('throws if secret is not configured', function () {
             const providerNoSecret = new SingleUseTokenProvider({
                 SingleUseTokenModel: mockModel,
-                validityPeriod: 86400000,
-                validityPeriodAfterUsage: 3600000,
+                validityPeriod: DAY_MS,
+                validityPeriodAfterUsage: HOUR_MS,
                 maxUsageCount: 3
             });
             assert.throws(() => {
@@ -228,8 +232,8 @@ describe('SingleUseTokenProvider', function () {
         it('should return false when secret is not configured', async function () {
             const providerNoSecret = new SingleUseTokenProvider({
                 SingleUseTokenModel: mockModel,
-                validityPeriod: 86400000,
-                validityPeriodAfterUsage: 3600000,
+                validityPeriod: DAY_MS,
+                validityPeriodAfterUsage: HOUR_MS,
                 maxUsageCount: 3
             });
 
@@ -355,7 +359,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError when token is expired by lifetime', async function () {
-                const oldDate = new Date(Date.now() - 86400001); // 24 hours + 1 ms ago (exceeds lifetime)
+                const oldDate = new Date(Date.now() - (DAY_MS + 1));
                 buildModel({createdAt: oldDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
@@ -364,7 +368,7 @@ describe('SingleUseTokenProvider', function () {
             });
 
             it('should throw ValidationError when token is expired after usage', async function () {
-                const oldUsageDate = new Date(Date.now() - 3600001); // 1 hour + 1 ms ago (exceeds post-usage validity)
+                const oldUsageDate = new Date(Date.now() - (HOUR_MS + 1));
                 buildModel({usedCount: 1, firstUsedAt: oldUsageDate});
                 await assert.rejects(
                     tokenProvider.validate(testToken),
@@ -374,7 +378,7 @@ describe('SingleUseTokenProvider', function () {
         });
 
         it('should increment usage count for previously used token', async function () {
-            const firstUsedDate = new Date(Date.now() - 1800000); // 30 minutes ago (within 1-hour window)
+            const firstUsedDate = new Date(Date.now() - HALF_HOUR_MS);
             const usedMockModel = createMockModel({
                 usedCount: 1,
                 firstUsedAt: firstUsedDate
@@ -532,8 +536,8 @@ describe('SingleUseTokenProvider', function () {
         it('throws when secret is missing', function () {
             const providerNoSecret = new SingleUseTokenProvider({
                 SingleUseTokenModel: mockModel,
-                validityPeriod: 86400000,
-                validityPeriodAfterUsage: 3600000,
+                validityPeriod: DAY_MS,
+                validityPeriodAfterUsage: HOUR_MS,
                 maxUsageCount: 3
             });
             assert.throws(() => providerNoSecret.createOTCVerificationHash(OTC, TOKEN), {code: 'OTC_SECRET_NOT_CONFIGURED'});
