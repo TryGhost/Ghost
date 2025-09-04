@@ -4,7 +4,6 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
-import {ValidateInputForm} from '../../utils/form';
 import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
@@ -110,12 +109,12 @@ export default class MagicLinkPage extends React.Component {
 
     doVerifyOTC() {
         this.setState((state) => {
+            const {t} = this.context;
+            const code = (state.otc || '').trim();
             return {
-                errors: ValidateInputForm({fields: [{
-                    name: OTC_FIELD_NAME,
-                    value: state.otc,
-                    required: true
-                }], t: this.context.t})
+                errors: {
+                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
+                }
             };
         }, () => {
             const {otc, errors} = this.state;
