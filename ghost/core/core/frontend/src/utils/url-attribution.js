@@ -45,12 +45,12 @@ function extractParams(searchParams) {
 }
 
 /**
- * Parses URL parameters to extract attribution information
+ * Parses URL parameters to extract complete referrer/attribution data
  * 
- * @param {string} url - The URL to parse
- * @returns {AttributionData} Parsed attribution data
+ * @param {string} url - The URL to parse (defaults to current URL)
+ * @returns {AttributionData} Complete attribution data including all UTM parameters
  */
-export function parseReferrer(url) {
+export function parseReferrerData(url) {
     // Extract current URL parameters
     const currentUrl = new URL(url || window.location.href);
     let searchParams = currentUrl.searchParams;
@@ -65,12 +65,14 @@ export function parseReferrer(url) {
 }
 
 /**
- * Gets the final referrer value based on parsed data
- * 
+ * Selects the primary referrer value from parsed attribution data
+ * Prioritizes: source → medium → url
+ * Filters out same-domain referrers
+ * @private
  * @param {AttributionData} referrerData - Parsed referrer data
- * @returns {string|null} Final referrer value or null
+ * @returns {string|null} Primary referrer value or null
  */
-export function getFinalReferrer(referrerData) {
+function selectPrimaryReferrer(referrerData) {
     const { source, medium, url } = referrerData;
     const finalReferrer = source || medium || url || null;
     
@@ -98,6 +100,9 @@ export function getFinalReferrer(referrerData) {
  * @returns {string|null} Final referrer value
  */
 export function getReferrer(url) {
-    const referrerData = parseReferrer(url);
-    return getFinalReferrer(referrerData);
+    const referrerData = parseReferrerData(url);
+    return selectPrimaryReferrer(referrerData);
 }
+
+// Legacy export name for backward compatibility
+export const parseReferrer = parseReferrerData;
