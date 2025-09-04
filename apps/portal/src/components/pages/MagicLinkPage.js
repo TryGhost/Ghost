@@ -39,10 +39,9 @@ export default class MagicLinkPage extends React.Component {
         };
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(_prevProps, prevState) {
         const {action, t} = this.context;
         
-        // Handle OTC verification failure - trigger when action changes from running to failed
         if (action === 'verifyOTC:failed' && prevState.lastAction === 'verifyOTC:running') {
             this.setState({
                 errors: {
@@ -52,7 +51,6 @@ export default class MagicLinkPage extends React.Component {
             });
         }
         
-        // Track when verification starts running
         if (action === 'verifyOTC:running' && prevState.lastAction !== action) {
             this.setState({
                 lastAction: action
