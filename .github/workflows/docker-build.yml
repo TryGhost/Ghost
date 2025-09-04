@@ -31,6 +31,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Calculate cache image name
+        id: cache
+        run: |
+          OWNER_LOWER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "image=ghcr.io/${OWNER_LOWER}/ghost-test" >> $GITHUB_OUTPUT
+
       - name: Docker meta
         id: meta
         uses: docker/metadata-action@v5
@@ -70,7 +76,7 @@ jobs:
           # On PRs: use both main cache and PR-specific cache
           # On main: only use main cache
           cache-from: |
-            type=registry,ref=ghcr.io/tryghost/ghost-test:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref=ghcr.io/tryghost/ghost-test:cache-pr-{0}', github.event.pull_request.number) || '' }}
+            type=registry,ref=${{ steps.cache.outputs.image }}:cache-main
+            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.cache.outputs.image, github.event.pull_request.number) || '' }}
           cache-to: |
-            type=registry,ref=ghcr.io/tryghost/ghost-test:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
+            type=registry,ref=${{ steps.cache.outputs.image }}:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
