@@ -594,8 +594,10 @@ export const sanitizeChartData = <T extends {date: string}>(data: T[], range: nu
  * - For ranges above 91 days: shows "Week of [date]"
  * - For other ranges: uses the default formatDisplayDate
  */
-export const formatDisplayDateWithRange = (date: string, range: number, showHours: boolean = false): string => {
-    if (range === 1 && showHours) {
+export const formatDisplayDateWithRange = (date: string, range: number, showHours: boolean = false, hoursOnly: boolean = false): string => {
+    if (range === 1 && hoursOnly) {
+        return moment(date).format('h:mma');
+    } else if (range === 1 && showHours) {
         return moment(date).format('MMM D, h:mma');
     } else if (range > 365) {
         return moment(date).format('MMM YYYY');

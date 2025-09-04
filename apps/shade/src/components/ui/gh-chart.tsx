@@ -116,6 +116,8 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
     const isWholeMid = Number.isInteger(midValue);
     const yTicks = isWholeMid ? [yRange[0], midValue, yRange[1]] : yRange;
 
+    const xTickHoursOnly = showHours && range === 1;
+
     return (
         <ChartContainer className={
             cn('w-full', className)
@@ -134,7 +136,7 @@ const GhAreaChart: React.FC<GhAreaChartProps> = ({
                     axisLine={{stroke: 'hsl(var(--border))', strokeWidth: 1}}
                     dataKey="date"
                     interval={0}
-                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range, showHours)} />}
+                    tick={props => <AlignedAxisTick {...props} formatter={value => formatDisplayDateWithRange(String(value), range, showHours, xTickHoursOnly)} />}
                     tickFormatter={value => formatDisplayDateWithRange(String(value), range, showHours)}
                     tickLine={false}
                     tickMargin={10}
