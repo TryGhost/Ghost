@@ -70,14 +70,8 @@ jobs:
           
           # Generate appropriate tags based on fork status
           if [ "$IS_FORK_PR" = "true" ]; then
-            # For fork PRs, use simple local tags since we're not pushing to registry
-            # Generate multiple tags to match main repo behavior
-            if [ "${{ github.event_name }}" = "pull_request" ]; then
-              LOCAL_TAGS="ghost-test:pr-${{ github.event.pull_request.number }}
-ghost-test:sha-${{ github.sha }}"
-            else
-              LOCAL_TAGS="ghost-test:sha-${{ github.sha }}"
-            fi
+            # For fork PRs, use simple local SHA tag since we're not pushing to registry
+            LOCAL_TAGS="ghost-test:sha-${{ github.sha }}"
             
             echo "image-tags<<EOF" >> $GITHUB_OUTPUT
             echo "$LOCAL_TAGS" >> $GITHUB_OUTPUT
