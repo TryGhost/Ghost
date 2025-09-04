@@ -72,9 +72,9 @@ jobs:
           context: .
           file: .docker/Dockerfile
           # Only push on main branch or PRs from the main repo (not forks)
-          push: ${{ github.event_name != 'pull_request' || github.pull_request.head.repo.fork == "false" }}
+          push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
           # Only load image on PRs from forks (to allow testing without pushing)
-          load: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == "true" }}
+          load: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
@@ -88,7 +88,7 @@ jobs:
     outputs:
       image-tags: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
-      is-fork: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork == "true" }}
+      is-fork: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository }}
   test:
     needs: build
     runs-on: ubuntu-latest-16-cores
