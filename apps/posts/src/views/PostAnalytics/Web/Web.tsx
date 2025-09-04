@@ -34,7 +34,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
         if (!isPostLoading && post?.email_only) {
-            navigate(`/analytics/${postId}`);
+            navigate(`/posts/analytics/${postId}`);
         }
     }, [isPostLoading, post?.email_only, navigate, postId]);
 

@@ -13,11 +13,16 @@ const messages = {
  */
 
 /**
+ * @typedef {Object} TokenValidateOptions
+ * @prop {string} [otcVerification] - "timestamp:hash" string used to verify an OTC-bound token
+ */
+
+/**
  * @template T
  * @template D
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
- * @prop {(token: T) => Promise<D>} validate
+ * @prop {(token: T, options?: TokenValidateOptions) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
  * @prop {(otcRef: string, tokenValue: T) => string} [deriveOTC]
  */
@@ -32,7 +37,7 @@ class MagicLink {
      * @param {object} options
      * @param {MailTransporter} options.transporter
      * @param {TokenProvider<Token, TokenData>} options.tokenProvider
-     * @param {(token: Token, type: string, referrer?: string) => URL} options.getSigninURL
+     * @param {(token: Token, type: string, referrer?: string, otcVerification?: string) => URL} options.getSigninURL
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
@@ -165,10 +170,11 @@ class MagicLink {
      * getDataFromToken
      *
      * @param {Token} token - The token to decode
+     * @param {string} [otcVerification] - Optional "timestamp:hash" to bind token usage to an OTC verification window
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
-    async getDataFromToken(token) {
-        const tokenData = await this.tokenProvider.validate(token);
+    async getDataFromToken(token, otcVerification) {
+        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
         return tokenData;
     }
 }

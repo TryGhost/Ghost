@@ -31,6 +31,14 @@ const features: Feature[] = [{
     title: 'Members sign-in OTC (alpha)',
     description: 'Enables one-time codes alongside magic links for members signin',
     flag: 'membersSigninOTC'
+}, {
+    title: 'Tags X',
+    description: 'Enables the new Tags UI',
+    flag: 'tagsX'
+}, {
+    title: 'UTM tracking',
+    description: 'Enables UTM tracking for web traffic and member attribution',
+    flag: 'utmTracking'
 }];
 
 const AlphaFeatures: React.FC = () => {

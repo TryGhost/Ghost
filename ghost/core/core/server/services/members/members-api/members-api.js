@@ -235,12 +235,12 @@ module.exports = function MembersAPI({
         });
     }
 
-    async function getTokenDataFromMagicLinkToken(token) {
-        return await magicLinkService.getDataFromToken(token);
+    async function getTokenDataFromMagicLinkToken(token, otcVerification) {
+        return await magicLinkService.getDataFromToken(token, otcVerification);
     }
 
-    async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token);
+    async function getMemberDataFromMagicLinkToken(token, otcVerification) {
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
@@ -339,6 +339,10 @@ module.exports = function MembersAPI({
         sendMagicLink: Router().use(
             body.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
+        ),
+        verifyOTC: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.verifyOTC(req, res))
         ),
         createCheckoutSession: Router().use(
             body.json(),

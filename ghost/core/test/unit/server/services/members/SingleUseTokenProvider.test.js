@@ -7,7 +7,12 @@ describe('SingleUseTokenProvider', function () {
     let tokenProvider;
     let mockMembersConfig;
     let mockModel;
-    const testAuthSecret = 'abc123';
+    const testAuthSecret = 'a'.repeat(128);
+
+    const COMMON_TEST_TOKEN = {
+        id: 'test-token-id',
+        token: 'test-token-value'
+    };
 
     beforeEach(function () {
         mockMembersConfig = {
@@ -17,14 +22,15 @@ describe('SingleUseTokenProvider', function () {
         mockModel = {
             add: sinon.stub(),
             findOne: sinon.stub(),
-            transaction: sinon.stub()
+            transaction: sinon.stub(),
+            save: sinon.stub()
         };
 
         tokenProvider = new SingleUseTokenProvider({
             SingleUseTokenModel: mockModel,
             validityPeriod: 86400000, // 24 hours
             validityPeriodAfterUsage: 3600000, // 1 hour
-            maxUsageCount: 3,
+            maxUsageCount: 7,
             secret: mockMembersConfig.getAuthSecret()
         });
     });
@@ -34,14 +40,11 @@ describe('SingleUseTokenProvider', function () {
     });
 
     describe('deriveOTC', function () {
-        const testToken = {
-            id: 'test-token-id',
-            token: 'test-token-value'
-        };
+        const testToken = COMMON_TEST_TOKEN;
 
         it('should generate a 6-digit code', function () {
             const code = tokenProvider.deriveOTC(testToken.id, testToken.token);
-            
+
             assert.equal(typeof code, 'string');
             assert.match(code, /^\d{6}$/);
         });
@@ -49,37 +52,37 @@ describe('SingleUseTokenProvider', function () {
         it('should generate consistent codes for the same token', function () {
             const code1 = tokenProvider.deriveOTC(testToken.id, testToken.token);
             const code2 = tokenProvider.deriveOTC(testToken.id, testToken.token);
-            
+
             assert.equal(code1, code2);
         });
 
         it('should generate different codes for different tokens', function () {
             const token1 = {id: 'token-1', token: 'value-1'};
             const token2 = {id: 'token-2', token: 'value-2'};
-            
+
             const code1 = tokenProvider.deriveOTC(token1.id, token1.token);
             const code2 = tokenProvider.deriveOTC(token2.id, token2.token);
-            
+
             assert.notEqual(code1, code2);
         });
 
         it('should generate different codes for same id with different token values', function () {
             const token1 = {id: 'same-id', token: 'value-1'};
             const token2 = {id: 'same-id', token: 'value-2'};
-            
+
             const code1 = tokenProvider.deriveOTC(token1.id, token1.token);
             const code2 = tokenProvider.deriveOTC(token2.id, token2.token);
-            
+
             assert.notEqual(code1, code2);
         });
 
         it('should generate different codes for same token value with different ids', function () {
             const token1 = {id: 'id-1', token: 'same-value'};
             const token2 = {id: 'id-2', token: 'same-value'};
-            
+
             const code1 = tokenProvider.deriveOTC(token1.id, token1.token);
             const code2 = tokenProvider.deriveOTC(token2.id, token2.token);
-            
+
             assert.notEqual(code1, code2);
         });
 
@@ -92,12 +95,12 @@ describe('SingleUseTokenProvider', function () {
             });
             assert.throws(() => {
                 providerNoSecret.deriveOTC('id', 'value');
-            }, /secret not configured/i);
+            }, {code: 'OTC_SECRET_NOT_CONFIGURED'});
         });
 
         it('throws if tokenId or tokenValue is missing', function () {
-            assert.throws(() => tokenProvider.deriveOTC('', 'value'), /tokenId and tokenValue are required/i);
-            assert.throws(() => tokenProvider.deriveOTC('id', ''), /tokenId and tokenValue are required/i);
+            assert.throws(() => tokenProvider.deriveOTC('', 'value'), {code: 'DERIVE_OTC_MISSING_INPUT'});
+            assert.throws(() => tokenProvider.deriveOTC('id', ''), {code: 'DERIVE_OTC_MISSING_INPUT'});
         });
     });
 
@@ -105,7 +108,7 @@ describe('SingleUseTokenProvider', function () {
         it('should return the token ID', async function () {
             const testTokenValue = 'test-token-value';
             const expectedId = 'test-token-id';
-            
+
             mockModel.findOne.resolves({
                 get: sinon.stub().returns(expectedId)
             });
@@ -118,7 +121,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should return null when a token does not exist', async function () {
             const testTokenValue = 'nonexistent-token';
-            
+
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(testTokenValue);
@@ -129,7 +132,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should return null when a database error occurs', async function () {
             const testTokenValue = 'test-token-value';
-            
+
             mockModel.findOne.rejects(new Error('Database connection failed'));
 
             const result = await tokenProvider.getIdByToken(testTokenValue);
@@ -140,7 +143,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should handle an empty token gracefully', async function () {
             const emptyToken = '';
-            
+
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(emptyToken);
@@ -151,7 +154,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should handle an undefined token gracefully', async function () {
             const undefinedToken = undefined;
-            
+
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.getIdByToken(undefinedToken);
@@ -162,7 +165,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should return null when model.get throws an error', async function () {
             const testTokenValue = 'test-token-value';
-            
+
             mockModel.findOne.resolves({
                 get: sinon.stub().throws(new Error('Model error'))
             });
@@ -175,14 +178,11 @@ describe('SingleUseTokenProvider', function () {
     });
 
     describe('verifyOTC', function () {
-        const testToken = {
-            id: 'test-token-id',
-            token: 'test-token-value'
-        };
+        const testToken = COMMON_TEST_TOKEN;
 
         it('should return true for valid OTC', async function () {
             const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
-            
+
             mockModel.findOne.resolves({
                 get: sinon.stub().returns(testToken.token)
             });
@@ -195,7 +195,7 @@ describe('SingleUseTokenProvider', function () {
 
         it('should return false for invalid OTC', async function () {
             const invalidOTC = '123456';
-            
+
             mockModel.findOne.resolves({
                 get: sinon.stub().returns(testToken.token)
             });
@@ -206,9 +206,17 @@ describe('SingleUseTokenProvider', function () {
             sinon.assert.calledOnceWithExactly(mockModel.findOne, {id: testToken.id});
         });
 
+        it('should return false for non-numeric OTC', async function () {
+            mockModel.findOne.resolves({get: sinon.stub().returns(testToken.token)});
+
+            const result = await tokenProvider.verifyOTC(testToken.id, '12ab56');
+
+            assert.equal(result, false);
+        });
+
         it('should return false when token is not found', async function () {
             const validOTC = tokenProvider.deriveOTC(testToken.id, testToken.token);
-            
+
             mockModel.findOne.resolves(null);
 
             const result = await tokenProvider.verifyOTC('nonexistent-id', validOTC);
@@ -261,6 +269,171 @@ describe('SingleUseTokenProvider', function () {
 
             assert.equal(result, false);
             sinon.assert.notCalled(mockModel.findOne);
+        });
+    });
+
+    describe('validate', function () {
+        let clock;
+        const testToken = COMMON_TEST_TOKEN.token;
+        const testData = {user: 'test-user', email: 'test@example.com'};
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers();
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        function createMockModel({
+            id = COMMON_TEST_TOKEN.id,
+            token = testToken,
+            data = JSON.stringify(testData),
+            usedCount = 0,
+            firstUsedAt = null,
+            createdAt = new Date()
+        } = {}) {
+            return {
+                get: sinon.stub().callsFake((field) => {
+                    switch (field) {
+                    case 'id': return id;
+                    case 'token': return token;
+                    case 'data': return data;
+                    case 'used_count': return usedCount;
+                    case 'first_used_at': return firstUsedAt;
+                    case 'created_at': return createdAt;
+                    default: return null;
+                    }
+                }),
+                save: sinon.stub().resolves()
+            };
+        }
+
+        function setupMockModelForValidation(mockModelInstance, options = {}) {
+            const transactionId = options.transactionId || 'test-transaction';
+            mockModelInstance.transaction = sinon.stub().callsFake(callback => callback(transactionId));
+            mockModelInstance.findOne = sinon.stub().resolves(mockModelInstance);
+            tokenProvider.model = mockModelInstance;
+            return mockModelInstance;
+        }
+
+        function buildModel(options = {}) {
+            const model = createMockModel(options);
+            return setupMockModelForValidation(model);
+        }
+
+        describe('OTC verification integration', function () {
+            function createOtcVerificationHash(tokenId, token, timestampOverride = null) {
+                const otc = tokenProvider.deriveOTC(tokenId, token);
+                const timestamp = timestampOverride || Math.floor(Date.now() / 1000);
+                const hash = tokenProvider.createOTCVerificationHash(otc, token, timestamp);
+                return `${timestamp}:${hash}`;
+            }
+
+            it('should validate token with realistic OTC verification hash', async function () {
+                const testTokenId = COMMON_TEST_TOKEN.id;
+                const otcMockModel = createMockModel({id: testTokenId});
+                setupMockModelForValidation(otcMockModel);
+
+                // Need to mock getIdByToken since _validateOTCVerificationHash calls it
+                sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
+                const validOtcVerification = createOtcVerificationHash(testTokenId, testToken);
+
+                const result = await tokenProvider.validate(testToken, {otcVerification: validOtcVerification});
+
+                assert.deepEqual(result, testData);
+                tokenProvider.getIdByToken.restore();
+            });
+
+            it('should throw ValidationError with malformed OTC verification hash', async function () {
+                buildModel();
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: 'malformed-hash'}),
+                    {code: 'INVALID_OTC_VERIFICATION_HASH'}
+                );
+            });
+
+            it('should throw ValidationError with expired OTC verification hash', async function () {
+                const testTokenId = COMMON_TEST_TOKEN.id;
+                buildModel({id: testTokenId});
+
+                sinon.stub(tokenProvider, 'getIdByToken').resolves(testTokenId);
+
+                const expiredTimestamp = Math.floor(Date.now() / 1000) - (6 * 60); // 6 minutes ago
+                const expiredOtcVerification = createOtcVerificationHash(testTokenId, testToken, expiredTimestamp);
+
+                await assert.rejects(
+                    tokenProvider.validate(testToken, {otcVerification: expiredOtcVerification}),
+                    {code: 'INVALID_OTC_VERIFICATION_HASH'}
+                );
+
+                tokenProvider.getIdByToken.restore();
+            });
+
+            it('should skip OTC verification when not provided', async function () {
+                const noOtcMockModel = createMockModel();
+                setupMockModelForValidation(noOtcMockModel);
+
+                const result = await tokenProvider.validate(testToken);
+
+                assert.deepEqual(result, testData);
+            });
+        });
+    });
+
+    describe('createOTCVerificationHash', function () {
+        const TOKEN = 'test-token-value';
+        const OTC = '123456';
+        const TIMESTAMP = 1700000000;
+
+        it('creates deterministic HMAC for same inputs', function () {
+            const firstHash = tokenProvider.createOTCVerificationHash(OTC, TOKEN, TIMESTAMP);
+            const secondHash = tokenProvider.createOTCVerificationHash(OTC, TOKEN, TIMESTAMP);
+            assert.equal(firstHash, secondHash);
+            assert.match(firstHash, /^[a-f0-9]{64}$/i);
+        });
+
+        it('produces different hashes when OTC differs', function () {
+            const firstHash = tokenProvider.createOTCVerificationHash('111111', TOKEN, TIMESTAMP);
+            const secondHash = tokenProvider.createOTCVerificationHash('222222', TOKEN, TIMESTAMP);
+            assert.notEqual(firstHash, secondHash);
+        });
+
+        it('produces different hashes when token differs', function () {
+            const firstHash = tokenProvider.createOTCVerificationHash(OTC, 'token-a', TIMESTAMP);
+            const secondHash = tokenProvider.createOTCVerificationHash(OTC, 'token-b', TIMESTAMP);
+            assert.notEqual(firstHash, secondHash);
+        });
+
+        it('produces different hashes when timestamp differs', function () {
+            const firstHash = tokenProvider.createOTCVerificationHash(OTC, TOKEN, 1700000000);
+            const secondHash = tokenProvider.createOTCVerificationHash(OTC, TOKEN, 1700001000);
+            assert.notEqual(firstHash, secondHash);
+        });
+
+        it('uses current time as timestamp when not provided', function () {
+            sinon.useFakeTimers(new Date('2025-09-02T12:00:00Z'));
+
+            // same current time, hashes match
+            const hash1 = tokenProvider.createOTCVerificationHash(OTC, TOKEN);
+            const hash2 = tokenProvider.createOTCVerificationHash(OTC, TOKEN);
+            assert.equal(hash1, hash2);
+
+            // different current time, hashes don't match
+            sinon.clock.tick(2000);
+
+            const hash3 = tokenProvider.createOTCVerificationHash(OTC, TOKEN);
+            assert.notEqual(hash3, hash1);
+        });
+
+        it('throws when secret is missing', function () {
+            const providerNoSecret = new SingleUseTokenProvider({
+                SingleUseTokenModel: mockModel,
+                validityPeriod: 86400000,
+                validityPeriodAfterUsage: 3600000,
+                maxUsageCount: 3
+            });
+            assert.throws(() => providerNoSecret.createOTCVerificationHash(OTC, TOKEN), {code: 'OTC_SECRET_NOT_CONFIGURED'});
         });
     });
 });
