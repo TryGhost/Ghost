@@ -153,6 +153,7 @@ RUN cd apps/admin-x-settings && yarn build
 FROM development-base AS admin-x-activitypub-builder
 WORKDIR /home/ghost
 COPY apps/admin-x-activitypub apps/admin-x-activitypub
+COPY ghost/core/core/frontend/src/cards ghost/core/core/frontend/src/cards
 COPY --from=shade-builder /home/ghost/apps/shade apps/shade
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
