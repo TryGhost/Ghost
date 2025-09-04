@@ -67,10 +67,14 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           file: .docker/Dockerfile
-          push: true
+          # Only push on main branch or PRs from the main repo (not forks)
+          push: ${{ github.event_name != 'pull_request' || !github.pull_request.head.repo.fork }}
+          # Only load image on PRs from forks (to allow testing without pushing)
+          load: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
@@ -80,3 +84,77 @@ jobs:
             ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.cache.outputs.image, github.event.pull_request.number) || '' }}
           cache-to: |
             type=registry,ref=${{ steps.cache.outputs.image }}:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
+
+    outputs:
+      image-tags: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      is-fork: ${{ github.event_name == 'pull_request' && github.pull_request.head.repo.fork }}
+  test:
+    needs: build
+    runs-on: ubuntu-latest-16-cores
+    
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        if: needs.build.outputs.is-fork == 'false'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract first image tag
+        id: image
+        run: |
+          TAGS="${{ needs.build.outputs.image-tags }}"
+          FIRST_TAG=$(echo "$TAGS" | head -n1)
+          echo "tag=$FIRST_TAG" >> $GITHUB_OUTPUT
+          echo "Using image tag: $FIRST_TAG"
+
+      - name: Pull image from registry (main repo/branch)
+        if: needs.build.outputs.is-fork == 'false'
+        run: |
+          echo "Pulling image from registry..."
+          docker pull ${{ steps.image.outputs.tag }}
+
+      - name: List available images (fork PR)
+        if: needs.build.outputs.is-fork == 'true'
+        run: |
+          echo "Images loaded locally:"
+          docker images
+          echo "Looking for image: ${{ steps.image.outputs.tag }}"
+
+      - name: Verify image is available
+        run: |
+          if docker inspect ${{ steps.image.outputs.tag }} > /dev/null 2>&1; then
+            echo "✅ Image ${{ steps.image.outputs.tag }} is available"
+          else
+            echo "❌ Image ${{ steps.image.outputs.tag }} is not available"
+            echo "Available images:"
+            docker images
+            exit 1
+          fi
+
+      - name: Test container
+        run: |
+          echo "Testing container..."
+          # Run a basic test - replace with your actual tests
+          docker run --rm ${{ steps.image.outputs.tag }} node --version
+          
+          # Example: Run your application's health check or tests
+          # docker run --rm -p 2368:2368 ${{ steps.image.outputs.tag }} &
+          # sleep 5
+          # curl -f http://localhost:2368 || exit 1
+
+      - name: Show container logs (on failure)
+        if: failure()
+        run: |
+          echo "Showing recent container logs..."
+          docker ps -a
+          # Show logs from the most recent container if needed
+          CONTAINER_ID=$(docker ps -lq)
+          if [ ! -z "$CONTAINER_ID" ]; then
+            docker logs $CONTAINER_ID
+          fi
