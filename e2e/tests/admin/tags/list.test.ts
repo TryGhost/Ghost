@@ -4,7 +4,7 @@ import {TagsPage} from '../../../helpers/pages/admin';
 test.describe('Ghost Admin - Tags', () => {
     test('shows empty state when no tags exist', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await tagsPage.mockTagsResponse(() => ({
+        await tagsPage.mockTagsResponse(async () => ({
             tags: []
         }));
 
@@ -27,7 +27,7 @@ test.describe('Ghost Admin - Tags', () => {
     test('lists public and internal tags separately', async ({page}) => {
         const tagsPage = new TagsPage(page);
 
-        await tagsPage.mockTagsResponse(request => ({
+        await tagsPage.mockTagsResponse(async request => ({
             tags: request.url().includes('internal')
                 ? [
                     {
@@ -84,7 +84,7 @@ test.describe('Ghost Admin - Tags', () => {
 
     test('lists tags', async ({page}) => {
         const tagsPage = new TagsPage(page);
-        await tagsPage.mockTagsResponse(() => ({
+        await tagsPage.mockTagsResponse(async () => ({
             tags: [
                 {
                     id: '1',
@@ -127,5 +127,75 @@ test.describe('Ghost Admin - Tags', () => {
         await tagsPage.newTagButton.click();
 
         await expect(page).toHaveURL('/ghost/#/tags/new');
+    });
+
+    test('loads tags on scroll with pagination', async ({page}) => {
+        const tagsPage = new TagsPage(page);
+        
+        // Mock first page of tags
+        await tagsPage.mockTagsResponse(async (request) => {
+            const url = new URL(request.url());
+            const pageParam = parseInt(url.searchParams.get('page') || '1');
+            const pageSize = 20;
+            const pages = 3;
+            const total = pageSize * (pages - 0.5);
+            const offset = (pageParam - 1) * pageSize + 1;
+
+            if (pageParam > 1) {
+                // Simulate slow response for subsequent pages so that we can test the loading state
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 500);
+                });
+            }
+
+            return {
+                meta: {
+                    pagination: {
+                        page: pageParam,
+                        limit: pageSize,
+                        pages,
+                        total,
+                        next: pageParam < pages ? pageParam + 1 : undefined
+                    }
+                },
+                tags: Array.from({length: pageParam < pages ? pageSize : pageSize / 2}, (_, i) => ({
+                    id: `${i + offset}`,
+                    name: `Tag ${i + offset}`,
+                    slug: `tag-${i + offset}`,
+                    url: `https://example.com/tag-${i + offset}`,
+                    description: `Tag ${i + offset} description`
+                }))
+            };
+        });
+
+        await tagsPage.goto();
+
+        // Verify first page loads
+        await expect(tagsPage.tagList).toBeVisible();
+        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 1', exact: true})).toBeVisible();
+        await expect(await tagsPage.tagListRow.count()).toBeGreaterThan(10);
+        await expect(await tagsPage.tagListRow.count()).toBeLessThan(40);
+        // Scroll to bottom to trigger pagination
+        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+
+        // Wait for loading placeholders to appear
+        const loadingPlaceholder = page.locator('[data-testid="loading-placeholder"]').first();
+        await expect(loadingPlaceholder).toBeVisible();
+
+        // Wait for second page to load
+        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 21', exact: true})).toBeVisible();
+
+        // Scroll again to trigger loading of third page
+        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+
+        // Wait for third page to load
+        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 41', exact: true})).toBeVisible();
+        
+        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+        await tagsPage.tagListRow.last().scrollIntoViewIfNeeded();
+        
+        // Verify last tag is visible
+        await expect(tagsPage.tagListRow.getByRole('link', {name: 'Tag 50', exact: true})).toBeVisible();
     });
 });

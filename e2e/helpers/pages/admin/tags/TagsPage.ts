@@ -18,6 +18,7 @@ interface PaginatedResponse {
             limit: number;
             pages: number;
             total: number;
+            next?: number;
         };
     };
     tags: Tag[];
@@ -51,9 +52,9 @@ export class TagsPage extends AdminPage {
     }
 
     // XXX: Remove once we have proper test isolation and don't need mocking
-    async mockTagsResponse(handler: (request: Request) => Partial<PaginatedResponse>) {
+    async mockTagsResponse(handler: (request: Request) => Promise<Partial<PaginatedResponse>>) {
         await this.page.route('/ghost/api/admin/tags/*', async (route, request) => {
-            const tags = handler(request);
+            const tags = await handler(request);
             await route.fulfill({
                 body: JSON.stringify({
                     meta: {

@@ -32,7 +32,7 @@ const PlaceholderRow = forwardRef<HTMLTableRowElement>(function PlaceholderRow(
             className="relative flex flex-col lg:table-row"
         >
             <TableCell className="relative z-10 h-24 animate-pulse">
-                <div className="h-full rounded-md bg-muted" />
+                <div className="h-full rounded-md bg-muted" data-testid="loading-placeholder" />
             </TableCell>
         </TableRow>
     );
@@ -94,6 +94,7 @@ function TagsList({
                                 key={key}
                                 {...props}
                                 className="relative grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0"
+                                data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
                                     <a
