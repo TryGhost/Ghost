@@ -3,16 +3,21 @@ name: Docker Build
 on:
   # Allow manual triggering
   workflow_dispatch:
-  # Add PR trigger with label requirement
   pull_request:
     types: [labeled, opened, synchronize, reopened]
+  push:
+    # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+    # Run on pushes to main, release branches, and previous/future major version branches
+    branches:
+      - main
+      - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
+      - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
 
 jobs:
   build:
     runs-on: ubuntu-latest-16-cores
     if: |
       (github.event_name != 'pull_request') ||
-      (github.event_name == 'pull_request' && contains(github.event.pull_request.labels.*.name, 'run-docker-build'))
 
     steps:
       - name: Checkout repository
