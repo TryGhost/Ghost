@@ -3,6 +3,36 @@
  */
 
 /**
+ * Extracts attribution parameters from URL search params
+ * @private
+ * @param {URLSearchParams} searchParams - The search params to parse
+ * @returns {Object} Parsed attribution data with all UTM parameters
+ */
+function extractParams(searchParams) {
+    const refParam = searchParams.get('ref');
+    const sourceParam = searchParams.get('source');
+    const utmSourceParam = searchParams.get('utm_source');
+    const utmMediumParam = searchParams.get('utm_medium');
+    const utmTermParam = searchParams.get('utm_term');
+    const utmCampaignParam = searchParams.get('utm_campaign');
+    const utmContentParam = searchParams.get('utm_content');
+    
+    // Determine primary source
+    const referrerSource = refParam || sourceParam || utmSourceParam || null;
+    
+    return {
+        source: referrerSource,
+        medium: utmMediumParam || null,
+        url: window.document.referrer || null,
+        utm_source: utmSourceParam || null,
+        utm_medium: utmMediumParam || null,
+        utm_term: utmTermParam || null,
+        utm_campaign: utmCampaignParam || null,
+        utm_content: utmContentParam || null
+    };
+}
+
+/**
  * Parses URL parameters to extract attribution information
  * 
  * @param {string} url - The URL to parse
@@ -11,46 +41,15 @@
 export function parseReferrer(url) {
     // Extract current URL parameters
     const currentUrl = new URL(url || window.location.href);
+    let searchParams = currentUrl.searchParams;
     
-    // Parse source parameters
-    const refParam = currentUrl.searchParams.get('ref');
-    const sourceParam = currentUrl.searchParams.get('source');
-    const utmSourceParam = currentUrl.searchParams.get('utm_source');
-    const utmMediumParam = currentUrl.searchParams.get('utm_medium');
-    
-    // Determine primary source
-    const referrerSource = refParam || sourceParam || utmSourceParam || null;
-    
-    // Check portal hash if needed
-    if (!referrerSource && currentUrl.hash && currentUrl.hash.includes('#/portal')) {
-        return parsePortalHash(currentUrl);
+    // Handle portal hash URLs - extract params from hash instead
+    if (currentUrl.hash && currentUrl.hash.includes('#/portal')) {
+        const hashUrl = new URL(currentUrl.href.replace('/#/portal', ''));
+        searchParams = hashUrl.searchParams;
     }
     
-    return {
-        source: referrerSource,
-        medium: utmMediumParam || null,
-        url: window.document.referrer || null
-    };
-}
-
-/**
- * Parses attribution data from portal hash URLs
- * 
- * @param {URL} url - URL object with a portal hash
- * @returns {Object} Parsed attribution data
- */
-export function parsePortalHash(url) {
-    const hashUrl = new URL(url.href.replace('/#/portal', ''));
-    const refParam = hashUrl.searchParams.get('ref');
-    const sourceParam = hashUrl.searchParams.get('source');
-    const utmSourceParam = hashUrl.searchParams.get('utm_source');
-    const utmMediumParam = hashUrl.searchParams.get('utm_medium');
-    
-    return {
-        source: refParam || sourceParam || utmSourceParam || null,
-        medium: utmMediumParam || null,
-        url: window.document.referrer || null
-    };
+    return extractParams(searchParams);
 }
 
 /**

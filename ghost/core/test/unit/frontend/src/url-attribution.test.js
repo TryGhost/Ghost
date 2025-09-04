@@ -5,7 +5,6 @@ const {JSDOM} = require('jsdom');
 // Use path relative to test file
 const {
     parseReferrer,
-    parsePortalHash,
     getFinalReferrer,
     getReferrer
 } = require('../../../../core/frontend/src/utils/url-attribution');
@@ -76,22 +75,42 @@ describe('URL Attribution Utils', function () {
             should.exist(result);
             should.equal(result.url, 'https://external-site.com/');
         });
+        
+        it('should extract all UTM parameters', function () {
+            const result = parseReferrer('https://example.com/?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
+            should.exist(result);
+            should.equal(result.utm_source, 'google');
+            should.equal(result.utm_medium, 'cpc');
+            should.equal(result.utm_campaign, 'summer');
+            should.equal(result.utm_term, 'ghost');
+            should.equal(result.utm_content, 'banner');
+            should.equal(result.source, 'google'); // source should be utm_source
+        });
     });
     
-    describe('parsePortalHash', function () {
+    describe('parseReferrer with portal hash', function () {
         it('should extract parameters from portal hash URL', function () {
-            const url = new URL('https://example.com/#/portal/signup?ref=newsletter');
-            const result = parsePortalHash(url);
+            const result = parseReferrer('https://example.com/#/portal/signup?ref=newsletter');
             should.exist(result);
             should.equal(result.source, 'newsletter');
         });
         
-        it('should handle multiple parameters', function () {
-            const url = new URL('https://example.com/#/portal/signup?ref=newsletter&utm_medium=email');
-            const result = parsePortalHash(url);
+        it('should handle multiple parameters in portal hash', function () {
+            const result = parseReferrer('https://example.com/#/portal/signup?ref=newsletter&utm_medium=email');
             should.exist(result);
             should.equal(result.source, 'newsletter');
             should.equal(result.medium, 'email');
+        });
+        
+        it('should extract all UTM parameters from portal hash', function () {
+            const result = parseReferrer('https://example.com/#/portal/signup?utm_source=google&utm_medium=cpc&utm_campaign=summer&utm_term=ghost&utm_content=banner');
+            should.exist(result);
+            should.equal(result.utm_source, 'google');
+            should.equal(result.utm_medium, 'cpc');
+            should.equal(result.utm_campaign, 'summer');
+            should.equal(result.utm_term, 'ghost');
+            should.equal(result.utm_content, 'banner');
+            should.equal(result.source, 'google'); // source should be utm_source
         });
     });
     
