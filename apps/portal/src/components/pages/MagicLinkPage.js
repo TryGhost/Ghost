@@ -34,8 +34,30 @@ export default class MagicLinkPage extends React.Component {
         super(props);
         this.state = {
             [OTC_FIELD_NAME]: '',
-            errors: {}
+            errors: {},
+            lastAction: ''
         };
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        const {action, t} = this.context;
+        
+        // Handle OTC verification failure - trigger when action changes from running to failed
+        if (action === 'verifyOTC:failed' && prevState.lastAction === 'verifyOTC:running') {
+            this.setState({
+                errors: {
+                    [OTC_FIELD_NAME]: t('Invalid Code. Try again.')
+                },
+                lastAction: action
+            });
+        }
+        
+        // Track when verification starts running
+        if (action === 'verifyOTC:running' && prevState.lastAction !== action) {
+            this.setState({
+                lastAction: action
+            });
+        }
     }
 
     renderFormHeader() {
@@ -116,16 +138,15 @@ export default class MagicLinkPage extends React.Component {
                     [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
                 }
             };
-        }, () => {
+        }, async () => {
             const {otc, errors} = this.state;
             const {otcRef} = this.context;
             const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
-                this.context.onAction('verifyOTC', {otc, otcRef, redirect});
+                await this.context.onAction('verifyOTC', {otc, otcRef, redirect});
             }
-        }
-        );
+        });
     }
 
     handleInputChange(e, field) {
@@ -143,7 +164,6 @@ export default class MagicLinkPage extends React.Component {
             return null;
         }
 
-        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
         const isError = (action === 'verifyOTC:failed');
 

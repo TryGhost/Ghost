@@ -128,19 +128,17 @@ async function verifyOTC({data, api, state}) {
         } else {
             return {
                 action: 'verifyOTC:failed',
-                popupNotification: createPopupNotification({
-                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                    message: response.message || t('Invalid verification code')
-                })
+                message: t('Invalid code. Try again.')
+                // popupNotification: createPopupNotification({
+                //     type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                //     message: response.message || t('Invalid verification code')
+                // })
             };
         }
     } catch (e) {
         return {
             action: 'verifyOTC:failed',
-            popupNotification: createPopupNotification({
-                type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
-            })
+            message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t) 
         };
     }
 }
