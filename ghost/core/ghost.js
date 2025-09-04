@@ -12,7 +12,7 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 const argv = process.argv;
 const mode = argv[2];
 
-// Switch between boot modes - changed a commit
+// Switch between boot modes
 switch (mode) {
 case 'repl':
 case 'timetravel':
