@@ -6,6 +6,31 @@ import {useAppContext} from '@src/App';
 // Default source icon URL - apps can override this
 const DEFAULT_SOURCE_ICON_URL = 'https://www.google.com/s2/favicons?domain=ghost.org&sz=64';
 
+interface SourceIconProps {
+    displayName: string;
+    iconSrc: string;
+    defaultSourceIconUrl: string;
+}
+
+const SourceIcon: React.FC<SourceIconProps> = ({defaultSourceIconUrl, displayName, iconSrc}) => {
+    return (
+        <>
+            {displayName.trim().toLowerCase().endsWith('newsletter') ? (
+                <LucideIcon.Mail aria-label="Newsletter" className="size-4 text-muted-foreground" />
+            ) : (
+                <img
+                    alt=""
+                    className="size-4"
+                    src={iconSrc}
+                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                        e.currentTarget.src = defaultSourceIconUrl;
+                    }}
+                />
+            )}
+        </>
+    );
+};
+
 interface SourcesTableProps {
     data: ProcessedSourceData[] | null;
     mode: 'visits' | 'growth';
@@ -43,22 +68,20 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                 <TableCell>
                                     {row.linkUrl ?
                                         <a className='group flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span className='group-hover:underline'>{row.displayName}</span>
                                         </a>
                                         :
                                         <span className='flex items-center gap-2'>
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span>{row.displayName}</span>
                                         </span>
                                     }
