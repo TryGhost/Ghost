@@ -162,7 +162,12 @@ export class GhostStats {
         const location = this.browser.getLocation();
 
         const referrerData = parseReferrerData(location?.href);
-        referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
+        // WORKAROUND: The downstream referrer-parser library requires the 'url' field to be populated
+        // even when attribution comes from query params (e.g., ?ref=ghost-newsletter) with no document.referrer.
+        // We use getReferrer() to get the primary attribution source and fall back to document.referrer.
+        // This means 'url' might contain non-URL values like "ghost-newsletter" when there's no actual referrer.
+        // TODO: Refactor the referrer-parser to handle query param attribution without requiring this hack.
+        referrerData.url = getReferrer(location?.href) || referrerData.url;
 
         // Debounce tracking to avoid duplicates and ensure page has settled
         this.browser.setTimeout(() => {
