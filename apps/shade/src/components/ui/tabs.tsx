@@ -25,7 +25,6 @@ const tabsVariants = cva(
                 'segmented-sm': '',
                 button: '',
                 'button-sm': '',
-                'button-sm-dropdown': '',
                 underline: '',
                 navbar: '',
                 pill: '',
