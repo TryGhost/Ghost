@@ -97,28 +97,68 @@ jobs:
         run: |
           # Get the first tag from the multi-line tags output
           IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
-          echo "Inspecting image: $IMAGE_TAG"
+          echo "## 📦 Docker Image Size Report"
+          echo ""
+          echo "**Image:** \`$IMAGE_TAG\`"
+          echo ""
           
-          # Use docker buildx imagetools to get detailed image information
-          docker buildx imagetools inspect "$IMAGE_TAG" --format "{{json .}}" > image-info.json
+          # First, check if this is a multi-platform image
+          MANIFEST_LIST=$(docker buildx imagetools inspect "$IMAGE_TAG" --raw)
           
-          # Extract and display size information
-          echo "## Docker Image Size Information"
-          echo "Image: $IMAGE_TAG"
-          
-          # Parse the manifest to get size information
-          if command -v jq >/dev/null 2>&1; then
-            # Extract total size from manifest layers
-            TOTAL_SIZE=$(cat image-info.json | jq '[.manifest.layers[].size] | add')
-            TOTAL_SIZE_MB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024" | bc 2>/dev/null || echo "N/A")
-            echo "Compressed size: ${TOTAL_SIZE_MB} MB (${TOTAL_SIZE} bytes)"
-            
-            # Display per-platform sizes if multi-platform
+          if echo "$MANIFEST_LIST" | jq -e '.manifests' >/dev/null 2>&1; then
+            # Multi-platform image - iterate through each platform
+            echo "### Multi-platform Image"
             echo ""
-            cat image-info.json | jq -r '.manifest | "Platform: \(.platform.os)/\(.platform.architecture)\(.platform.variant // "")"'
+            
+            # Get the main platform manifest (skip attestation manifests)
+            PLATFORM_DIGEST=$(echo "$MANIFEST_LIST" | jq -r '.manifests[] | select(.platform.os != "unknown") | .digest' | head -n1)
+            
+            if [ -n "$PLATFORM_DIGEST" ]; then
+              # Get the actual manifest with layers
+              MANIFEST=$(docker buildx imagetools inspect "${IMAGE_TAG}@${PLATFORM_DIGEST}" --raw)
+              
+              # Calculate total size (config + all layers)
+              TOTAL_SIZE=$(echo "$MANIFEST" | jq '[.config.size, (.layers[].size)] | add')
+              
+              if [ "$TOTAL_SIZE" != "null" ] && [ -n "$TOTAL_SIZE" ]; then
+                TOTAL_SIZE_MB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024" | bc)
+                TOTAL_SIZE_GB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024 / 1024" | bc)
+                
+                echo "**Compressed Size:** ${TOTAL_SIZE_MB} MB (${TOTAL_SIZE_GB} GB)"
+                echo ""
+                
+                # Show breakdown
+                CONFIG_SIZE=$(echo "$MANIFEST" | jq '.config.size // 0')
+                LAYERS_SIZE=$(echo "$MANIFEST" | jq '[.layers[].size // 0] | add // 0')
+                LAYERS_COUNT=$(echo "$MANIFEST" | jq '.layers | length')
+                
+                echo "**Details:**"
+                echo "- Config: $(echo "scale=2; $CONFIG_SIZE / 1024" | bc) KB"
+                echo "- Layers: ${LAYERS_COUNT} layers, $(echo "scale=2; $LAYERS_SIZE / 1024 / 1024" | bc) MB total"
+                echo ""
+                
+                # Platform info
+                PLATFORM_INFO=$(echo "$MANIFEST_LIST" | jq -r '.manifests[] | select(.digest == "'"$PLATFORM_DIGEST"'") | "- Platform: \(.platform.os)/\(.platform.architecture)\(.platform.variant // "")"')
+                echo "$PLATFORM_INFO"
+              fi
+            fi
           else
-            # Fallback to basic inspection without jq
-            docker buildx imagetools inspect "$IMAGE_TAG"
+            # Single platform image
+            echo "### Single Platform Image"
+            echo ""
+            
+            # Get manifest directly
+            MANIFEST="$MANIFEST_LIST"
+            
+            # Calculate total size
+            TOTAL_SIZE=$(echo "$MANIFEST" | jq '[.config.size, (.layers[].size)] | add')
+            
+            if [ "$TOTAL_SIZE" != "null" ] && [ -n "$TOTAL_SIZE" ]; then
+              TOTAL_SIZE_MB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024" | bc)
+              TOTAL_SIZE_GB=$(echo "scale=2; $TOTAL_SIZE / 1024 / 1024 / 1024" | bc)
+              
+              echo "**Compressed Size:** ${TOTAL_SIZE_MB} MB (${TOTAL_SIZE_GB} GB)"
+            fi
           fi
 
       - name: Get image size (loaded images)
