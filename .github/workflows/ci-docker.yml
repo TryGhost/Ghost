@@ -162,12 +162,11 @@ jobs:
             echo "|------|-------|"
             
             # Get all layers (including 0B ones)
-            docker history "$IMAGE_TAG" --format "table {{.Size}}\t{{.CreatedBy}}" --no-trunc | \
-            grep -v "^SIZE" | \
-            while IFS=$'\t' read -r size cmd; do
+            docker history "$IMAGE_TAG" --format "{{.Size}}@@@{{.CreatedBy}}" --no-trunc | \
+            while IFS='@@@' read -r size cmd; do
               # Clean up the command for display
-              cmd_clean=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | cut -c1-60)
-              if [ ${#cmd} -gt 60 ]; then
+              cmd_clean=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | sed 's/^@@//' | sed 's/|/\\|/g' | cut -c1-80)
+              if [ ${#cmd} -gt 80 ]; then
                 cmd_clean="${cmd_clean}..."
               fi
               echo "| $size | \`${cmd_clean}\` |"
