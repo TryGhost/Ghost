@@ -25,6 +25,7 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
                 <NavbarActions className="w-full justify-between md:w-auto">
                     <PageMenu
                         className="min-h-[34px] pr-2 lg:pr-4"
+                        data-testid="tags-header-tabs"
                         defaultValue={currentTab}
                     >
                         <PageMenuItem value="public" asChild>
