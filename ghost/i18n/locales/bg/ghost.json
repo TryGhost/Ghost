@@ -41,7 +41,7 @@
     "Sign in": "Вход",
     "Sign in now": "Влезте сега",
     "Sign in to {siteTitle}": "Влизане в {siteTitle}",
-    "Sign in to {siteTitle} with code {otc}": "",
+    "Sign in to {siteTitle} with code {otc}": "Влизане в {siteTitle} с код {otc}",
     "Sign in verification": "Проверка за влизане",
     "Someone just replied to your comment": "Някой току-що отговори на коментара ви",
     "Someone just replied to your comment on {postTitle}.": "Някой току-що отговори на коментара ви към {postTitle}.",
