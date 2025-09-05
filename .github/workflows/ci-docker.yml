@@ -1,10 +1,8 @@
-name: Docker Build
-
+name: CI (Docker)
 on:
-  # Allow manual triggering
   workflow_dispatch:
   pull_request:
-    types: [labeled, opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
@@ -15,11 +13,13 @@ on:
 
 jobs:
   build:
+    name: Build & Push
     runs-on: ubuntu-latest-16-cores
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -31,8 +31,7 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-        # For branches in TryGhost/Ghost, we can push to the registry and use registry caching
-        # For PRs from forks, we can't access secrets, so we can't push to the registry
+        # We can't access secrets from forks, so we can't push to the registry
         # Instead, we upload the image as an artifact, and download it in downstream jobs
       - name: Determine build strategy
         id: strategy
@@ -114,97 +113,26 @@ jobs:
       image-tags: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
-  test:
+
+  unit_tests:
     needs: build
-    runs-on: ubuntu-latest-16-cores
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Download image artifact (fork PR)
-        if: needs.build.outputs.is-fork == 'true'
-        uses: actions/download-artifact@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
         with:
-          name: docker-image
+          sparse-checkout: |
+            .github/actions/load-docker-image
 
-      - name: Load image from artifact (fork PR)
-        if: needs.build.outputs.is-fork == 'true'
-        run: |
-          echo "Loading Docker image from artifact..."
-          gunzip -c docker-image.tar.gz | docker load
-          echo "Available images after load:"
-          docker images
-
-      - name: Log in to GitHub Container Registry
-        if: needs.build.outputs.is-fork == 'false'
-        uses: docker/login-action@v3
+      - name: Load Docker Image
+        id: load
+        uses: ./.github/actions/load-docker-image
         with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Pull image from registry (main repo/branch)
-        if: needs.build.outputs.is-fork == 'false'
-        run: |
-          # For main repo, extract first tag from multi-line registry tags
-          IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
-          echo "Pulling image from registry: $IMAGE_TAG"
-          docker pull "$IMAGE_TAG"
-
-      - name: Verify image is available
-        run: |
-          # Use the appropriate tag based on fork status
-          if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
-            IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
-          else
-            IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
-          fi
-          echo "Checking for image: $IMAGE_TAG"
-
-          if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
-            echo "✅ Image $IMAGE_TAG is available"
-            echo "Image details:"
-            docker inspect "$IMAGE_TAG" --format='{{.Id}} {{.Created}}'
-          else
-            echo "❌ Image $IMAGE_TAG is not available"
-            echo "Available images:"
-            docker images
-
-            # For fork PRs, the image might have been loaded with a different tag
-            if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
-              echo ""
-              echo "Searching for any loaded Ghost images..."
-              docker images --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | grep -E "(ghost|Ghost)" || echo "No Ghost images found"
-            fi
-            exit 1
-          fi
+          is-fork: ${{ needs.build.outputs.is-fork }}
+          image-tags: ${{ needs.build.outputs.image-tags }}
 
       - name: Test container
-        run: |
-          # Use the appropriate tag based on fork status
-          if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
-            IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
-          else
-            IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
-          fi
-
-          echo "Testing container: $IMAGE_TAG"
-          # Run a basic test - replace with your actual tests
-          docker run --rm "$IMAGE_TAG" node --version
-
-          # Example: Run your application's health check or tests
-          # docker run --rm -p 2368:2368 "$IMAGE_TAG" &
-          # sleep 5
-          # curl -f http://localhost:2368 || exit 1
-
-      - name: Show container logs (on failure)
-        if: failure()
-        run: |
-          echo "Showing recent container logs..."
-          docker ps -a
-          # Show logs from the most recent container if needed
-          CONTAINER_ID=$(docker ps -lq)
-          if [ ! -z "$CONTAINER_ID" ]; then
-            docker logs $CONTAINER_ID
-          fi
+        env:
+          IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+        run: docker run --rm "$IMAGE_TAG" node --version
