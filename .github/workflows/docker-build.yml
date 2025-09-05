@@ -89,9 +89,9 @@ jobs:
           # On main: only use main cache
           cache-from: |
             type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
-            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.cache.outputs.cache-key, github.event.pull_request.number) || '' }}
+            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
           # Only export cache if we can push (not on fork PRs)
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.cache.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Save image as artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
