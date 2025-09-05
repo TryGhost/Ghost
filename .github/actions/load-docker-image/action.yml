@@ -70,6 +70,26 @@ runs:
           exit 1
         fi
 
+    - name: Inspect image size and layers
+      shell: bash
+      run: |
+        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
+        echo "## 📦 Docker Image Size Report"
+        echo ""
+        echo "**Image:** \`$IMAGE_TAG\`"
+        echo ""
+        
+        # Get the uncompressed size (size on disk)
+        UNCOMPRESSED_SIZE=$(docker images "$IMAGE_TAG" --format "{{.Size}}")
+        echo "### Total Image Size"
+        echo "**Size on disk:** $UNCOMPRESSED_SIZE"
+        echo ""
+        
+        echo "### All Image Layers"
+        echo "\`\`\`"
+        docker history "$IMAGE_TAG" --format "table {{.Size}}\t{{.CreatedBy}}" --no-trunc
+        echo "\`\`\`"
+
 outputs:
   image-tag:
     description: 'The Docker image tag to use'
