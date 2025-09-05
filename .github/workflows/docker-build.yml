@@ -83,7 +83,7 @@ jobs:
           file: .docker/Dockerfile
           push: ${{ steps.strategy.outputs.should-push }}
           load: ${{ steps.strategy.outputs.should-load }}
-          tags: ${{ steps.meta.outputs.image-tags }}
+          tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
           # On main: only use main cache
