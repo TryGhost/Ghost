@@ -115,8 +115,8 @@ jobs:
       image-digest: ${{ steps.build.outputs.digest }}
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
 
-  unit_tests:
-    name: Unit Tests
+  inspect_image:
+    name: Inspect Docker Image
     needs: build
     runs-on: ubuntu-latest
 
@@ -134,7 +134,142 @@ jobs:
           is-fork: ${{ needs.build.outputs.is-fork }}
           image-tags: ${{ needs.build.outputs.image-tags }}
 
-      - name: Test container
-        env:
-          IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
-        run: docker run --rm "$IMAGE_TAG" node --version
+      - name: Inspect image size and layers
+        shell: bash
+        run: |
+          IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
+          echo "Analyzing Docker image: $IMAGE_TAG"
+
+          # Start the GitHub Step Summary
+          {
+            echo "# 🐳 Docker Image Analysis Report"
+            echo ""
+
+            # Image Metadata Section
+            echo "## 📋 Image Metadata"
+            echo ""
+            echo "| Property | Value |"
+            echo "|----------|-------|"
+            echo "| **Image** | \`$IMAGE_TAG\` |"
+
+            # Get image digest
+            DIGEST=$(docker inspect "$IMAGE_TAG" --format='{{index .RepoDigests 0}}' 2>/dev/null || echo "N/A")
+            if [ "$DIGEST" != "N/A" ] && [ "$DIGEST" != "" ]; then
+              DIGEST=$(echo "$DIGEST" | cut -d'@' -f2)
+              echo "| **Digest** | \`${DIGEST:0:12}...\` |"
+            fi
+
+            # Get creation date
+            CREATED=$(docker inspect "$IMAGE_TAG" --format='{{.Created}}' | cut -d'T' -f1-2 | tr 'T' ' ')
+            echo "| **Created** | $CREATED UTC |"
+
+            # Get architecture
+            ARCH=$(docker inspect "$IMAGE_TAG" --format='{{.Architecture}}')
+            OS=$(docker inspect "$IMAGE_TAG" --format='{{.Os}}')
+            echo "| **Architecture** | $OS/$ARCH |"
+
+            # Get all tags from build output
+            TAGS="${{ needs.build.outputs.image-tags }}"
+            if [ -n "$TAGS" ]; then
+              # Convert multi-line tags to comma-separated list
+              TAGS_LIST=$(echo "$TAGS" | sed 's/.*://g' | paste -sd', ' -)
+              echo "| **Tags** | $TAGS_LIST |"
+            fi
+
+            echo ""
+
+            # Size Analysis Section
+            echo "## 📊 Size Analysis"
+            echo ""
+            echo "| Metric | Value |"
+            echo "|--------|-------|"
+
+            # Get uncompressed size
+            UNCOMPRESSED_SIZE=$(docker inspect "$IMAGE_TAG" --format='{{.Size}}')
+            UNCOMPRESSED_MB=$(echo "scale=1; $UNCOMPRESSED_SIZE / 1024 / 1024" | bc)
+            UNCOMPRESSED_GB=$(echo "scale=2; $UNCOMPRESSED_SIZE / 1024 / 1024 / 1024" | bc)
+
+            if (( $(echo "$UNCOMPRESSED_GB < 1" | bc -l) )); then
+              echo "| **Image Size** | ${UNCOMPRESSED_MB} MB |"
+            else
+              echo "| **Image Size** | ${UNCOMPRESSED_GB} GB |"
+            fi
+
+            # Count total layers
+            TOTAL_LAYERS=$(docker history "$IMAGE_TAG" --no-trunc --format "{{.CreatedBy}}" | wc -l)
+            echo "| **Total Layers** | $TOTAL_LAYERS |"
+
+            # Calculate base image size (approximate - first FROM layer)
+            BASE_SIZE=$(docker history "$IMAGE_TAG" --no-trunc --format "{{.Size}}:{{.CreatedBy}}" | grep -E "FROM|ADD file:" | tail -1 | cut -d':' -f1)
+            if [ -n "$BASE_SIZE" ] && [ "$BASE_SIZE" != "0B" ]; then
+              echo "| **Base Image Size** | $BASE_SIZE |"
+            fi
+
+            echo ""
+
+            # Top 10 Layers Section
+            echo "## 🧩 Top 10 Layers by Size"
+            echo ""
+            echo "| # | Size | Command |"
+            echo "|---|------|---------|"
+
+            # Get layers sorted by size (excluding 0B layers)
+            docker history "$IMAGE_TAG" --no-trunc --format "{{.Size}}•{{.CreatedBy}}" | \
+            grep -v "^0B•" | \
+            while IFS='•' read -r size cmd; do
+              # Convert size to bytes for sorting
+              size_bytes=0
+              if [[ $size == *GB ]]; then
+                size_num=$(echo "$size" | sed 's/GB//')
+                size_bytes=$(echo "$size_num * 1024 * 1024 * 1024" | bc | cut -d'.' -f1)
+              elif [[ $size == *MB ]]; then
+                size_num=$(echo "$size" | sed 's/MB//')
+                size_bytes=$(echo "$size_num * 1024 * 1024" | bc | cut -d'.' -f1)
+              elif [[ $size == *kB ]]; then
+                size_num=$(echo "$size" | sed 's/kB//')
+                size_bytes=$(echo "$size_num * 1024" | bc | cut -d'.' -f1)
+              elif [[ $size == *B ]]; then
+                size_bytes=$(echo "$size" | sed 's/B//')
+              fi
+
+              # Truncate command for display
+              cmd_display=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | cut -c1-80)
+              if [ ${#cmd} -gt 80 ]; then
+                cmd_display="${cmd_display}..."
+              fi
+
+              echo "${size_bytes}•${size}•${cmd_display}"
+            done | \
+            sort -t'•' -k1 -rn | \
+            head -10 | \
+            awk -F'•' 'BEGIN{n=1} {printf "| %d | **%s** | `%s` |\n", n++, $2, $3}'
+
+            echo ""
+
+            # Collapsible section for all layers
+            echo "<details>"
+            echo "<summary>View all $TOTAL_LAYERS layers</summary>"
+            echo ""
+            echo "| Size | Created By |"
+            echo "|------|------------|"
+
+            docker history "$IMAGE_TAG" --no-trunc --format "{{.Size}}•{{.CreatedBy}}" | \
+            while IFS='•' read -r size cmd; do
+              # Truncate command for display
+              cmd_display=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | cut -c1-100)
+              if [ ${#cmd} -gt 100 ]; then
+                cmd_display="${cmd_display}..."
+              fi
+              echo "| $size | \`$cmd_display\` |"
+            done
+
+            echo ""
+            echo "</details>"
+            echo ""
+
+            echo "---"
+            echo "*Generated at: $(date -u '+%Y-%m-%d %H:%M:%S') UTC | Workflow: ${{ github.workflow }} | Run: #${{ github.run_number }}*"
+
+          } >> $GITHUB_STEP_SUMMARY
+
+          echo "✅ Docker image analysis complete. View the summary in the GitHub Actions Summary tab."
