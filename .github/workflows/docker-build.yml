@@ -96,7 +96,7 @@ jobs:
       - name: Save image as artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
         run: |
-          IMAGE_TAG="${{ steps.strategy.outputs.image-tags }}"
+          IMAGE_TAG="${{ steps.meta.outputs.tags }}"
           echo "Saving image: $IMAGE_TAG"
           docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
           echo "Image saved as docker-image.tar.gz"
@@ -111,7 +111,7 @@ jobs:
           retention-days: 1
 
     outputs:
-      image-tags: ${{ steps.meta.outputs.image-tags }}
+      image-tags: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
   test:
