@@ -30,7 +30,7 @@
     "access": "public"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.0",
+    "@babel/eslint-parser": "7.28.4",
     "@babel/plugin-syntax-import-assertions": "^7.26.0",
     "@lexical/headless": "0.13.1",
     "@lexical/html": "0.13.1",
