@@ -29,6 +29,11 @@ export const SOURCE_DOMAIN_MAP: Record<string, string> = {
     'Apple News': 'apple.com',
     SmartNews: 'smartnews.com',
     'Hacker News': 'news.ycombinator.com',
+    // Additional sources that need explicit mapping
+    github: 'github.com',
+    GitHub: 'github.com',
+    yandex: 'yandex.com',
+    Yandex: 'yandex.com',
     // Search engines
     Google: 'google.com',
     'Google News': 'news.google.com',
@@ -137,7 +142,15 @@ export const SOURCE_NORMALIZATION_MAP = new Map<string, string>([
     ['www.flipboard.com', 'Flipboard'],
     ['smartnews', 'SmartNews'],
     ['smartnews.com', 'SmartNews'],
-    ['www.smartnews.com', 'SmartNews']
+    ['www.smartnews.com', 'SmartNews'],
+    
+    // Additional platform normalizations
+    ['github', 'GitHub'],
+    ['github.com', 'GitHub'],
+    ['www.github.com', 'GitHub'],
+    ['yandex', 'Yandex'],
+    ['yandex.com', 'Yandex'],
+    ['www.yandex.com', 'Yandex']
 ]);
 
 /**
@@ -230,9 +243,10 @@ export const getFaviconDomain = (source: string | number | undefined, siteUrl?: 
         return {domain: mappedDomain, isDirectTraffic: false};
     }
 
-    // If not in mapping, check if it's already a domain
-    const isDomain = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/.test(source);
-    if (isDomain) {
+    // If not in mapping, check if it's already a valid domain with TLD
+    // This regex ensures there's at least one dot and a valid TLD
+    const isDomain = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)+$/.test(source);
+    if (isDomain && source.includes('.')) {
         // Clean up the domain by removing www. prefix
         const cleanDomain = source.replace(/^www\./, '');
         return {domain: cleanDomain, isDirectTraffic: false};
