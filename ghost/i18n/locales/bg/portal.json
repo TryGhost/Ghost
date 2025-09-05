@@ -102,7 +102,7 @@
     "In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.": "В случай че при опит за изпращане на бюлетин се получава някакъв постоянен проблем, имейлите ще бъдат деактивирани за вашия адрес.",
     "In your email client add {senderEmail} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.": "Добавете {senderEmail} в списъка си с контакти. Това информира вашия доставчик, че имейлите, изпратени от този адрес, са надеждни.",
     "Invalid email address": "Невалиден имейл адрес",
-    "Invalid verification code": "Невалиден код за потвърждение",
+    "Invalid verification code": "Невалиден код за проверка",
     "Jamie Larson": "Петър Петров",
     "jamie@example.com": "peter@example.com",
     "Less like this": "По-малко такива",
