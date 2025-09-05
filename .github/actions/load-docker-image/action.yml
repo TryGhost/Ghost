@@ -38,7 +38,6 @@ runs:
       if: inputs.is-fork == 'false'
       shell: bash
       run: |
-        # For main repo, extract first tag from multi-line registry tags
         IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
         echo "Pulling image from registry: $IMAGE_TAG"
         docker pull "$IMAGE_TAG"
@@ -47,48 +46,19 @@ runs:
       id: verify
       shell: bash
       run: |
-        # Always get the first tag from the multi-line tags
         IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
         echo "Checking for image: $IMAGE_TAG"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
         if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
           echo "✅ Image $IMAGE_TAG is available"
-          echo "Image details:"
-          docker inspect "$IMAGE_TAG" --format='{{.Id}} {{.Created}}'
         else
           echo "❌ Image $IMAGE_TAG is not available"
           echo "Available images:"
           docker images
-
-          # For fork PRs, the image might have been loaded with a different tag
-          if [ "${{ inputs.is-fork }}" = "true" ]; then
-            echo ""
-            echo "Searching for any loaded Ghost images..."
-            docker images --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | grep -E "(ghost|Ghost)" || echo "No Ghost images found"
-          fi
           exit 1
         fi
 
-    - name: Inspect image size and layers
-      shell: bash
-      run: |
-        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
-        echo "## 📦 Docker Image Size Report"
-        echo ""
-        echo "**Image:** \`$IMAGE_TAG\`"
-        echo ""
-        
-        # Get the uncompressed size (size on disk)
-        UNCOMPRESSED_SIZE=$(docker images "$IMAGE_TAG" --format "{{.Size}}")
-        echo "### Total Image Size"
-        echo "**Size on disk:** $UNCOMPRESSED_SIZE"
-        echo ""
-        
-        echo "### All Image Layers"
-        echo "\`\`\`"
-        docker history "$IMAGE_TAG" --format "table {{.Size}}\t{{.CreatedBy}}" --no-trunc
-        echo "\`\`\`"
 
 outputs:
   image-tag:
