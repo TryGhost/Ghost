@@ -1,4 +1,5 @@
 import React from 'react';
+import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
 import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
@@ -34,22 +35,20 @@ const SourcesTable: React.FC<SourcesTableProps> = ({tableHeader, data, defaultSo
                                     <div className='truncate font-medium'>
                                         {row.linkUrl ?
                                             <a className='group/link flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span className='group-hover/link:underline'>{row.displayName}</span>
                                             </a>
                                             :
                                             <span className='flex items-center gap-2'>
-                                                <img
-                                                    className="size-4"
-                                                    src={row.iconSrc}
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = defaultSourceIconUrl;
-                                                    }} />
+                                                <SourceIcon
+                                                    defaultSourceIconUrl={defaultSourceIconUrl}
+                                                    displayName={row.displayName}
+                                                    iconSrc={row.iconSrc}
+                                                />
                                                 <span>{row.displayName}</span>
                                             </span>
                                         }

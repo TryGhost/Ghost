@@ -1,5 +1,6 @@
 import * as React from 'react';
 import * as TabsPrimitive from '@radix-ui/react-tabs';
+import {DropdownMenuTrigger} from './dropdown-menu';
 
 import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
@@ -258,4 +259,48 @@ const KpiDropdownButton = React.forwardRef<HTMLButtonElement, KpiDropdownButtonP
 );
 KpiDropdownButton.displayName = 'KpiDropdownButton';
 
-export {Tabs, TabsList, TabsTrigger, TabsTriggerCount, TabsContent, KpiTabTrigger, KpiTabValue, KpiDropdownButton, tabsVariants};
+interface TabsDropdownTriggerProps extends Omit<React.ComponentProps<typeof TabsPrimitive.Trigger>, 'asChild'> {
+    children: React.ReactNode;
+}
+
+const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTriggerProps>(({
+    children,
+    className,
+    ...props
+}, ref) => {
+    const variant = React.useContext(TabsVariantContext);
+    return (
+        <div className="relative rounded-md hover:bg-muted">
+            <TabsPrimitive.Trigger
+                ref={ref}
+                className={cn(tabsTriggerVariants({variant, className}))}
+                {...props}
+            >
+                <div className="flex items-center gap-2">
+                    {children}
+                </div>
+            </TabsPrimitive.Trigger>
+            <DropdownMenuTrigger
+                className="absolute inset-0 size-full cursor-pointer"
+                onClick={(e) => {
+                    // Stop propagation to prevent tab change
+                    e.preventDefault();
+                }}
+            />
+        </div>
+    );
+});
+TabsDropdownTrigger.displayName = 'TabsDropdownTrigger';
+
+export {
+    Tabs,
+    TabsList,
+    TabsTrigger,
+    TabsTriggerCount,
+    TabsContent,
+    KpiTabTrigger,
+    KpiTabValue,
+    KpiDropdownButton,
+    TabsDropdownTrigger,
+    tabsVariants
+};

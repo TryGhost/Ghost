@@ -106,6 +106,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
                     data={chartData}
                     id="mrr"
                     range={range}
+                    showHours={true}
                     yAxisRange={[0, getYRange(chartData).max]}
                 />
             </div>

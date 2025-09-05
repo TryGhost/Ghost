@@ -45,6 +45,8 @@ export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
 export {default as PostShareModal} from './components/features/post_share_modal';
+export {default as SourceTabs} from './components/features/sources/source-tabs';
+export type {CampaignType, TabType} from './components/features/sources/source-tabs';
 
 // Third party components
 export * as Recharts from 'recharts';
