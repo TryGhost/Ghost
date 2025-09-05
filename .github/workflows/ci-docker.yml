@@ -95,7 +95,8 @@ jobs:
       - name: Save image as artifact (fork PR)
         if: steps.strategy.outputs.is-fork-pr == 'true'
         run: |
-          IMAGE_TAG="${{ steps.meta.outputs.tags }}"
+          # Get the first tag from the multi-line tags output
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
           docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
           echo "Image saved as docker-image.tar.gz"
@@ -115,6 +116,7 @@ jobs:
       is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
 
   unit_tests:
+    name: Unit Tests
     needs: build
     runs-on: ubuntu-latest
 
