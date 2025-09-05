@@ -45,6 +45,7 @@ export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
 export {default as PostShareModal} from './components/features/post_share_modal';
+export * from './components/features/unsplash';
 
 // Third party components
 export * as Recharts from 'recharts';
