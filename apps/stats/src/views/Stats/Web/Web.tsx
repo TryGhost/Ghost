@@ -1,13 +1,13 @@
 import AudienceSelect, {getAudienceQueryParam} from '../components/AudienceSelect';
 import DateRangeSelect from '../components/DateRangeSelect';
-import React from 'react';
+import React, {useState} from 'react';
 import SourcesCard from './components/SourcesCard';
 import StatsHeader from '../layout/StatsHeader';
 import StatsLayout from '../layout/StatsLayout';
 import StatsView from '../layout/StatsView';
 import TopContent from './components/TopContent';
 import WebKPIs, {KpiDataItem} from './components/WebKPIs';
-import {Card, CardContent, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
+import {CampaignType, Card, CardContent, TabType, formatDuration, formatNumber, formatPercentage, formatQueryDate, getRangeDates} from '@tryghost/shade';
 import {KpiMetric} from '@src/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@src/utils/constants';
@@ -51,6 +51,11 @@ const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, audience, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
+    const [selectedTab, setSelectedTab] = useState<TabType>('sources');
+    const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
+    
+    // Check if UTM tracking is enabled in labs
+    const utmTrackingEnabled = data?.config?.labs?.utmTracking || false;
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
@@ -82,12 +87,63 @@ const Web: React.FC = () => {
         params
     });
 
-    // Get top sources data
+    // Get top sources data (always fetch this)
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
         statsConfig,
         params
     });
+
+    // Map campaign types to endpoints
+    const campaignEndpointMap: Record<CampaignType, string> = {
+        '': '',
+        'UTM sources': 'api_top_utm_sources',
+        'UTM mediums': 'api_top_utm_mediums',
+        'UTM campaigns': 'api_top_utm_campaigns',
+        'UTM contents': 'api_top_utm_contents',
+        'UTM terms': 'api_top_utm_terms'
+    };
+
+    // Get UTM campaign data (only fetch when a campaign is selected)
+    const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
+    const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
+        endpoint: campaignEndpoint,
+        statsConfig,
+        params,
+        enabled: !!selectedCampaign && selectedTab === 'campaigns'
+    });
+
+    // Select and transform the appropriate data based on current view
+    const displayData = React.useMemo(() => {
+        // If we're viewing UTM campaigns, use and transform the UTM data
+        if (selectedTab === 'campaigns' && selectedCampaign && utmData) {
+            // Map UTM field names to the generic key name
+            const utmKeyMap: Record<CampaignType, string> = {
+                '': '',
+                'UTM sources': 'utm_source',
+                'UTM mediums': 'utm_medium',
+                'UTM campaigns': 'utm_campaign',
+                'UTM contents': 'utm_content',
+                'UTM terms': 'utm_term'
+            };
+            
+            const utmKey = utmKeyMap[selectedCampaign];
+            if (!utmKey) {
+                return utmData;
+            }
+            
+            // Transform the data to use 'source' as the key
+            return utmData.map((item: SourcesData) => ({
+                ...item,
+                source: String((item as Record<string, unknown>)[utmKey] || '(not set)'),
+                // Remove the original utm_* key to avoid confusion
+                [utmKey]: undefined
+            }));
+        }
+        
+        // Default to regular sources data
+        return sourcesData;
+    }, [sourcesData, utmData, selectedTab, selectedCampaign]);
 
     // Get total visitors for table
     const totalVisitors = kpiData?.length ? kpiData.reduce((sum, item) => sum + Number(item.visits), 0) : 0;
@@ -123,13 +179,18 @@ const Web: React.FC = () => {
                         totalVisitors={totalVisitors}
                     />
                     <SourcesCard
-                        data={sourcesData as SourcesData[] | null}
+                        data={displayData as SourcesData[] | null}
                         defaultSourceIconUrl={STATS_DEFAULT_SOURCE_ICON_URL}
-                        isLoading={isSourcesLoading}
+                        isLoading={selectedTab === 'campaigns' ? isUtmLoading : isSourcesLoading}
                         range={range}
+                        selectedCampaign={selectedCampaign}
+                        selectedTab={selectedTab}
                         siteIcon={siteIcon}
                         siteUrl={siteUrl}
                         totalVisitors={totalVisitors}
+                        utmTrackingEnabled={utmTrackingEnabled}
+                        onCampaignChange={setSelectedCampaign}
+                        onTabChange={setSelectedTab}
                     />
                 </div>
             </StatsView>
