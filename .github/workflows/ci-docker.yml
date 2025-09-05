@@ -150,9 +150,27 @@ jobs:
           
           # Write to GitHub Step Summary
           {
-            echo "# Docker Image Size"
+            echo "# Docker Image Analysis"
             echo ""
             echo "**Image:** \`$IMAGE_TAG\`"
             echo ""
-            echo "**Size:** ${IMAGE_SIZE_MB} MB"
+            echo "**Total Size:** ${IMAGE_SIZE_MB} MB"
+            echo ""
+            echo "## Image Layers"
+            echo ""
+            echo "| Size | Layer |"
+            echo "|------|-------|"
+            
+            # Get all layers (including 0B ones)
+            docker history "$IMAGE_TAG" --format "table {{.Size}}\t{{.CreatedBy}}" --no-trunc | \
+            grep -v "^SIZE" | \
+            while IFS=$'\t' read -r size cmd; do
+              # Clean up the command for display
+              cmd_clean=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | cut -c1-60)
+              if [ ${#cmd} -gt 60 ]; then
+                cmd_clean="${cmd_clean}..."
+              fi
+              echo "| $size | \`${cmd_clean}\` |"
+            done
+            
           } >> $GITHUB_STEP_SUMMARY
