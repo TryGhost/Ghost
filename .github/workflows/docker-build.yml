@@ -45,7 +45,7 @@ jobs:
           if [ "$IS_FORK_PR" = "true" ]; then
             IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
           fi
-          CACHE_KEY=$(echo '$IMAGE_NAME' | tr '[:upper:]' '[:lower:]')
+          CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
           echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
           echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
