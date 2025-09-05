@@ -51,6 +51,12 @@ jobs:
           echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
           echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
           echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "Build Strategy: "
+          echo "  Is fork PR: $IS_FORK_PR"
+          echo "  Should push: $( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )"
+          echo "  Should load: $( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )"
+          echo "  Image name: $IMAGE_NAME"
+          echo "  Cache key: $CACHE_KEY"
 
       - name: Docker meta
         id: meta
@@ -75,7 +81,6 @@ jobs:
         with:
           context: .
           file: .docker/Dockerfile
-          target: development
           push: ${{ steps.strategy.outputs.should-push }}
           load: ${{ steps.strategy.outputs.should-load }}
           tags: ${{ steps.meta.outputs.image-tags }}
