@@ -47,12 +47,8 @@ runs:
       id: verify
       shell: bash
       run: |
-        # Use the appropriate tag based on fork status
-        if [ "${{ inputs.is-fork }}" = "true" ]; then
-          IMAGE_TAG="${{ inputs.image-tags }}"
-        else
-          IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
-        fi
+        # Always get the first tag from the multi-line tags
+        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
         echo "Checking for image: $IMAGE_TAG"
         echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
 
