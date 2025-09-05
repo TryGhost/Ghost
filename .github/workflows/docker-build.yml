@@ -57,6 +57,37 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
             maintainer=TryGhost
 
+      - name: Determine build strategy
+        id: strategy
+        run: |
+          IS_FORK_PR="false"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            IS_FORK_PR="true"
+          fi
+          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
+          echo "should-push=${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}" >> $GITHUB_OUTPUT
+          echo "should-load=$IS_FORK_PR" >> $GITHUB_OUTPUT
+          
+          # Generate appropriate tags based on fork status
+          if [ "$IS_FORK_PR" = "true" ]; then
+            # For fork PRs, use simple local SHA tag since we're not pushing to registry
+            LOCAL_TAGS="ghost-test:sha-${{ github.sha }}"
+            
+            echo "image-tags<<EOF" >> $GITHUB_OUTPUT
+            echo "$LOCAL_TAGS" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "Using local tags for fork: $LOCAL_TAGS"
+          else
+            # For main repo, use the registry tags from docker/metadata-action  
+            echo "image-tags=${{ steps.meta.outputs.tags }}" >> $GITHUB_OUTPUT
+            echo "Using registry tags for main repo"
+          fi
+          
+          echo "Build strategy determined:"
+          echo "- Is fork PR: $IS_FORK_PR"
+          echo "- Should push: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}"
+          echo "- Should load: $IS_FORK_PR"
+
       - name: Display Docker metadata
         run: |
           echo "Generated tags:"
@@ -67,16 +98,136 @@ jobs:
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
+        id: build
         with:
           context: .
           file: .docker/Dockerfile
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
+          # Only push on main branch or PRs from the main repo (not forks)
+          push: ${{ steps.strategy.outputs.should-push }}
+          # Only load image on PRs from forks (to allow testing without pushing)
+          load: ${{ steps.strategy.outputs.should-load }}
+          tags: ${{ steps.strategy.outputs.image-tags }}
           labels: ${{ steps.meta.outputs.labels }}
           # On PRs: use both main cache and PR-specific cache
           # On main: only use main cache
           cache-from: |
             type=registry,ref=${{ steps.cache.outputs.image }}:cache-main
             ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.cache.outputs.image, github.event.pull_request.number) || '' }}
-          cache-to: |
-            type=registry,ref=${{ steps.cache.outputs.image }}:cache-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main' }},mode=max
+          # Only export cache if we can push (not on fork PRs)
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.cache.outputs.image, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save image as artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        run: |
+          IMAGE_TAG="${{ steps.strategy.outputs.image-tags }}"
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
+          echo "Image saved as docker-image.tar.gz"
+          ls -lh docker-image.tar.gz
+
+      - name: Upload image artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: docker-image.tar.gz
+          retention-days: 1
+
+    outputs:
+      image-tags: ${{ steps.strategy.outputs.image-tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+  test:
+    needs: build
+    runs-on: ubuntu-latest-16-cores
+
+    steps:
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Download image artifact (fork PR)
+        if: needs.build.outputs.is-fork == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-image
+
+      - name: Load image from artifact (fork PR)
+        if: needs.build.outputs.is-fork == 'true'
+        run: |
+          echo "Loading Docker image from artifact..."
+          gunzip -c docker-image.tar.gz | docker load
+          echo "Available images after load:"
+          docker images
+
+      - name: Log in to GitHub Container Registry
+        if: needs.build.outputs.is-fork == 'false'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Pull image from registry (main repo/branch)
+        if: needs.build.outputs.is-fork == 'false'
+        run: |
+          # For main repo, extract first tag from multi-line registry tags
+          IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
+          echo "Pulling image from registry: $IMAGE_TAG"
+          docker pull "$IMAGE_TAG"
+
+      - name: Verify image is available
+        run: |
+          # Use the appropriate tag based on fork status
+          if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
+            IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
+          else
+            IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
+          fi
+          echo "Checking for image: $IMAGE_TAG"
+          
+          if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
+            echo "✅ Image $IMAGE_TAG is available"
+            echo "Image details:"
+            docker inspect "$IMAGE_TAG" --format='{{.Id}} {{.Created}}'
+          else
+            echo "❌ Image $IMAGE_TAG is not available"
+            echo "Available images:"
+            docker images
+            
+            # For fork PRs, the image might have been loaded with a different tag
+            if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
+              echo ""
+              echo "Searching for any loaded Ghost images..."
+              docker images --format "table {{.Repository}}:{{.Tag}}\t{{.ID}}\t{{.CreatedAt}}" | grep -E "(ghost|Ghost)" || echo "No Ghost images found"
+            fi
+            exit 1
+          fi
+
+      - name: Test container
+        run: |
+          # Use the appropriate tag based on fork status
+          if [ "${{ needs.build.outputs.is-fork }}" = "true" ]; then
+            IMAGE_TAG="${{ needs.build.outputs.image-tags }}"
+          else
+            IMAGE_TAG=$(echo "${{ needs.build.outputs.image-tags }}" | head -n1)
+          fi
+          
+          echo "Testing container: $IMAGE_TAG"
+          # Run a basic test - replace with your actual tests
+          docker run --rm "$IMAGE_TAG" node --version
+
+          # Example: Run your application's health check or tests
+          # docker run --rm -p 2368:2368 "$IMAGE_TAG" &
+          # sleep 5
+          # curl -f http://localhost:2368 || exit 1
+
+      - name: Show container logs (on failure)
+        if: failure()
+        run: |
+          echo "Showing recent container logs..."
+          docker ps -a
+          # Show logs from the most recent container if needed
+          CONTAINER_ID=$(docker ps -lq)
+          if [ ! -z "$CONTAINER_ID" ]; then
+            docker logs $CONTAINER_ID
+          fi
