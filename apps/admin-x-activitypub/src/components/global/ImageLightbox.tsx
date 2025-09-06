@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {Button, Dialog, DialogClose, DialogContent, LucideIcon} from '@tryghost/shade';
 import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {getAttachment} from '@components/feed/FeedItem';
+import {getAttachment} from '@components/feed/common/FeedItemAttachment';
 
 export interface LightboxImage {
     url: string;
