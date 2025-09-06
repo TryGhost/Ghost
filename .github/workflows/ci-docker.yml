@@ -145,8 +145,16 @@ jobs:
           
           # Convert to human readable format
           IMAGE_SIZE_MB=$(( IMAGE_SIZE_BYTES / 1024 / 1024 ))
+          IMAGE_SIZE_GB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024 / 1024" | bc)
           
-          echo "Image size: ${IMAGE_SIZE_MB} MB"
+          # Format size display based on magnitude
+          if [ $IMAGE_SIZE_MB -ge 1024 ]; then
+            IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_GB} GB"
+          else
+            IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_MB} MB"
+          fi
+          
+          echo "Image size: ${IMAGE_SIZE_DISPLAY}"
           
           # Write to GitHub Step Summary
           {
@@ -154,7 +162,7 @@ jobs:
             echo ""
             echo "**Image:** \`$IMAGE_TAG\`"
             echo ""
-            echo "**Total Size:** ${IMAGE_SIZE_MB} MB"
+            echo "**Total Size:** ${IMAGE_SIZE_DISPLAY}"
             echo ""
             echo "## Image Layers"
             echo ""
