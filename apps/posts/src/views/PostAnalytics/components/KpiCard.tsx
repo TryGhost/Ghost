@@ -14,7 +14,7 @@ export const KpiCardLabel: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({ch
         <div className={
             cn('[&_svg]:size-4 flex items-center gap-1.5 text-base h-[22px] font-medium transition-all',
                 className,
-                props.onClick && 'hover:cursor-pointer hover:text-black'
+                props.onClick && 'hover:cursor-pointer hover:text-foreground'
             )} {...props}>
             {children}
         </div>
