@@ -5,8 +5,17 @@ import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settin
 import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
+// The actual shape of the config data from the API
+type ConfigData = Config & {
+    config?: {
+        stats?: StatsConfig;
+        labs?: Record<string, boolean>;
+        [key: string]: unknown;
+    };
+};
+
 interface GlobalData {
-    data: Config | undefined;
+    data: ConfigData | undefined;
     site: {
         url?: string;
         icon?: string;
@@ -37,7 +46,13 @@ export const useGlobalData = () => {
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();
     const site = useBrowseSite();
-    const config = useBrowseConfig() as unknown as { data: Config & { config: { stats?: StatsConfig } } | null, isLoading: boolean, error: Error | null };
+    // The actual response structure includes nested config with labs and stats
+    const configQuery = useBrowseConfig();
+    const config = {
+        data: configQuery.data?.config as ConfigData | undefined,
+        isLoading: configQuery.isLoading,
+        error: configQuery.error as Error | null
+    };
     // Only fetch Tinybird token if stats config is present
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
