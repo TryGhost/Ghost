@@ -120,7 +120,7 @@
     "react-router-dom": "7.8.2",
     "react-slider": "^2.0.6",
     "storybook": "^8.5.0",
-    "stylelint": "16.23.1",
+    "stylelint": "16.24.0",
     "tailwindcss": "3.4.17",
     "typescript": "5.9.2",
     "vite": "4.5.14",
