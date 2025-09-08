@@ -37,9 +37,10 @@ export const useGlobalData = () => {
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();
     const site = useBrowseSite();
-    const config = useBrowseConfig() as unknown as { data: Config & { config: { stats?: StatsConfig } } | null, isLoading: boolean, error: Error | null };
-    // Only fetch Tinybird token if stats config is present
-    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const config = useBrowseConfig();
+    // config.data is ConfigResponseType which has shape { config: Config }
+    const configData = config.data?.config;
+    const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
     // Initialize with all audiences selected (binary 111 = 7)
@@ -69,9 +70,9 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     };
 
     return <GlobalDataContext.Provider value={{
-        data: config.data || undefined,
+        data: configData,
         site: siteData,
-        statsConfig: config.data?.config?.stats,
+        statsConfig: configData?.stats,
         tinybirdToken: tinybirdTokenQuery.token,
         isLoading,
         range,
