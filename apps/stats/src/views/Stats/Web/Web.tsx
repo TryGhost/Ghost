@@ -87,7 +87,7 @@ const Web: React.FC = () => {
         params
     });
 
-    // Get top sources data (always fetch this)
+    // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
         statsConfig,
