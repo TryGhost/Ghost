@@ -140,6 +140,21 @@ module.exports = class GhostMailer {
     }
 
     async sendMail(message) {
+        // Add site-based tagging for Mailgun transactional emails
+        if (this.state.usingMailgun) {
+            const siteId = config.get('hostSettings:siteId');
+            if (siteId) {
+                // Add the site-based tag in the format blog-{siteId}
+                if (!message['o:tag']) {
+                    message['o:tag'] = [];
+                } else if (typeof message['o:tag'] === 'string') {
+                    message['o:tag'] = [message['o:tag']];
+                }
+
+                message['o:tag'].push(`blog-${siteId}`);
+            }
+        }
+
         const startTime = Date.now();
         try {
             const response = await this.transport.sendMail(message);
