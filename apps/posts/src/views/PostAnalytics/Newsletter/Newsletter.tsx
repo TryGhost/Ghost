@@ -433,9 +433,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <HTable className='mr-2'>Members</HTable>
                             </div>
                             {isLoading ?
-                                <CardContent className='p-6'>
+                                <CardContent className='p-6 pt-0'>
                                     <Separator />
-                                    <SkeletonTable />
+                                    <SkeletonTable className='mt-6' />
                                 </CardContent>
                                 :
                                 <CardContent className='pb-0'>
