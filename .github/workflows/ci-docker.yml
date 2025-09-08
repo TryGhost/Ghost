@@ -15,6 +15,9 @@ jobs:
   build:
     name: Build & Push
     runs-on: ubuntu-latest-16-cores
+    permissions:
+      contents: read
+      packages: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -139,23 +142,23 @@ jobs:
         run: |
           IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
           echo "Analyzing Docker image: $IMAGE_TAG"
-          
+
           # Get the image size in bytes
           IMAGE_SIZE_BYTES=$(docker inspect "$IMAGE_TAG" --format='{{.Size}}')
-          
+
           # Convert to human readable format
           IMAGE_SIZE_MB=$(( IMAGE_SIZE_BYTES / 1024 / 1024 ))
           IMAGE_SIZE_GB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024 / 1024" | bc)
-          
+
           # Format size display based on magnitude
           if [ $IMAGE_SIZE_MB -ge 1024 ]; then
             IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_GB} GB"
           else
             IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_MB} MB"
           fi
-          
+
           echo "Image size: ${IMAGE_SIZE_DISPLAY}"
-          
+
           # Write to GitHub Step Summary
           {
             echo "# Docker Image Analysis"
@@ -168,7 +171,7 @@ jobs:
             echo ""
             echo "| Size | Layer |"
             echo "|------|-------|"
-            
+
             # Get all layers (including 0B ones)
             docker history "$IMAGE_TAG" --format "{{.Size}}@@@{{.CreatedBy}}" --no-trunc | \
             while IFS='@@@' read -r size cmd; do
@@ -179,5 +182,5 @@ jobs:
               fi
               echo "| $size | \`${cmd_clean}\` |"
             done
-            
+
           } >> $GITHUB_STEP_SUMMARY
