@@ -119,7 +119,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
-    const title = selectedTab === 'campaigns' && selectedCampaign ? `Top ${selectedCampaign}` : 'Top sources';
+    const title = selectedTab === 'campaigns' && selectedCampaign ? `${selectedCampaign}` : 'Top sources';
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
     // Only show skeleton on initial load, not when switching between tabs
@@ -148,18 +148,16 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             </div>
             <CardContent className='overflow-hidden'>
                 {utmTrackingEnabled && (
-                    <>
-                        <div className='mb-2'>
-                            <SourceTabs
-                                selectedCampaign={selectedCampaign}
-                                selectedTab={selectedTab}
-                                onCampaignChange={onCampaignChange}
-                                onTabChange={onTabChange}
-                            />
-                        </div>
-                        <Separator />
-                    </>
+                    <div className='mb-4'>
+                        <SourceTabs
+                            selectedCampaign={selectedCampaign}
+                            selectedTab={selectedTab}
+                            onCampaignChange={onCampaignChange}
+                            onTabChange={onTabChange}
+                        />
+                    </div>
                 )}
+                <Separator />
                 {topSources.length > 0 ? (
                     <SourcesTable
                         data={topSources}
