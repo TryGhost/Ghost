@@ -1,3 +1,6 @@
+// native fetch is not allowed in this file, use `this.externalRequest` instead to avoid SSRF
+/* eslint no-restricted-globals: ["error", "fetch"] */
+
 const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
@@ -59,7 +62,7 @@ const findUrlWithProvider = (url) => {
  */
 
 /**
- * @typedef {(url: string, config: Object) => Promise} IExternalRequest
+ * @typedef {import('got').GotRequestFunction} IExternalRequest
  */
 
 /**
@@ -128,20 +131,12 @@ class OEmbedService {
     }
 
     /**
-     * Fetches the image buffer from a URL using fetch
+     * Fetches the image buffer from a URL using this.externalRequest
      * @param {String} imageUrl - URL of the image to fetch
      * @returns {Promise<Buffer>} - Promise resolving to the image buffer
      */
     async fetchImageBuffer(imageUrl) {
-        const response = await fetch(imageUrl);
-        
-        if (!response.ok) {
-            throw Error(`Failed to fetch image: ${response.statusText}`);
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        
-        const buffer = Buffer.from(arrayBuffer);
+        const buffer = await this.externalRequest(imageUrl).buffer();
         return buffer;
     }
 
