@@ -3,63 +3,76 @@
  */
 
 /**
- * Parses URL parameters to extract attribution information
- * 
- * @param {string} url - The URL to parse
- * @returns {Object} Parsed attribution data
+ * @typedef {Object} AttributionData
+ * @property {string|null} source - Primary attribution source (ref || source || utm_source)
+ * @property {string|null} medium - UTM medium parameter
+ * @property {string|null} url - Browser's document.referrer
+ * @property {string|null} utmSource - UTM source parameter
+ * @property {string|null} utmMedium - UTM medium parameter
+ * @property {string|null} utmTerm - UTM term/keyword parameter
+ * @property {string|null} utmCampaign - UTM campaign parameter
+ * @property {string|null} utmContent - UTM content/variant parameter
  */
-export function parseReferrer(url) {
-    // Extract current URL parameters
-    const currentUrl = new URL(url || window.location.href);
-    
-    // Parse source parameters
-    const refParam = currentUrl.searchParams.get('ref');
-    const sourceParam = currentUrl.searchParams.get('source');
-    const utmSourceParam = currentUrl.searchParams.get('utm_source');
-    const utmMediumParam = currentUrl.searchParams.get('utm_medium');
+
+/**
+ * Extracts attribution parameters from URL search params
+ * @private
+ * @param {URLSearchParams} searchParams - The search params to parse
+ * @returns {AttributionData} Parsed attribution data with all UTM parameters
+ */
+function extractParams(searchParams) {
+    const refParam = searchParams.get('ref');
+    const sourceParam = searchParams.get('source');
+    const utmSourceParam = searchParams.get('utm_source');
+    const utmMediumParam = searchParams.get('utm_medium');
+    const utmTermParam = searchParams.get('utm_term');
+    const utmCampaignParam = searchParams.get('utm_campaign');
+    const utmContentParam = searchParams.get('utm_content');
     
     // Determine primary source
     const referrerSource = refParam || sourceParam || utmSourceParam || null;
     
-    // Check portal hash if needed
-    if (!referrerSource && currentUrl.hash && currentUrl.hash.includes('#/portal')) {
-        return parsePortalHash(currentUrl);
-    }
-    
     return {
         source: referrerSource,
         medium: utmMediumParam || null,
-        url: window.document.referrer || null
+        url: window.document.referrer || null,
+        utmSource: utmSourceParam || null,
+        utmMedium: utmMediumParam || null,
+        utmTerm: utmTermParam || null,
+        utmCampaign: utmCampaignParam || null,
+        utmContent: utmContentParam || null
     };
 }
 
 /**
- * Parses attribution data from portal hash URLs
+ * Parses URL parameters to extract complete referrer/attribution data
  * 
- * @param {URL} url - URL object with a portal hash
- * @returns {Object} Parsed attribution data
+ * @param {string} url - The URL to parse (defaults to current URL)
+ * @returns {AttributionData} Complete attribution data including all UTM parameters
  */
-export function parsePortalHash(url) {
-    const hashUrl = new URL(url.href.replace('/#/portal', ''));
-    const refParam = hashUrl.searchParams.get('ref');
-    const sourceParam = hashUrl.searchParams.get('source');
-    const utmSourceParam = hashUrl.searchParams.get('utm_source');
-    const utmMediumParam = hashUrl.searchParams.get('utm_medium');
+export function parseReferrerData(url) {
+    // Extract current URL parameters
+    const currentUrl = new URL(url || window.location.href);
+    let searchParams = currentUrl.searchParams;
     
-    return {
-        source: refParam || sourceParam || utmSourceParam || null,
-        medium: utmMediumParam || null,
-        url: window.document.referrer || null
-    };
+    // Handle portal hash URLs - extract params from hash instead
+    if (currentUrl.hash && currentUrl.hash.includes('#/portal')) {
+        const hashUrl = new URL(currentUrl.href.replace('/#/portal', ''));
+        searchParams = hashUrl.searchParams;
+    }
+    
+    return extractParams(searchParams);
 }
 
 /**
- * Gets the final referrer value based on parsed data
- * 
- * @param {Object} referrerData - Parsed referrer data
- * @returns {string|null} Final referrer value or null
+ * Selects the primary referrer value from parsed attribution data
+ * Prioritizes: source → medium → url
+ * Filters out same-domain referrers
+ * @private
+ * @param {AttributionData} referrerData - Parsed referrer data
+ * @returns {string|null} Primary referrer value or null
  */
-export function getFinalReferrer(referrerData) {
+function selectPrimaryReferrer(referrerData) {
     const { source, medium, url } = referrerData;
     const finalReferrer = source || medium || url || null;
     
@@ -87,6 +100,6 @@ export function getFinalReferrer(referrerData) {
  * @returns {string|null} Final referrer value
  */
 export function getReferrer(url) {
-    const referrerData = parseReferrer(url);
-    return getFinalReferrer(referrerData);
+    const referrerData = parseReferrerData(url);
+    return selectPrimaryReferrer(referrerData);
 }
