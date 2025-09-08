@@ -68,7 +68,7 @@ const Step1: React.FC = () => {
                             <div className={`relative -mx-3 h-8 max-w-[calc(100%+24px)] px-3 text-lg font-medium before:absolute before:inset-0 before:rounded-full before:bg-gradient-to-r before:from-[#CFB0FF66] before:to-[#B6E8FF66] before:opacity-0 ${!usersLoading && 'before:animate-onboarding-handle-bg'} dark:before:from-[#CFB0FF20] dark:before:to-[#B6E8FF20]`}>
                                 <div className='relative flex h-full items-center gap-1'>
                                     <span className='truncate'>{account?.handle || <Skeleton className='w-64' />}</span>
-                                    <Button className='h-6 w-6 p-0 hover:opacity-80' variant='link' onClick={handleCopy}>
+                                    <Button className='size-6 p-0 hover:opacity-80' variant='link' onClick={handleCopy}>
                                         {!copied ?
                                             <LucideIcon.Copy size={16} /> :
                                             <LucideIcon.Check size={16} />
@@ -86,7 +86,7 @@ const Step1: React.FC = () => {
                             )}
                         </p>
                         <div className='mt-1 flex gap-2 text-sm text-gray-800 dark:text-gray-600'>
-                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:pointer-events-none [&>*]:h-5 [&>*]:w-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&_img]:h-5 [&_img]:w-5'>
+                            <div className='flex [&>*:not(:first-child)]:-ml-2 [&>*:nth-child(1)]:z-30 [&>*:nth-child(2)]:z-20 [&>*:nth-child(3)]:z-10 [&>*]:pointer-events-none [&>*]:size-5 [&>*]:border [&>*]:border-white dark:[&>*]:border-[#101114] [&_img]:size-5'>
                                 {transformedUsers.map(user => (
                                     <APAvatar key={user.id} author={user} disabled={true} size='xs' />
                                 ))}

@@ -188,7 +188,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                             </div>
                             <H2 className='mt-4 truncate break-anywhere'>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</H2>
                             <div className='mb-4 flex items-center gap-2'>
-                                <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
+                                <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-500' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                     <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 </a>
                                 {account?.followsMe && !isLoadingAccount && (

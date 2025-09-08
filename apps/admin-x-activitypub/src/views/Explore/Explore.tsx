@@ -58,7 +58,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                 <div className='flex items-center justify-between gap-3'>
                     <div className='flex grow flex-col break-anywhere'>
                         <span className='line-clamp-1 font-semibold text-black dark:text-white'>{!isLoading ? profile.name : <Skeleton className='w-full max-w-48' />}</span>
-                        <span className='line-clamp-1 text-sm text-gray-700'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
+                        <span className='line-clamp-1 text-sm text-gray-700 dark:text-gray-600'>{!isLoading ? profile.handle : <Skeleton className='w-32' />}</span>
                     </div>
                     {!isLoading ? (
                         !isCurrentUser ? (
@@ -87,7 +87,7 @@ export const ExploreProfile: React.FC<ExploreProfileProps & {
                     />
                 }
                 {!isLoading ?
-                    <div className='mt-2 flex items-center gap-1 text-sm text-gray-700'>
+                    <div className='mt-2 flex items-center gap-1 text-sm text-gray-700 dark:text-gray-600'>
                         <LucideIcon.UserRound size={14} strokeWidth={1.5} />
                         {formatFollowNumber(profile.followerCount)} followers
                     </div>

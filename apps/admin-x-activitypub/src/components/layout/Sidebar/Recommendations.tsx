@@ -26,7 +26,7 @@ const Recommendations: React.FC = () => {
                     <LucideIcon.Globe className='text-purple-500' size={20} strokeWidth={1.5} />
                     <H4>Follow suggestions</H4>
                 </div>
-                <span className='text-sm text-gray-700'>
+                <span className='text-sm text-gray-700 dark:text-gray-600'>
                     Accounts you might be interested in
                 </span>
             </div>
@@ -70,7 +70,7 @@ const Recommendations: React.FC = () => {
                                     /> : <Skeleton className='z-10 size-10' />}
                                     <div className='flex min-w-0  flex-col'>
                                         <span className='block max-w-[190px] truncate font-semibold text-black dark:text-white'>{!isLoadingSuggested ? actorName : <Skeleton className='w-24' />}</span>
-                                        <span className='block max-w-[190px] truncate text-sm text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>
+                                        <span className='block max-w-[190px] truncate text-sm text-gray-700 dark:text-gray-600'>{!isLoadingSuggested ? actorHandle : <Skeleton className='w-40' />}</span>
                                     </div>
                                 </ActivityItem>
                             </li>
