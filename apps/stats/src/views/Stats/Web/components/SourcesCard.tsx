@@ -167,20 +167,12 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                         range={range}
                         tableHeader={false} />
                 ) : (
-                    // Only show empty state if we're not loading
-                    !isLoading ? (
-                        <EmptyIndicator
-                            className='mt-8 w-full py-20'
-                            title={`No visitors ${getPeriodText(range)}`}
-                        >
-                            <LucideIcon.Globe strokeWidth={1.5} />
-                        </EmptyIndicator>
-                    ) : (
-                        // Show skeleton while loading if no data
-                        <div className='mt-4'>
-                            <SkeletonTable lines={5} />
-                        </div>
-                    )
+                    <EmptyIndicator
+                        className='mt-8 w-full py-20'
+                        title={`No visitors ${getPeriodText(range)}`}
+                    >
+                        <LucideIcon.Globe strokeWidth={1.5} />
+                    </EmptyIndicator>
                 )}
             </CardContent>
             {extendedData.length > 11 &&
