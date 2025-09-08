@@ -742,8 +742,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-nav-pro .gh-btn-green {
-    margin: 12px 0 9px 38px!important;
-    width: calc(100% - 72px)!important;
+    margin: 12px 0 9px 0px !important;
+    width: 100% !important;
 }
 
 .gh-nav-view-list {
