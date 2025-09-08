@@ -113,10 +113,6 @@ jobs:
           path: docker-image.tar.gz
           retention-days: 1
 
-      - name: Test a failed build
-        run: |
-          exit 1
-
     outputs:
       image-tags: ${{ steps.meta.outputs.tags }}
       image-digest: ${{ steps.build.outputs.digest }}
