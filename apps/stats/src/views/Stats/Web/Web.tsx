@@ -104,19 +104,24 @@ const Web: React.FC = () => {
         'UTM terms': 'api_top_utm_terms'
     };
 
-    // Get UTM campaign data (only fetch when a campaign is selected)
+    // Get UTM campaign data (only fetch when UTM is enabled, campaigns tab is selected, and a campaign is selected)
     const campaignEndpoint = selectedCampaign ? campaignEndpointMap[selectedCampaign] : '';
     const {data: utmData, loading: isUtmLoading} = useTinybirdQuery({
         endpoint: campaignEndpoint,
         statsConfig,
         params,
-        enabled: !!selectedCampaign && selectedTab === 'campaigns'
+        enabled: utmTrackingEnabled && selectedTab === 'campaigns' && !!selectedCampaign
     });
 
     // Select and transform the appropriate data based on current view
     const displayData = React.useMemo(() => {
         // If we're viewing UTM campaigns, use and transform the UTM data
-        if (selectedTab === 'campaigns' && selectedCampaign && utmData) {
+        if (selectedTab === 'campaigns' && selectedCampaign) {
+            // If UTM data is still loading or undefined, return null
+            if (!utmData) {
+                return null;
+            }
+            
             // Map UTM field names to the generic key name
             const utmKeyMap: Record<CampaignType, string> = {
                 '': '',
@@ -132,13 +137,14 @@ const Web: React.FC = () => {
                 return utmData;
             }
             
-            // Transform the data to use 'source' as the key
-            return utmData.map((item: SourcesData) => ({
-                ...item,
-                source: String((item as Record<string, unknown>)[utmKey] || '(not set)'),
-                // Remove the original utm_* key to avoid confusion
-                [utmKey]: undefined
-            }));
+            // Transform the data to use 'source' as the key, omitting the original utm_* field
+            return utmData.map((item: SourcesData) => {
+                const {[utmKey]: utmValue, ...rest} = item as Record<string, unknown>;
+                return {
+                    ...rest,
+                    source: String(utmValue || '(not set)')
+                };
+            });
         }
         
         // Default to regular sources data
