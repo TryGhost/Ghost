@@ -33,13 +33,13 @@ export const UnsplashPhotoComponent: React.FC<UnsplashPhotoProps> = ({
 
     const containerClasses = cn(
         'group relative overflow-hidden bg-gray-100 transition-all duration-200',
-        zoomed ? 'h-full pt-28 cursor-zoom-out' : 'cursor-zoom-in hover:shadow-lg mb-4',
+        zoomed ? 'h-full max-w-full cursor-zoom-out' : 'cursor-zoom-in hover:shadow-lg mb-4',
         className
     );
 
     const imageClasses = cn(
-        'object-cover transition-transform duration-200',
-        zoomed ? 'h-full' : 'w-full '
+        'transition-transform duration-200',
+        zoomed ? 'h-full object-contain' : 'w-full object-cover'
     );
 
     return (

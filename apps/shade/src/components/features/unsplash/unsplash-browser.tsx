@@ -43,9 +43,36 @@ export const UnsplashDialogContent: React.FC<UnsplashDialogContentProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
     const [zoomedPhoto, setZoomedPhoto] = useState<UnsplashPhoto | null>(null);
+    const [headerHeight, setHeaderHeight] = useState(100);
+    const headerRef = useRef<HTMLDivElement>(null);
 
     const containerRef = useRef<HTMLDivElement>(null);
     const searchInputRef = useRef<HTMLInputElement>(null);
+
+    // Track header height for proper positioning
+    useEffect(() => {
+        const updateHeaderHeight = () => {
+            if (headerRef.current) {
+                const height = headerRef.current.getBoundingClientRect().height;
+                setHeaderHeight(height);
+                // Set CSS custom property for use in styling
+                document.documentElement.style.setProperty('--header-height', `${height}px`);
+            }
+        };
+
+        updateHeaderHeight();
+
+        // Update on resize
+        const resizeObserver = new ResizeObserver(updateHeaderHeight);
+        if (headerRef.current) {
+            resizeObserver.observe(headerRef.current);
+        }
+
+        return () => {
+            resizeObserver.disconnect();
+            document.documentElement.style.removeProperty('--header-height');
+        };
+    }, []);
 
     // Debounce search term
     useEffect(() => {
@@ -154,7 +181,12 @@ export const UnsplashDialogContent: React.FC<UnsplashDialogContentProps> = ({
     );
 
     const contentClasses = cn(
-        'inset-y-8 max-w-[calc(100svw-6.4rem)] flex flex-col items-stretch gap-0 overflow-y-auto p-0',
+        'inset-y-8 max-w-[calc(100svw-6.4rem)] flex flex-col items-stretch gap-0 overflow-y-auto p-0'
+        
+    );
+
+    const scrollableClasses = cn(
+        'flex-1 overflow-y-auto',
         zoomedPhoto ? 'overflow-y-hidden' : 'overflow-y-auto'
     );
 
@@ -171,61 +203,130 @@ export const UnsplashDialogContent: React.FC<UnsplashDialogContentProps> = ({
                 }
             }}
         >
-            {/* Header */}
-            <DialogHeader className="sticky top-0 z-50 grid flex-none grid-cols-2 items-center gap-x-4 bg-gradient-to-b from-background via-background/90 to-background/70 p-4 backdrop-blur-md md:grid-cols-[1fr_auto_auto] md:p-8">
-                <a
-                    className="col-span-1 flex items-center transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
-                    href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <UnsplashLogo className="mr-2 size-4 fill-current md:size-6" />
-                    <DialogTitle className="text-xl font-semibold md:text-3xl">
+            <div className={scrollableClasses}>
+                {/* Header */}
+                <DialogHeader ref={headerRef} className="sticky top-0 z-50 grid flex-none grid-cols-2 items-center gap-x-4 bg-gradient-to-b from-background via-background/90 to-background/70 p-4 backdrop-blur-md md:grid-cols-[1fr_auto_auto] md:p-8">
+                    <a
+                        className="col-span-1 flex items-center transition-colors hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
+                        href="https://unsplash.com/?utm_source=ghost&utm_medium=referral&utm_campaign=api-credit"
+                        rel="noopener noreferrer"
+                        target="_blank"
+                    >
+                        <UnsplashLogo className="mr-2 size-4 fill-current md:size-6" />
+                        <DialogTitle className="text-xl font-semibold md:text-3xl">
                         Unsplash
-                    </DialogTitle>
-                </a>
+                        </DialogTitle>
+                    </a>
 
-                <div className="relative col-span-2 col-start-1 row-start-2 w-full max-w-md md:col-span-1 md:col-start-2 md:row-start-1">
-                    <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
-                    <Input
-                        ref={searchInputRef}
-                        aria-label="Search Unsplash photos"
-                        className="px-10"
-                        placeholder="Search free high-resolution photos"
-                        size={30}
-                        type="text"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                    />
-                    {searchTerm && (
+                    <div className="relative col-span-2 col-start-1 row-start-2 w-full max-w-md md:col-span-1 md:col-start-2 md:row-start-1">
+                        <Search className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-gray-400" />
+                        <Input
+                            ref={searchInputRef}
+                            aria-label="Search Unsplash photos"
+                            className="px-10"
+                            placeholder="Search free high-resolution photos"
+                            size={30}
+                            type="text"
+                            value={searchTerm}
+                            onChange={handleSearchChange}
+                        />
+                        {searchTerm && (
+                            <Button
+                                aria-label="Clear search"
+                                className="absolute right-1 top-1/2 size-7 -translate-y-1/2"
+                                size="icon"
+                                variant="ghost"
+                                onClick={handleClearSearch}
+                            >
+                                <X className="size-4" />
+                            </Button>
+                        )}
+                    </div>
+
+                    <DialogClose asChild>
                         <Button
-                            aria-label="Clear search"
-                            className="absolute right-1 top-1/2 size-7 -translate-y-1/2"
+                            aria-label="Close"
+                            className="space-0 m-0 size-8"
                             size="icon"
                             variant="ghost"
-                            onClick={handleClearSearch}
                         >
-                            <X className="size-4" />
+                            <X className="size-8" />
                         </Button>
+                    </DialogClose>
+                </DialogHeader>
+
+                {/* Content */}
+                <div className="col-start-1 row-start-2 h-full p-4 pt-0 md:p-8 md:pt-0">
+                    {isLoading && photos.length === 0 ? (
+                        <div className="flex h-full items-center justify-center">
+                            <LoadingIndicator size="lg" />
+                        </div>
+                    ) : isError ? (
+                        <div className="flex h-full flex-col items-center justify-center text-center">
+                            <div className="mb-4 text-gray-500 dark:text-gray-400">
+                                <X className="mx-auto mb-4 size-16" />
+                                <h4 className="mb-2 text-lg font-medium">
+                                Error loading photos
+                                </h4>
+                                <p className="mb-4 text-sm">{error}</p>
+                                <Button variant="outline" onClick={retry}>
+                                Retry
+                                </Button>
+                            </div>
+                        </div>
+                    ) : photos.length === 0 && debouncedSearchTerm ? (
+                        <div className="flex h-full flex-col items-center justify-center text-center">
+                            <div className="text-gray-500 dark:text-gray-400">
+                                <Search className="mx-auto mb-4 size-16" />
+                                <h4 className="mb-2 text-lg font-medium">
+                                No photos found
+                                </h4>
+                                <p className="text-sm">
+                                No photos found for &apos;{debouncedSearchTerm}
+                                &apos;
+                                </p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div
+                            className={cn(
+                                'columns-1 sm:columns-2 xl:columns-3 gap-4'
+                            )}
+                        >
+                            {photos.map((photo, index) => (
+                                <div
+                                    key={photo.id}
+                                    ref={
+                                        index === photos.length - 1
+                                            ? lastPhotoRef
+                                            : null
+                                    }
+                                    className="break-inside-avoid"
+                                >
+                                    <UnsplashPhotoComponent
+                                        photo={photo}
+                                        onSelect={handlePhotoSelect}
+                                        onZoom={handlePhotoZoom}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Loading more indicator */}
+                    {isFetchingNextPage && (
+                        <div className="mt-8 flex justify-center">
+                            <LoadingIndicator size="md" />
+                        </div>
                     )}
                 </div>
-
-                <DialogClose asChild>
-                    <Button
-                        aria-label="Close"
-                        className="space-0 m-0 size-8"
-                        size="icon"
-                        variant="ghost"
-                    >
-                        <X className="size-8" />
-                    </Button>
-                </DialogClose>
-            </DialogHeader>
+            </div>
 
             {/* Zoomed photo overlay */}
             {zoomedPhoto && (
                 <div
-                    className="sticky inset-0 z-10 col-start-1 row-start-2 flex h-[calc(100svh-6.4rem)] flex-1 justify-center bg-white"
+                    className="absolute inset-0 z-10 flex flex-1 justify-center bg-background p-4"
+                    style={{paddingTop: headerHeight}}
                     onClick={handleCloseZoom}
                 >
                     <UnsplashPhotoComponent
@@ -235,72 +336,6 @@ export const UnsplashDialogContent: React.FC<UnsplashDialogContentProps> = ({
                     />
                 </div>
             )}
-
-            {/* Content */}
-            <div className="col-start-1 row-start-2 h-full p-4 pt-0 md:p-8 md:pt-0">
-                {isLoading && photos.length === 0 ? (
-                    <div className="flex h-full items-center justify-center">
-                        <LoadingIndicator size="lg" />
-                    </div>
-                ) : isError ? (
-                    <div className="flex h-full flex-col items-center justify-center text-center">
-                        <div className="mb-4 text-gray-500 dark:text-gray-400">
-                            <X className="mx-auto mb-4 size-16" />
-                            <h4 className="mb-2 text-lg font-medium">
-                                Error loading photos
-                            </h4>
-                            <p className="mb-4 text-sm">{error}</p>
-                            <Button variant="outline" onClick={retry}>
-                                Retry
-                            </Button>
-                        </div>
-                    </div>
-                ) : photos.length === 0 && debouncedSearchTerm ? (
-                    <div className="flex h-full flex-col items-center justify-center text-center">
-                        <div className="text-gray-500 dark:text-gray-400">
-                            <Search className="mx-auto mb-4 size-16" />
-                            <h4 className="mb-2 text-lg font-medium">
-                                No photos found
-                            </h4>
-                            <p className="text-sm">
-                                No photos found for &apos;{debouncedSearchTerm}
-                                &apos;
-                            </p>
-                        </div>
-                    </div>
-                ) : (
-                    <div
-                        className={cn(
-                            'columns-1 sm:columns-2 xl:columns-3 gap-4'
-                        )}
-                    >
-                        {photos.map((photo, index) => (
-                            <div
-                                key={photo.id}
-                                ref={
-                                    index === photos.length - 1
-                                        ? lastPhotoRef
-                                        : null
-                                }
-                                className="break-inside-avoid"
-                            >
-                                <UnsplashPhotoComponent
-                                    photo={photo}
-                                    onSelect={handlePhotoSelect}
-                                    onZoom={handlePhotoZoom}
-                                />
-                            </div>
-                        ))}
-                    </div>
-                )}
-
-                {/* Loading more indicator */}
-                {isFetchingNextPage && (
-                    <div className="mt-8 flex justify-center">
-                        <LoadingIndicator size="md" />
-                    </div>
-                )}
-            </div>
 
         </DialogContent>
     );
