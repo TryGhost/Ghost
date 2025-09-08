@@ -8,7 +8,9 @@ import {tracked} from '@glimmer/tracking';
 export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
+    @service configManager;
     @service ghostPaths;
+    @service limit;
     @service notifications;
     @service session;
 
@@ -45,6 +47,10 @@ export default class GhBillingIframe extends Component {
 
             if (event.data?.subscription) {
                 this._handleSubscriptionUpdate(event.data);
+            }
+
+            if (event.data?.request === 'refreshRequired') {
+                this._handleRefreshRequired();
             }
         }
     }
@@ -105,7 +111,13 @@ export default class GhBillingIframe extends Component {
         }, '*');
     }
 
-    _handleSubscriptionUpdate(data) {
+    async _handleSubscriptionUpdate(data) {
+        // Refresh config which includes billing limits and other plan-related settings
+        await this.configManager.fetch();
+
+        // Reload the limit service to ensure all admin pages can enforce limits
+        await this.limit.reload();
+
         this.billing.subscription = data.subscription;
         this.billing.checkoutRoute = data?.checkoutRoute ?? '/plans';
 
