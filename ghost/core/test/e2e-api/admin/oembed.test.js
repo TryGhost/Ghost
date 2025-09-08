@@ -306,6 +306,58 @@ describe('Oembed API', function () {
         res.body.metadata.thumbnail.should.eql(`${urlUtils.urlFor('home', true)}content/images/thumbnail/image-01.png`);
     });
 
+    it('should prevent SSRF attacks via bookmark image fetching', async function () {
+        // This test demonstrates a security vulnerability in bookmark processing
+        // An attacker can create a page with og:image/icon pointing to internal services
+        // Ghost's fetchImageBuffer method will fetch content from private addresses
+
+        // disableNetwork, overrides dnsPromises.lookup to always resolve to 123.123.123.123
+        // we need to keep local ip addresses resolving to local ips for this test
+        dnsPromises.lookup.withArgs('127.0.0.1').returns(Promise.resolve({address: '127.0.0.1'}));
+
+        const internalSecretContent = 'INTERNAL_SECRET_TOKEN=top-secret-123\nTIMESTAMP=2024-01-01T00:00:00.000Z\n';
+
+        // Mock the attacker's page with og:image pointing to internal service
+        const attackerPageMock = nock('http://attacker.example.com')
+            .get('/')
+            .reply(
+                200,
+                '<html><head><title>SSRF PoC Page</title><meta property="og:image" content="http://127.0.0.1:5555/secret-thumbnail"><link rel="icon" href="http://127.0.0.1:5555/secret-icon"></head><body><h1>Attack Page</h1></body></html>',
+                {'content-type': 'text/html'}
+            );
+
+        // Mock the internal service that should not be accessible, 2 interceptors to cover both icon and thumbnail
+        const internalServiceThumbnailMock = nock('http://127.0.0.1:5555')
+            .get('/secret-thumbnail')
+            .reply(200, internalSecretContent, {'content-type': 'text/plain'});
+
+        const internalServiceIconMock = nock('http://127.0.0.1:5555')
+            .get('/secret-icon')
+            .reply(200, internalSecretContent, {'content-type': 'text/plain'});
+
+        // Don't stub processImageFromUrl - let it call the real fetchImageBuffer that makes the image requests
+        processImageFromUrlStub.restore();
+
+        const url = encodeURIComponent('http://attacker.example.com');
+
+        const res = await request.get(localUtils.API.getApiQuery(`oembed/?url=${url}&type=bookmark`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        // Check that the attacker page was called
+        attackerPageMock.isDone().should.be.true();
+
+        // Check if the internal service was called - this indicates SSRF occurred
+        internalServiceThumbnailMock.isDone().should.be.false('Thumbnail SSRF occurred');
+        internalServiceIconMock.isDone().should.be.false('Icon SSRF occurred');
+
+        // Body contains the fallback data after requests failed
+        res.body.metadata.icon.should.eql('https://static.ghost.org/v5.0.0/images/link-icon.svg');
+        res.body.metadata.thumbnail.should.eql('http://127.0.0.1:5555/secret-thumbnail');
+    });
+
     describe('with unknown provider', function () {
         it('fetches url and follows redirects', async function () {
             const redirectMock = nock('http://test.com/')
