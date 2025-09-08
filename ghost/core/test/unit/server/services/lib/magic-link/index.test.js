@@ -114,7 +114,7 @@ describe('MagicLink', function () {
     });
 
     describe('#sendMagicLink with labsService', function () {
-        it('should not return tokenId when labsService is provided and flag is enabled but includeOTC is not set', async function () {
+        it('should not return otcRef when labsService is provided and flag is enabled but includeOTC is not set', async function () {
             const labsService = {
                 isSet: sandbox.stub().withArgs('membersSigninOTC').returns(true)
             };
@@ -130,11 +130,11 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
         });
 
-        it('should not return tokenId when labsService flag is disabled', async function () {
+        it('should not return otcRef when labsService flag is disabled', async function () {
             const labsService = {
                 isSet: sandbox.stub().withArgs('membersSigninOTC').returns(false)
             };
@@ -151,11 +151,11 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
         });
 
-        it('should not return tokenId when labsService is not provided', async function () {
+        it('should not return otcRef when labsService is not provided', async function () {
             const service = new MagicLink(buildOptions({labsService: undefined}));
 
             const args = {
@@ -169,7 +169,7 @@ describe('MagicLink', function () {
             // Should not throw any errors
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
         });
 
@@ -194,11 +194,11 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
             assert(options.transporter.sendMail.calledOnce);
         });
 
-        it('should return tokenId as null when getIdByToken resolves to null', async function () {
+        it('should return otcRef as null when getIdByToken resolves to null', async function () {
             mockSingleUseTokenProvider.getIdByToken.resolves(null);
 
             const labsService = {
@@ -217,7 +217,7 @@ describe('MagicLink', function () {
 
             const result = await service.sendMagicLink(args);
 
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
             // deriveOTC is only possible with a token so it's skipped if getIdByToken returns null
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
             assert(mockSingleUseTokenProvider.getIdByToken.calledOnce);
@@ -244,7 +244,7 @@ describe('MagicLink', function () {
             assert(mockSingleUseTokenProvider.getIdByToken.calledTwice);
             assert(mockSingleUseTokenProvider.deriveOTC.calledOnce);
             assert(mockSingleUseTokenProvider.deriveOTC.calledWith('test-token-id-123', 'mock-token'));
-            assert.equal(result.tokenId, 'test-token-id-123');
+            assert.equal(result.otcRef, 'test-token-id-123');
 
             // Verify OTC is passed to email content functions
             assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', '654321'));
@@ -272,7 +272,7 @@ describe('MagicLink', function () {
 
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
 
             // Verify OTC is not passed to email content functions
             assert(options.getText.firstCall.calledWithExactly('FAKEURL', 'signin', 'test@example.com', null));
@@ -299,7 +299,7 @@ describe('MagicLink', function () {
 
             assert(mockSingleUseTokenProvider.getIdByToken.notCalled);
             assert(mockSingleUseTokenProvider.deriveOTC.notCalled);
-            assert.equal(result.tokenId, null);
+            assert.equal(result.otcRef, null);
         });
 
         it('should pass OTC to email content functions when OTC is enabled', async function () {

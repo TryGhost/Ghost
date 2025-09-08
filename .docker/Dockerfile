@@ -12,40 +12,19 @@ RUN apt-get update && \
     libjemalloc2 \
     python3 \
     tar  \
-    git && \
-    rm -rf /var/lib/apt/lists/* && \
-    apt clean
-
-# --------------------
-# Playwright Version
-# --------------------
-# Cache Optimization: Extract the playwright version from package.json
-FROM base AS playwright-version
-WORKDIR /tmp
-COPY ghost/core/package.json ./
-RUN jq -r '.devDependencies."@playwright/test"' ./package.json > playwright-version.txt
-
-# --------------------
-# Playwright
-# --------------------
-# Cache Optimization: Playwright install is slow. Copy the version from the previous stage.
-# This way we only bust build cache when the playwright version changes.
-FROM base AS playwright
-RUN curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
+    git &&  \
+    curl -s https://packages.stripe.dev/api/security/keypair/stripe-cli-gpg/public | gpg --dearmor | tee /usr/share/keyrings/stripe.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/stripe.gpg] https://packages.stripe.dev/stripe-cli-debian-local stable main" | tee -a /etc/apt/sources.list.d/stripe.list && \
-    apt update && \
-    apt install -y \
+    apt-get update && \
+    apt-get install -y \
     stripe && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
-WORKDIR /home/ghost
-COPY --from=playwright-version tmp/playwright-version.txt /tmp/playwright-version.txt
-RUN npx playwright@$(cat /tmp/playwright-version.txt) install --with-deps
 
 # --------------------
 # Development Base
 # --------------------
-FROM playwright AS development-base
+FROM base AS development-base
 WORKDIR /home/ghost
 
 COPY package.json yarn.lock ./
@@ -78,12 +57,120 @@ COPY ghost/i18n/package.json ghost/i18n/package.json
 # Copy patches directory so patch-package can apply patches during yarn install
 COPY patches patches
 
-RUN yarn install --frozen-lockfile --prefer-offline
+RUN --mount=type=cache,target=/usr/local/share/.cache/yarn,id=yarn-cache \
+    yarn install --frozen-lockfile --prefer-offline
+
+# --------------------
+# Shade Builder
+# --------------------
+FROM development-base AS shade-builder
+WORKDIR /home/ghost
+COPY apps/shade apps/shade
+RUN cd apps/shade && yarn build
+
+# --------------------
+# Admin-x-design-system Builder
+# --------------------
+FROM development-base AS admin-x-design-system-builder
+WORKDIR /home/ghost
+COPY apps/admin-x-design-system apps/admin-x-design-system
+RUN cd apps/admin-x-design-system && yarn build
+
+# --------------------
+# Admin-x-framework Builder
+# --------------------
+FROM development-base AS admin-x-framework-builder
+WORKDIR /home/ghost
+COPY apps/admin-x-framework apps/admin-x-framework
+COPY --from=shade-builder /home/ghost/apps/shade/es apps/shade/es
+COPY --from=shade-builder /home/ghost/apps/shade/types apps/shade/types
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
+RUN cd apps/admin-x-framework && yarn build
+
+# --------------------
+# Stats Builder
+# --------------------
+FROM development-base AS stats-builder
+WORKDIR /home/ghost
+COPY apps/stats apps/stats
+COPY --from=shade-builder /home/ghost/apps/shade apps/shade
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+RUN cd apps/stats && yarn build
+
+# --------------------
+# Posts Builder
+# --------------------
+FROM development-base AS posts-builder
+WORKDIR /home/ghost
+COPY apps/posts apps/posts
+COPY --from=shade-builder /home/ghost/apps/shade apps/shade
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+RUN cd apps/posts && yarn build
+
+# --------------------
+# Admin-x-settings Builder
+# --------------------
+FROM development-base AS admin-x-settings-builder
+WORKDIR /home/ghost
+COPY apps/admin-x-settings apps/admin-x-settings
+COPY --from=shade-builder /home/ghost/apps/shade apps/shade
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system apps/admin-x-design-system
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+RUN cd apps/admin-x-settings && yarn build
+
+# --------------------
+# Admin-x-activitypub Builder
+# --------------------
+FROM development-base AS admin-x-activitypub-builder
+WORKDIR /home/ghost
+COPY apps/admin-x-activitypub apps/admin-x-activitypub
+COPY ghost/core/core/frontend/src/cards ghost/core/core/frontend/src/cards
+COPY --from=shade-builder /home/ghost/apps/shade apps/shade
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+RUN cd apps/admin-x-activitypub && yarn build
+
+# --------------------
+# Admin Ember Builder
+# --------------------
+FROM development-base AS admin-ember-builder
+WORKDIR /home/ghost
+COPY ghost/admin ghost/admin
+# Admin's asset-delivery pipeline needs the ghost module to resolve
+COPY ghost/core/package.json ghost/core/package.json
+COPY ghost/core/index.js ghost/core/index.js
+COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
+COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
+COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
+COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
+RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 
 # --------------------
 # Development
 # --------------------
 FROM development-base AS development
 COPY . .
-RUN yarn build
+COPY --from=shade-builder /home/ghost/apps/shade/es apps/shade/es
+COPY --from=shade-builder /home/ghost/apps/shade/types apps/shade/types
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
+COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/types apps/admin-x-design-system/types
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/dist apps/admin-x-framework/dist
+COPY --from=admin-x-framework-builder /home/ghost/apps/admin-x-framework/types apps/admin-x-framework/types
+COPY --from=stats-builder /home/ghost/apps/stats/dist apps/stats/dist
+COPY --from=posts-builder /home/ghost/apps/posts/dist apps/posts/dist
+COPY --from=admin-x-settings-builder /home/ghost/apps/admin-x-settings/dist apps/admin-x-settings/dist
+COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dist apps/admin-x-activitypub/dist
+COPY --from=admin-ember-builder /home/ghost/ghost/admin/dist ghost/admin/dist
+COPY --from=admin-ember-builder /home/ghost/ghost/core/core/built/admin ghost/core/core/built/admin
+
 CMD ["yarn", "dev"]

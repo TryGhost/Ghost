@@ -172,12 +172,12 @@ export const formatDisplayDate = (dateString: string): string => {
 
     // Check if this is a datetime string (contains time) or just a date
     const hasTime = dateString.includes(':');
-    
+
     const date = new Date(dateString);
     const today = new Date();
-    
+
     let day, month, year, isToday, isCurrentYear;
-    
+
     if (hasTime && !dateString.includes('T') && !dateString.includes('Z')) {
         // This is a localized datetime string like "2025-07-29 19:00:00"
         // Use local date methods to avoid timezone conversion
@@ -594,8 +594,12 @@ export const sanitizeChartData = <T extends {date: string}>(data: T[], range: nu
  * - For ranges above 91 days: shows "Week of [date]"
  * - For other ranges: uses the default formatDisplayDate
  */
-export const formatDisplayDateWithRange = (date: string, range: number): string => {
-    if (range > 365) {
+export const formatDisplayDateWithRange = (date: string, range: number, showHours: boolean = false, hoursOnly: boolean = false): string => {
+    if (range === 1 && hoursOnly) {
+        return moment(date).format('h:mma');
+    } else if (range === 1 && showHours) {
+        return moment(date).format('MMM D, h:mma');
+    } else if (range > 365) {
         return moment(date).format('MMM YYYY');
     } else if (range >= 91) {
         return `Week of ${formatDisplayDate(date)}`;

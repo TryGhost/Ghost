@@ -81,11 +81,26 @@ async function signout({api, state}) {
 async function signin({data, api, state}) {
     const {t, labs} = state;
 
-    const otc = labs.membersSigninOTC ? true : undefined;
+    const includeOTC = labs?.membersSigninOTC ? true : undefined;
 
     try {
         const integrityToken = await api.member.getIntegrityToken();
-        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken, otc});
+        const payload = {
+            ...data,
+            emailType: 'signin',
+            integrityToken,
+            ...(includeOTC ? {includeOTC: true} : {})
+        };
+        const response = await api.member.sendMagicLink(payload);
+
+        if (includeOTC && response?.otc_ref) {
+            return {
+                page: 'magiclink',
+                lastPage: 'signin',
+                otcRef: response.otc_ref
+            };
+        }
+
         return {
             page: 'magiclink',
             lastPage: 'signin'
@@ -96,6 +111,35 @@ async function signin({data, api, state}) {
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: chooseBestErrorMessage(e, t('Failed to log in, please try again'), t)
+            })
+        };
+    }
+}
+
+async function verifyOTC({data, api, state}) {
+    const {t} = state;
+
+    try {
+        const integrityToken = await api.member.getIntegrityToken();
+        const response = await api.member.verifyOTC({...data, integrityToken});
+
+        if (response.redirectUrl) {
+            return window.location.assign(response.redirectUrl);
+        } else {
+            return {
+                action: 'verifyOTC:failed',
+                popupNotification: createPopupNotification({
+                    type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                    message: response.message || t('Invalid verification code')
+                })
+            };
+        }
+    } catch (e) {
+        return {
+            action: 'verifyOTC:failed',
+            popupNotification: createPopupNotification({
+                type: 'verifyOTC:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: chooseBestErrorMessage(e, t('Failed to verify code, please try again'), t)
             })
         };
     }
@@ -564,6 +608,7 @@ const Actions = {
     back,
     signout,
     signin,
+    verifyOTC,
     signup,
     updateSubscription,
     cancelSubscription,
