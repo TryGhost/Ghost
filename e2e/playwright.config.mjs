@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import path from 'path';
 dotenv.config();
 
 /** @type {import('@playwright/test').PlaywrightTestConfig} */
@@ -16,7 +17,7 @@ const config = {
         browserName: 'chromium'
     },
     testDir: './',
-    testMatch: ['tests/**/*.test.{js,ts}', 'data-factory/*.test.{js,ts}'],
+    testMatch: ['tests/**/*.test.{js,ts}'],
     projects: [
         // Main tests - run after setup with authentication
         {
@@ -25,7 +26,7 @@ const config = {
             testDir: './tests',
             use: {
                 // Use authentication state for all tests by default
-                storageState: 'playwright/.auth/user.json',
+                storageState: path.resolve(import.meta.dirname, './playwright/.auth/user.json'),
                 viewport: {width: 1920, height: 1080}
             },
             dependencies: ['setup']

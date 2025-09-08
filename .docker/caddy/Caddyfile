@@ -14,7 +14,7 @@
     @analytics_paths path_regexp analytics_match ^(.*)/\.ghost/analytics(.*)$
     handle @analytics_paths {
         rewrite * {re.analytics_match.2}
-        reverse_proxy analytics:3000
+        reverse_proxy {$ANALYTICS_PROXY_TARGET}
     }
 
     handle /ember-cli-live-reload.js {

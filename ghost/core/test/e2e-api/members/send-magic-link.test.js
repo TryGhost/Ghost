@@ -1,5 +1,7 @@
-const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const should = require('should');
+const sinon = require('sinon');
+const assert = require('assert/strict');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
 const DomainEvents = require('@tryghost/domain-events');
@@ -287,6 +289,65 @@ describe('sendMagicLink', function () {
         });
     });
 
+    describe('signin email', function () {
+        const testEmail = 'member1@test.com';
+
+        beforeEach(function () {
+            mockManager.mockLabsDisabled();
+        });
+
+        afterEach(function () {
+            mockManager.restore();
+        });
+
+        function scrubEmailContent(mail) {
+            const scrub = s => s && s
+                .replace(/([?&])token=[^&\s'\"]+/gi, '$1token=<TOKEN>')
+                .replace(/\d{6}/g, '<OTC>');
+
+            return {
+                to: mail.to,
+                subject: scrub(mail.subject),
+                html: scrub(mail.html),
+                text: scrub(mail.text)
+            };
+        }
+
+        async function sendSigninRequest(options = {}) {
+            const body = {
+                email: testEmail,
+                emailType: 'signin',
+                ...options
+            };
+
+            await membersAgent.post('/api/send-magic-link')
+                .body(body)
+                .expectStatus(201);
+
+            return mockManager.assert.sentEmail({to: testEmail});
+        }
+
+        it('matches snapshot', async function () {
+            const mail = await sendSigninRequest();
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
+        });
+
+        it('matches non-OTC snapshot (membersSigninOTC enabled)', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest();
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
+        });
+
+        it('matches OTC snapshot (membersSigninOTC enabled)', async function () {
+            mockManager.mockLabsEnabled('membersSigninOTC');
+            const mail = await sendSigninRequest({includeOTC: true});
+            const scrubbedEmail = scrubEmailContent(mail);
+            should(scrubbedEmail).matchSnapshot();
+        });
+    });
+
     describe('blocked email domains', function () {
         beforeEach(async function () {
             configUtils.set('spam:blocked_email_domains', ['blocked-domain-config.com']);
@@ -358,7 +419,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            includeOTC: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -376,7 +438,8 @@ describe('sendMagicLink', function () {
                     await membersAgent.post('/api/send-magic-link')
                         .body({
                             email,
-                            emailType: 'signin'
+                            emailType: 'signin',
+                            includeOTC: true
                         })
                         .expectStatus(201)
                         .expect(({body}) => {
@@ -500,6 +563,453 @@ describe('sendMagicLink', function () {
             });
 
             should.exist(mail);
+        });
+    });
+
+    describe('Rate limiting', function () {
+        let clock;
+
+        beforeEach(async function () {
+            await dbUtils.truncate('brute');
+            await resetRateLimits();
+            clock = sinon.useFakeTimers(new Date());
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        it('Will rate limit member enumeration', async function () {
+            // +1 because this is a retry count, so we have one request + the retries, then blocked
+            const userLoginRateLimit = configUtils.config.get('spam').member_login.freeRetries + 1;
+
+            for (let i = 0; i < userLoginRateLimit; i++) {
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email: 'rate-limiting-test-' + i + '@test.com',
+                        emailType: 'signup'
+                    })
+                    .expectStatus(201);
+            }
+
+            // Now we've been rate limited for every email
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'other@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Now we've been rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'one@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Get one of the magic link emails
+            const mail = mockManager.assert.sentEmail({
+                to: 'rate-limiting-test-0@test.com',
+                subject: /Complete your sign up to Ghost!/
+            });
+
+            // Get link from email
+            const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+
+            const magicLink = new URL(url);
+
+            // Login works, but we're still rate limited (otherwise this would be an easy escape to allow user enumeration)
+            await membersAgent.get(magicLink.pathname + magicLink.search);
+
+            // We are still rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Wait 10 minutes and check if we are still rate limited
+            clock.tick(10 * 60 * 1000);
+
+            // We should be able to send a new email
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // But only once
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 10 minutes is still enough (fibonacci)
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 10 minutes is not enough any longer
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 20 minutes is enough
+            clock.tick(10 * 60 * 1000);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any3@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Waiting 12 hours is enough to reset it completely
+            clock.tick(12 * 60 * 60 * 1000 + 1000);
+
+            // We can try multiple times again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any4@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            // Blocked again
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'any5@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+        });
+
+        it('Will clear rate limits for members auth', async function () {
+            // Temporary increase the member_login rate limits to a higher number
+            // because other wise we would hit user enumeration rate limits (this won't get reset after a succeeded login)
+            // We need to do this here otherwise the middlewares are not setup correctly
+            configUtils.set('spam:member_login:freeRetries', 40);
+
+            // We need to reset spam instances to apply the configuration change
+            await resetRateLimits();
+
+            // +1 because this is a retry count, so we have one request + the retries, then blocked
+            const userLoginRateLimit = configUtils.config.get('spam').user_login.freeRetries + 1;
+
+            for (let i = 0; i < userLoginRateLimit; i++) {
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email: 'rate-limiting-test-1@test.com',
+                        emailType: 'signup'
+                    })
+                    .expectStatus(201);
+
+                await membersAgent.post('/api/send-magic-link')
+                    .body({
+                        email: 'rate-limiting-test-2@test.com',
+                        emailType: 'signup'
+                    })
+                    .expectStatus(201);
+            }
+
+            // Now we've been rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-1@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Now we've been rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Get one of the magic link emails
+            const mail = mockManager.assert.sentEmail({
+                to: 'rate-limiting-test-1@test.com',
+                subject: /Complete your sign up to Ghost!/
+            });
+
+            // Get link from email
+            const [url] = mail.text.match(/https?:\/\/[^\s]+/);
+
+            const magicLink = new URL(url);
+
+            // Login
+            await membersAgent.get(magicLink.pathname + magicLink.search);
+
+            // The first member has been un ratelimited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-1@test.com',
+                    emailType: 'signup'
+                })
+                .expectEmptyBody()
+                .expectStatus(201);
+
+            // The second is still rate limited
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(429);
+
+            // Wait 10 minutes and check if we are still rate limited
+            clock.tick(10 * 60 * 1000);
+
+            // We should be able to send a new email
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'rate-limiting-test-2@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+        });
+    });
+
+    describe('OTC', function () {
+        function sendMagicLinkRequest(email, emailType = 'signin', otc = false) {
+            const body = {email, emailType};
+            if (otc) {
+                body.includeOTC = otc;
+            }
+
+            return membersAgent
+                .post('/api/send-magic-link')
+                .body(body);
+        }
+
+        function assertOTCInEmailContent(mail) {
+            const otcRegex = /\d{6}/;
+
+            // NOTE: we don't (at time of writing tests) include the OTC in the subject line
+            assert(otcRegex.test(mail.html), 'Email HTML should contain OTC');
+            assert(otcRegex.test(mail.text), 'Email text should contain OTC');
+        }
+
+        function assertNoOTCInEmailContent(mail) {
+            const otcRegex = /\d{6}|\scode\s|\sotc\s/i;
+
+            assert(!otcRegex.test(mail.subject), 'Email subject should not contain OTC');
+            assert(!otcRegex.test(mail.html), 'Email HTML should not contain OTC');
+            assert(!otcRegex.test(mail.text), 'Email text should not contain OTC');
+        }
+
+        beforeEach(async function () {
+            // ensure we don't hit rate limits whilst testing
+            await dbUtils.truncate('brute');
+            await resetRateLimits();
+        });
+
+        describe('With membersSigninOTC flag disabled', function () {
+            beforeEach(function () {
+                mockManager.mockLabsDisabled('membersSigninOTC');
+            });
+
+            it('Should return empty body for signin magic link requests', async function () {
+                await sendMagicLinkRequest('member1@test.com')
+                    .expectEmptyBody()
+                    .expectStatus(201);
+            });
+
+            it('Should not include otc_ref in response when requesting magic link', async function () {
+                const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                    .expectStatus(201);
+
+                assert(!response.body.otc_ref, 'Response should not contain otc_ref');
+            });
+
+            ['signin', 'signup'].forEach((emailType) => {
+                it(`Should generate ${emailType} emails without OTC codes in content`, async function () {
+                    await sendMagicLinkRequest('member1@test.com', emailType, true);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                });
+            });
+
+            it('Should allow normal magic link authentication flow', async function () {
+                const magicLink = await membersService.api.getMagicLink('member1@test.com', 'signin');
+                const magicLinkUrl = new URL(magicLink);
+                const token = magicLinkUrl.searchParams.get('token');
+
+                await membersAgent.get(`/?token=${token}`)
+                    .expectStatus(302)
+                    .expectHeader('Location', /success=true/)
+                    .expectHeader('Set-Cookie', /members-ssr.*/);
+            });
+
+            it('Should not call OTC generation methods when flag is disabled', async function () {
+                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCSpy = sinon.spy(tokenProvider.prototype, 'deriveOTC');
+
+                try {
+                    await sendMagicLinkRequest('member1@test.com', 'signin', true);
+                    sinon.assert.notCalled(deriveOTCSpy);
+                } finally {
+                    deriveOTCSpy.restore();
+                }
+            });
+        });
+
+        describe('With membersSigninOTC flag enabled', function () {
+            beforeEach(function () {
+                mockManager.mockLabsEnabled('membersSigninOTC');
+            });
+
+            [true, 'true'].forEach((otcValue) => {
+                it(`Should include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
+                        .expectStatus(201);
+
+                    assert(response.body.otc_ref, `Response should contain otc_ref for includeOTC=${otcValue}`);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertOTCInEmailContent(mail);
+                });
+            });
+
+            [false, 'false'].forEach((otcValue) => {
+                it(`Should not include OTC when requested with otc parameter value: ${otcValue}`, async function () {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', otcValue)
+                        .expectStatus(201);
+
+                    assert(!response.body.otc_ref, `Response should not contain otc_ref for includeOTC=${otcValue}`);
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                });
+            });
+
+            it('Should gracefully handle OTC generation failures', async function () {
+                const tokenProvider = require('../../../core/server/services/members/SingleUseTokenProvider');
+                const deriveOTCStub = sinon.stub(tokenProvider.prototype, 'deriveOTC').throws(new Error('OTC generation failed'));
+
+                try {
+                    const response = await sendMagicLinkRequest('member1@test.com', 'signin', true)
+                        .expectStatus(201);
+
+                    // Ensure we're actually hitting our stub
+                    sinon.assert.called(deriveOTCStub);
+
+                    // Should still succeed but without OTC
+                    assert(!response.body.otc_ref, 'Response should not contain otc_ref when OTC generation fails');
+
+                    const mail = mockManager.assert.sentEmail({
+                        to: 'member1@test.com'
+                    });
+
+                    assertNoOTCInEmailContent(mail);
+                } finally {
+                    deriveOTCStub.restore();
+                }
+            });
+
+            it('Should handle OTC parameter with non-existent member email', async function () {
+                const response = await sendMagicLinkRequest('nonexistent@test.com', 'signin', true)
+                    .expectStatus(400);
+
+                // Should still process the request normally for non-existent members
+                assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
+            });
+
+            async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {
+                const response = await sendMagicLinkRequest(email, emailType, true)
+                    .expectStatus(201);
+
+                const mail = mockManager.assert.sentEmail({
+                    to: email
+                });
+
+                const otcRef = response.body.otc_ref;
+                const otc = mail.text.match(/\d{6}/)[0];
+
+                const verifyResponse = await membersAgent
+                    .post('/api/verify-otc')
+                    .header('Referer', options.referer)
+                    .body({
+                        otcRef,
+                        otc,
+                        redirect: options.redirect
+                    })
+                    .expectStatus(200);
+
+                return verifyResponse;
+            }
+
+            it('Can verify provided OTC using /verify-otc endpoint', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin');
+
+                assert(verifyResponse.body.redirectUrl, 'Response should contain redirectUrl');
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert(redirectUrl.pathname.endsWith('members/'), 'Redirect URL should end with /members');
+
+                const token = redirectUrl.searchParams.get('token');
+                const otcVerification = redirectUrl.searchParams.get('otc_verification');
+
+                assert(token, 'Redirect URL should contain token');
+                assert(otcVerification, 'Redirect URL should contain otc_verification');
+            });
+
+            it('/verify-otc endpoint returns correct redirectUrl using Referer header', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com'});
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com');
+            });
+
+            it('/verify-otc endpoint returns correct redirectUrl using redirect body param', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com/signin', redirect: 'https://www.test.com/post'});
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
+            });
         });
     });
 });

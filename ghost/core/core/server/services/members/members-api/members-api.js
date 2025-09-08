@@ -208,7 +208,7 @@ module.exports = function MembersAPI({
 
     const users = memberRepository;
 
-    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null}) {
+    async function sendEmailWithMagicLink({email, requestedType, tokenData, options = {forceEmailType: false}, referrer = null, includeOTC = false}) {
         let type = requestedType;
         if (!options.forceEmailType) {
             const member = await users.get({email});
@@ -218,7 +218,7 @@ module.exports = function MembersAPI({
                 type = 'signup';
             }
         }
-        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer});
+        return magicLinkService.sendMagicLink({email, type, tokenData: Object.assign({email, type}, tokenData), referrer, includeOTC});
     }
 
     /**
@@ -235,12 +235,12 @@ module.exports = function MembersAPI({
         });
     }
 
-    async function getTokenDataFromMagicLinkToken(token) {
-        return await magicLinkService.getDataFromToken(token);
+    async function getTokenDataFromMagicLinkToken(token, otcVerification) {
+        return await magicLinkService.getDataFromToken(token, otcVerification);
     }
 
-    async function getMemberDataFromMagicLinkToken(token) {
-        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token);
+    async function getMemberDataFromMagicLinkToken(token, otcVerification) {
+        const {email, labels = [], name = '', oldEmail, newsletters, attribution, reqIp, type} = await getTokenDataFromMagicLinkToken(token, otcVerification);
         if (!email) {
             return null;
         }
@@ -339,6 +339,10 @@ module.exports = function MembersAPI({
         sendMagicLink: Router().use(
             body.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
+        ),
+        verifyOTC: Router().use(
+            body.json(),
+            forwardError((req, res) => routerController.verifyOTC(req, res))
         ),
         createCheckoutSession: Router().use(
             body.json(),
