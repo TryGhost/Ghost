@@ -1,36 +1,38 @@
 import type {Meta, StoryObj} from '@storybook/react';
 import {useState} from 'react';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {Dialog, DialogTrigger} from '@/components/ui/dialog';
+import {
+    UnsplashImagePicker,
+    UnsplashDialogContent,
+    PhotoData
+} from './unsplash-browser';
 import {Button} from '@/components/ui/button';
-import {UnsplashBrowser} from './unsplash-browser';
 
 const meta = {
-    title: 'Features / Unsplash Browser',
-    component: UnsplashBrowser,
+    title: 'Features / Unsplash Image Picker',
+    component: UnsplashImagePicker,
     parameters: {
         layout: 'fullscreen',
         docs: {
             description: {
-                component: 'A full-screen modal for browsing and selecting photos from Unsplash. Features search, infinite scroll, photo zoom, and responsive grid layout.'
+                component:
+                    'A composable Unsplash image picker with separate trigger and dialog content components. Features search, infinite scroll, photo zoom, and responsive grid layout.'
             }
         }
     },
     tags: ['autodocs'],
     argTypes: {
-        isOpen: {
-            control: 'boolean',
-            description: 'Whether the browser modal is open'
-        },
-        onClose: {
-            action: 'closed',
-            description: 'Callback when the browser is closed'
-        },
         onSelect: {
             action: 'photo selected',
             description: 'Callback when a photo is selected'
+        },
+        className: {
+            control: 'text',
+            description: 'Additional CSS classes for the trigger button'
         }
     }
-} satisfies Meta<typeof UnsplashBrowser>;
+} satisfies Meta<typeof UnsplashImagePicker>;
 
 export default meta;
 type Story = StoryObj<typeof meta>;
@@ -45,39 +47,24 @@ const queryClient = new QueryClient({
     }
 });
 
-// Demo component that manages the modal state
-const UnsplashBrowserDemo = () => {
-    const [isOpen, setIsOpen] = useState(false);
-
-    const handleSelect = (photoData: {
-        src: string;
-        width: number;
-        height: number;
-        alt: string;
-        caption: string;
-    }) => {
-        // eslint-disable-next-line no-console
-        console.log('Selected photo:', photoData);
-        setIsOpen(false);
+// Demo component showing different usage patterns
+const UnsplashDemo = () => {
+    const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+    const handleSelect = (photo: PhotoData) => {
+        setPhotoData(photo);
     };
 
     return (
         <QueryClientProvider client={queryClient}>
-            <div className="min-h-screen bg-gray-50 p-8">
-                <div className="mx-auto max-w-md space-y-4">
-                    <Button className="w-full" onClick={() => setIsOpen(true)}>
-                        Open Unsplash Browser (Controlled)
-                    </Button>
-                    <UnsplashBrowser
-                        showTrigger={true}
-                        onSelect={handleSelect}
+            <div className="flex flex-col items-center gap-4 p-8">
+                {photoData && (
+                    <img
+                        alt={photoData.alt}
+                        className="w-32 "
+                        src={photoData.src}
                     />
-                </div>
-                <UnsplashBrowser
-                    isOpen={isOpen}
-                    onClose={() => setIsOpen(false)}
-                    onSelect={handleSelect}
-                />
+                )}
+                <UnsplashImagePicker onSelect={handleSelect} />
             </div>
         </QueryClientProvider>
     );
@@ -85,25 +72,40 @@ const UnsplashBrowserDemo = () => {
 
 export const Default: Story = {
     args: {
-        isOpen: false,
-        onClose: () => {},
         onSelect: () => {}
     },
-    render: () => <UnsplashBrowserDemo />
+    render: () => <UnsplashDemo />
 };
 
-export const WithTrigger: Story = {
+function ComposableDemo() {
+    const [photoData, setPhotoData] = useState<PhotoData | null>(null);
+    const handleSelect = (photo: PhotoData) => {
+        setPhotoData(photo);
+    };
+    return (
+        <QueryClientProvider client={queryClient}>
+            <div className="flex flex-col items-center gap-4 p-8">
+                {photoData && (
+                    <img
+                        alt={photoData.alt}
+                        className="w-32 "
+                        src={photoData.src}
+                    />
+                )}
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button>Open Unsplash Image Picker</Button>
+                    </DialogTrigger>
+                    <UnsplashDialogContent onSelect={handleSelect} />
+                </Dialog>
+            </div>
+        </QueryClientProvider>
+    );
+}
+
+export const Composable: Story = {
     args: {
-        showTrigger: true,
         onSelect: () => {}
     },
-    decorators: [
-        StoryComponent => (
-            <QueryClientProvider client={queryClient}>
-                <div className="p-8">
-                    <StoryComponent />
-                </div>
-            </QueryClientProvider>
-        )
-    ]
+    render: () => <ComposableDemo />
 };

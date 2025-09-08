@@ -1,6 +1,7 @@
 import React from 'react';
 import {cn} from '@/lib/utils';
 import {UnsplashPhoto} from '@/hooks/use-unsplash';
+import {Button} from '@/components/ui/button';
 
 interface UnsplashPhotoProps {
     photo: UnsplashPhoto;
@@ -18,11 +19,7 @@ export const UnsplashPhotoComponent: React.FC<UnsplashPhotoProps> = ({
     className
 }) => {
     const handleClick = () => {
-        if (zoomed) {
-            onSelect(photo);
-        } else if (onZoom) {
-            onZoom(photo);
-        }
+        onZoom?.(photo);
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -32,26 +29,24 @@ export const UnsplashPhotoComponent: React.FC<UnsplashPhotoProps> = ({
         }
     };
 
-    const imageUrl = zoomed 
-        ? photo.urls.regular.replace(/&w=\d+/, '&w=2000')
-        : photo.urls.regular;
+    const imageUrl = photo.urls.regular;
 
     const containerClasses = cn(
-        'group relative cursor-pointer overflow-hidden bg-gray-100 transition-all duration-200',
-        'hover:shadow-lg',
-        'mb-4',
-        zoomed ? 'max-h-[40vh] max-w-[40vw]' : '',
+        'group relative overflow-hidden bg-gray-100 transition-all duration-200',
+        zoomed ? 'h-full pt-28 cursor-zoom-out' : 'cursor-zoom-in hover:shadow-lg mb-4',
         className
     );
 
     const imageClasses = cn(
-        'w-full h-auto object-cover transition-transform duration-200',
-        zoomed ? 'max-h-[40vh]' : ''
+        'object-cover transition-transform duration-200',
+        zoomed ? 'h-full' : 'w-full '
     );
 
     return (
         <div
-            aria-label={photo.description || photo.alt_description || 'Unsplash photo'}
+            aria-label={
+                photo.description || photo.alt_description || 'Unsplash photo'
+            }
             className={containerClasses}
             role="button"
             tabIndex={0}
@@ -64,11 +59,10 @@ export const UnsplashPhotoComponent: React.FC<UnsplashPhotoProps> = ({
                 loading="lazy"
                 src={imageUrl}
                 style={{
-                    aspectRatio: photo.ratio ? `${1 / photo.ratio}` : 'auto',
-                    minHeight: '200px'
+                    aspectRatio: photo.ratio ? `${1 / photo.ratio}` : 'auto'
                 }}
             />
-            
+
             {/* Overlay with photographer info */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                 <div className="absolute inset-x-0 bottom-0 p-3 text-white">
@@ -83,14 +77,12 @@ export const UnsplashPhotoComponent: React.FC<UnsplashPhotoProps> = ({
                 </div>
             </div>
 
-            {/* Selection indicator */}
-            {zoomed && (
-                <div className="absolute right-2 top-2 rounded-full bg-green-500 p-2 text-white shadow-lg">
-                    <svg className="size-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} />
-                    </svg>
-                </div>
-            )}
+            <Button
+                className="absolute bottom-2 right-2"
+                onClick={() => onSelect(photo)}
+            >
+                Insert image
+            </Button>
         </div>
     );
 };
