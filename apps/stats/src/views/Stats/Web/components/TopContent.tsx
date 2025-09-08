@@ -153,7 +153,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors}) => {
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <div className='mb-2'>
+                <div className='mb-4'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>
