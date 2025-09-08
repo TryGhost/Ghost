@@ -114,7 +114,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
             <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${otc ? t('Welcome back to {siteTitle}! Your verification code is {otc}.', {siteTitle, otc, interpolation: {escapeValue: false}}) : t('Welcome back to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}</span>
             <!-- SPACING FOR PREVIEW TEXT -->
             <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
-              ${'&zwnj; '.repeat(75)}
+              ${'&zwnj;&nbsp;'.repeat(75)}
             </div>
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
