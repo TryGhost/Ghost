@@ -5,17 +5,8 @@ import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settin
 import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
-// The actual shape of the config data from the API
-type ConfigData = Config & {
-    config?: {
-        stats?: StatsConfig;
-        labs?: Record<string, boolean>;
-        [key: string]: unknown;
-    };
-};
-
 interface GlobalData {
-    data: ConfigData | undefined;
+    data: Config | undefined;
     site: {
         url?: string;
         icon?: string;
@@ -46,15 +37,10 @@ export const useGlobalData = () => {
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const settings = useBrowseSettings();
     const site = useBrowseSite();
-    // The actual response structure includes nested config with labs and stats
-    const configQuery = useBrowseConfig();
-    const config = {
-        data: configQuery.data?.config as ConfigData | undefined,
-        isLoading: configQuery.isLoading,
-        error: configQuery.error as Error | null
-    };
-    // Only fetch Tinybird token if stats config is present
-    const hasStatsConfig = Boolean(config.data?.config?.stats);
+    const config = useBrowseConfig();
+    // config.data is ConfigResponseType which has shape { config: Config }
+    const configData = config.data?.config;
+    const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
     // Initialize with all audiences selected (binary 111 = 7)
@@ -84,9 +70,9 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     };
 
     return <GlobalDataContext.Provider value={{
-        data: config.data || undefined,
+        data: configData,
         site: siteData,
-        statsConfig: config.data?.config?.stats,
+        statsConfig: configData?.stats,
         tinybirdToken: tinybirdTokenQuery.token,
         isLoading,
         range,

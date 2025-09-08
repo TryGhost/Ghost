@@ -55,7 +55,7 @@ const Web: React.FC = () => {
     const [selectedCampaign, setSelectedCampaign] = useState<CampaignType>('');
     
     // Check if UTM tracking is enabled in labs
-    const utmTrackingEnabled = data?.config?.labs?.utmTracking || false;
+    const utmTrackingEnabled = data?.labs?.utmTracking || false;
 
     // Get site URL and icon for domain comparison and Direct traffic favicon
     const siteUrl = data?.url as string | undefined;
