@@ -66,7 +66,7 @@ setup('global environment setup', async () => {
             NODE_ENV: 'development'
         };
 
-        const migrationContainer = await new GenericContainer('ghost-monorepo')
+        const migrationContainer = await new GenericContainer(process.env.GHOST_IMAGE_TAG || 'ghost-monorepo')
             .withNetwork(network)
             .withWorkingDir('/home/ghost')
             .withCommand(['yarn', 'knex-migrator', 'init'])
@@ -127,8 +127,8 @@ setup('global environment setup', async () => {
             ])
             .withWorkingDir('/home/tinybird')
             .withEnvironment({
-                'TB_HOST': 'http://tinybird-local:7181',
-                'TB_LOCAL_HOST': 'tinybird-local'
+                TB_HOST: 'http://tinybird-local:7181',
+                TB_LOCAL_HOST: 'tinybird-local'
             })
             .withLabels({'ghost-e2e': 'tb-cli-deploy'})
             .withAutoRemove(true)
@@ -157,8 +157,8 @@ setup('global environment setup', async () => {
             ])
             .withWorkingDir('/home/tinybird')
             .withEnvironment({
-                'TB_HOST': 'http://tinybird-local:7181',
-                'TB_LOCAL_HOST': 'tinybird-local'
+                TB_HOST: 'http://tinybird-local:7181',
+                TB_LOCAL_HOST: 'tinybird-local'
             })
             .withLabels({'ghost-e2e': 'tb-cli-info'})
             .withAutoRemove(true)
@@ -217,7 +217,6 @@ setup('global environment setup', async () => {
         log('Tinybird setup completed and state saved');
 
         log('Global environment setup completed successfully');
-
     } catch (error) {
         log('Global environment setup failed:', error);
         // Clean up on failure

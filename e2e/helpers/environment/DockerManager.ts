@@ -42,7 +42,7 @@ export class DockerManager {
     async executeInContainer(containerId: string, command: string[]): Promise<ContainerExecResult> {
         try {
             const container = this.docker.getContainer(containerId);
-            
+
             const exec = await container.exec({
                 Cmd: command,
                 AttachStdout: true,
@@ -51,7 +51,7 @@ export class DockerManager {
             });
 
             const stream = await exec.start({ hijack: true, stdin: false });
-            
+
             return new Promise((resolve, reject) => {
                 let stdout = '';
                 let stderr = '';
@@ -61,7 +61,7 @@ export class DockerManager {
                 stream.on('data', (chunk: Buffer) => {
                     const header = chunk.readUInt8(0);
                     const data = chunk.subarray(8).toString(); // Skip 8-byte header
-                    
+
                     if (header === 1) {
                         stdout += data;
                     } else if (header === 2) {
@@ -100,7 +100,7 @@ export class DockerManager {
             `-p${mysqlState.rootPassword}`,
             '-e', command
         ];
-        
+
         log('Executing MySQL command:', command);
         return await this.executeInContainer(mysqlState.containerId, cmd);
     }
@@ -122,7 +122,7 @@ export class DockerManager {
 
         log('Creating MySQL dump for database:', database);
         const result = await this.executeInContainer(mysqlState.containerId, cmd);
-        
+
         if (result.exitCode !== 0) {
             throw new Error(`mysqldump failed: ${result.stderr}`);
         }
@@ -176,7 +176,7 @@ export class DockerManager {
             };
 
             const containerConfig = {
-                Image: 'ghost-monorepo',
+                Image: process.env.GHOST_IMAGE_TAG || 'ghost-monorepo',
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
                 NetworkingConfig: {
                     EndpointsConfig: {
@@ -212,7 +212,7 @@ export class DockerManager {
 
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
-            
+
             // Inspect the container to see actual port mappings
             const containerInfo = await container.inspect();
             log('Container port mappings:', containerInfo.NetworkSettings.Ports);
@@ -234,7 +234,7 @@ export class DockerManager {
     private async waitForGhostReady(port: number, timeoutMs: number = 60000): Promise<void> {
         const startTime = Date.now();
         const healthUrl = `http://localhost:${port}/ghost/api/admin/site/`;
-        
+
         while (Date.now() - startTime < timeoutMs) {
             try {
                 // Simple HTTP check to see if Ghost API responds
@@ -242,22 +242,22 @@ export class DockerManager {
                     method: 'GET',
                     signal: AbortSignal.timeout(5000) // 5 second timeout per request
                 });
-                
+
                 // If we get any response (even 401/404), Ghost is ready
                 if (response.status < 500) {
                     log('Ghost is ready, responded with status:', response.status);
                     return;
                 }
-                
+
                 log('Ghost not ready yet, status:', response.status);
             } catch (error) {
                 log('Ghost health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
-            
+
             // Wait 200ms before next check
             await new Promise(resolve => setTimeout(resolve, 200));
         }
-        
+
         throw new Error(`Timeout waiting for Ghost to start on port ${port}`);
     }
 
@@ -267,7 +267,7 @@ export class DockerManager {
     async removeContainer(containerId: string): Promise<void> {
         try {
             const container = this.docker.getContainer(containerId);
-            
+
             // Stop the container (with force if needed)
             try {
                 await container.stop({ t: 10 }); // 10 second timeout
@@ -291,7 +291,7 @@ export class DockerManager {
         try {
             const network = this.docker.getNetwork(networkId);
             const networkInfo = await network.inspect();
-            
+
             const containerIds = Object.keys(networkInfo.Containers || {});
             log('Found containers on network:', containerIds);
             return containerIds;
@@ -322,7 +322,7 @@ export class DockerManager {
         try {
             // Get all containers on the network
             const containerIds = await this.getNetworkContainers(networkId);
-            
+
             // Remove all containers
             await Promise.all(
                 containerIds.map(containerId => this.removeContainer(containerId))
@@ -330,7 +330,7 @@ export class DockerManager {
 
             // Remove the network
             await this.removeNetwork(networkId);
-            
+
             log('Network cleanup completed:', networkId);
         } catch (error) {
             log('Network cleanup failed:', error);
@@ -468,7 +468,7 @@ export class DockerManager {
 
             const tbInfoJson = logs.toString();
             const tbInfo = JSON.parse(tbInfoJson);
-            
+
             const workspaceId = tbInfo.local.workspace_id;
             const workspaceToken = tbInfo.local.token;
 
@@ -503,27 +503,27 @@ export class DockerManager {
     private async waitForTinybirdReady(port: number, timeoutMs: number = 60000): Promise<void> {
         const startTime = Date.now();
         const healthUrl = `http://localhost:${port}/v0/health`;
-        
+
         while (Date.now() - startTime < timeoutMs) {
             try {
                 const response = await fetch(healthUrl, {
                     method: 'GET',
                     signal: AbortSignal.timeout(5000)
                 });
-                
+
                 if (response.ok) {
                     log('Tinybird is ready, responded with status:', response.status);
                     return;
                 }
-                
+
                 log('Tinybird not ready yet, status:', response.status);
             } catch (error) {
                 log('Tinybird health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
-            
+
             await new Promise(resolve => setTimeout(resolve, 200));
         }
-        
+
         throw new Error(`Timeout waiting for Tinybird to start on port ${port}`);
     }
 }
