@@ -21,15 +21,6 @@ export const test = base.extend<GhostInstanceFixture>({
 
         const environmentManager = new EnvironmentManager();
 
-        // Check if global environment is ready
-        if (!environmentManager.isEnvironmentReady()) {
-            const status = environmentManager.getEnvironmentStatus();
-            throw new Error(
-                `Global environment not ready. Status: ${JSON.stringify(status)}. ` +
-                'Make sure global setup has completed successfully.'
-            );
-        }
-
         // Generate unique test ID from test info
         const testId = testInfo.testId;
         const workerId = testInfo.workerIndex;
@@ -83,11 +74,6 @@ export const test = base.extend<GhostInstanceFixture>({
 
         await use(page);
         await context.close();
-    },
-
-    environmentManager: async ({ }, use) => {
-        const environmentManager = new EnvironmentManager();
-        await use(environmentManager);
     }
 });
 
