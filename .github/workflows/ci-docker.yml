@@ -296,6 +296,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+        # TODO: Build tb-cli in a separate workflow and pull from GHCR instead of building here
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
@@ -320,6 +321,8 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Pull images
+        env:
+          GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
         run: docker compose -f e2e/compose.e2e.yml pull
 
       - uses: actions/setup-node@v4
@@ -333,6 +336,7 @@ jobs:
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
+
 
       - name: Run e2e tests
         env:

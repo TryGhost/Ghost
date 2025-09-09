@@ -15,8 +15,9 @@ services:
       interval: 1s
       retries: 120
 
-  ghost_migrations:
+  ghost-migrations:
     image: ${GHOST_IMAGE_TAG:-ghost-monorepo:latest}
+    pull_policy: never
     working_dir: /home/ghost
     command: ["yarn", "knex-migrator", "init"]
     environment:
