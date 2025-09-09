@@ -1,7 +1,9 @@
 import {appConfig} from './app-config';
 import {UserFactory, User} from '../../data-factory/factories/user-factory';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const logging = require('@tryghost/logging');
+import logging from '@tryghost/logging';
+import baseDebug from '@tryghost/debug';
+
+const debug = baseDebug('e2e:helpers:utils:setup-user');
 
 export class GhostUserSetup {
     private readonly baseURL: string;
@@ -15,7 +17,7 @@ export class GhostUserSetup {
 
     async setup(userOverrides: Partial<User> = {}): Promise<void> {
         if (await this.isSetupAlreadyCompleted()) {
-            logging.info('Ghost user setup is already completed.');
+            debug('Ghost user setup is already completed.');
             return;
         }
 
@@ -31,7 +33,7 @@ export class GhostUserSetup {
 
     private async createUser(user: User): Promise<void> {
         await this.makeRequest('POST', {setup: [user]});
-        logging.info('Ghost user created successfully.');
+        debug('Ghost user created successfully.');
     }
 
     private async makeRequest(method: 'GET' | 'POST', body?: unknown): Promise<Response> {
