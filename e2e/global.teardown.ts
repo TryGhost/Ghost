@@ -3,5 +3,5 @@ import {EnvironmentManager} from './helpers/environment/EnvironmentManager';
 
 teardown('global environment cleanup', async ({}) => {
     const environmentManager = new EnvironmentManager();
-    environmentManager.teardownGlobalEnvironment();
+    await environmentManager.teardownGlobalEnvironment();
 });
