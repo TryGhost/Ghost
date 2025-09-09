@@ -3,7 +3,7 @@ import APAvatar from '@components/global/APAvatar';
 import FeedItem from '@components/feed/FeedItem';
 import getUsername from '@utils/get-username';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
+import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, LucideIcon, Skeleton} from '@tryghost/shade';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
 import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
@@ -40,9 +40,14 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const [showAltInput, setShowAltInput] = useState(false);
     const [isPosting, setIsPosting] = useState(false);
     const [isSticky, setIsSticky] = useState(false);
+    const [showDiscardAlert, setShowDiscardAlert] = useState(false);
     const navigate = useNavigate();
 
     const MAX_CONTENT_LENGTH = 500;
+
+    const hasUnsavedContent = useCallback(() => {
+        return content.trim() !== '' || imagePreview !== null;
+    }, [content, imagePreview]);
 
     // Sync external open prop with internal state
     useEffect(() => {
@@ -64,6 +69,31 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     }, [isOpen, props.open]);
 
     const isDisabled = !content.trim() || !user || isPosting || content.length > MAX_CONTENT_LENGTH;
+
+    const handleDiscardAndClose = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setContent('');
+        setImagePreview(null);
+        setUploadedImageUrl(null);
+        setAltText('');
+        setShowAltInput(false);
+        if (imagePreview) {
+            URL.revokeObjectURL(imagePreview);
+        }
+        if (imageInputRef.current) {
+            imageInputRef.current.value = '';
+        }
+        setShowDiscardAlert(false);
+        setIsOpen(false);
+        if (onOpenChange) {
+            onOpenChange(false);
+        }
+    }, [imagePreview, onOpenChange]);
+
+    const handleCancelDiscard = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        setShowDiscardAlert(false);
+    }, []);
 
     const handlePost = useCallback(async () => {
         const trimmedContent = content.trim();
@@ -290,18 +320,25 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 if (imageInputRef.current) {
                     imageInputRef.current.value = '';
                 }
-            }
-
-            setIsOpen(open);
-
-            if (onOpenChange) {
-                onOpenChange(open);
+                setIsOpen(open);
+                if (onOpenChange) {
+                    onOpenChange(open);
+                }
+            } else {
+                if (hasUnsavedContent() && !isPosting) {
+                    setShowDiscardAlert(true);
+                } else {
+                    setIsOpen(false);
+                    if (onOpenChange) {
+                        onOpenChange(false);
+                    }
+                }
             }
         }} {...(props.open !== undefined ? {} : props)}>
             <DialogTrigger asChild>
                 {children}
             </DialogTrigger>
-            <DialogContent className={`max-h-[80vh] min-h-[240px] gap-0 overflow-y-auto pb-0`} data-testid="new-note-modal" onClick={e => e.stopPropagation()}>
+            <DialogContent className={`max-h-[80vh] min-h-[240px] gap-0 overflow-y-auto pb-0`} data-testid="new-note-modal" showCloseButton={true} onClick={e => e.stopPropagation()}>
                 <DialogHeader className='hidden'>
                     <DialogTitle>{replyTo ? 'Reply' : 'New note'}</DialogTitle>
                     <DialogDescription>Post your thoughts to the Social web</DialogDescription>
@@ -395,6 +432,25 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     </div>
                 </DialogFooter>
             </DialogContent>
+
+            <AlertDialog open={showDiscardAlert} onOpenChange={setShowDiscardAlert}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Discard changes?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            You’ll lose what you’ve written.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={handleDiscardAndClose}>
+                            Discard
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleCancelDiscard}>
+                            Continue writing
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Dialog>
     );
 };
