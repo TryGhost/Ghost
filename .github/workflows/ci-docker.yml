@@ -289,7 +289,7 @@ jobs:
           } >> $GITHUB_STEP_SUMMARY
 
   test_e2e:
-    name: E2E Tests (Docker)
+    name: E2E Tests
     runs-on: ubuntu-latest
     needs: [build, setup]
     steps:
