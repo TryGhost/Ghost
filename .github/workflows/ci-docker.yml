@@ -321,4 +321,5 @@ jobs:
       - name: Run e2e tests
         env:
           GHOST_IMAGE_TAG: ${{ steps.load.outputs.image-tag }}
+          DEBUG: e2e:*,testcontainers:*
         run: yarn test:e2e
