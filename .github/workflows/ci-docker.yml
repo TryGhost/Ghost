@@ -111,6 +111,10 @@ jobs:
       - name: Install dependencies
         run: yarn install --prefer-offline --frozen-lockfile
 
+    outputs:
+      dependency_cache_key: ${{ env.cachekey }}
+      node_version: ${{ env.NODE_VERSION }}
+
   build:
     name: Build & Push
     runs-on: ubuntu-latest-16-cores
