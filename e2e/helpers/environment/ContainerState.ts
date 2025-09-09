@@ -50,7 +50,7 @@ export class ContainerState {
     private ensureStateDirectory(): void {
         try {
             if (!fs.existsSync(ContainerState.STATE_DIR)) {
-                fs.mkdirSync(ContainerState.STATE_DIR, { recursive: true });
+                fs.mkdirSync(ContainerState.STATE_DIR, {recursive: true});
                 log('Created state directory:', ContainerState.STATE_DIR);
             }
         } catch (error) {
@@ -192,7 +192,7 @@ export class ContainerState {
     cleanupAll(): void {
         try {
             if (fs.existsSync(ContainerState.STATE_DIR)) {
-                fs.rmSync(ContainerState.STATE_DIR, { recursive: true, force: true });
+                fs.rmSync(ContainerState.STATE_DIR, {recursive: true, force: true});
                 log('All state files cleaned up');
             }
         } catch (error) {

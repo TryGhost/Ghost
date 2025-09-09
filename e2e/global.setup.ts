@@ -18,7 +18,6 @@ setup('global environment setup', async () => {
     containerState.cleanupAll();
 
     try {
-        // 1. Create Docker network
         log('Creating Docker network...');
         const network = await new Network().start();
 
@@ -29,7 +28,6 @@ setup('global environment setup', async () => {
         containerState.saveNetworkState(networkState);
         log('Network created and state saved:', networkState);
 
-        // 2. Start MySQL container
         log('Starting MySQL container...');
         const mysql = await new MySqlContainer('mysql:8.0')
             .withNetwork(network)
@@ -53,7 +51,6 @@ setup('global environment setup', async () => {
             database: mysqlState.database
         });
 
-        // 3. Run Ghost migrations in temporary container
         log('Running Ghost migrations...');
         const ghostEnv = {
             server__host: '0.0.0.0',
@@ -76,7 +73,6 @@ setup('global environment setup', async () => {
 
         log('Ghost migrations completed successfully');
 
-        // 4. Create database dump inside MySQL container
         log('Creating database dump...');
         await dockerManager.executeInContainer(mysqlState.containerId, [
             'sh', '-c',
@@ -84,10 +80,8 @@ setup('global environment setup', async () => {
         ]);
         log('Database dump created inside MySQL container');
 
-        // 5. Stop migration container (we don't need it anymore)
         await migrationContainer.stop();
 
-        // 6. Setup Tinybird Local for analytics
         log('Setting up Tinybird Local for analytics...');
         const tinybirdContainer = await new GenericContainer('tinybirdco/tinybird-local:latest')
             .withNetwork(network)
@@ -111,7 +105,7 @@ setup('global environment setup', async () => {
         const tinybirdDataPath = path.resolve(process.cwd(), '../ghost/core/core/server/data/tinybird');
         log('Deploying Tinybird schema from:', tinybirdDataPath);
 
-        const tbCliContainer = await new GenericContainer('ghost-tb-cli:latest')
+        await new GenericContainer('ghost-tb-cli:latest')
             .withNetwork(network)
             .withBindMounts([
                 {
@@ -139,7 +133,6 @@ setup('global environment setup', async () => {
 
         log('Tinybird schema deployment completed');
 
-        // 8. Extract Tinybird configuration using tb-cli
         log('Extracting Tinybird configuration...');
         const tbInfoContainer = await new GenericContainer('ghost-tb-cli:latest')
             .withNetwork(network)
@@ -199,8 +192,8 @@ setup('global environment setup', async () => {
         ]);
 
         const tokensData = JSON.parse(tokensResult.stdout);
-        const adminToken = tokensData.tokens.find((t: any) => t.name === 'admin token')?.token;
-        const trackerToken = tokensData.tokens.find((t: any) => t.name === 'tracker')?.token;
+        const adminToken = tokensData.tokens.find((t: {name: string; token: string}) => t.name === 'admin token')?.token;
+        const trackerToken = tokensData.tokens.find((t: {name: string; token: string}) => t.name === 'tracker')?.token;
 
         if (!adminToken || !trackerToken) {
             throw new Error('Failed to extract admin or tracker tokens');
