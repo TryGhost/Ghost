@@ -292,40 +292,10 @@ export class EnvironmentManager {
     }
 
     /**
-     * Get MySQL connection details for direct database access
-     * Useful for data factories or direct database operations
-     */
-    public getMySQLConnection(): {host: string, port: number, user: string, password: string} {
-        try {
-            const mysqlState = this.containerState.loadMySQLState();
-            return {
-                host: mysqlState.host,
-                port: mysqlState.mappedPort,
-                user: 'root',
-                password: mysqlState.rootPassword
-            };
-        } catch (error) {
-            logging.error('Failed to get MySQL connection details:', error);
-            throw new Error(`Failed to get MySQL connection details: ${error}`);
-        }
-    }
-
-    /**
      * Check if the global environment is ready
      */
     public isEnvironmentReady(): boolean {
         return true;
-    }
-
-    /**
-     * Get environment status for debugging
-     */
-    public getEnvironmentStatus() {
-        return {
-            networkReady: this.containerState.hasNetworkState(),
-            mysqlReady: this.containerState.hasMySQLState(),
-            tinybirdReady: this.containerState.hasTinybirdState()
-        };
     }
 
     /**
