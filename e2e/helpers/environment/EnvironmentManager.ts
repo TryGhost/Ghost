@@ -22,6 +22,7 @@ export class EnvironmentManager {
     private composeFilePath = path.resolve(__dirname, '../../compose.e2e.yml');
     private composeProjectName = 'ghost-e2e';
     private docker: Docker;
+
     constructor() {
         this.containerState = new ContainerState();
         this.dockerManager = new DockerManager();
@@ -30,6 +31,9 @@ export class EnvironmentManager {
 
     /**
      * Get a Docker container entity by its Docker Compose service name
+     * @param service - The Docker Compose service name
+     * @returns The Docker container entity
+     * @throws Error if no container or multiple containers are found for the service
      */
     public async getContainerForService(service: string): Promise<Docker.Container> {
         debug('getContainerForService called for service:', service);
@@ -51,6 +55,8 @@ export class EnvironmentManager {
 
     /**
      * Get the Docker network ID used by the Compose setup
+     * @returns The Docker network entity
+     * @throws Error if no network or multiple networks are found for the Compose project
      */
     public async getNetwork(): Promise<Docker.Network> {
         debug('getNetwork called');
@@ -70,29 +76,29 @@ export class EnvironmentManager {
     }
 
     /**
-     * Initialize global environment
-     * This method is designed to be called once before all tests to setup shared infrastructure
+     * Setup shared global environment for tests (i.e. mysql, tinybird)
      */
-    public async initializeGlobalEnvironment(): Promise<void> {
+    public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
         try {
-            // Start Docker Compose services
+            logging.info('Starting docker compose services...');
             execSync(`docker compose -f ${this.composeFilePath} up -d`, {stdio: 'inherit'});
             // Wait for ghost migrations and tb migrations to complete
             // NOTE: `docker compose up -d --wait` will fail if one-shot services are included
             execSync(`docker compose -f ${this.composeFilePath} wait ghost-migrations tb-cli`);
         } catch (error) {
-            logging.error('Failed to start Docker Compose services:', error);
+            logging.error('Failed to start docker compose services:', error);
             throw error;
         }
-        const mysqlContainer = await this.getContainerForService('mysql');
+        logging.info('Docker compose services are up');
 
+        logging.info('Creating database snapshot...');
+        const mysqlContainer = await this.getContainerForService('mysql');
         await this.execInContainer(
             mysqlContainer,
             'mysqldump -uroot -proot --opt --single-transaction ghost_testing > /tmp/dump.sql'
         );
-
-        logging.info('Database dump created inside MySQL container');
+        logging.info('Database snapshot created');
 
         logging.info('Fetching Tinybird tokens...');
         const rawTinybirdEnv = execSync(
@@ -121,28 +127,28 @@ export class EnvironmentManager {
         };
         this.containerState.saveTinybirdState(updatedTinybirdState);
         logging.info('Tinybird tokens fetched');
-
-        logging.info('Global environment setup completed successfully');
+        logging.info('Global environment setup complete');
     }
 
     /**
      * Teardown global environment
      * This method is designed to be called once after all tests to clean up shared infrastructure
      */
-    public async teardownGlobalEnvironment(): Promise<void> {
+    public async globalTeardown(): Promise<void> {
         debug('teardownGlobalEnvironment called');
         debug('PRESERVE_ENV:', process.env.PRESERVE_ENV);
         if (process.env.PRESERVE_ENV === 'true') {
             logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
             return;
         }
-        logging.info('Starting global environment cleanup...');
+        logging.info('Starting global environment teardown...');
         try {
             execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
         } catch (error) {
-            logging.error('Failed to stop Docker Compose services:', error);
+            logging.error('Failed to stop docker compose services:', error);
             throw error;
         }
+        logging.info('Global environment teardown complete');
     }
 
     /**
@@ -152,26 +158,14 @@ export class EnvironmentManager {
     public async setupGhostInstance(workerId: number, testId: string): Promise<GhostInstance> {
         try {
             debug('Setting up Ghost instance for worker %d, test %s', workerId, testId);
-
             const network = await this.getNetwork();
-            // // Load shared infrastructure state
-            // const networkState = this.containerState.loadNetworkState();
-            // const mysqlState = this.containerState.loadMySQLState();
-            // const tinybirdState = this.containerState.loadTinybirdState();
-
-            // Generate unique identifiers for this test
             const networkAlias = ContainerState.generateNetworkAlias(workerId, testId);
-            debug('Generated network alias:', networkAlias);
             const port = ContainerState.generateUniquePort(workerId);
-            debug('Generated unique port:', port);
             const siteUuid = ContainerState.generateSiteUuid();
-            debug('Generated site UUID:', siteUuid);
             const database = `ghost_${siteUuid}`;
-            debug('Generated database name:', database);
             const tinybirdState = this.containerState.loadTinybirdState();
-            debug('Loaded Tinybird state:', tinybirdState);
 
-            debug('Generated test-specific identifiers:', {database, networkAlias, port});
+            debug('Generated test-specific identifiers:', {siteUuid, database, networkAlias, port});
 
             // Create and restore database
             await this.setupTestDatabase(database, siteUuid);
@@ -181,7 +175,7 @@ export class EnvironmentManager {
                 networkId: network.id,
                 networkAlias: networkAlias,
                 database: database,
-                mysqlHost: 'mysql', // Network alias of MySQL container
+                mysqlHost: 'mysql',
                 mysqlPort: '3306',
                 mysqlUser: 'root',
                 mysqlPassword: 'root',
@@ -278,7 +272,6 @@ export class EnvironmentManager {
         try {
             debug('Cleaning up test database:', database);
             const mysqlContainer = await this.getContainerForService('mysql');
-
             await this.execInContainer(
                 mysqlContainer,
                 'mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"'
@@ -289,13 +282,6 @@ export class EnvironmentManager {
             logging.warn('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
         }
-    }
-
-    /**
-     * Check if the global environment is ready
-     */
-    public isEnvironmentReady(): boolean {
-        return true;
     }
 
     /**
