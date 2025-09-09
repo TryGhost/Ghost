@@ -978,7 +978,6 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
-        job_e2e-tests,
         job_tinybird-tests
       ]
     if: always()
