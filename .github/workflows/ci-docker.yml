@@ -12,6 +12,13 @@ on:
       - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
 
 env:
+  HEAD_COMMIT: ${{ github.sha }}
+  CACHED_DEPENDENCY_PATHS: |
+    ${{ github.workspace }}/node_modules
+    ${{ github.workspace }}/apps/*/node_modules
+    ${{ github.workspace }}/ghost/*/node_modules
+    ${{ github.workspace }}/e2e/node_modules
+    ~/.cache/ms-playwright/
   NODE_VERSION: 22.13.1
 
 jobs:
