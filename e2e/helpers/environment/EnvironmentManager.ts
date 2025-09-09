@@ -239,7 +239,7 @@ export class EnvironmentManager {
      * This method is designed to be called once after all tests to clean up shared infrastructure
      */
     public async teardownGlobalEnvironment(): Promise<void> {
-        log('Starting global environment cleanup...');
+        loging.info('Starting global environment cleanup...');
 
         const containerState = new ContainerState();
         const dockerManager = new DockerManager();
@@ -251,7 +251,7 @@ export class EnvironmentManager {
             const hasTinybirdState = containerState.hasTinybirdState();
 
             if (!hasNetworkState && !hasMySQLState && !hasTinybirdState) {
-                log('No container state found, nothing to clean up');
+                logging.info('No container state found, nothing to clean up');
                 return;
             }
 
@@ -261,14 +261,14 @@ export class EnvironmentManager {
             try {
                 const networkState = containerState.loadNetworkState();
                 networkId = networkState.networkId;
-                log('Found network to clean up:', networkId);
+                logging.info('Found network to clean up:', networkId);
             } catch (error) {
-                log('Could not load network state:', error);
+                logging.error('Could not load network state:', error);
             }
 
             // If we have a network, perform comprehensive cleanup
             if (networkId) {
-                log('Performing comprehensive network cleanup...');
+                logging.info('Performing comprehensive network cleanup...');
 
                 try {
                 // This will:
@@ -276,25 +276,25 @@ export class EnvironmentManager {
                 // 2. Stop and remove them (Ghost instances + MySQL)
                 // 3. Remove the network
                     await dockerManager.cleanupNetwork(networkId);
-                    log('Network cleanup completed successfully');
+                    logging.info('Network cleanup completed successfully');
                 } catch (error) {
-                    log('Network cleanup failed, attempting individual cleanup:', error);
+                    logging.warn('Network cleanup failed, attempting individual cleanup:', error);
 
                     // Fallback: try to clean up MySQL container directly
                     try {
                         const mysqlState = containerState.loadMySQLState();
                         await dockerManager.removeContainer(mysqlState.containerId);
-                        log('MySQL container cleanup completed');
+                        logging.info('MySQL container cleanup completed');
                     } catch (mysqlError) {
-                        log('MySQL container cleanup failed:', mysqlError);
+                        logging.error('MySQL container cleanup failed:', mysqlError);
                     }
 
                     // Try to remove network anyway
                     try {
                         await dockerManager.removeNetwork(networkId);
-                        log('Network removal completed');
+                        logging.info('Network removal completed');
                     } catch (networkError) {
-                        log('Network removal failed:', networkError);
+                        logging.error('Network removal failed:', networkError);
                     }
                 }
             } else {
@@ -302,26 +302,26 @@ export class EnvironmentManager {
                 try {
                     const mysqlState = containerState.loadMySQLState();
                     await dockerManager.removeContainer(mysqlState.containerId);
-                    log('MySQL container cleanup completed');
+                    logging.info('MySQL container cleanup completed');
                 } catch (error) {
-                    log('Could not clean up MySQL container:', error);
+                    logging.error('Could not clean up MySQL container:', error);
                 }
             }
 
             // Clean up state files
             containerState.cleanupAll();
-            log('State files cleaned up');
+            logging.info('State files cleaned up');
 
-            log('Global environment cleanup completed successfully');
+            logging.info('Global environment cleanup completed successfully');
         } catch (error) {
-            log('Global environment cleanup encountered errors:', error);
+            logging.error('Global environment cleanup encountered errors:', error);
 
             // Still try to clean up state files even if container cleanup failed
             try {
                 containerState.cleanupAll();
-                log('State files cleaned up after error');
+                logging.info('State files cleaned up after error');
             } catch (stateCleanupError) {
-                log('State file cleanup also failed:', stateCleanupError);
+                logging.error('State file cleanup also failed:', stateCleanupError);
             }
         }
     }
@@ -383,7 +383,7 @@ export class EnvironmentManager {
             log('Ghost instance setup completed:', ghostInstance);
             return ghostInstance;
         } catch (error) {
-            log('Failed to setup Ghost instance:', error);
+            logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
         }
     }
@@ -404,7 +404,7 @@ export class EnvironmentManager {
 
             log('Ghost instance teardown completed');
         } catch (error) {
-            log('Failed to teardown Ghost instance:', error);
+            logging.error('Failed to teardown Ghost instance:', error);
             // Don't throw - we want tests to continue even if cleanup fails
         }
     }
@@ -426,7 +426,7 @@ export class EnvironmentManager {
 
             log('Test database setup completed:', database, 'with site_uuid:', siteUuid);
         } catch (error) {
-            log('Failed to setup test database:', error);
+            logging.error('Failed to setup test database:', error);
             throw new Error(`Failed to setup test database: ${error}`);
         }
     }
@@ -440,7 +440,7 @@ export class EnvironmentManager {
             await this.dockerManager.executeMySQLCommand(mysqlState, `DROP DATABASE IF EXISTS ${database}`);
             log('Test database cleanup completed:', database);
         } catch (error) {
-            log('Failed to cleanup test database:', error);
+            logging.warn('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
         }
     }
@@ -459,7 +459,7 @@ export class EnvironmentManager {
                 password: mysqlState.rootPassword
             };
         } catch (error) {
-            log('Failed to get MySQL connection details:', error);
+            logging.error('Failed to get MySQL connection details:', error);
             throw new Error(`Failed to get MySQL connection details: ${error}`);
         }
     }
