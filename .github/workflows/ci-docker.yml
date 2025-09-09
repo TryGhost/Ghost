@@ -298,13 +298,10 @@ jobs:
       - name: Restore caches
         uses: ./.github/actions/restore-cache
         env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
+          DEPENDENCY_CACHE_KEY: ${{ needs.setup.outputs.dependency_cache_key }}
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
 
       - name: Run e2e tests
         run: yarn test:e2e
-
-
-
