@@ -189,7 +189,7 @@ class UpdateCheckService {
 
         try {
             const response = await this.request(checkEndpoint, reqObj);
-            return response.body;
+            return JSON.parse(response.body);
         } catch (err) {
             // CASE: no notifications available, ignore
             if (err.statusCode === 404) {
