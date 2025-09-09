@@ -1,6 +1,6 @@
 import Docker from 'dockerode';
 import debug from 'debug';
-import type { MySQLState, NetworkState, TinybirdState } from './ContainerState';
+import type {MySQLState} from './ContainerState';
 
 const log = debug('e2e:DockerManager');
 
@@ -50,7 +50,7 @@ export class DockerManager {
                 AttachStdin: false
             });
 
-            const stream = await exec.start({ hijack: true, stdin: false });
+            const stream = await exec.start({hijack: true, stdin: false});
 
             return new Promise((resolve, reject) => {
                 let stdout = '';
@@ -190,7 +190,7 @@ export class DockerManager {
                 },
                 HostConfig: {
                     PortBindings: {
-                        '2368/tcp': [{ HostPort: config.exposedPort.toString() }]
+                        '2368/tcp': [{HostPort: config.exposedPort.toString()}]
                     }
                 },
                 WorkingDir: config.workingDir || '/home/ghost/ghost/core',
@@ -255,7 +255,9 @@ export class DockerManager {
             }
 
             // Wait 200ms before next check
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 200);
+            });
         }
 
         throw new Error(`Timeout waiting for Ghost to start on port ${port}`);
@@ -270,13 +272,13 @@ export class DockerManager {
 
             // Stop the container (with force if needed)
             try {
-                await container.stop({ t: 10 }); // 10 second timeout
+                await container.stop({t: 10}); // 10 second timeout
             } catch (error) {
                 log('Container already stopped or stop failed, forcing removal:', containerId);
             }
 
             // Remove the container
-            await container.remove({ force: true });
+            await container.remove({force: true});
             log('Container removed:', containerId);
         } catch (error) {
             log('Failed to remove container:', error);
@@ -357,13 +359,13 @@ export class DockerManager {
                 },
                 HostConfig: {
                     PortBindings: {
-                        '7181/tcp': [{ HostPort: '7181' }]
+                        '7181/tcp': [{HostPort: '7181'}]
                     }
                 },
                 Healthcheck: {
                     Test: ['CMD', 'curl', '-f', 'http://localhost:7181/v0/health'],
                     Interval: 1000000000, // 1 second in nanoseconds
-                    Timeout: 5000000000,  // 5 seconds in nanoseconds
+                    Timeout: 5000000000, // 5 seconds in nanoseconds
                     Retries: 120
                 }
             };
@@ -416,14 +418,13 @@ export class DockerManager {
             await container.wait();
 
             // Get logs to check for errors
-            const logs = await container.logs({
+            await container.logs({
                 stdout: true,
                 stderr: true
             });
 
             log('Tinybird schema deployment completed');
             await container.remove();
-
         } catch (error) {
             log('Failed to deploy Tinybird schema:', error);
             throw new Error(`Failed to deploy Tinybird schema: ${error}`);
@@ -481,16 +482,15 @@ export class DockerManager {
             ]);
 
             const tokensData = JSON.parse(tokensResult.stdout);
-            const adminToken = tokensData.tokens.find((t: any) => t.name === 'admin token')?.token;
-            const trackerToken = tokensData.tokens.find((t: any) => t.name === 'tracker')?.token;
+            const adminToken = tokensData.tokens.find((t: {name: string; token: string}) => t.name === 'admin token')?.token;
+            const trackerToken = tokensData.tokens.find((t: {name: string; token: string}) => t.name === 'tracker')?.token;
 
             if (!adminToken || !trackerToken) {
                 throw new Error('Failed to extract admin or tracker tokens');
             }
 
             log('Tinybird tokens extracted successfully');
-            return { workspaceId, adminToken, trackerToken };
-
+            return {workspaceId, adminToken, trackerToken};
         } catch (error) {
             log('Failed to extract Tinybird tokens:', error);
             throw new Error(`Failed to extract Tinybird tokens: ${error}`);
@@ -521,7 +521,9 @@ export class DockerManager {
                 log('Tinybird health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
 
-            await new Promise(resolve => setTimeout(resolve, 200));
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 200);
+            });
         }
 
         throw new Error(`Timeout waiting for Tinybird to start on port ${port}`);

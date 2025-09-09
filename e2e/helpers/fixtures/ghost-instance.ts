@@ -1,4 +1,4 @@
-import {test as base, TestInfo, Page, BrowserContext} from '@playwright/test';
+import {test as base, TestInfo} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
 import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
 import {appConfig, setupUser} from '../utils';

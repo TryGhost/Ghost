@@ -80,7 +80,6 @@ teardown('global environment cleanup', async ({}) => {
         log('State files cleaned up');
 
         log('Global environment cleanup completed successfully');
-
     } catch (error) {
         log('Global environment cleanup encountered errors:', error);
         

@@ -1,6 +1,6 @@
 import {ContainerState} from './ContainerState';
 import {DockerManager, GhostContainerConfig} from './DockerManager';
-import type {MySQLState, NetworkState, GhostInstanceState, TinybirdState} from './ContainerState';
+import type {MySQLState} from './ContainerState';
 import debug from 'debug';
 
 const log = debug('e2e:EnvironmentManager');
@@ -41,7 +41,7 @@ export class EnvironmentManager {
             const port = ContainerState.generateUniquePort(workerId);
             const siteUuid = ContainerState.generateSiteUuid();
 
-            log('Generated test-specific identifiers:', { database, networkAlias, port });
+            log('Generated test-specific identifiers:', {database, networkAlias, port});
 
             // Create and restore database
             await this.setupTestDatabase(mysqlState, database, siteUuid);
@@ -78,7 +78,6 @@ export class EnvironmentManager {
 
             log('Ghost instance setup completed:', ghostInstance);
             return ghostInstance;
-
         } catch (error) {
             log('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
@@ -100,7 +99,6 @@ export class EnvironmentManager {
             await this.cleanupTestDatabase(mysqlState, ghostInstance.database);
 
             log('Ghost instance teardown completed');
-
         } catch (error) {
             log('Failed to teardown Ghost instance:', error);
             // Don't throw - we want tests to continue even if cleanup fails
@@ -123,7 +121,6 @@ export class EnvironmentManager {
             );
 
             log('Test database setup completed:', database, 'with site_uuid:', siteUuid);
-
         } catch (error) {
             log('Failed to setup test database:', error);
             throw new Error(`Failed to setup test database: ${error}`);
@@ -138,7 +135,6 @@ export class EnvironmentManager {
             log('Cleaning up test database:', database);
             await this.dockerManager.executeMySQLCommand(mysqlState, `DROP DATABASE IF EXISTS ${database}`);
             log('Test database cleanup completed:', database);
-
         } catch (error) {
             log('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
