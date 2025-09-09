@@ -21,11 +21,10 @@ export const test = base.extend<GhostInstanceFixture>({
         const environmentManager = new EnvironmentManager();
 
         // Generate unique test ID from test info
-        const testId = testInfo.testId;
         const workerId = testInfo.workerIndex;
 
         // Setup Ghost instance for this test
-        const ghostInstance = await environmentManager.setupGhostInstance(workerId, testId);
+        const ghostInstance = await environmentManager.setupGhostInstance(workerId);
 
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
