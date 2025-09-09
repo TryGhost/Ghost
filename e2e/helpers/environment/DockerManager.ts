@@ -1,8 +1,9 @@
 import Docker from 'dockerode';
-import debug from 'debug';
 import type {MySQLState} from './ContainerState';
+import logging from '@tryghost/logging';
+import baseDebug from '@tryghost/debug';
 
-const log = debug('e2e:DockerManager');
+const debug = baseDebug('e2e:DockerManager');
 
 export interface ContainerExecResult {
     exitCode: number;
@@ -85,7 +86,7 @@ export class DockerManager {
                 stream.on('error', reject);
             });
         } catch (error) {
-            log('Failed to execute command in container:', error);
+            logging.error('Failed to execute command in container:', error);
             throw new Error(`Failed to execute command in container: ${error}`);
         }
     }
@@ -101,7 +102,7 @@ export class DockerManager {
             '-e', command
         ];
 
-        log('Executing MySQL command:', command);
+        debug('Executing MySQL command:', command);
         return await this.executeInContainer(mysqlState.containerId, cmd);
     }
 
@@ -120,7 +121,7 @@ export class DockerManager {
             database
         ];
 
-        log('Creating MySQL dump for database:', database);
+        debug('Creating MySQL dump for database:', database);
         const result = await this.executeInContainer(mysqlState.containerId, cmd);
 
         if (result.exitCode !== 0) {
@@ -146,7 +147,7 @@ export class DockerManager {
             throw new Error(`MySQL restore failed: ${result.stderr}`);
         }
 
-        log('Database restored successfully:', database);
+        debug('Database restored successfully:', database);
     }
 
     /**
@@ -199,31 +200,31 @@ export class DockerManager {
                 AttachStderr: true
             };
 
-            log('Creating Ghost container with config:', {
+            debug('Creating Ghost container with config:', {
                 networkId: config.networkId,
                 alias: config.networkAlias,
                 database: config.database,
                 port: config.exposedPort
             });
 
-            log('Ghost environment variables:', JSON.stringify(environment, null, 2));
+            debug('Ghost environment variables:', JSON.stringify(environment, null, 2));
 
-            log('Full Docker container config:', JSON.stringify(containerConfig, null, 2));
+            debug('Full Docker container config:', JSON.stringify(containerConfig, null, 2));
 
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
 
             // Inspect the container to see actual port mappings
             const containerInfo = await container.inspect();
-            log('Container port mappings:', containerInfo.NetworkSettings.Ports);
+            debug('Container port mappings:', containerInfo.NetworkSettings.Ports);
 
             // Wait for Ghost to be ready by checking HTTP health
             await this.waitForGhostReady(config.exposedPort);
 
-            log('Ghost container started successfully:', container.id);
+            debug('Ghost container started successfully:', container.id);
             return container.id;
         } catch (error) {
-            log('Failed to create Ghost container:', error);
+            logging.error('Failed to create Ghost container:', error);
             throw new Error(`Failed to create Ghost container: ${error}`);
         }
     }
@@ -245,13 +246,13 @@ export class DockerManager {
 
                 // If we get any response (even 401/404), Ghost is ready
                 if (response.status < 500) {
-                    log('Ghost is ready, responded with status:', response.status);
+                    debug('Ghost is ready, responded with status:', response.status);
                     return;
                 }
 
-                log('Ghost not ready yet, status:', response.status);
+                debug('Ghost not ready yet, status:', response.status);
             } catch (error) {
-                log('Ghost health check failed, retrying...', error instanceof Error ? error.message : String(error));
+                debug('Ghost health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
 
             // Wait 200ms before next check
@@ -274,14 +275,14 @@ export class DockerManager {
             try {
                 await container.stop({t: 10}); // 10 second timeout
             } catch (error) {
-                log('Container already stopped or stop failed, forcing removal:', containerId);
+                debug('Container already stopped or stop failed, forcing removal:', containerId);
             }
 
             // Remove the container
             await container.remove({force: true});
-            log('Container removed:', containerId);
+            debug('Container removed:', containerId);
         } catch (error) {
-            log('Failed to remove container:', error);
+            debug('Failed to remove container:', error);
             // Don't throw - container might already be removed
         }
     }
@@ -295,10 +296,10 @@ export class DockerManager {
             const networkInfo = await network.inspect();
 
             const containerIds = Object.keys(networkInfo.Containers || {});
-            log('Found containers on network:', containerIds);
+            debug('Found containers on network:', containerIds);
             return containerIds;
         } catch (error) {
-            log('Failed to get network containers:', error);
+            debug('Failed to get network containers:', error);
             return [];
         }
     }
@@ -310,9 +311,9 @@ export class DockerManager {
         try {
             const network = this.docker.getNetwork(networkId);
             await network.remove();
-            log('Network removed:', networkId);
+            debug('Network removed:', networkId);
         } catch (error) {
-            log('Failed to remove network:', error);
+            logging.error('Failed to remove network:', error);
             // Don't throw - network might already be removed
         }
     }
@@ -333,9 +334,9 @@ export class DockerManager {
             // Remove the network
             await this.removeNetwork(networkId);
 
-            log('Network cleanup completed:', networkId);
+            debug('Network cleanup completed:', networkId);
         } catch (error) {
-            log('Network cleanup failed:', error);
+            logging.error('Network cleanup failed:', error);
             throw new Error(`Network cleanup failed: ${error}`);
         }
     }
@@ -370,17 +371,17 @@ export class DockerManager {
                 }
             };
 
-            log('Creating Tinybird Local container...');
+            debug('Creating Tinybird Local container...');
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
 
             // Wait for health check to pass
             await this.waitForTinybirdReady(7181);
 
-            log('Tinybird Local container started successfully:', container.id);
+            debug('Tinybird Local container started successfully:', container.id);
             return container.id;
         } catch (error) {
-            log('Failed to create Tinybird container:', error);
+            logging.error('Failed to create Tinybird container:', error);
             throw new Error(`Failed to create Tinybird container: ${error}`);
         }
     }
@@ -410,7 +411,7 @@ export class DockerManager {
                 Cmd: ['tb', '--local', 'build']
             };
 
-            log('Deploying Tinybird schema...');
+            debug('Deploying Tinybird schema...');
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
 
@@ -423,10 +424,10 @@ export class DockerManager {
                 stderr: true
             });
 
-            log('Tinybird schema deployment completed');
+            debug('Tinybird schema deployment completed');
             await container.remove();
         } catch (error) {
-            log('Failed to deploy Tinybird schema:', error);
+            logging.error('Failed to deploy Tinybird schema:', error);
             throw new Error(`Failed to deploy Tinybird schema: ${error}`);
         }
     }
@@ -456,7 +457,7 @@ export class DockerManager {
                 Cmd: ['tb', '--output', 'json', 'info']
             };
 
-            log('Extracting Tinybird configuration...');
+            debug('Extracting Tinybird configuration...');
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
             await container.wait();
@@ -489,10 +490,10 @@ export class DockerManager {
                 throw new Error('Failed to extract admin or tracker tokens');
             }
 
-            log('Tinybird tokens extracted successfully');
+            debug('Tinybird tokens extracted successfully');
             return {workspaceId, adminToken, trackerToken};
         } catch (error) {
-            log('Failed to extract Tinybird tokens:', error);
+            logging.error('Failed to extract Tinybird tokens:', error);
             throw new Error(`Failed to extract Tinybird tokens: ${error}`);
         }
     }
@@ -512,13 +513,13 @@ export class DockerManager {
                 });
 
                 if (response.ok) {
-                    log('Tinybird is ready, responded with status:', response.status);
+                    debug('Tinybird is ready, responded with status:', response.status);
                     return;
                 }
 
-                log('Tinybird not ready yet, status:', response.status);
+                debug('Tinybird not ready yet, status:', response.status);
             } catch (error) {
-                log('Tinybird health check failed, retrying...', error instanceof Error ? error.message : String(error));
+                debug('Tinybird health check failed, retrying...', error instanceof Error ? error.message : String(error));
             }
 
             await new Promise<void>((resolve) => {

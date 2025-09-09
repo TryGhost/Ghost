@@ -1,9 +1,10 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as crypto from 'crypto';
-import debug from 'debug';
+import logging from '@tryghost/logging';
+import baseDebug from '@tryghost/debug';
 
-const log = debug('e2e:ContainerState');
+const debug = baseDebug('e2e:ContainerState');
 
 export interface NetworkState {
     networkId: string;
@@ -51,12 +52,12 @@ export class ContainerState {
         try {
             if (!fs.existsSync(ContainerState.STATE_DIR)) {
                 fs.mkdirSync(ContainerState.STATE_DIR, {recursive: true});
-                log('Created state directory:', ContainerState.STATE_DIR);
+                debug('Created state directory:', ContainerState.STATE_DIR);
             }
         } catch (error) {
             // Handle race condition where directory might be created between existsSync and mkdirSync
             if (!fs.existsSync(ContainerState.STATE_DIR)) {
-                log('Failed to ensure state directory exists:', error);
+                logging.error('Failed to ensure state directory exists:', error);
                 throw new Error(`Failed to ensure state directory exists: ${error}`);
             }
         }
@@ -67,9 +68,9 @@ export class ContainerState {
         try {
             this.ensureStateDirectory(); // Ensure directory exists before writing
             fs.writeFileSync(ContainerState.NETWORK_FILE, JSON.stringify(state, null, 2));
-            log('Network state saved:', state);
+            debug('Network state saved:', state);
         } catch (error) {
-            log('Failed to save network state:', error);
+            logging.error('Failed to save network state:', error);
             throw new Error(`Failed to save network state: ${error}`);
         }
     }
@@ -81,10 +82,10 @@ export class ContainerState {
             }
             const data = fs.readFileSync(ContainerState.NETWORK_FILE, 'utf8');
             const state = JSON.parse(data) as NetworkState;
-            log('Network state loaded:', state);
+            debug('Network state loaded:', state);
             return state;
         } catch (error) {
-            log('Failed to load network state:', error);
+            logging.error('Failed to load network state:', error);
             throw new Error(`Failed to load network state: ${error}`);
         }
     }
@@ -93,9 +94,9 @@ export class ContainerState {
     saveMySQLState(state: MySQLState): void {
         try {
             fs.writeFileSync(ContainerState.MYSQL_FILE, JSON.stringify(state, null, 2));
-            log('MySQL state saved:', state);
+            debug('MySQL state saved:', state);
         } catch (error) {
-            log('Failed to save MySQL state:', error);
+            logging.error('Failed to save MySQL state:', error);
             throw new Error(`Failed to save MySQL state: ${error}`);
         }
     }
@@ -107,10 +108,10 @@ export class ContainerState {
             }
             const data = fs.readFileSync(ContainerState.MYSQL_FILE, 'utf8');
             const state = JSON.parse(data) as MySQLState;
-            log('MySQL state loaded:', state);
+            debug('MySQL state loaded:', state);
             return state;
         } catch (error) {
-            log('Failed to load MySQL state:', error);
+            logging.error('Failed to load MySQL state:', error);
             throw new Error(`Failed to load MySQL state: ${error}`);
         }
     }
@@ -120,9 +121,9 @@ export class ContainerState {
         try {
             this.ensureStateDirectory();
             fs.writeFileSync(ContainerState.TINYBIRD_FILE, JSON.stringify(state, null, 2));
-            log('Tinybird state saved:', state);
+            debug('Tinybird state saved:', state);
         } catch (error) {
-            log('Failed to save Tinybird state:', error);
+            logging.error('Failed to save Tinybird state:', error);
             throw new Error(`Failed to save Tinybird state: ${error}`);
         }
     }
@@ -134,10 +135,10 @@ export class ContainerState {
             }
             const data = fs.readFileSync(ContainerState.TINYBIRD_FILE, 'utf8');
             const state = JSON.parse(data) as TinybirdState;
-            log('Tinybird state loaded:', state);
+            debug('Tinybird state loaded:', state);
             return state;
         } catch (error) {
-            log('Failed to load Tinybird state:', error);
+            logging.error('Failed to load Tinybird state:', error);
             throw new Error(`Failed to load Tinybird state: ${error}`);
         }
     }
@@ -146,9 +147,9 @@ export class ContainerState {
     saveDatabaseDump(dumpContent: string): void {
         try {
             fs.writeFileSync(ContainerState.DUMP_FILE, dumpContent);
-            log('Database dump saved to:', ContainerState.DUMP_FILE);
+            debug('Database dump saved to:', ContainerState.DUMP_FILE);
         } catch (error) {
-            log('Failed to save database dump:', error);
+            logging.error('Failed to save database dump:', error);
             throw new Error(`Failed to save database dump: ${error}`);
         }
     }
@@ -159,10 +160,10 @@ export class ContainerState {
                 throw new Error('Database dump file does not exist');
             }
             const dump = fs.readFileSync(ContainerState.DUMP_FILE, 'utf8');
-            log('Database dump loaded, size:', dump.length);
+            debug('Database dump loaded, size:', dump.length);
             return dump;
         } catch (error) {
-            log('Failed to load database dump:', error);
+            logging.error('Failed to load database dump:', error);
             throw new Error(`Failed to load database dump: ${error}`);
         }
     }
@@ -193,10 +194,10 @@ export class ContainerState {
         try {
             if (fs.existsSync(ContainerState.STATE_DIR)) {
                 fs.rmSync(ContainerState.STATE_DIR, {recursive: true, force: true});
-                log('All state files cleaned up');
+                debug('All state files cleaned up');
             }
         } catch (error) {
-            log('Failed to cleanup state files:', error);
+            logging.error('Failed to cleanup state files:', error);
             throw new Error(`Failed to cleanup state files: ${error}`);
         }
     }
