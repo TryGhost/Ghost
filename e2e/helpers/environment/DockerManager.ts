@@ -1,5 +1,4 @@
 import Docker from 'dockerode';
-import type {MySQLState} from './ContainerState';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 
@@ -35,94 +34,6 @@ export class DockerManager {
 
     constructor() {
         this.docker = new Docker();
-    }
-
-    /**
-     * Execute a command inside a container
-     */
-    async executeInContainer(containerId: string, command: string[]): Promise<ContainerExecResult> {
-        try {
-            const container = this.docker.getContainer(containerId);
-
-            const exec = await container.exec({
-                Cmd: command,
-                AttachStdout: true,
-                AttachStderr: true,
-                AttachStdin: false
-            });
-
-            const stream = await exec.start({hijack: true, stdin: false});
-
-            return new Promise((resolve, reject) => {
-                let stdout = '';
-                let stderr = '';
-
-                // Docker multiplexes stdout/stderr in a single stream
-                // First byte indicates stream type: 1=stdout, 2=stderr
-                stream.on('data', (chunk: Buffer) => {
-                    const header = chunk.readUInt8(0);
-                    const data = chunk.subarray(8).toString(); // Skip 8-byte header
-
-                    if (header === 1) {
-                        stdout += data;
-                    } else if (header === 2) {
-                        stderr += data;
-                    }
-                });
-
-                stream.on('end', async () => {
-                    try {
-                        const inspectResult = await exec.inspect();
-                        resolve({
-                            exitCode: inspectResult.ExitCode || 0,
-                            stdout: stdout.trim(),
-                            stderr: stderr.trim()
-                        });
-                    } catch (error) {
-                        reject(error);
-                    }
-                });
-
-                stream.on('error', reject);
-            });
-        } catch (error) {
-            logging.error('Failed to execute command in container:', error);
-            throw new Error(`Failed to execute command in container: ${error}`);
-        }
-    }
-
-    /**
-     * Execute MySQL command in MySQL container
-     */
-    async executeMySQLCommand(mysqlState: MySQLState, command: string): Promise<ContainerExecResult> {
-        const cmd = [
-            'mysql',
-            '-u', 'root',
-            `-p${mysqlState.rootPassword}`,
-            '-e', command
-        ];
-
-        debug('Executing MySQL command:', command);
-        return await this.executeInContainer(mysqlState.containerId, cmd);
-    }
-
-    /**
-     * Restore database from the existing dump file inside the MySQL container
-     */
-    async restoreDatabaseFromDump(mysqlState: MySQLState, database: string): Promise<void> {
-        // Create the database first
-        await this.executeMySQLCommand(mysqlState, `CREATE DATABASE IF NOT EXISTS ${database}`);
-
-        // Restore from the existing dump file (created during global setup)
-        const result = await this.executeInContainer(mysqlState.containerId, [
-            'sh', '-c', `mysql -u root -p${mysqlState.rootPassword} ${database} < /tmp/dump.sql`
-        ]);
-
-        if (result.exitCode !== 0) {
-            throw new Error(`MySQL restore failed: ${result.stderr}`);
-        }
-
-        debug('Database restored successfully:', database);
     }
 
     /**
@@ -263,62 +174,6 @@ export class DockerManager {
         } catch (error) {
             debug('Failed to remove container:', error);
             // Don't throw - container might already be removed
-        }
-    }
-
-    /**
-     * Get all containers connected to a network
-     */
-    async getNetworkContainers(networkId: string): Promise<string[]> {
-        try {
-            const network = this.docker.getNetwork(networkId);
-            const networkInfo = await network.inspect();
-
-            const containerIds = Object.keys(networkInfo.Containers || {});
-            debug('Found containers on network:', containerIds);
-            return containerIds;
-        } catch (error) {
-            debug('Failed to get network containers:', error);
-            return [];
-        }
-    }
-
-    /**
-     * Remove a network
-     */
-    async removeNetwork(networkId: string): Promise<void> {
-        try {
-            const network = this.docker.getNetwork(networkId);
-            await network.remove();
-            debug('Network removed:', networkId);
-        } catch (error) {
-            logging.error('Failed to remove network:', error);
-            // Don't throw - network might already be removed
-        }
-    }
-
-    /**
-     * Clean up all containers on a network and remove the network
-     */
-    async cleanupNetwork(networkId: string): Promise<void> {
-        try {
-            // Get all containers on the network
-            const containerIds = await this.getNetworkContainers(networkId);
-            logging.info(`Cleaning up network ${networkId}, found containers:`, containerIds);
-
-            // Remove all containers
-            await Promise.all(
-                containerIds.map(containerId => this.removeContainer(containerId))
-            );
-            logging.info(`All containers removed from network ${networkId}`);
-
-            // Remove the network
-            await this.removeNetwork(networkId);
-
-            logging.info('Network cleanup completed:', networkId);
-        } catch (error) {
-            logging.error('Network cleanup failed:', error);
-            throw new Error(`Network cleanup failed: ${error}`);
         }
     }
 }

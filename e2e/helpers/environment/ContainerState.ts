@@ -6,19 +6,6 @@ import baseDebug from '@tryghost/debug';
 
 const debug = baseDebug('e2e:ContainerState');
 
-export interface NetworkState {
-    networkId: string;
-    networkName: string;
-}
-
-export interface MySQLState {
-    containerId: string;
-    rootPassword: string;
-    mappedPort: number;
-    database: string;
-    host: string;
-}
-
 export interface GhostInstanceState {
     containerId: string;
     workerId: number;
@@ -35,11 +22,8 @@ export interface TinybirdState {
 }
 
 export class ContainerState {
-    private static readonly STATE_DIR = path.join(process.cwd(), '.playwright-containers');
-    private static readonly NETWORK_FILE = path.join(ContainerState.STATE_DIR, 'network.json');
-    private static readonly MYSQL_FILE = path.join(ContainerState.STATE_DIR, 'mysql.json');
+    private static readonly STATE_DIR = path.join(process.cwd(), 'playwright');
     private static readonly TINYBIRD_FILE = path.join(ContainerState.STATE_DIR, 'tinybird.json');
-    private static readonly DUMP_FILE = path.join(ContainerState.STATE_DIR, 'dump.sql');
 
     constructor() {
         this.ensureStateDirectory();
@@ -57,59 +41,6 @@ export class ContainerState {
                 logging.error('Failed to ensure state directory exists:', error);
                 throw new Error(`Failed to ensure state directory exists: ${error}`);
             }
-        }
-    }
-
-    // Network state management
-    saveNetworkState(state: NetworkState): void {
-        try {
-            this.ensureStateDirectory(); // Ensure directory exists before writing
-            fs.writeFileSync(ContainerState.NETWORK_FILE, JSON.stringify(state, null, 2));
-            debug('Network state saved:', state);
-        } catch (error) {
-            logging.error('Failed to save network state:', error);
-            throw new Error(`Failed to save network state: ${error}`);
-        }
-    }
-
-    loadNetworkState(): NetworkState {
-        try {
-            if (!fs.existsSync(ContainerState.NETWORK_FILE)) {
-                throw new Error('Network state file does not exist');
-            }
-            const data = fs.readFileSync(ContainerState.NETWORK_FILE, 'utf8');
-            const state = JSON.parse(data) as NetworkState;
-            debug('Network state loaded:', state);
-            return state;
-        } catch (error) {
-            logging.error('Failed to load network state:', error);
-            throw new Error(`Failed to load network state: ${error}`);
-        }
-    }
-
-    // MySQL state management
-    saveMySQLState(state: MySQLState): void {
-        try {
-            fs.writeFileSync(ContainerState.MYSQL_FILE, JSON.stringify(state, null, 2));
-            debug('MySQL state saved:', state);
-        } catch (error) {
-            logging.error('Failed to save MySQL state:', error);
-            throw new Error(`Failed to save MySQL state: ${error}`);
-        }
-    }
-
-    loadMySQLState(): MySQLState {
-        try {
-            if (!fs.existsSync(ContainerState.MYSQL_FILE)) {
-                throw new Error('MySQL state file does not exist');
-            }
-            const data = fs.readFileSync(ContainerState.MYSQL_FILE, 'utf8');
-            const state = JSON.parse(data) as MySQLState;
-            debug('MySQL state loaded:', state);
-            return state;
-        } catch (error) {
-            logging.error('Failed to load MySQL state:', error);
-            throw new Error(`Failed to load MySQL state: ${error}`);
         }
     }
 
@@ -140,48 +71,6 @@ export class ContainerState {
         }
     }
 
-    // Database dump management
-    saveDatabaseDump(dumpContent: string): void {
-        try {
-            fs.writeFileSync(ContainerState.DUMP_FILE, dumpContent);
-            debug('Database dump saved to:', ContainerState.DUMP_FILE);
-        } catch (error) {
-            logging.error('Failed to save database dump:', error);
-            throw new Error(`Failed to save database dump: ${error}`);
-        }
-    }
-
-    loadDatabaseDump(): string {
-        try {
-            if (!fs.existsSync(ContainerState.DUMP_FILE)) {
-                throw new Error('Database dump file does not exist');
-            }
-            const dump = fs.readFileSync(ContainerState.DUMP_FILE, 'utf8');
-            debug('Database dump loaded, size:', dump.length);
-            return dump;
-        } catch (error) {
-            logging.error('Failed to load database dump:', error);
-            throw new Error(`Failed to load database dump: ${error}`);
-        }
-    }
-
-    getDumpFilePath(): string {
-        return ContainerState.DUMP_FILE;
-    }
-
-    // State validation
-    hasNetworkState(): boolean {
-        return fs.existsSync(ContainerState.NETWORK_FILE);
-    }
-
-    hasMySQLState(): boolean {
-        return fs.existsSync(ContainerState.MYSQL_FILE);
-    }
-
-    hasDatabaseDump(): boolean {
-        return fs.existsSync(ContainerState.DUMP_FILE);
-    }
-
     hasTinybirdState(): boolean {
         return fs.existsSync(ContainerState.TINYBIRD_FILE);
     }
@@ -197,13 +86,6 @@ export class ContainerState {
             logging.error('Failed to cleanup state files:', error);
             throw new Error(`Failed to cleanup state files: ${error}`);
         }
-    }
-
-    // Utility methods for generating unique identifiers
-    static generateDatabaseName(workerId: number, testId: string): string {
-        // Clean test ID to be MySQL-safe
-        const cleanTestId = testId.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
-        return `ghost_test_w${workerId}_${cleanTestId}`;
     }
 
     static generateNetworkAlias(workerId: number, testId: string): string {
