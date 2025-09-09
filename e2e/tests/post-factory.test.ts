@@ -1,4 +1,4 @@
-import {test, expect} from '../helpers/fixtures/ghost-instance';
+import {test, expect} from '../helpers/playwright';
 import {createPostFactory} from '../data-factory';
 import type {PostFactory} from '../data-factory';
 

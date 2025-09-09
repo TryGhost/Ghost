@@ -1,4 +1,4 @@
-import {test, expect} from '../../../helpers/fixtures/ghost-instance';
+import {test, expect} from '../../../helpers/playwright';
 import {
     AnalyticsOverviewPage,
     AnalyticsWebTrafficPage,

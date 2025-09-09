@@ -8,7 +8,6 @@ const debug = baseDebug('e2e:ghost-fixture');
 
 export interface GhostInstanceFixture {
     ghostInstance: GhostInstance;
-    environmentManager: EnvironmentManager;
 }
 
 /**
