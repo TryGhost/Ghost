@@ -256,6 +256,22 @@ module.exports = {
                     '100%': {
                         transform: 'rotate(360deg)'
                     }
+                },
+                'accordion-down': {
+                    from: {
+                        height: '0'
+                    },
+                    to: {
+                        height: 'var(--radix-accordion-content-height)'
+                    }
+                },
+                'accordion-up': {
+                    from: {
+                        height: 'var(--radix-accordion-content-height)'
+                    },
+                    to: {
+                        height: '0'
+                    }
                 }
             },
             animation: {
@@ -269,7 +285,9 @@ module.exports = {
                 'modal-in': 'modalIn 0.25s ease forwards',
                 'modal-in-from-right': 'modalInFromRight 0.25s ease forwards',
                 'modal-in-reverse': 'modalInReverse 0.25s ease forwards',
-                spin: 'spin 1s linear infinite'
+                spin: 'spin 1s linear infinite',
+                'accordion-down': 'accordion-down 0.2s ease-out',
+                'accordion-up': 'accordion-up 0.2s ease-out'
             },
             spacing: {
                 0: '0px',
