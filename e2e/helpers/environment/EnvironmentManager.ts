@@ -1,4 +1,4 @@
-import {ContainerState} from './ContainerState';
+import * as fs from 'fs';
 import Docker from 'dockerode';
 import type {Container} from 'dockerode';
 import logging from '@tryghost/logging';
@@ -35,14 +35,21 @@ export interface GhostInstance {
     siteUuid: string;
 }
 
+export interface TinybirdState {
+    workspaceId: string;
+    adminToken: string;
+    trackerToken: string;
+}
+
 export class EnvironmentManager {
-    private containerState: ContainerState;
-    private composeFilePath = path.resolve(__dirname, '../../compose.e2e.yml');
-    private composeProjectName = 'ghost-e2e';
+    private readonly composeFilePath = path.resolve(__dirname, '../../compose.e2e.yml');
+    private readonly composeProjectName = 'ghost-e2e';
+    private readonly stateDir = path.resolve(__dirname, '../../data/state');
+    private readonly tinybirdStateFile = path.join(this.stateDir, 'tinybird.json');
     private docker: Docker;
 
     constructor() {
-        this.containerState = new ContainerState();
+        this.ensureDataDir();
         this.docker = new Docker();
     }
 
@@ -142,7 +149,7 @@ export class EnvironmentManager {
             adminToken,
             trackerToken
         };
-        this.containerState.saveTinybirdState(updatedTinybirdState);
+        this.saveTinybirdState(updatedTinybirdState);
         logging.info('Tinybird tokens fetched');
         logging.info('Global environment setup complete');
     }
@@ -161,6 +168,7 @@ export class EnvironmentManager {
         logging.info('Starting global environment teardown...');
         try {
             execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
+            this.cleanupStateFiles();
         } catch (error) {
             logging.error('Failed to stop docker compose services:', error);
             throw error;
@@ -178,8 +186,8 @@ export class EnvironmentManager {
             const network = await this.getNetwork();
             const siteUuid = crypto.randomUUID();
             const instanceId = `ghost_${siteUuid}`;
-            const port = ContainerState.generateUniquePort(workerId);
-            const tinybirdState = this.containerState.loadTinybirdState();
+            const port = 2368 + workerId; ;
+            const tinybirdState = this.loadTinybirdState();
 
             debug('Generated test-specific identifiers:', {siteUuid, instanceId, port});
 
@@ -484,6 +492,68 @@ export class EnvironmentManager {
         } catch (error) {
             debug('Failed to remove container:', error);
             // Don't throw - container might already be removed
+        }
+    }
+
+    private ensureDataDir(): void {
+        try {
+            if (!fs.existsSync(this.stateDir)) {
+                fs.mkdirSync(this.stateDir, {recursive: true});
+                debug('created state directory:', this.stateDir);
+            }
+        } catch (error) {
+            // handle race condition where directory might be created between existssync and mkdirsync
+            if (!fs.existsSync(this.stateDir)) {
+                logging.error('failed to ensure state directory exists:', error);
+                throw new error(`failed to ensure state directory exists: ${error}`);
+            }
+        }
+    }
+    private saveTinybirdState(state: TinybirdState): void {
+        try {
+            this.ensureDataDir();
+            fs.writeFileSync(this.tinybirdStateFile, JSON.stringify(state, null, 2));
+            debug('Tinybird state saved:', state);
+        } catch (error) {
+            logging.error('Failed to save Tinybird state:', error);
+            throw new Error(`Failed to save Tinybird state: ${error}`);
+        }
+    }
+
+    private loadTinybirdState(): TinybirdState {
+        try {
+            if (!fs.existsSync(this.tinybirdStateFile)) {
+                throw new Error('Tinybird state file does not exist');
+            }
+            const data = fs.readFileSync(this.tinybirdStateFile, 'utf8');
+            const state = JSON.parse(data) as TinybirdState;
+            debug('Tinybird state loaded:', state);
+            return state;
+        } catch (error) {
+            logging.error('Failed to load Tinybird state:', error);
+            throw new Error(`Failed to load Tinybird state: ${error}`);
+        }
+    }
+
+    private cleanupStateFiles(): void {
+        try {
+            if (fs.existsSync(this.stateDir)) {
+                // Delete all files in the directory, but keep the directory itself
+                const files = fs.readdirSync(this.stateDir);
+                for (const file of files) {
+                    const filePath = path.join(this.stateDir, file);
+                    const stat = fs.statSync(filePath);
+                    if (stat.isDirectory()) {
+                        fs.rmSync(filePath, {recursive: true, force: true});
+                    } else {
+                        fs.unlinkSync(filePath);
+                    }
+                }
+                debug('State files cleaned up');
+            }
+        } catch (error) {
+            logging.error('Failed to cleanup state files:', error);
+            throw new Error(`Failed to cleanup state files: ${error}`);
         }
     }
 }

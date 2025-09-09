@@ -194,4 +194,4 @@ yalc.lock
 /e2e/test-results
 /e2e/build
 /e2e/playwright
-/e2e/.playwright-containers
+/e2e/data
