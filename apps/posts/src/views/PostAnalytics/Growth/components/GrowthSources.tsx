@@ -1,6 +1,7 @@
 import React from 'react';
+import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources, useNavigate} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, formatNumber} from '@tryghost/shade';
+import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, EmptyIndicator, LucideIcon, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, cn, formatNumber} from '@tryghost/shade';
 import {useAppContext} from '@src/App';
 
 // Default source icon URL - apps can override this
@@ -43,22 +44,20 @@ const SourcesTable: React.FC<SourcesTableProps> = ({headerStyle = 'table', child
                                 <TableCell>
                                     {row.linkUrl ?
                                         <a className='group flex items-center gap-2' href={row.linkUrl} rel="noreferrer" target="_blank">
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span className='group-hover:underline'>{row.displayName}</span>
                                         </a>
                                         :
                                         <span className='flex items-center gap-2'>
-                                            <img
-                                                className="size-4"
-                                                src={row.iconSrc}
-                                                onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                    e.currentTarget.src = defaultSourceIconUrl;
-                                                }} />
+                                            <SourceIcon
+                                                defaultSourceIconUrl={defaultSourceIconUrl}
+                                                displayName={row.displayName}
+                                                iconSrc={row.iconSrc}
+                                            />
                                             <span>{row.displayName}</span>
                                         </span>
                                     }
@@ -90,6 +89,7 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     getPeriodText?: (range: number) => string;
+    className?: string;
 }
 
 export const GrowthSources: React.FC<SourcesCardProps> = ({
@@ -102,7 +102,8 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
     siteUrl,
     siteIcon,
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
-    getPeriodText
+    getPeriodText,
+    className
 }) => {
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
@@ -141,7 +142,7 @@ export const GrowthSources: React.FC<SourcesCardProps> = ({
         : `How readers found your ${range ? 'site' : 'post'}${range && getPeriodText ? ` ${getPeriodText(range)}` : ''}`;
 
     return (
-        <Card className='group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-sources-card'>
+        <Card className={cn('group/datalist w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]', className)} data-testid='top-sources-card'>
             {topSources.length <= 0 &&
                 <CardHeader>
                     <CardTitle>{title}</CardTitle>

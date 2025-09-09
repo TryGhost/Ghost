@@ -873,7 +873,7 @@ describe('RouterController', function () {
                     end: sinon.stub()
                 };
                 handleSigninStub = sinon.stub();
-                
+
                 routerController = new RouterController({
                     allowSelfSignup: sinon.stub().returns(true),
                     memberAttributionService: {
@@ -897,13 +897,13 @@ describe('RouterController', function () {
                     sentry: {},
                     urlUtils: {}
                 });
-                
+
                 routerController._handleSignin = handleSigninStub;
             });
 
-            it('should return otc_ref when flag is enabled and tokenId exists', async function () {
+            it('should return otc_ref when flag is enabled and otcRef exists', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
-                handleSigninStub.resolves({tokenId: 'test-token-123'});
+                handleSigninStub.resolves({otcRef: 'test-token-123'});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -913,7 +913,7 @@ describe('RouterController', function () {
 
             it('should not return otc_ref when flag is disabled', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(false);
-                handleSigninStub.resolves({tokenId: 'test-token-123'});
+                handleSigninStub.resolves({otcRef: 'test-token-123'});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -921,9 +921,9 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but no tokenId', async function () {
+            it('should not return otc_ref when flag is enabled but no otcRef', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
-                handleSigninStub.resolves({tokenId: null});
+                handleSigninStub.resolves({otcRef: null});
 
                 await routerController.sendMagicLink(req, res);
 
@@ -931,7 +931,7 @@ describe('RouterController', function () {
                 res.end.calledWith('Created.').should.be.true();
             });
 
-            it('should not return otc_ref when flag is enabled but tokenId is undefined', async function () {
+            it('should not return otc_ref when flag is enabled but otcRef is undefined', async function () {
                 routerController.labsService.isSet.withArgs('membersSigninOTC').returns(true);
                 handleSigninStub.resolves({});
 
@@ -1095,6 +1095,269 @@ describe('RouterController', function () {
                 assert(error instanceof errors.BadRequestError, 'Error should be an instance of BadRequestError');
                 assert.equal(error.message, 'Cannot subscribe to archived newsletters Newsletter 2');
             }
+        });
+    });
+
+    describe('verifyOTC', function () {
+        let routerController;
+        let mockMagicLinkService;
+        let mockUrlUtils;
+        let req;
+        let res;
+
+        const OTC_TEST_CONSTANTS = {
+            VALID_OTC: '123456',
+            INVALID_OTC_5_DIGITS: '12345',
+            INVALID_OTC_NON_DIGITS: '12345a',
+            TOKEN_ID: 'test-token-id',
+            TOKEN_VALUE: 'test-token-value',
+            OTC_VERIFICATION_HASH: 'c3784e7545cd61c87b34b9bd6d7b840c1225679c74fbc04bc07302a7a1c6aed4',
+            SITE_URL: 'http://example.com',
+            MEMBERS_URL: 'http://example.com/members/'
+        };
+
+        beforeEach(function () {
+            mockMagicLinkService = {
+                tokenProvider: {
+                    verifyOTC: sinon.stub(),
+                    getTokenByRef: sinon.stub(),
+                    createOTCVerificationHash: sinon.stub().returns(OTC_TEST_CONSTANTS.OTC_VERIFICATION_HASH)
+                },
+                getSigninURL: sinon.stub().returns(OTC_TEST_CONSTANTS.MEMBERS_URL)
+            };
+
+            mockUrlUtils = {
+                urlFor: sinon.stub().returns(OTC_TEST_CONSTANTS.MEMBERS_URL),
+                getSiteUrl: sinon.stub().returns(OTC_TEST_CONSTANTS.SITE_URL)
+            };
+
+            routerController = new RouterController({
+                offersAPI,
+                paymentsService,
+                tiersService,
+                memberRepository: {},
+                StripePrice: {},
+                allowSelfSignup: () => true,
+                magicLinkService: mockMagicLinkService,
+                stripeAPIService,
+                tokenService: {},
+                memberAttributionService: {},
+                sendEmailWithMagicLink: sinon.stub(),
+                labsService,
+                newslettersService: {},
+                sentry: undefined,
+                urlUtils: mockUrlUtils
+            });
+
+            req = {
+                body: {
+                    otc: OTC_TEST_CONSTANTS.VALID_OTC,
+                    otcRef: OTC_TEST_CONSTANTS.TOKEN_ID
+                },
+                get: sinon.stub()
+            };
+
+            res = {
+                json: sinon.stub()
+            };
+        });
+
+        describe('input validation', function () {
+            it('should throw BadRequestError when otc is missing', async function () {
+                req.body.otc = undefined;
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_MISSING_PARAMS'}
+                );
+            });
+
+            it('should throw BadRequestError when otcRef is missing', async function () {
+                req.body.otcRef = undefined;
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_MISSING_PARAMS'}
+                );
+            });
+
+            it('should throw BadRequestError for invalid otc formats', async function () {
+                const invalidOtcs = [
+                    OTC_TEST_CONSTANTS.INVALID_OTC_5_DIGITS,
+                    OTC_TEST_CONSTANTS.INVALID_OTC_NON_DIGITS
+                ];
+
+                for (const invalid of invalidOtcs) {
+                    req.body.otc = invalid;
+                    mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
+
+                    await assert.rejects(
+                        routerController.verifyOTC(req, res),
+                        {code: 'INVALID_OTC'}
+                    );
+                }
+            });
+
+            it('should accept valid 6-digit OTC', async function () {
+                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
+
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledOnce(res.json);
+                const responseData = res.json.firstCall.args[0];
+                assert(responseData.redirectUrl);
+            });
+        });
+
+        describe('token provider integration', function () {
+            beforeEach(function () {
+                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
+                req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
+            });
+
+            it('should throw BadRequestError when tokenProvider is missing', async function () {
+                mockMagicLinkService.tokenProvider = undefined;
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_NOT_SUPPORTED'}
+                );
+            });
+
+            it('should throw BadRequestError when verifyOTC method is missing', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC = undefined;
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_NOT_SUPPORTED'}
+                );
+            });
+
+            it('should throw BadRequestError when verifyOTC returns false', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(false);
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'INVALID_OTC'}
+                );
+            });
+
+            it('should throw BadRequestError when getTokenByRef returns null', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(null);
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'INVALID_OTC_REF'}
+                );
+            });
+
+            it('should handle tokenProvider.getTokenByRef throwing error', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.rejects(new Error('Database error'));
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    Error
+                );
+            });
+
+            it('should throw BadRequestError when getSigninURL returns null', async function () {
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                mockMagicLinkService.getSigninURL.returns(null);
+
+                await assert.rejects(
+                    routerController.verifyOTC(req, res),
+                    {code: 'OTC_VERIFICATION_FAILED'}
+                );
+            });
+        });
+
+        describe('success flow integration', function () {
+            beforeEach(function () {
+                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
+                req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+            });
+
+            it('should return success response with valid inputs', async function () {
+                // use a fake time so we get a stable OTC verification hash for our mocked token/secret
+                sinon.useFakeTimers(new Date('2021-01-01'));
+                const TIMESTAMP_AND_OTC_VERIFICATION_HASH = `1609459200:${OTC_TEST_CONSTANTS.OTC_VERIFICATION_HASH}`;
+
+                await routerController.verifyOTC(req, res);
+
+                sinon.assert.calledOnce(res.json);
+                const responseData = res.json.firstCall.args[0];
+
+                assert(responseData.redirectUrl);
+                assert.equal(responseData.redirectUrl, OTC_TEST_CONSTANTS.MEMBERS_URL);
+
+                sinon.assert.calledWith(
+                    mockMagicLinkService.getSigninURL,
+                    OTC_TEST_CONSTANTS.TOKEN_VALUE,
+                    'signin',
+                    null,
+                    TIMESTAMP_AND_OTC_VERIFICATION_HASH
+                );
+            });
+        });
+
+        describe('referer passthrough', function () {
+            beforeEach(function () {
+                req.body.otc = OTC_TEST_CONSTANTS.VALID_OTC;
+                req.body.otcRef = OTC_TEST_CONSTANTS.TOKEN_ID;
+                mockMagicLinkService.tokenProvider.verifyOTC.resolves(true);
+                mockMagicLinkService.tokenProvider.getTokenByRef.resolves(OTC_TEST_CONSTANTS.TOKEN_VALUE);
+                req.get = sinon.stub();
+                sinon.useFakeTimers(new Date('2021-01-01'));
+            });
+
+            async function assertReferrerPassedToGetSigninURL(expectedReferrer) {
+                await routerController.verifyOTC(req, res);
+                const referrerArg = mockMagicLinkService.getSigninURL.getCall(0).args[2];
+                assert.equal(referrerArg, expectedReferrer);
+            }
+
+            it('should pass referer header', async function () {
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/page');
+            });
+
+            it('should prioritize redirect body parameter', async function () {
+                req.body.redirect = 'https://example.com/custom-redirect';
+                req.get.withArgs('referer').returns('https://example.com/other-page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/custom-redirect');
+            });
+
+            it('should pass null when autoRedirect is false', async function () {
+                req.body.autoRedirect = false;
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL(null);
+            });
+
+            it('should fallback to referer when redirect URL is invalid', async function () {
+                req.body.redirect = 'invalid-url';
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL('https://example.com/page');
+            });
+
+            it('should pass null when no referer or redirect', async function () {
+                req.get.withArgs('referer').returns(undefined);
+                await assertReferrerPassedToGetSigninURL(null);
+            });
+
+            it('should pass null when autoRedirect false overrides redirect', async function () {
+                req.body.autoRedirect = false;
+                req.body.redirect = 'https://example.com/custom-redirect';
+                req.get.withArgs('referer').returns('https://example.com/page');
+                await assertReferrerPassedToGetSigninURL(null);
+            });
         });
     });
 });

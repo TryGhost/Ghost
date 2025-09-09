@@ -1,0 +1,186 @@
+name: CI (Docker)
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, labeled, unlabeled]
+  push:
+    # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
+    # Run on pushes to main, release branches, and previous/future major version branches
+    branches:
+      - main
+      - 'v[0-9]+.*' # Matches any release branch, e.g. v6.0.3, v12.1.0
+      - '[0-9]+.x' # Matches any major version branch, e.g. 5.x, 23.x
+
+jobs:
+  build:
+    name: Build & Push
+    runs-on: ubuntu-latest-16-cores
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+        # We can't access secrets from forks, so we can't push to the registry
+        # Instead, we upload the image as an artifact, and download it in downstream jobs
+      - name: Determine build strategy
+        id: strategy
+        run: |
+          IS_FORK_PR="false"
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+            IS_FORK_PR="true"
+          fi
+          IMAGE_NAME="ghcr.io/${{ github.repository_owner }}/ghost-development"
+          if [ "$IS_FORK_PR" = "true" ]; then
+            IMAGE_NAME="ghcr.io/${{ github.event.pull_request.head.repo.owner.login }}/ghost-development"
+          fi
+          CACHE_KEY=$(echo $IMAGE_NAME | tr '[:upper:]' '[:lower:]')
+          echo "is-fork-pr=$IS_FORK_PR" >> $GITHUB_OUTPUT
+          echo "should-push=$( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "should-load=$( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "image-name=$IMAGE_NAME" >> $GITHUB_OUTPUT
+          echo "cache-key=$CACHE_KEY" >> $GITHUB_OUTPUT
+          echo "Build Strategy: "
+          echo "  Is fork PR: $IS_FORK_PR"
+          echo "  Should push: $( [ "$IS_FORK_PR" = "false" ] && echo "true" || echo "false" )"
+          echo "  Should load: $( [ "$IS_FORK_PR" = "true" ] && echo "true" || echo "false" )"
+          echo "  Image name: $IMAGE_NAME"
+          echo "  Cache key: $CACHE_KEY"
+
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ steps.strategy.outputs.image-name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost Development
+            org.opencontainers.image.description=Ghost development build
+            org.opencontainers.image.vendor=TryGhost
+            maintainer=TryGhost
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: .docker/Dockerfile
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.should-load }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # On PRs: use both main cache and PR-specific cache
+          # On main: only use main cache
+          cache-from: |
+            type=registry,ref=${{ steps.strategy.outputs.cache-key }}:cache-main
+            ${{ github.event_name == 'pull_request' && format('type=registry,ref={0}:cache-pr-{1}', steps.strategy.outputs.cache-key, github.event.pull_request.number) || '' }}
+          # Only export cache if we can push (not on fork PRs)
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.cache-key, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save image as artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        run: |
+          # Get the first tag from the multi-line tags output
+          IMAGE_TAG=$(echo "${{ steps.meta.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image.tar.gz
+          echo "Image saved as docker-image.tar.gz"
+          ls -lh docker-image.tar.gz
+
+      - name: Upload image artifact (fork PR)
+        if: steps.strategy.outputs.is-fork-pr == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-image
+          path: docker-image.tar.gz
+          retention-days: 1
+
+    outputs:
+      image-tags: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+      is-fork: ${{ steps.strategy.outputs.is-fork-pr }}
+
+  inspect_image:
+    name: Inspect Docker Image
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/actions/load-docker-image
+
+      - name: Load Docker Image
+        id: load
+        uses: ./.github/actions/load-docker-image
+        with:
+          is-fork: ${{ needs.build.outputs.is-fork }}
+          image-tags: ${{ needs.build.outputs.image-tags }}
+
+      - name: Inspect image size and layers
+        shell: bash
+        run: |
+          IMAGE_TAG="${{ steps.load.outputs.image-tag }}"
+          echo "Analyzing Docker image: $IMAGE_TAG"
+
+          # Get the image size in bytes
+          IMAGE_SIZE_BYTES=$(docker inspect "$IMAGE_TAG" --format='{{.Size}}')
+
+          # Convert to human readable format
+          IMAGE_SIZE_MB=$(( IMAGE_SIZE_BYTES / 1024 / 1024 ))
+          IMAGE_SIZE_GB=$(echo "scale=2; $IMAGE_SIZE_BYTES / 1024 / 1024 / 1024" | bc)
+
+          # Format size display based on magnitude
+          if [ $IMAGE_SIZE_MB -ge 1024 ]; then
+            IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_GB} GB"
+          else
+            IMAGE_SIZE_DISPLAY="${IMAGE_SIZE_MB} MB"
+          fi
+
+          echo "Image size: ${IMAGE_SIZE_DISPLAY}"
+
+          # Write to GitHub Step Summary
+          {
+            echo "# Docker Image Analysis"
+            echo ""
+            echo "**Image:** \`$IMAGE_TAG\`"
+            echo ""
+            echo "**Total Size:** ${IMAGE_SIZE_DISPLAY}"
+            echo ""
+            echo "## Image Layers"
+            echo ""
+            echo "| Size | Layer |"
+            echo "|------|-------|"
+
+            # Get all layers (including 0B ones)
+            docker history "$IMAGE_TAG" --format "{{.Size}}@@@{{.CreatedBy}}" --no-trunc | \
+            while IFS='@@@' read -r size cmd; do
+              # Clean up the command for display
+              cmd_clean=$(echo "$cmd" | sed 's/^\/bin\/sh -c //' | sed 's/^#(nop) //' | sed 's/^@@//' | sed 's/|/\\|/g' | cut -c1-80)
+              if [ ${#cmd} -gt 80 ]; then
+                cmd_clean="${cmd_clean}..."
+              fi
+              echo "| $size | \`${cmd_clean}\` |"
+            done
+
+          } >> $GITHUB_STEP_SUMMARY

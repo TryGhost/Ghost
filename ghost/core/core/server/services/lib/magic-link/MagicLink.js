@@ -13,13 +13,18 @@ const messages = {
  */
 
 /**
+ * @typedef {Object} TokenValidateOptions
+ * @prop {string} [otcVerification] - "timestamp:hash" string used to verify an OTC-bound token
+ */
+
+/**
  * @template T
  * @template D
  * @typedef {Object} TokenProvider<T, D>
  * @prop {(data: D) => Promise<T>} create
- * @prop {(token: T) => Promise<D>} validate
+ * @prop {(token: T, options?: TokenValidateOptions) => Promise<D>} validate
  * @prop {(token: T) => Promise<string | null>} [getIdByToken]
- * @prop {(tokenId: string, tokenValue: T) => string} [deriveOTC]
+ * @prop {(otcRef: string, tokenValue: T) => string} [deriveOTC]
  */
 
 /**
@@ -32,7 +37,7 @@ class MagicLink {
      * @param {object} options
      * @param {MailTransporter} options.transporter
      * @param {TokenProvider<Token, TokenData>} options.tokenProvider
-     * @param {(token: Token, type: string, referrer?: string) => URL} options.getSigninURL
+     * @param {(token: Token, type: string, referrer?: string, otcVerification?: string) => URL} options.getSigninURL
      * @param {typeof defaultGetText} [options.getText]
      * @param {typeof defaultGetHTML} [options.getHTML]
      * @param {typeof defaultGetSubject} [options.getSubject]
@@ -62,7 +67,7 @@ class MagicLink {
      * @param {string} [options.type='signin'] - The type to be passed to the url and content generator functions
      * @param {string} [options.referrer=null] - The referrer of the request, if exists. The member will be redirected back to this URL after signin.
      * @param {boolean} [options.includeOTC=false] - Whether to send a one-time-code in the email.
-     * @returns {Promise<{token: Token, tokenId: string | null, info: SentMessageInfo}>}
+     * @returns {Promise<{token: Token, otcRef: string | null, info: SentMessageInfo}>}
      */
     async sendMagicLink(options) {
         this.sentry?.captureMessage?.(`[Magic Link] Generating magic link`, {extra: options});
@@ -96,21 +101,21 @@ class MagicLink {
             html: this.getHTML(url, type, options.email, otc)
         });
 
-        // return tokenId so we can pass it as a reference to the client so it
+        // return otcRef so we can pass it as a reference to the client so it
         // can pass it back as a reference when verifying the OTC. We only do
         // this if we've successfully generated an OTC to avoid clients showing
         // a token input field when the email doesn't contain an OTC
-        let tokenId = null;
+        let otcRef = null;
         if (this.labsService?.isSet('membersSigninOTC') && otc) {
             try {
-                tokenId = await this.getIdFromToken(token);
+                otcRef = await this.getIdFromToken(token);
             } catch (err) {
                 this.sentry?.captureException?.(err);
-                tokenId = null;
+                otcRef = null;
             }
         }
 
-        return {token, tokenId, info};
+        return {token, otcRef, info};
     }
 
     /**
@@ -165,10 +170,11 @@ class MagicLink {
      * getDataFromToken
      *
      * @param {Token} token - The token to decode
+     * @param {string} [otcVerification] - Optional "timestamp:hash" to bind token usage to an OTC verification window
      * @returns {Promise<TokenData>} data - The data object associated with the magic link
      */
-    async getDataFromToken(token) {
-        const tokenData = await this.tokenProvider.validate(token);
+    async getDataFromToken(token, otcVerification) {
+        const tokenData = await this.tokenProvider.validate(token, {otcVerification});
         return tokenData;
     }
 }

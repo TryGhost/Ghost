@@ -34,11 +34,11 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
     const getTableHeader = () => {
         switch (contentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Post';
+            return 'Posts';
         case CONTENT_TYPES.PAGES:
-            return 'Page';
+            return 'Pages';
         default:
-            return 'Post';
+            return 'Posts & pages';
         }
     };
 
@@ -153,7 +153,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors}) => {
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
-                <div className='mb-2'>
+                <div className='mb-4'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>

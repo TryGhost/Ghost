@@ -82,13 +82,23 @@ class MembersConfigProvider {
         };
     }
 
-    getSigninURL(token, type, referrer) {
+    /**
+     * @param {string} token
+     * @param {string} type - also known as "action", e.g. "signin" or "signup"
+     * @param {string} [referrer] - optional URL for redirecting to after signin
+     * @param {string} [otcVerification] - optional for verifying an OTC signin redirect
+     * @returns {string}
+     */
+    getSigninURL(token, type, referrer, otcVerification) {
         const siteUrl = this._urlUtils.urlFor({relativeUrl: '/members/'}, true);
         const signinURL = new URL(siteUrl);
         signinURL.searchParams.set('token', token);
         signinURL.searchParams.set('action', type);
         if (referrer) {
             signinURL.searchParams.set('r', referrer);
+        }
+        if (otcVerification) {
+            signinURL.searchParams.set('otc_verification', otcVerification);
         }
         return signinURL.toString();
     }
