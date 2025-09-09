@@ -316,12 +316,11 @@ jobs:
           is-fork: ${{ needs.build.outputs.is-fork }}
           image-tags: ${{ needs.build.outputs.image-tags }}
 
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Pull images
         run: docker compose -f e2e/compose.e2e.yml pull
-
-      - name: Setup Docker Registry Mirrors
-        uses: ./.github/actions/setup-docker-registry-mirrors
 
       - uses: actions/setup-node@v4
         with:
