@@ -2,6 +2,33 @@ import {test, expect} from '../../../helpers/playwright';
 import {TagsPage} from '../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Tags', () => {
+    // XXX: Amend the settings response to enable tagsX feature flag for all tests
+    // until we have a proper way to enable and disable feature flags in tests
+    test.beforeEach(async ({page}) => {
+        await page.route('/ghost/api/admin/settings/*', async (route) => {
+            const response = await route.fetch();
+            const json = await response.json();
+            
+            // Override the labs field to enable tagsX feature flag
+            if (json.settings) {
+                const labsSetting = json.settings.find(setting => setting.key === 'labs');
+                if (labsSetting) {
+                    const labs = JSON.parse(labsSetting.value || '{}');
+                    labs.tagsX = true;
+                    labsSetting.value = JSON.stringify(labs);
+                }
+            }
+            
+            await route.fulfill({
+                response,
+                json
+            });
+        });
+
+        // Reload the page so that settings are updated and the feature flag is enabled
+        await page.reload();
+    });
+
     test('shows empty state when no tags exist', async ({page}) => {
         const tagsPage = new TagsPage(page);
         await tagsPage.mockTagsResponse(async () => ({
