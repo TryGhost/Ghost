@@ -816,11 +816,8 @@ jobs:
         with:
           submodules: true
 
-      - name: Configure Docker daemon for mirror.gcr.io
-        run: |
-          echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-          docker logout || echo "No Docker Hub login found"
+      - name: Setup Docker Registry Mirrors
+        uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Start E2E services
         run: docker compose -f e2e/compose.e2e.yml up -d --wait
