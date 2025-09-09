@@ -296,6 +296,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        id: build
+        with:
+          context: .
+          file: .docker/tb-cli/Dockerfile
+          push: false
+          load: true
+          tags: tbi-cli:latest
+
       - name: Load Image
         uses: ./.github/actions/load-docker-image
         id: load
