@@ -4,10 +4,10 @@ import type {MySQLState} from './ContainerState';
 import {GenericContainer, Network, Wait} from 'testcontainers';
 import {MySqlContainer} from '@testcontainers/mysql';
 import logging from '@tryghost/logging';
-import debug from 'debug';
+import baseDebug from '@tryghost/debug';
 import path from 'path';
 
-const log = debug('e2e:EnvironmentManager');
+const debug = baseDebug('e2e:EnvironmentManager');
 
 export interface GhostInstance {
     containerId: string;
@@ -47,7 +47,7 @@ export class EnvironmentManager {
         };
         containerState.saveNetworkState(networkState);
         logging.info('Network created: ', networkState.networkId);
-        log('Network created and state saved:', networkState);
+        debug('Network created and state saved:', networkState);
 
         logging.info('Starting MySQL container...');
         const mysql = await new MySqlContainer('mysql:8.0')
@@ -68,7 +68,7 @@ export class EnvironmentManager {
         containerState.saveMySQLState(mysqlState);
 
         logging.info('MySQL started: ', mysqlState.containerId);
-        log('MySQL container started and state saved:', {
+        debug('MySQL container started and state saved:', {
             containerId: mysqlState.containerId,
             mappedPort: mysqlState.mappedPort,
             database: mysqlState.database
@@ -239,7 +239,7 @@ export class EnvironmentManager {
      * This method is designed to be called once after all tests to clean up shared infrastructure
      */
     public async teardownGlobalEnvironment(): Promise<void> {
-        loging.info('Starting global environment cleanup...');
+        logging.info('Starting global environment cleanup...');
 
         const containerState = new ContainerState();
         const dockerManager = new DockerManager();
@@ -332,7 +332,7 @@ export class EnvironmentManager {
      */
     public async setupGhostInstance(workerId: number, testId: string): Promise<GhostInstance> {
         try {
-            log('Setting up Ghost instance for worker %d, test %s', workerId, testId);
+            debug('Setting up Ghost instance for worker %d, test %s', workerId, testId);
 
             // Load shared infrastructure state
             const networkState = this.containerState.loadNetworkState();
@@ -345,7 +345,7 @@ export class EnvironmentManager {
             const port = ContainerState.generateUniquePort(workerId);
             const siteUuid = ContainerState.generateSiteUuid();
 
-            log('Generated test-specific identifiers:', {database, networkAlias, port});
+            debug('Generated test-specific identifiers:', {database, networkAlias, port});
 
             // Create and restore database
             await this.setupTestDatabase(mysqlState, database, siteUuid);
@@ -380,7 +380,7 @@ export class EnvironmentManager {
                 siteUuid
             };
 
-            log('Ghost instance setup completed:', ghostInstance);
+            debug('Ghost instance setup completed:', ghostInstance);
             return ghostInstance;
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
@@ -393,7 +393,7 @@ export class EnvironmentManager {
      */
     public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
         try {
-            log('Tearing down Ghost instance:', ghostInstance.containerId);
+            debug('Tearing down Ghost instance:', ghostInstance.containerId);
 
             // Stop and remove the Ghost container
             await this.dockerManager.removeContainer(ghostInstance.containerId);
@@ -402,7 +402,7 @@ export class EnvironmentManager {
             const mysqlState = this.containerState.loadMySQLState();
             await this.cleanupTestDatabase(mysqlState, ghostInstance.database);
 
-            log('Ghost instance teardown completed');
+            debug('Ghost instance teardown completed');
         } catch (error) {
             logging.error('Failed to teardown Ghost instance:', error);
             // Don't throw - we want tests to continue even if cleanup fails
@@ -414,7 +414,7 @@ export class EnvironmentManager {
      */
     private async setupTestDatabase(mysqlState: MySQLState, database: string, siteUuid: string): Promise<void> {
         try {
-            log('Setting up test database:', database);
+            debug('Setting up test database:', database);
 
             // Create and restore database from the dump file inside the MySQL container
             await this.dockerManager.restoreDatabaseFromDump(mysqlState, database);
@@ -424,7 +424,7 @@ export class EnvironmentManager {
                 `UPDATE ${database}.settings SET value='${siteUuid}' WHERE \`key\`='site_uuid'`
             );
 
-            log('Test database setup completed:', database, 'with site_uuid:', siteUuid);
+            debug('Test database setup completed:', database, 'with site_uuid:', siteUuid);
         } catch (error) {
             logging.error('Failed to setup test database:', error);
             throw new Error(`Failed to setup test database: ${error}`);
@@ -436,9 +436,9 @@ export class EnvironmentManager {
      */
     private async cleanupTestDatabase(mysqlState: MySQLState, database: string): Promise<void> {
         try {
-            log('Cleaning up test database:', database);
+            debug('Cleaning up test database:', database);
             await this.dockerManager.executeMySQLCommand(mysqlState, `DROP DATABASE IF EXISTS ${database}`);
-            log('Test database cleanup completed:', database);
+            debug('Test database cleanup completed:', database);
         } catch (error) {
             logging.warn('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
