@@ -299,7 +299,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Build and push Docker image
+      - name: Build Tinybird CLI Image
         uses: docker/build-push-action@v6
         id: build
         with:
@@ -307,7 +307,7 @@ jobs:
           file: .docker/tb-cli/Dockerfile
           push: false
           load: true
-          tags: ghost-tbi-cli
+          tags: ghost-tb-cli
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
