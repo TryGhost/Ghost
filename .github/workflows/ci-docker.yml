@@ -307,7 +307,7 @@ jobs:
           file: .docker/tb-cli/Dockerfile
           push: false
           load: true
-          tags: tbi-cli:latest
+          tags: ghost-tbi-cli
 
       - name: Load Image
         uses: ./.github/actions/load-docker-image
