@@ -16,6 +16,7 @@ export class GhostUserSetup {
     }
 
     async setup(userOverrides: Partial<User> = {}): Promise<void> {
+        debug('setup-user called');
         if (await this.isSetupAlreadyCompleted()) {
             debug('Ghost user setup is already completed.');
             return;
@@ -28,6 +29,7 @@ export class GhostUserSetup {
     private async isSetupAlreadyCompleted(): Promise<boolean> {
         const response = await this.makeRequest('GET');
         const data = await response.json();
+        debug('Setup status response:', data);
         return data.setup?.[0]?.status === true;
     }
 

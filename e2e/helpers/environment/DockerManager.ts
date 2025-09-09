@@ -21,13 +21,13 @@ export interface GhostContainerConfig {
     mysqlPassword: string;
     exposedPort: number;
     siteUuid: string;
-    tinybirdConfig: {
+    workingDir?: string;
+    command?: string[];
+    tinybird: {
         workspaceId: string;
         adminToken: string;
         trackerToken: string;
     };
-    workingDir?: string;
-    command?: string[];
 }
 
 export class DockerManager {
@@ -146,9 +146,8 @@ export class DockerManager {
                 tinybird__stats__endpoint: 'http://tinybird-local:7181',
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
-                tinybird__workspaceId: config.tinybirdConfig.workspaceId,
-                tinybird__adminToken: config.tinybirdConfig.adminToken,
-                tinybird__trackerToken: config.tinybirdConfig.trackerToken
+                tinybird__workspaceId: config.tinybird.workspaceId,
+                tinybird__adminToken: config.tinybird.adminToken
             };
 
             const containerConfig = {
@@ -168,6 +167,11 @@ export class DockerManager {
                     PortBindings: {
                         '2368/tcp': [{HostPort: config.exposedPort.toString()}]
                     }
+                },
+                Labels: {
+                    'com.docker.compose.project': 'ghost-e2e',
+                    'com.docker.compose.service': `ghost-${config.siteUuid}`,
+                    'tryghost/e2e': 'ghost'
                 },
                 WorkingDir: config.workingDir || '/home/ghost/ghost/core',
                 Cmd: config.command || ['yarn', 'dev'],

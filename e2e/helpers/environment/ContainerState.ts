@@ -29,12 +29,9 @@ export interface GhostInstanceState {
 }
 
 export interface TinybirdState {
-    containerId: string;
     workspaceId: string;
     adminToken: string;
     trackerToken: string;
-    mappedPort: number;
-    host: string;
 }
 
 export class ContainerState {

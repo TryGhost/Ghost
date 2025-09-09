@@ -2,7 +2,7 @@ import {test as base, TestInfo} from '@playwright/test';
 import {EnvironmentManager, GhostInstance} from '../environment/EnvironmentManager';
 import {LoginPage, AnalyticsOverviewPage} from '../pages/admin';
 import {appConfig, setupUser} from '../utils';
-import baseDebug from 'debug';
+import baseDebug from '@tryghost/debug';
 
 const debug = baseDebug('e2e:ghost-fixture');
 
