@@ -442,11 +442,11 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                        <AlertDialogCancel onClick={handleDiscardAndClose}>
-                            Discard
-                        </AlertDialogCancel>
-                        <AlertDialogAction onClick={handleCancelDiscard}>
+                        <AlertDialogCancel onClick={handleCancelDiscard}>
                             Continue writing
+                        </AlertDialogCancel>
+                        <AlertDialogAction onClick={handleDiscardAndClose}>
+                            Discard
                         </AlertDialogAction>
                     </AlertDialogFooter>
                 </AlertDialogContent>
