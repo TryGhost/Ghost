@@ -28,10 +28,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      IS_MAIN: ${{ github.ref == 'refs/heads/main' }}
       IS_DEVELOPMENT: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/5.x' || github.ref == 'refs/heads/6.x' }}
-      IS_SIX: ${{ github.ref == 'refs/heads/6.x' }}
-      IS_SIX_PR: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.ref == '6.x' }}
     permissions:
       pull-requests: read
     steps:
