@@ -56,6 +56,11 @@ export class EnvironmentManager {
 
     /**
      * Setup shared global environment for tests (i.e. mysql, tinybird)
+     * This should be called once before all tests run.
+     *
+     * 1. Start docker-compose services (including running Ghost migrations on the default database)
+     * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
+     * 3. Fetch Tinybird tokens from the tinybird-local service
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
