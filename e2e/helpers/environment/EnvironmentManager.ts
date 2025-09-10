@@ -4,17 +4,9 @@ import type {Container} from 'dockerode';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import path from 'path';
-// No direct docker compose CLI usage here; handled by DockerCompose helper
 import {randomUUID} from 'crypto';
-import {PassThrough} from 'stream';
 import {DockerCompose} from './DockerCompose';
-
-// Extended Container type with modem access
-interface ContainerWithModem extends Container {
-    modem: {
-        demuxStream(stream: NodeJS.ReadableStream, stdout: NodeJS.WritableStream, stderr: NodeJS.WritableStream): void;
-    };
-}
+import {MySQLManager} from './MySQLManager';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -58,6 +50,7 @@ export class EnvironmentManager {
     private readonly tinybirdStateFile = path.join(this.stateDir, 'tinybird.json');
     private docker: Docker;
     private dockerCompose: DockerCompose;
+    private mysql: MySQLManager;
 
     constructor() {
         this.ensureDataDir();
@@ -67,6 +60,7 @@ export class EnvironmentManager {
             projectName: 'ghost-e2e',
             docker: this.docker
         });
+        this.mysql = new MySQLManager(this.dockerCompose);
     }
 
     /**
@@ -81,7 +75,7 @@ export class EnvironmentManager {
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
         this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
-        await this.createDatabaseSnapshot();
+        await this.mysql.createSnapshot();
         this.fetchTinybirdTokens();
         logging.info('Global environment setup complete');
     }
@@ -107,9 +101,8 @@ export class EnvironmentManager {
         try {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
-            await this.setupTestDatabase(instanceId, siteUuid);
-            const ghostInstance: GhostInstance = await this.startGhostInstance(instanceId, siteUuid);
-            return ghostInstance;
+            await this.mysql.setupTestDatabase(instanceId, siteUuid);
+            return await this.startGhostInstance(instanceId, siteUuid);
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
             throw new Error(`Failed to setup Ghost instance: ${error}`);
@@ -126,7 +119,7 @@ export class EnvironmentManager {
         try {
             debug('Tearing down Ghost instance:', ghostInstance.containerId);
             await this.removeContainer(ghostInstance.containerId);
-            await this.cleanupTestDatabase(ghostInstance.database);
+            await this.mysql.cleanupTestDatabase(ghostInstance.database);
             debug('Ghost instance teardown completed');
         } catch (error) {
             logging.error('Failed to teardown Ghost instance:', error);
@@ -140,56 +133,7 @@ export class EnvironmentManager {
      * ================
      */
 
-    /**
-     * Create and restore a database for a test
-     */
-    private async setupTestDatabase(database: string, siteUuid: string): Promise<void> {
-        try {
-            debug('Setting up test database:', database);
-            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-            await this.execInContainer(
-                mysqlContainer,
-                'mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + database + '\\`;"'
-            );
-            debug('Database created:', database);
-
-            debug('Restoring database from snapshot:', database);
-            await this.execInContainer(
-                mysqlContainer,
-                'mysql -uroot -proot ' + database + ' < /tmp/dump.sql'
-            );
-            debug('Database restored from snapshot:', database);
-
-            debug('Updating site_uuid in database settings:', database, siteUuid);
-            await this.execInContainer(
-                mysqlContainer,
-                'mysql -uroot -proot -e "UPDATE \\`' + database + '\\`.settings SET value=\'' + siteUuid + '\' WHERE \\`key\\`=\'site_uuid\';"'
-            );
-            debug('site_uuid updated in database settings:', siteUuid);
-            debug('Test database setup completed:', database, 'with site_uuid:', siteUuid);
-        } catch (error) {
-            logging.error('Failed to setup test database:', error);
-            throw new Error(`Failed to setup test database: ${error}`);
-        }
-    }
-
-    /**
-     * Clean up a test database
-     */
-    private async cleanupTestDatabase(database: string): Promise<void> {
-        try {
-            debug('Cleaning up test database:', database);
-            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-            await this.execInContainer(
-                mysqlContainer,
-                'mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"'
-            );
-            debug('Test database cleanup completed:', database);
-        } catch (error) {
-            logging.warn('Failed to cleanup test database:', error);
-            // Don't throw - cleanup failures shouldn't break tests
-        }
-    }
+    // MySQL responsibilities are handled by MySQLManager
 
     private async startGhostInstance(instanceId: string, siteUuid: string) {
         const ghostConfig: GhostContainerConfig = {
@@ -387,99 +331,23 @@ export class EnvironmentManager {
     }
 
     /**
-     * ================
-     * Docker Helpers
-     * ================
-     */
-
-    /**
-     * Execute a command in a container and wait for completion
-     * @param container - The Docker container to execute the command in
-     * @param command - The shell command to execute
-     * @returns The command output
-     * @throws Error if the command fails
-     */
-    private async execInContainer(container: Container, command: string): Promise<string> {
-        const exec = await container.exec({
-            Cmd: ['sh', '-c', command],
-            AttachStdout: true,
-            AttachStderr: true,
-            Tty: false
-        });
-
-        const stream = await exec.start({
-            hijack: true,
-            stdin: false
-        });
-
-        // Demultiplex the stream into separate stdout and stderr
-        const stdoutChunks: Buffer[] = [];
-        const stderrChunks: Buffer[] = [];
-
-        const stdoutStream = new PassThrough();
-        const stderrStream = new PassThrough();
-
-        stdoutStream.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
-        stderrStream.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
-
-        // Use Docker modem's demuxStream to separate stdout and stderr
-        (container as ContainerWithModem).modem.demuxStream(stream, stdoutStream, stderrStream);
-
-        // Wait for the stream to end
-        await new Promise<void>((resolve, reject) => {
-            stream.on('end', () => resolve());
-            stream.on('error', reject);
-        });
-
-        // Get the exit code from exec inspection
-        const execInfo = await exec.inspect();
-        const exitCode = execInfo.ExitCode;
-
-        const stdout = Buffer.concat(stdoutChunks).toString('utf8').trim();
-        const stderr = Buffer.concat(stderrChunks).toString('utf8').trim();
-
-        if (exitCode !== 0) {
-            throw new Error(
-                `Command failed with exit code ${exitCode}: ${command}\n` +
-                `STDOUT: ${stdout}\n` +
-                `STDERR: ${stderr}`
-            );
-        }
-
-        return stdout;
-    }
-
-    /**
      * Stop and remove a container
      */
     private async removeContainer(containerId: string): Promise<void> {
         try {
             const container = this.docker.getContainer(containerId);
-
-            // Stop the container (with force if needed)
             try {
                 await container.stop({t: 10}); // 10 second timeout
             } catch (error) {
                 debug('Container already stopped or stop failed, forcing removal:', containerId);
             }
 
-            // Remove the container
             await container.remove({force: true});
             debug('Container removed:', containerId);
         } catch (error) {
             debug('Failed to remove container:', error);
             // Don't throw - container might already be removed
         }
-    }
-
-    private async createDatabaseSnapshot() {
-        logging.info('Creating database snapshot...');
-        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysqldump -uroot -proot --opt --single-transaction ghost_testing > /tmp/dump.sql'
-        );
-        logging.info('Database snapshot created');
     }
 
     private fetchTinybirdTokens() {
