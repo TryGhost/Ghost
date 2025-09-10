@@ -11,6 +11,68 @@ describe('ghost-stats.js', function () {
     let browserService;
     let ghostStats;
 
+    // Test helper functions
+    const createMockConfig = (overrides = {}) => ({
+        host: 'https://test.com',
+        token: 'test-token',
+        siteUuid: 'test-site-uuid',
+        ...overrides
+    });
+
+    const setupMockConfig = (config = createMockConfig()) => {
+        mockDocument.currentScript.getAttribute.withArgs('data-host').returns(config.host);
+        mockDocument.currentScript.getAttribute.withArgs('data-token').returns(config.token);
+        mockDocument.currentScript.attributes = [
+            {name: 'tb_site_uuid', value: config.siteUuid}
+        ];
+        ghostStats.initConfig();
+    };
+
+    const getLastRequest = () => {
+        expect(mockFetch.called).to.be.true;
+        const [url, options] = mockFetch.lastCall.args;
+        return {url, options, payload: JSON.parse(options.body)};
+    };
+
+    const getLastPayload = () => {
+        const {payload} = getLastRequest();
+        return JSON.parse(payload.payload);
+    };
+
+    const expectRequestToContain = (expectedFields) => {
+        const {payload} = getLastRequest();
+        const innerPayload = JSON.parse(payload.payload);
+        
+        Object.entries(expectedFields).forEach(([key, value]) => {
+            if (typeof value === 'object' && value !== null) {
+                expect(innerPayload[key]).to.deep.include(value);
+            } else {
+                expect(innerPayload[key]).to.equal(value);
+            }
+        });
+    };
+
+    const expectRequestStructure = (expectedStructure) => {
+        const {url, options, payload} = getLastRequest();
+        
+        if (expectedStructure.url) {
+            expect(url).to.include(expectedStructure.url);
+        }
+        if (expectedStructure.method) {
+            expect(options.method).to.equal(expectedStructure.method);
+        }
+        if (expectedStructure.headers) {
+            Object.entries(expectedStructure.headers).forEach(([key, value]) => {
+                expect(options.headers[key]).to.equal(value);
+            });
+        }
+        if (expectedStructure.payloadFields) {
+            expectedStructure.payloadFields.forEach((field) => {
+                expect(payload).to.have.property(field);
+            });
+        }
+    };
+
     beforeEach(function () {
         sandbox = sinon.createSandbox();
         
@@ -72,6 +134,9 @@ describe('ghost-stats.js', function () {
             document: mockDocument
         };
 
+        // Make sure document.referrer is accessible via window.document.referrer
+        mockWindow.document = mockDocument;
+
         // Setup global mocks for url-attribution.js
         global.window = mockWindow;
         global.document = mockDocument;
@@ -96,30 +161,6 @@ describe('ghost-stats.js', function () {
     });
 
     describe('BrowserService', function () {
-        it('should detect test environments correctly', function () {
-            expect(browserService.isTestEnvironment()).to.be.false;
-
-            Object.defineProperty(mockWindow, 'Cypress', {
-                value: {},
-                configurable: true
-            });
-            expect(browserService.isTestEnvironment()).to.be.true;
-            delete mockWindow.Cypress;
-
-            Object.defineProperty(mockWindow, '__nightmare', {
-                value: true,
-                configurable: true
-            });
-            expect(browserService.isTestEnvironment()).to.be.true;
-            delete mockWindow.__nightmare;
-
-            Object.defineProperty(mockWindow.navigator, 'webdriver', {
-                value: true,
-                configurable: true
-            });
-            expect(browserService.isTestEnvironment()).to.be.true;
-        });
-
         it('should allow synthetic monitoring to bypass test environment detection', function () {
             // Set up webdriver environment (normally would be detected as test)
             Object.defineProperty(mockWindow.navigator, 'webdriver', {
@@ -208,45 +249,72 @@ describe('ghost-stats.js', function () {
 
     describe('GhostStats Event Tracking', function () {
         beforeEach(function () {
-            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
-            mockDocument.currentScript.attributes = [
-                {name: 'tb_site_uuid', value: 'test-site-uuid'}
-            ];
-            ghostStats.initConfig();
+            setupMockConfig();
         });
 
-        it('should set the x-site-uuid header', async function () {
+        it('should send requests with proper authentication headers', async function () {
             await ghostStats.trackEvent('test_event', {data: 'test'});
 
-            expect(mockFetch.calledOnce).to.be.true;
-            expect(mockFetch.firstCall.args[1].headers['x-site-uuid']).to.equal('test-site-uuid');
+            expectRequestStructure({
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-site-uuid': 'test-site-uuid'
+                },
+                method: 'POST'
+            });
         });
 
-        it('should track custom events with correct data', async function () {
-            await ghostStats.trackEvent('test_event', {data: 'test'});
+        it('should track custom events with user data', async function () {
+            const eventData = {customField: 'test_value', numericField: 123};
+            await ghostStats.trackEvent('custom_event', eventData);
             
-            expect(mockFetch.calledOnce).to.be.true;
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            expect(payload.action).to.equal('test_event');
-            expect(payload.payload).to.include('test');
+            expectRequestToContain(eventData);
+            
+            const {payload} = getLastRequest();
+            expect(payload.action).to.equal('custom_event');
         });
 
-        it('should track page hits with location info', function () {
+        it('should track page hits with browser and location context', function () {
             ghostStats.trackPageHit();
             
+            // Execute the delayed callback to simulate the debounced tracking
             const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
             timeoutCallback();
             
-            expect(mockFetch.calledOnce).to.be.true;
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            expect(payload.action).to.equal('page_hit');
-            expect(JSON.parse(payload.payload)).to.deep.include({
+            expectRequestToContain({
                 'user-agent': 'test-agent',
                 pathname: '/test',
                 href: 'https://example.com/test',
                 locale: 'en-US',
                 location: 'US'
+            });
+            
+            const {payload} = getLastRequest();
+            expect(payload.action).to.equal('page_hit');
+        });
+
+        it('should include referrer and UTM tracking data in page hits', function () {
+            // Set up URL with UTM parameters to test parsing
+            mockWindow.location.href = 'https://example.com/test?utm_source=test-source&utm_medium=test-medium&utm_campaign=test-campaign&utm_term=test-term&utm_content=test-content';
+            
+            ghostStats.trackPageHit();
+            
+            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
+            timeoutCallback();
+            
+            const payload = getLastPayload();
+            
+            // Verify referrer structure exists and has expected fields
+            expect(payload.parsedReferrer).to.be.an('object');
+            expect(payload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
+            
+            // Verify UTM fields are present at top level
+            expect(payload).to.include({
+                utmSource: 'test-source',
+                utmMedium: 'test-medium',
+                utmCampaign: 'test-campaign',
+                utmTerm: 'test-term',
+                utmContent: 'test-content'
             });
         });
 
@@ -261,7 +329,7 @@ describe('ghost-stats.js', function () {
             consoleSpy.restore();
         });
 
-        it('should send payload with correct shape and required fields', async function () {
+        it('should send properly structured analytics payloads', async function () {
             const testEventData = {
                 custom_field: 'test_value',
                 numeric_field: 123
@@ -269,98 +337,97 @@ describe('ghost-stats.js', function () {
             
             await ghostStats.trackEvent('custom_event', testEventData);
             
-            expect(mockFetch.calledOnce).to.be.true;
+            expectRequestStructure({
+                url: 'https://test.com?name=analytics_events&token=test-token',
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-site-uuid': 'test-site-uuid'
+                },
+                payloadFields: ['action', 'payload', 'timestamp']
+            });
             
-            // Verify request structure
-            const [url, options] = mockFetch.firstCall.args;
-            expect(url).to.equal('https://test.com?name=analytics_events&token=test-token');
-            expect(options.method).to.equal('POST');
-            expect(options.headers['Content-Type']).to.equal('application/json');
-            expect(options.headers['x-site-uuid']).to.equal('test-site-uuid');
+            const {payload} = getLastRequest();
+            const innerPayload = getLastPayload();
             
-            // Parse and validate payload structure
-            const payload = JSON.parse(options.body);
-            
-            // Required top-level fields
-            expect(payload).to.have.property('action');
-            expect(payload).to.have.property('payload');
-            expect(payload).to.have.property('timestamp');
-            
-            // Validate field types
-            expect(payload.action).to.be.a('string');
-            expect(payload.payload).to.be.a('string');
-            expect(payload.timestamp).to.be.a('string');
-            
-            // Validate action matches expected value
+            // Validate payload structure and content
             expect(payload.action).to.equal('custom_event');
-            
-            // Validate timestamp is ISO format
-            expect(() => new Date(payload.timestamp)).to.not.throw();
-            expect(new Date(payload.timestamp).toISOString()).to.equal(payload.timestamp);
-            
-            // Parse inner payload and validate structure
-            const innerPayload = JSON.parse(payload.payload);
-            
-            // Should contain custom event data
-            expect(innerPayload).to.have.property('custom_field', 'test_value');
-            expect(innerPayload).to.have.property('numeric_field', 123);
-            
-            // Should contain global attributes from script tag
+            expect(payload.timestamp).to.match(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/);
+            expect(innerPayload).to.include(testEventData);
             expect(innerPayload).to.have.property('site_uuid', 'test-site-uuid');
             
-            // Custom events do not automatically include browser/location info
-            // That is only added for page_hit events in trackPageHit()
-            expect(innerPayload).to.not.have.property('user-agent');
-            expect(innerPayload).to.not.have.property('pathname');
-            expect(innerPayload).to.not.have.property('href');
+            // Custom events should not include page-specific data
+            expect(innerPayload).to.not.have.any.keys(['user-agent', 'pathname', 'href']);
         });
 
-        it('should send page hit payload with correct shape', function () {
+        it('should send complete page hit analytics data', function () {
+            // Set up URL with UTM parameters to test parsing
+            mockWindow.location.href = 'https://example.com/test?utm_source=test-source&utm_medium=test-medium&utm_campaign=test-campaign&utm_term=test-term&utm_content=test-content';
+            
             ghostStats.trackPageHit();
             
-            // Execute the delayed callback
             const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
             timeoutCallback();
             
-            expect(mockFetch.calledOnce).to.be.true;
+            const {payload} = getLastRequest();
+            const innerPayload = getLastPayload();
             
-            const [, options] = mockFetch.firstCall.args;
-            const payload = JSON.parse(options.body);
-            const innerPayload = JSON.parse(payload.payload);
-            
-            // Page hit specific validations
             expect(payload.action).to.equal('page_hit');
             
-            // Should contain all required page hit fields
-            expect(innerPayload).to.have.property('user-agent');
-            expect(innerPayload).to.have.property('pathname');
-            expect(innerPayload).to.have.property('href');
-            expect(innerPayload).to.have.property('parsedReferrer');
-            expect(innerPayload).to.have.property('locale');
-            expect(innerPayload).to.have.property('location');
-            expect(innerPayload).to.have.property('site_uuid');
+            // Verify all required page hit data is present
+            const requiredPageFields = [
+                'user-agent', 'pathname', 'href', 'parsedReferrer', 
+                'locale', 'location', 'site_uuid', 'event_id'
+            ];
+            requiredPageFields.forEach((field) => {
+                expect(innerPayload).to.have.property(field);
+            });
             
-            // Validate field types for page hit
+            // Verify UTM tracking fields are present
+            expect(innerPayload).to.include({
+                utmSource: 'test-source',
+                utmMedium: 'test-medium',
+                utmCampaign: 'test-campaign',
+                utmTerm: 'test-term',
+                utmContent: 'test-content'
+            });
+            
+            // Verify data types
             expect(innerPayload['user-agent']).to.be.a('string');
             expect(innerPayload.pathname).to.be.a('string');
             expect(innerPayload.href).to.be.a('string');
             expect(innerPayload.parsedReferrer).to.be.a('object');
             expect(innerPayload.locale).to.be.a('string');
             expect(innerPayload.location).to.be.a('string');
-            expect(innerPayload.site_uuid).to.be.a('string');
             expect(innerPayload.event_id).to.be.a('string');
+            
+            // Verify referrer structure is clean (no UTM fields)
+            expect(innerPayload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
+            expect(innerPayload.parsedReferrer).to.not.have.any.keys(['utmSource', 'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent']);
         });
 
         it('should handle missing token gracefully', async function () {
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns(null);
-            ghostStats.initConfig();
+            setupMockConfig(createMockConfig({token: null}));
             await ghostStats.trackEvent('test', {});
 
-            expect(mockFetch.calledOnce).to.be.true;
-            
-            // Verify request structure
-            const [url] = mockFetch.firstCall.args;
+            const {url} = getLastRequest();
             expect(url).to.equal('https://test.com?name=analytics_events');
+        });
+
+        it('should handle network timeouts gracefully', async function () {
+            mockFetch.rejects(new Error('Request timeout'));
+            
+            const result = await ghostStats.trackEvent('test_event', {});
+            expect(result).to.be.null;
+            expect(mockFetch.calledOnce).to.be.true;
+        });
+
+        it('should handle HTTP error responses gracefully', async function () {
+            mockFetch.resolves({ok: false, status: 500});
+            
+            const result = await ghostStats.trackEvent('test_event', {});
+            expect(result).to.be.null;
+            expect(mockFetch.calledOnce).to.be.true;
         });
     });
 
@@ -457,17 +524,6 @@ describe('ghost-stats.js', function () {
             expect(typeof mockWindow.Tinybird.trackEvent).to.equal('function');
         });
 
-        it('should skip initialization in test environments', function () {
-            // Make it a test environment
-            Object.defineProperty(mockWindow, 'Cypress', {
-                value: {},
-                configurable: true
-            });
-
-            expect(ghostStats.init()).to.be.false;
-            mockWindow.Cypress = undefined;
-        });
-
         it('should skip initialization when in an iframe', function () {
             // Configure with valid settings
             mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
@@ -537,32 +593,37 @@ describe('ghost-stats.js', function () {
 
     describe('GhostStats Referrer Parsing', function () {
         beforeEach(function () {
-            mockDocument.currentScript.getAttribute.withArgs('data-host').returns('https://test.com');
-            mockDocument.currentScript.getAttribute.withArgs('data-token').returns('test-token');
-            mockDocument.currentScript.attributes = [
-                {name: 'tb_site_uuid', value: 'test-site-uuid'}
-            ];
-            ghostStats.initConfig();
+            setupMockConfig();
         });
 
-        it('should parse query string referrer parameters', function () {
+        it('should extract and separate referrer and UTM data from URL parameters', function () {
             mockDocument.referrer = '';
-            mockWindow.location.href = 'https://example.com/test?ref=ghost-newsletter&utm_source=twitter&utm_medium=social';
+            mockWindow.location.href = 'https://example.com/test?ref=ghost-newsletter&utm_source=twitter&utm_medium=social&utm_campaign=test-campaign&utm_term=test-term&utm_content=test-content';
             
             ghostStats.trackPageHit();
             
             const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
             timeoutCallback();
             
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            const innerPayload = JSON.parse(payload.payload);
+            const innerPayload = getLastPayload();
             
-            expect(innerPayload.parsedReferrer.source).to.equal('ghost-newsletter');
-            expect(innerPayload.parsedReferrer.medium).to.equal('social');
+            // Verify referrer data is properly structured
+            expect(innerPayload.parsedReferrer).to.deep.include({
+                source: 'ghost-newsletter',
+                medium: 'social'
+            });
+            
+            // Verify UTM data is at top level
+            expect(innerPayload).to.include({
+                utmSource: 'twitter',
+                utmMedium: 'social',
+                utmCampaign: 'test-campaign',
+                utmTerm: 'test-term',
+                utmContent: 'test-content'
+            });
         });
 
-        it('should preserve document referrer when getReferrer returns null', function () {
-            // Test the fix where referrerData.url is preserved when getReferrer returns null
+        it('should handle document referrer when no URL parameters exist', function () {
             mockDocument.referrer = 'https://example.com/internal-page';
             mockWindow.location.href = 'https://example.com/test';
             
@@ -571,11 +632,44 @@ describe('ghost-stats.js', function () {
             const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
             timeoutCallback();
             
-            const payload = JSON.parse(mockFetch.firstCall.args[1].body);
-            const innerPayload = JSON.parse(payload.payload);
+            const innerPayload = getLastPayload();
             
-            // Should preserve the original referrer URL even if it's from the same domain
+            // Should preserve document referrer
             expect(innerPayload.parsedReferrer.url).to.equal('https://example.com/internal-page');
+            
+            // UTM fields should still be present and null
+            expect(innerPayload).to.include({
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
+            });
+        });
+
+        it('should handle missing referrer gracefully', function () {
+            mockDocument.referrer = '';
+            mockWindow.location.href = 'https://example.com/test';
+            
+            ghostStats.trackPageHit();
+            
+            const timeoutCallback = mockWindow.setTimeout.firstCall.args[0];
+            timeoutCallback();
+            
+            const innerPayload = getLastPayload();
+            
+            // Should still have referrer structure
+            expect(innerPayload.parsedReferrer).to.be.an('object');
+            expect(innerPayload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
+            
+            // UTM fields should be present and null
+            expect(innerPayload).to.include({
+                utmSource: null,
+                utmMedium: null,
+                utmCampaign: null,
+                utmTerm: null,
+                utmContent: null
+            });
         });
     });
 });

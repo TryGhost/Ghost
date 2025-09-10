@@ -175,9 +175,18 @@ export class GhostStats {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                parsedReferrer: referrerData,
+                parsedReferrer: {
+                    url: referrerData.url,
+                    source: referrerData.source,
+                    medium: referrerData.medium,
+                },
                 pathname: location?.pathname,
                 href: location?.href,
+                utmSource: referrerData.utmSource,
+                utmMedium: referrerData.utmMedium,
+                utmCampaign: referrerData.utmCampaign,
+                utmTerm: referrerData.utmTerm,
+                utmContent: referrerData.utmContent
             });
         }, 300);
     }
