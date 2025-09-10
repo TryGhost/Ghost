@@ -102,7 +102,7 @@ export const Disabled: Story = {
 
 export const FormattingToolbar: Story = {
     render: () => (
-        <div className="flex items-center gap-1 border rounded-md p-1 bg-background">
+        <div className="flex items-center gap-1 rounded-md border bg-background p-1">
             <Toggle aria-label="Toggle bold">
                 <Bold />
             </Toggle>

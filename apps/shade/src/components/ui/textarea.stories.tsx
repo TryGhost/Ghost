@@ -69,7 +69,7 @@ export const Disabled: Story = {
 export const CustomHeight: Story = {
     args: {
         placeholder: 'This textarea has custom height...',
-        style: { minHeight: '150px' }
+        style: {minHeight: '150px'}
     },
     parameters: {
         docs: {
