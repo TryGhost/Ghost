@@ -362,7 +362,7 @@ export class EnvironmentManager {
             // handle race condition where directory might be created between existssync and mkdirsync
             if (!fs.existsSync(this.stateDir)) {
                 logging.error('failed to ensure state directory exists:', error);
-                throw new error(`failed to ensure state directory exists: ${error}`);
+                throw new Error(`failed to ensure state directory exists: ${error}`);
             }
         }
     }
