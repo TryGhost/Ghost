@@ -162,6 +162,18 @@ describe('Signin', () => {
             });
         });
 
+        test('shows non-OTC MagicLink description with submitted email', async () => {
+            const {popupIframeDocument, emailInput, submitButton} = await setup({
+                site: FixtureSite.singleTier.basic
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(submitButton);
+
+            const desc = await within(popupIframeDocument).findByText(/A sign in link has been sent to jamie@example.com/i);
+            expect(desc).toBeInTheDocument();
+        });
+
         test('with OTC enabled', async () => {
             const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.basic,
@@ -541,6 +553,17 @@ describe('OTC Integration Flow', () => {
         expect(otcInput).toBeInTheDocument();
     });
 
+    test('MagicLink description shows submitted email on OTC flow', async () => {
+        const {popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+
+        const descWithEmail = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(descWithEmail).toBeInTheDocument();
+    });
+    
     test('OTC verification with invalid code shows error', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
