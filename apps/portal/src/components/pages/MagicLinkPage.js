@@ -1,10 +1,13 @@
 import React from 'react';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
+import {
+    InputOTC,
+    InputOTCGroup,
+    InputOTCSlot
+} from '../common/InputOTC';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
-
-import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
     .gh-portal-icon-envelope {
@@ -138,10 +141,10 @@ export default class MagicLinkPage extends React.Component {
         );
     }
 
-    handleInputChange(e, field) {
+    handleInputChange(value, field) {
         const fieldName = field.name;
         this.setState({
-            [fieldName]: e.target.value
+            [fieldName]: value
         });
     }
 
@@ -153,26 +156,36 @@ export default class MagicLinkPage extends React.Component {
             return null;
         }
 
-        // @TODO: action implementation TBD
         const isRunning = (action === 'verifyOTC:running');
-        const isError = (action === 'verifyOTC:failed');
+        const hasFailedVerification = (action === 'verifyOTC:failed');
+        const hasError = !!(errors.otc || hasFailedVerification);
+        const errorMessage = (errors.otc || (hasFailedVerification ? t('Invalid code. Try again.') : ''));
 
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 <section className='gh-portal-section'>
-                    {/* @TODO: create different input component with updated design */}
-                    <InputField
-                        id={`input-${OTC_FIELD_NAME}`}
-                        name={OTC_FIELD_NAME}
-                        type="text"
-                        value={this.state.otc}
-                        placeholder="• • • • • •"
-                        label={t('Code')}
-                        errorMessage={errors.otc || ''}
-                        autoFocus={false}
-                        maxlength={6}
-                        onChange={e => this.handleInputChange(e, {name: OTC_FIELD_NAME})}
-                    />
+                    <div className='gh-portal-inputotc-outer'>
+                        <div className='gh-portal-inputotc-wrap'>
+                            <p className='gh-portal-inputotc-error gh-portal-error' data-visible={hasError}>
+                                {errorMessage}
+                            </p>
+                            <InputOTC 
+                                id={`input-${OTC_FIELD_NAME}`}
+                                name={OTC_FIELD_NAME} 
+                                maxLength={6}  
+                                value={this.state.otc}
+                                label={t('Code')}
+                                hasError={hasError}
+                                onChange={value => this.handleInputChange(value, {name: OTC_FIELD_NAME})}
+                            >
+                                <InputOTCGroup>
+                                    {Array.from({length: 6}, (_, i) => (
+                                        <InputOTCSlot key={i} index={i} />
+                                    ))}
+                                </InputOTCGroup>
+                            </InputOTC>
+                        </div>
+                    </div>
                 </section>
                 <footer className='gh-portal-signin-footer'>
                     <ActionButton
@@ -181,7 +194,7 @@ export default class MagicLinkPage extends React.Component {
                         brandColor={this.context.brandColor}
                         label={isRunning ? t('Verifying...') : t('Continue')}
                         isRunning={isRunning}
-                        retry={isError}
+                        retry={hasFailedVerification}
                         disabled={isRunning}
                     />
                 </footer>
