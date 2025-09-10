@@ -3,6 +3,7 @@ import path from 'path';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
+import {STATE_DIR, TB} from './constants';
 
 const debug = baseDebug('e2e:TinybirdManager');
 
@@ -16,8 +17,7 @@ export interface TinybirdState {
  * Handles Tinybird token fetching and local state persistence for e2e runs.
  */
 export class TinybirdManager {
-    private readonly stateDir = path.resolve(__dirname, '../../data/state');
-    private readonly tinybirdStateFile = path.join(this.stateDir, 'tinybird.json');
+    private readonly tinybirdStateFile = path.join(STATE_DIR, 'tinybird.json');
     private dockerCompose: DockerCompose;
 
     constructor(dockerCompose: DockerCompose) {
@@ -27,12 +27,12 @@ export class TinybirdManager {
     /** Ensure the state directory exists. */
     private ensureDataDir(): void {
         try {
-            if (!fs.existsSync(this.stateDir)) {
-                fs.mkdirSync(this.stateDir, {recursive: true});
-                debug('created state directory:', this.stateDir);
+            if (!fs.existsSync(STATE_DIR)) {
+                fs.mkdirSync(STATE_DIR, {recursive: true});
+                debug('created state directory:', STATE_DIR);
             }
         } catch (error) {
-            if (!fs.existsSync(this.stateDir)) {
+            if (!fs.existsSync(STATE_DIR)) {
                 logging.error('failed to ensure state directory exists:', error);
                 throw new Error(`failed to ensure state directory exists: ${error}`);
             }
@@ -72,7 +72,7 @@ export class TinybirdManager {
     */
     fetchTokens(): void {
         logging.info('Fetching Tinybird tokens...');
-        const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', '/mnt/shared-config/.env.tinybird');
+        const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', TB.CLI_ENV_PATH);
         const envLines = rawTinybirdEnv.split('\n');
         const envVars: Record<string, string> = {};
         for (const line of envLines) {
@@ -90,4 +90,3 @@ export class TinybirdManager {
         logging.info('Tinybird tokens fetched');
     }
 }
-

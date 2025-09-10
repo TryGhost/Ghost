@@ -8,6 +8,7 @@ import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
 import {TinybirdManager} from './TinybirdManager';
 import {GhostManager} from './GhostManager';
+import {COMPOSE_FILE_PATH, COMPOSE_PROJECT, STATE_DIR} from './constants';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -35,7 +36,6 @@ export interface GhostInstance {
  * ````
  */
 export class EnvironmentManager {
-    private readonly stateDir = path.resolve(__dirname, '../../data/state');
     private docker: Docker;
     private dockerCompose: DockerCompose;
     private mysql: MySQLManager;
@@ -45,8 +45,8 @@ export class EnvironmentManager {
     constructor() {
         this.docker = new Docker();
         this.dockerCompose = new DockerCompose({
-            composeFilePath: path.resolve(__dirname, '../../compose.e2e.yml'),
-            projectName: 'ghost-e2e',
+            composeFilePath: COMPOSE_FILE_PATH,
+            projectName: COMPOSE_PROJECT,
             docker: this.docker
         });
         this.mysql = new MySQLManager(this.dockerCompose);
@@ -114,11 +114,11 @@ export class EnvironmentManager {
 
     private cleanupStateFiles(): void {
         try {
-            if (fs.existsSync(this.stateDir)) {
+            if (fs.existsSync(STATE_DIR)) {
                 // Delete all files in the directory, but keep the directory itself
-                const files = fs.readdirSync(this.stateDir);
+                const files = fs.readdirSync(STATE_DIR);
                 for (const file of files) {
-                    const filePath = path.join(this.stateDir, file);
+                    const filePath = path.join(STATE_DIR, file);
                     const stat = fs.statSync(filePath);
                     if (stat.isDirectory()) {
                         fs.rmSync(filePath, {recursive: true, force: true});

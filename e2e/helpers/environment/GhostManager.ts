@@ -5,6 +5,7 @@ import logging from '@tryghost/logging';
 import {DockerCompose} from './DockerCompose';
 import {TinybirdManager} from './TinybirdManager';
 import type {GhostInstance} from './EnvironmentManager';
+import {COMPOSE_PROJECT, DEFAULT_GHOST_IMAGE, DEFAULT_WORKDIR, GHOST_PORT, MYSQL, TB} from './constants';
 
 const debug = baseDebug('e2e:GhostManager');
 
@@ -49,17 +50,17 @@ export class GhostManager {
             const tinybirdState = this.tinybird.loadState();
             const environment = {
                 server__host: '0.0.0.0',
-                server__port: '2368',
+                server__port: String(GHOST_PORT),
                 database__client: 'mysql2',
-                database__connection__host: 'mysql',
-                database__connection__port: '3306',
-                database__connection__user: 'root',
-                database__connection__password: 'root',
+                database__connection__host: MYSQL.HOST,
+                database__connection__port: String(MYSQL.PORT),
+                database__connection__user: MYSQL.USER,
+                database__connection__password: MYSQL.PASSWORD,
                 database__connection__database: config.instanceId,
                 NODE_ENV: 'development',
-                TB_HOST: 'http://tinybird-local:7181',
-                TB_LOCAL_HOST: 'tinybird-local',
-                tinybird__stats__endpoint: 'http://tinybird-local:7181',
+                TB_HOST: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
+                TB_LOCAL_HOST: TB.LOCAL_HOST,
+                tinybird__stats__endpoint: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
                 tinybird__workspaceId: tinybirdState.workspaceId,
@@ -67,7 +68,7 @@ export class GhostManager {
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
-                Image: process.env.GHOST_IMAGE_TAG || 'ghost-monorepo',
+                Image: DEFAULT_GHOST_IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
                 NetworkingConfig: {
                     EndpointsConfig: {
@@ -77,19 +78,19 @@ export class GhostManager {
                     }
                 },
                 ExposedPorts: {
-                    '2368/tcp': {}
+                    [`${GHOST_PORT}/tcp`]: {}
                 },
                 HostConfig: {
                     PortBindings: {
-                        '2368/tcp': [{HostPort: '0'}]
+                        [`${GHOST_PORT}/tcp`]: [{HostPort: '0'}]
                     }
                 },
                 Labels: {
-                    'com.docker.compose.project': 'ghost-e2e',
+                    'com.docker.compose.project': COMPOSE_PROJECT,
                     'com.docker.compose.service': `ghost-${config.siteUuid}`,
                     'tryghost/e2e': 'ghost'
                 },
-                WorkingDir: config.workingDir || '/home/ghost/ghost/core',
+                WorkingDir: config.workingDir || DEFAULT_WORKDIR,
                 Cmd: config.command || ['yarn', 'dev'],
                 AttachStdout: true,
                 AttachStderr: true
