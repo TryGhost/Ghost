@@ -75,48 +75,9 @@ export class EnvironmentManager {
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        try {
-            logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} up -d`, {stdio: 'inherit'});
-            // Wait for ghost migrations and tb migrations to complete
-            // NOTE: `docker compose up -d --wait` will fail if one-shot services are included
-            execSync(`docker compose -f ${this.composeFilePath} wait ghost-migrations tb-cli`);
-        } catch (error) {
-            logging.error('Failed to start docker compose services:', error);
-            throw error;
-        }
-        logging.info('Docker compose services are up');
-
-        logging.info('Creating database snapshot...');
-        const mysqlContainer = await this.getContainerForService('mysql');
-        await this.execInContainer(
-            mysqlContainer,
-            'mysqldump -uroot -proot --opt --single-transaction ghost_testing > /tmp/dump.sql'
-        );
-        logging.info('Database snapshot created');
-
-        logging.info('Fetching Tinybird tokens...');
-        // The tb-cli entrypoint grabs these values and stores them in /mnt/shared-config/.env.tinybird
-        // We can read that file to get the tokens
-        const rawTinybirdEnv = execSync(
-            `docker compose -f ${this.composeFilePath} run --rm -T --entrypoint sh tb-cli -c "cat /mnt/shared-config/.env.tinybird"`,
-            {encoding: 'utf-8'}
-        ).toString();
-        const envLines = rawTinybirdEnv.split('\n');
-        const envVars: Record<string, string> = {};
-        for (const line of envLines) {
-            const [key, value] = line.split('=');
-            if (key && value) {
-                envVars[key.trim()] = value.trim();
-            }
-        }
-        const tinybirdState = {
-            workspaceId: envVars.TINYBIRD_WORKSPACE_ID,
-            adminToken: envVars.TINYBIRD_ADMIN_TOKEN,
-            trackerToken: envVars.TINYBIRD_TRACKER_TOKEN
-        };
-        this.saveTinybirdState(tinybirdState);
-        logging.info('Tinybird tokens fetched');
+        this.startDockerComposeServices();
+        await this.createDatabaseSnapshot();
+        this.fetchTinybirdTokens();
         logging.info('Global environment setup complete');
     }
 
@@ -124,18 +85,12 @@ export class EnvironmentManager {
      * Teardown global environment
      */
     public async globalTeardown(): Promise<void> {
-        if (process.env.PRESERVE_ENV === 'true') {
+        if (this.shouldPreserveEnvironment()) {
             logging.info('PRESERVE_ENV is set to true - skipping global environment teardown');
             return;
         }
-
         logging.info('Starting global environment teardown...');
-        try {
-            execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
-        } catch (error) {
-            logging.error('Failed to stop docker compose services:', error);
-            throw error;
-        }
+        this.stopDockerComposeServices();
         this.cleanupStateFiles();
         logging.info('Global environment teardown complete');
     }
@@ -147,28 +102,8 @@ export class EnvironmentManager {
         try {
             const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
-
             await this.setupTestDatabase(instanceId, siteUuid);
-
-            const ghostConfig: GhostContainerConfig = {
-                instanceId,
-                database: instanceId,
-                siteUuid: siteUuid
-            };
-            const container = await this.createGhostContainer(ghostConfig);
-            const containerInfo = await container.inspect();
-            const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
-            await this.waitForGhostReady(hostPort, 30000); // 30 second timeout
-
-            const ghostInstance: GhostInstance = {
-                containerId: container.id,
-                instanceId,
-                database: instanceId,
-                port: hostPort,
-                baseUrl: `http://localhost:${hostPort}`,
-                siteUuid: siteUuid
-            };
-            debug('Ghost instance setup completed:', ghostInstance);
+            const ghostInstance: GhostInstance = await this.startGhostInstance(instanceId, siteUuid);
             return ghostInstance;
         } catch (error) {
             logging.error('Failed to setup Ghost instance:', error);
@@ -180,7 +115,7 @@ export class EnvironmentManager {
      * Teardown a Ghost instance
      */
     public async teardownGhostInstance(ghostInstance: GhostInstance): Promise<void> {
-        if (process.env.PRESERVE_ENV === 'true') {
+        if (this.shouldPreserveEnvironment()) {
             return;
         }
         try {
@@ -249,6 +184,28 @@ export class EnvironmentManager {
             logging.warn('Failed to cleanup test database:', error);
             // Don't throw - cleanup failures shouldn't break tests
         }
+    }
+
+    private async startGhostInstance(instanceId: string, siteUuid: string) {
+        const ghostConfig: GhostContainerConfig = {
+            instanceId,
+            database: instanceId,
+            siteUuid: siteUuid
+        };
+        const container = await this.createGhostContainer(ghostConfig);
+        const containerInfo = await container.inspect();
+        const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
+        await this.waitForGhostReady(hostPort, 30000); // 30 second timeout
+
+        const ghostInstance: GhostInstance = {
+            containerId: container.id,
+            instanceId,
+            database: instanceId,
+            port: hostPort,
+            baseUrl: `http://localhost:${hostPort}`,
+            siteUuid: siteUuid
+        };
+        return ghostInstance;
     }
 
     /**
@@ -554,6 +511,68 @@ export class EnvironmentManager {
             debug('Failed to remove container:', error);
             // Don't throw - container might already be removed
         }
+    }
+
+    private startDockerComposeServices() {
+        try {
+            logging.info('Starting docker compose services...');
+            execSync(`docker compose -f ${this.composeFilePath} up -d`, {stdio: 'inherit'});
+            // Wait for ghost migrations and tb migrations to complete
+            // NOTE: `docker compose up -d --wait` will fail if one-shot services are included
+            execSync(`docker compose -f ${this.composeFilePath} wait ghost-migrations tb-cli`);
+        } catch (error) {
+            logging.error('Failed to start docker compose services:', error);
+            throw error;
+        }
+        logging.info('Docker compose services are up');
+    }
+
+    private async createDatabaseSnapshot() {
+        logging.info('Creating database snapshot...');
+        const mysqlContainer = await this.getContainerForService('mysql');
+        await this.execInContainer(
+            mysqlContainer,
+            'mysqldump -uroot -proot --opt --single-transaction ghost_testing > /tmp/dump.sql'
+        );
+        logging.info('Database snapshot created');
+    }
+
+    private fetchTinybirdTokens() {
+        logging.info('Fetching Tinybird tokens...');
+        // The tb-cli entrypoint grabs these values and stores them in /mnt/shared-config/.env.tinybird
+        // We can read that file to get the tokens
+        const rawTinybirdEnv = execSync(
+            `docker compose -f ${this.composeFilePath} run --rm -T --entrypoint sh tb-cli -c "cat /mnt/shared-config/.env.tinybird"`,
+            {encoding: 'utf-8'}
+        ).toString();
+        const envLines = rawTinybirdEnv.split('\n');
+        const envVars: Record<string, string> = {};
+        for (const line of envLines) {
+            const [key, value] = line.split('=');
+            if (key && value) {
+                envVars[key.trim()] = value.trim();
+            }
+        }
+        const tinybirdState = {
+            workspaceId: envVars.TINYBIRD_WORKSPACE_ID,
+            adminToken: envVars.TINYBIRD_ADMIN_TOKEN,
+            trackerToken: envVars.TINYBIRD_TRACKER_TOKEN
+        };
+        this.saveTinybirdState(tinybirdState);
+        logging.info('Tinybird tokens fetched');
+    }
+
+    private stopDockerComposeServices() {
+        try {
+            execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
+        } catch (error) {
+            logging.error('Failed to stop docker compose services:', error);
+            throw error;
+        }
+    }
+
+    private shouldPreserveEnvironment(): boolean {
+        return process.env.PRESERVE_ENV === 'true';
     }
 }
 
