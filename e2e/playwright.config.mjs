@@ -9,6 +9,7 @@ const config = {
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
     workers: process.env.CI ? 4 : 10,
+    fullyParallel: true,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
         // Base URL will be set dynamically per test via fixture
