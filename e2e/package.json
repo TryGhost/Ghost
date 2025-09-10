@@ -10,7 +10,6 @@
     "build:ts": "tsc --noEmit",
     "prepare": "tsc --noEmit",
     "test": "playwright test --project=main",
-    "test:parallel": "playwright test --project=main --workers=8",
     "test:factory": "playwright test --project=factories",
     "test:types": "tsc --noEmit",
     "lint": "eslint . --ext .ts --cache"
