@@ -1,0 +1,37 @@
+name: "Run Playwright Tests"
+description: "Run Playwright tests"
+
+inputs:
+  ghost_base_url:
+    description: "Base URL for Ghost instance"
+    required: false
+    default: "http://localhost:2368"
+  test_command:
+    description: "Command to execute tests"
+    required: true
+    default: "yarn test:e2e"
+  env_vars:
+    description: "Environment variables to pass (space-separated KEY=value pairs)"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get Playwright version
+      id: playwright-version
+      shell: bash
+      run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> $GITHUB_OUTPUT
+
+    - name: Run tests
+      shell: bash
+      run: |
+        docker run --rm \
+          --ipc=host \
+          --network=host \
+          -v $PWD:/workspace \
+          -w /workspace \
+          -e GHOST_BASE_URL=${{ inputs.ghost_base_url }} \
+          -e CI=true \
+          mcr.microsoft.com/playwright:v${{ steps.playwright-version.outputs.version }} \
+          bash -c "${{ inputs.env_vars }} ${{ inputs.test_command }}"
