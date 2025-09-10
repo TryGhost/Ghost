@@ -118,6 +118,11 @@ export default class GhBillingIframe extends Component {
         // Reload the limit service to ensure all admin pages can enforce limits
         await this.limit.reload();
 
+        // Invalidate React Query cache for config data in admin-x-settings
+        if (window.adminXQueryClient) {
+            window.adminXQueryClient.invalidateQueries(['ConfigResponseType']);
+        }
+
         this.billing.subscription = data.subscription;
         this.billing.checkoutRoute = data?.checkoutRoute ?? '/plans';
 

@@ -122,5 +122,5 @@ export const useLimiter = () => {
             errorIfWouldGoOverLimit: (limitName: string, metadata: Record<string, unknown> = {}): Promise<void> => limiter.errorIfWouldGoOverLimit(limitName, metadata),
             errorIfIsOverLimit: (limitName: string): Promise<void> => limiter.errorIfIsOverLimit(limitName)
         };
-    }, [LimitService, config.hostSettings?.limits, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
+    }, [LimitService, config, contributorUsers, fetchMembers, fetchNewsletters, helpLink, invites, isLoading, users]);
 };
