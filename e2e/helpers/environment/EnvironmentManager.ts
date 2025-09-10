@@ -476,42 +476,53 @@ export class EnvironmentManager {
      * @throws Error if the command fails
      */
     private async execInContainer(container: Container, command: string): Promise<string> {
-        // Wrap command with exit code check
-        const wrappedCommand = `${command}; echo "__EXIT_CODE__=$?"`;
-
         const exec = await container.exec({
-            Cmd: ['sh', '-c', wrappedCommand],
+            Cmd: ['sh', '-c', command],
             AttachStdout: true,
-            AttachStderr: true
+            AttachStderr: true,
+            Tty: false
         });
 
-        const stream = await exec.start({});
-        stream.setEncoding('utf8');
+        const stream = await exec.start({
+            hijack: true,
+            stdin: false
+        });
 
-        // Wait for the command to complete
-        const output = await new Promise<string>((resolve, reject) => {
-            let data = '';
-            stream.on('data', (chunk: string) => data += chunk);
-            stream.on('end', () => resolve(data));
+        // Demultiplex the stream into separate stdout and stderr
+        const stdoutChunks: Buffer[] = [];
+        const stderrChunks: Buffer[] = [];
+
+        const stdoutStream = new (require('stream').PassThrough)();
+        const stderrStream = new (require('stream').PassThrough)();
+
+        stdoutStream.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
+        stderrStream.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
+
+        // Use Docker modem's demuxStream to separate stdout and stderr
+        (container as any).modem.demuxStream(stream, stdoutStream, stderrStream);
+
+        // Wait for the stream to end
+        await new Promise<void>((resolve, reject) => {
+            stream.on('end', () => resolve());
             stream.on('error', reject);
         });
 
-        // Check exit code
-        const exitCodeMatch = output.match(/__EXIT_CODE__=(\d+)/);
-        if (exitCodeMatch) {
-            const exitCode = parseInt(exitCodeMatch[1], 10);
-            if (exitCode !== 0) {
-                // Remove the exit code marker from output for cleaner error message
-                const cleanOutput = output.replace(/__EXIT_CODE__=\d+/, '').trim();
-                throw new Error(`Command failed with exit code ${exitCode}: ${command}\nOutput: ${cleanOutput}`);
-            }
-            // Remove the exit code marker from successful output
-            return output.replace(/__EXIT_CODE__=\d+/, '').trim();
+        // Get the exit code from exec inspection
+        const execInfo = await exec.inspect();
+        const exitCode = execInfo.ExitCode;
+
+        const stdout = Buffer.concat(stdoutChunks).toString('utf8').trim();
+        const stderr = Buffer.concat(stderrChunks).toString('utf8').trim();
+
+        if (exitCode !== 0) {
+            throw new Error(
+                `Command failed with exit code ${exitCode}: ${command}\n` +
+                `STDOUT: ${stdout}\n` +
+                `STDERR: ${stderr}`
+            );
         }
 
-        // If no exit code found, return output as-is but log a warning
-        debug('Warning: No exit code found in command output');
-        return output;
+        return stdout;
     }
 
     /**
