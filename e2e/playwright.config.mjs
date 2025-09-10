@@ -23,7 +23,7 @@ const config = {
         {
             name: 'global-setup',
             testMatch: /global\.setup\.ts/,
-            testDir: './',
+            testDir: './tests',
             teardown: 'global-teardown',
             timeout: 60 * 1000 // 60 seconds for setup
         },
@@ -39,7 +39,7 @@ const config = {
         {
             name: 'global-teardown',
             testMatch: /global\.teardown\.ts/,
-            testDir: './'
+            testDir: './tests'
         }
     ]
 };

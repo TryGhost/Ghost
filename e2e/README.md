@@ -67,6 +67,8 @@ e2e/
 │   │   └── testname.spec.ts    # Test cases
 │   ├── admin/                  # Admin site tests
 │   │   └── testname.spec.ts    # Test cases
+│   ├── global.setup.ts         # Global setup script
+│   ├── global.teardown.ts      # Global teardown script
 │   └── .eslintrc.js            # Test-specific ESLint config
 ├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
 │   ├── playwright/             # Playwright specific helpers
@@ -130,8 +132,8 @@ export class AdminLoginPage {
 
 Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-teardown#option-1-project-dependencies) to define special tests as global setup and teardown tests:
 
-- Global Setup: `global.setup.ts` - runs once before all tests
-- Global Teardown: `global.teardown.ts` - runs once after all tests
+- Global Setup: `tests/global.setup.ts` - runs once before all tests
+- Global Teardown: `tests/global.teardown.ts` - runs once after all tests
 
 ### Playwright Fixtures
 
@@ -142,19 +144,18 @@ For example, a `ghostInstance` fixture creates a new Ghost instance with its own
 
 Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database:
 
-- Global setup (`global.setup.ts`):
+- Global setup (`tests/global.setup.ts`):
     - Starts shared services (MySQL, Tinybird, etc.)
     - Runs Ghost migrations to create a template database
     - Saves a snapshot of the template database using `mysqldump`
-- Before each test (`playwright/fixture.ts`):
+- Before each test (`helpers/playwright/fixture.ts`):
     - Creates a new database by restoring from the template snapshot
     - Starts a new Ghost container connected to the new database
-- After each test (`playwright/fixture.ts`):
+- After each test (`helpers/playwright/fixture.ts`):
     - Stops and removes the Ghost container
     - Drops the test database
-- Global teardown (`global.teardown.ts`):
+- Global teardown (`tests/global.teardown.ts`):
     - Stops and removes shared services
-
 
 ### Best Practices
 
