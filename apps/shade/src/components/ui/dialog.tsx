@@ -3,6 +3,7 @@ import * as DialogPrimitive from '@radix-ui/react-dialog';
 
 import {cn} from '@/lib/utils';
 import {SHADE_APP_NAMESPACES} from '@/ShadeApp';
+import {XIcon} from 'lucide-react';
 
 const Dialog = DialogPrimitive.Root;
 
@@ -29,8 +30,10 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
     React.ElementRef<typeof DialogPrimitive.Content>,
-    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({className, children, ...props}, ref) => (
+    React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+        showCloseButton?: boolean;
+    }
+>(({className, children, showCloseButton = false, ...props}, ref) => (
     <DialogPortal>
         <div className={SHADE_APP_NAMESPACES}>
             <DialogOverlay />
@@ -43,6 +46,15 @@ const DialogContent = React.forwardRef<
                 {...props}
             >
                 {children}
+                {showCloseButton && (
+                    <DialogPrimitive.Close
+                        className="rounded-xs focus:outline-hidden absolute right-5 top-5 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+                        data-slot="dialog-close"
+                    >
+                        <XIcon />
+                        <span className="sr-only">Close</span>
+                    </DialogPrimitive.Close>
+                )}
             </DialogPrimitive.Content>
         </div>
     </DialogPortal>
