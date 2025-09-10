@@ -31,6 +31,7 @@
 - Storybook: add a sibling `*.stories.tsx` file with an overview (what/why) and stories showing different use cases/variants (sizes, states, important props).
 - Implementation: forward `className` and merge with `cn(...)`; use CVA for variants where appropriate.
 - Verification: `yarn lint`, `yarn test`, plus `yarn storybook` to visually validate stories before opening a PR.
+- **Important**: Always run `yarn lint` after making changes to fix any ESLint errors and warnings before committing.
 
 ## Testing Guidelines (TBD)
 We are finalizing a formal testing strategy.
