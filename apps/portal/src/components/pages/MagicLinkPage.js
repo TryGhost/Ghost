@@ -39,18 +39,28 @@ export default class MagicLinkPage extends React.Component {
     }
 
     renderFormHeader() {
-        const {t, otcRef} = this.context;
+        const {t, otcRef, pageData} = this.context;
+        const submittedEmailOrInbox = pageData?.email ? pageData.email : t('your inbox');
 
         let popupTitle = t(`Now check your email!`);
-        let popupDescription = t(`A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`);
+        let popupDescription = t(
+            `A sign in link has been sent to {submittedEmailOrInbox}. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`,
+            {submittedEmailOrInbox}
+        );
 
         if (this.context.lastPage === 'signup') {
             popupTitle = t(`Now check your email!`);
-            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
+            popupDescription = t(
+                `To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn't arrive within 3 minutes, check your spam folder!`,
+                {submittedEmailOrInbox}
+            );
         }
 
         if (this.context.lastPage === 'signin' && otcRef) {
-            popupDescription = t(`An email has been sent to your inbox. Use the link inside or enter the code below.`);
+            popupDescription = t(
+                `An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.`,
+                {submittedEmailOrInbox}
+            );
         }
 
         return (
