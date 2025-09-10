@@ -56,6 +56,7 @@ Refer to “Adding New Components” for the process. Story content should:
 - Include a short overview (what the component does and primary use case).
 - Demonstrate key variants and states (sizes, disabled/loading, critical props).
 - Be minimal but representative; prefer CVA variants/props over ad‑hoc class overrides.
+ - Avoid obvious technical implementation details (e.g., which libraries are used). Prefer one‑line guidance per story explaining when to use that variant/size/state.
 
 ## Notes for Contributors (and Agents)
 - Do not rename ShadCN-generated files purely for casing.
