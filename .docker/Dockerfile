@@ -156,10 +156,19 @@ COPY --from=admin-x-activitypub-builder /home/ghost/apps/admin-x-activitypub/dis
 RUN mkdir -p ghost/core/core/built/admin && cd ghost/admin && yarn build
 
 # --------------------
+# Ghost Assets Builder
+# --------------------
+FROM development-base AS ghost-assets-builder
+WORKDIR /home/ghost
+COPY ghost/core ghost/core
+RUN cd ghost/core && yarn build:assets
+
+# --------------------
 # Development
 # --------------------
 FROM development-base AS development
 COPY . .
+COPY --from=ghost-assets-builder /home/ghost/ghost/core/core/frontend/public ghost/core/core/frontend/public
 COPY --from=shade-builder /home/ghost/apps/shade/es apps/shade/es
 COPY --from=shade-builder /home/ghost/apps/shade/types apps/shade/types
 COPY --from=admin-x-design-system-builder /home/ghost/apps/admin-x-design-system/es apps/admin-x-design-system/es
