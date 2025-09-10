@@ -4,6 +4,7 @@ import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
 import {STATE_DIR, TB} from './constants';
+import {ensureDir} from './utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
 
@@ -24,25 +25,10 @@ export class TinybirdManager {
         this.dockerCompose = dockerCompose;
     }
 
-    /** Ensure the state directory exists. */
-    private ensureDataDir(): void {
-        try {
-            if (!fs.existsSync(STATE_DIR)) {
-                fs.mkdirSync(STATE_DIR, {recursive: true});
-                debug('created state directory:', STATE_DIR);
-            }
-        } catch (error) {
-            if (!fs.existsSync(STATE_DIR)) {
-                logging.error('failed to ensure state directory exists:', error);
-                throw new Error(`failed to ensure state directory exists: ${error}`);
-            }
-        }
-    }
-
     /** Persist Tinybird state to disk. */
     saveState(state: TinybirdState): void {
         try {
-            this.ensureDataDir();
+            ensureDir(STATE_DIR);
             fs.writeFileSync(this.tinybirdStateFile, JSON.stringify(state, null, 2));
             debug('Tinybird state saved:', state);
         } catch (error) {
