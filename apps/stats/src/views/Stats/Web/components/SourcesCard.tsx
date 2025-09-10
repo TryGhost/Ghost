@@ -148,7 +148,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
             </div>
             <CardContent className='overflow-hidden'>
                 {utmTrackingEnabled && (
-                    <div className='mb-4'>
+                    <div className='mb-2'>
                         <SourceTabs
                             selectedCampaign={selectedCampaign}
                             selectedTab={selectedTab}
