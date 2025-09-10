@@ -1144,7 +1144,7 @@ jobs:
         include:
           - package_name: '@tryghost/admin-x-activitypub'
             package_path: 'apps/admin-x-activitypub'
-            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@0/dist/admin-x-activitypub.js'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-x-activitypub@CURRENT_MAJOR/dist/admin-x-activitypub.js'
           - package_name: '@tryghost/portal'
             package_path: 'apps/portal'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
@@ -1188,6 +1188,9 @@ jobs:
           CURRENT_MINOR=$(cat package.json | jq -r .version | awk -F. '{print $1"."$2}')
           echo "current_minor=$CURRENT_MINOR" >> $GITHUB_OUTPUT
 
+          CURRENT_MAJOR=$(cat package.json | jq -r .version | awk -F. '{print $1}')
+          echo "current_major=$CURRENT_MAJOR" >> $GITHUB_OUTPUT
+
           if [ "$CURRENT_VERSION" = "$PUBLISHED_VERSION" ]; then
             echo "Version is unchanged."
             echo "version_changed=false" >> $GITHUB_OUTPUT
@@ -1213,13 +1216,13 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: npm publish --access public
 
-      - name: Replace CURRENT_MINOR in cdn-paths
+      - name: Replace version placeholders in cdn-paths
         id: cdn_paths
         if: steps.version_check.outputs.version_changed == 'true'
         run: |
           cdn_paths="${{ matrix.cdn_paths }}"
           echo "cdn_paths<<EOF" >> $GITHUB_OUTPUT
-          echo "$cdn_paths" | sed 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' >> $GITHUB_OUTPUT
+          echo "$cdn_paths" | sed -e 's/CURRENT_MINOR/${{ steps.version_check.outputs.current_minor }}/g' -e 's/CURRENT_MAJOR/${{ steps.version_check.outputs.current_major }}/g' >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Print cdn_paths
