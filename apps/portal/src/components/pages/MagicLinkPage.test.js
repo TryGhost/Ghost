@@ -106,9 +106,10 @@ describe('MagicLinkPage', () => {
             const otcInput = utils.getByLabelText(OTC_LABEL_REGEX);
 
             expect(otcInput).toHaveAttribute('type', 'text');
-            expect(otcInput).toHaveAttribute('placeholder', '• • • • • •');
             expect(otcInput).toHaveAttribute('name', 'otc');
             expect(otcInput).toHaveAttribute('id', 'input-otc');
+            expect(otcInput).toHaveAttribute('inputmode', 'numeric');
+            expect(otcInput).toHaveAttribute('pattern');
             expect(otcInput).toHaveAccessibleName(OTC_LABEL_REGEX);
         });
 
