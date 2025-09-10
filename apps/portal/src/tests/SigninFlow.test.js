@@ -560,8 +560,8 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
-        expect(description).toBeInTheDocument();
+        const descWithEmail = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(descWithEmail).toBeInTheDocument();
     });
     
     test('OTC verification with invalid code shows error', async () => {
