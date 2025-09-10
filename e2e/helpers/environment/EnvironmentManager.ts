@@ -5,6 +5,7 @@ import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import path from 'path';
 import {execSync} from 'child_process';
+import {randomUUID} from 'crypto';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -136,7 +137,7 @@ export class EnvironmentManager {
      */
     public async setupGhostInstance(): Promise<GhostInstance> {
         try {
-            const siteUuid = crypto.randomUUID();
+            const siteUuid = randomUUID();
             const instanceId = `ghost_${siteUuid}`;
 
             await this.setupTestDatabase(instanceId, siteUuid);
