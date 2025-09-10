@@ -798,89 +798,6 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
-  job_e2e-tests:
-    runs-on: ubuntu-latest
-    needs: [job_setup]
-    if: needs.job_setup.outputs.changed_any_code == 'true'
-    name: E2E tests
-    env:
-      CI: true
-      database__client: mysql2
-      database__connection__host: localhost
-      database__connection__port: 3306
-      database__connection__user: ghost
-      database__connection__password: ghost
-      database__connection__database: ghost_testing
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Configure Docker daemon for mirror.gcr.io
-        run: |
-          echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
-          sudo systemctl restart docker
-          docker logout || echo "No Docker Hub login found"
-
-      - name: Start E2E services
-        run: docker compose -f e2e/compose.e2e.yml up -d --wait
-      - uses: actions/setup-node@v4
-        env:
-          FORCE_COLOR: 0
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Restore caches
-        uses: ./.github/actions/restore-cache
-        env:
-          DEPENDENCY_CACHE_KEY: ${{ needs.job_setup.outputs.dependency_cache_key }}
-
-      - name: Setup Playwright
-        uses: ./.github/actions/setup-playwright
-
-      - name: Install Tinybird CLI
-        run: curl -fsSL https://tinybird.co/install.sh | sh
-
-      - name: Deploy Tinybird Schema
-        working-directory: ghost/core/core/server/data/tinybird
-        run: tb build
-
-      - name: Get Tinybird configuration
-        working-directory: ghost/core/core/server/data/tinybird
-        run: ./scripts/configure-ghost.sh
-
-      - name: Run migrations
-        working-directory: ghost/core
-        run: yarn knex-migrator init
-
-      - name: Build Admin
-        run: yarn nx run ghost-admin:build:dev
-
-      - name: Start Ghost
-        working-directory: ghost/core
-        run: node --import=tsx index.js &
-
-      - name: Wait for Ghost to be ready
-        run: |
-          timeout 120 bash -c 'until curl -f http://localhost:2368; do sleep 1; done'
-
-      - name: Run E2E tests
-        run: yarn test:e2e
-        env:
-          GHOST_BASE_URL: http://localhost:2368
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-playwright-report
-          path: e2e/test-results
-          retention-days: 30
-
-      - name: Stop E2E services
-        if: always()
-        run: docker compose -f e2e/compose.e2e.yml down
-
   job_tinybird-tests:
     name: Tinybird Tests
     runs-on: ubuntu-latest
@@ -1061,7 +978,6 @@ jobs:
         job_admin_x_activitypub,
         job_comments_ui,
         job_signup_form,
-        job_e2e-tests,
         job_tinybird-tests
       ]
     if: always()

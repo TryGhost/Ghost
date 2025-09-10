@@ -2,57 +2,24 @@
 
 This test suite runs automated browser tests against a running Ghost instance to ensure critical user journeys work correctly.
 
-## Prerequisites
-
-- **Node.js**: Version specified in `.nvmrc`
-- **Ghost instance**: Running and accessible (see setup below)
-- **Dependencies**: Installed via `yarn` from repository root
-
 ## Quick Start
 
+### Prerequisites
+- Docker and Docker Compose installed
+- Node.js and Yarn installed
+
+### Running Tests
 From the repository root:
 
 ```bash
 # Install dependencies
 yarn
 
-# Start Ghost in development mode
-yarn dev
+# Build Docker images
+yarn docker:build
 
-# Run the e2e tests (in a separate terminal)
+# Run the e2e tests
 yarn test:e2e
-```
-
-## Running Tests
-
-### Locally - with Development Ghost
-
-1. **Start Ghost in development mode:**
-
-```bash
-# From repository root
-yarn dev
-```
-This starts Ghost on `http://localhost:2368`
-
-2. **Run e2e tests:**
-
-```bash
-# From repository root
-yarn test:e2e
-
-# Or directly from e2e directory
-cd e2e
-yarn test
-```
-
-### Locally - with Custom Ghost Instance
-
-If you have Ghost running on a different URL:
-
-```bash
-# From repository root
-GHOST_BASE_URL=http://localhost:3000 yarn test:e2e
 ```
 
 ### Running Specific Tests
@@ -79,8 +46,6 @@ The test suite is organized into separate directories for different areas/functi
 
 ### **Current Test Suites**
 - `tests/public/` - Public-facing site tests (homepage, posts, etc.)
-
-### **Suggested Additional Test Suites**
 - `tests/admin/` - Ghost admin panel tests (login, content creation, settings)
 
 We can decide on additional sub-folders as we go.
@@ -102,8 +67,12 @@ e2e/
 │   │   └── testname.spec.ts    # Test cases
 │   ├── admin/                  # Admin site tests
 │   │   └── testname.spec.ts    # Test cases
+│   ├── global.setup.ts         # Global setup script
+│   ├── global.teardown.ts      # Global teardown script
 │   └── .eslintrc.js            # Test-specific ESLint config
 ├── helpers/                    # All helpers that support the tests, utilities, fixtures, page objects etc.
+│   ├── playwright/             # Playwright specific helpers
+│   │   └── fixture.ts          # Playwright fixtures
 │   ├── pages/                  # Page Object Models
 │   │   └── HomePage.ts         # Page Object
 │   ├── utils/                  # Utils
@@ -159,6 +128,35 @@ export class AdminLoginPage {
 }
 ```
 
+### Global Setup and Teardown
+
+Tests use [Project Dependencies](https://playwright.dev/docs/test-global-setup-teardown#option-1-project-dependencies) to define special tests as global setup and teardown tests:
+
+- Global Setup: `tests/global.setup.ts` - runs once before all tests
+- Global Teardown: `tests/global.teardown.ts` - runs once after all tests
+
+### Playwright Fixtures
+
+[Playwright Fixtures](https://playwright.dev/docs/test-fixtures) are defined in `helpers/playwright/fixture.ts` and provide reusable test setup/teardown logic.
+For example, a `ghostInstance` fixture creates a new Ghost instance with its own database for each test, to ensure isolation between tests.
+
+### Test Isolation 
+
+Test isolation is extremely important to avoid flaky tests that are hard to debug. For the most part, you shouldn't have to worry about this when writing tests, because each test gets a fresh Ghost instance with its own database:
+
+- Global setup (`tests/global.setup.ts`):
+    - Starts shared services (MySQL, Tinybird, etc.)
+    - Runs Ghost migrations to create a template database
+    - Saves a snapshot of the template database using `mysqldump`
+- Before each test (`helpers/playwright/fixture.ts`):
+    - Creates a new database by restoring from the template snapshot
+    - Starts a new Ghost container connected to the new database
+- After each test (`helpers/playwright/fixture.ts`):
+    - Stops and removes the Ghost container
+    - Drops the test database
+- Global teardown (`tests/global.teardown.ts`):
+    - Stops and removes shared services
+
 ### Best Practices
 
 1. **Use page object patterns** to separate page elements, actions on the pages, complex logic from tests. They should help you make them more readable and UI elements reusable.
@@ -174,22 +172,12 @@ Tests run automatically in GitHub Actions on every PR and commit to `main`.
 ### CI Process
 
 1. **Setup**: Ubuntu runner with Node.js and MySQL
-2. **Ghost Setup**: 
-   - Install dependencies
-   - Setup MySQL database
-   - Run database migrations
-   - Build admin interface
-   - Start Ghost on port 2369
-3. **Test Execution**:
+2. **Docker Build & Push**: Build Ghost image and push to GitHub Container Registry
+3. **Pull Images**: Pull Ghost, MySQL, Tinybird, etc. images
+4. **Test Execution**:
    - Wait for Ghost to be ready
    - Run Playwright tests
    - Upload test artifacts
-
-### Environment Variables in CI
-
-- `NODE_ENV=testing-mysql` (sets Ghost port to 2369)
-- `GHOST_BASE_URL=http://localhost:2369`
-- `CI=true` (enables retries and specific reporters)
 
 ## Available Scripts
 
@@ -212,35 +200,9 @@ yarn dev           # Watch mode for TypeScript compilation
 
 ## Resolving issues
 
-### Ghost Not Starting
-
-If tests fail because Ghost isn't ready:
-
-```bash
-# Check if Ghost is running
-curl http://localhost:2368
-
-# Check Ghost logs
-tail -f ghost/core/content/logs/ghost-dev.log
-```
-
 ### Test Failures
 
 1. **Screenshots**: Playwright captures screenshots on failure
 2. **Traces**: Available in `test-results/` directory
 3. **Debug Mode**: Run with `yarn test --debug` or `yarn test --ui` to see browser
 4. **Verbose Logging**: Check CI logs for detailed error information
-
-### Port Conflicts
-
-If you get port conflicts:
-
-```bash
-# Find what's using the port
-lsof -i :2368
-lsof -i :2369
-
-# Kill conflicting processes
-kill -9 <PID>
-```
-
