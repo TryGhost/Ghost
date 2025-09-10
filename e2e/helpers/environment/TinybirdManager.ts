@@ -4,7 +4,7 @@ import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import {DockerCompose} from './DockerCompose';
 import {STATE_DIR, TB} from './constants';
-import {ensureDir} from './utils';
+import {ensureDir} from '../utils';
 
 const debug = baseDebug('e2e:TinybirdManager');
 
