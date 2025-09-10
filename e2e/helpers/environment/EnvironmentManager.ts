@@ -6,6 +6,14 @@ import baseDebug from '@tryghost/debug';
 import path from 'path';
 import {execSync} from 'child_process';
 import {randomUUID} from 'crypto';
+import {PassThrough} from 'stream';
+
+// Extended Container type with modem access
+interface ContainerWithModem extends Container {
+    modem: {
+        demuxStream(stream: NodeJS.ReadableStream, stdout: NodeJS.WritableStream, stderr: NodeJS.WritableStream): void;
+    };
+}
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -492,14 +500,14 @@ export class EnvironmentManager {
         const stdoutChunks: Buffer[] = [];
         const stderrChunks: Buffer[] = [];
 
-        const stdoutStream = new (require('stream').PassThrough)();
-        const stderrStream = new (require('stream').PassThrough)();
+        const stdoutStream = new PassThrough();
+        const stderrStream = new PassThrough();
 
         stdoutStream.on('data', (chunk: Buffer) => stdoutChunks.push(chunk));
         stderrStream.on('data', (chunk: Buffer) => stderrChunks.push(chunk));
 
         // Use Docker modem's demuxStream to separate stdout and stderr
-        (container as any).modem.demuxStream(stream, stdoutStream, stderrStream);
+        (container as ContainerWithModem).modem.demuxStream(stream, stdoutStream, stderrStream);
 
         // Wait for the stream to end
         await new Promise<void>((resolve, reject) => {
