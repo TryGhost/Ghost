@@ -2,47 +2,66 @@ import APAvatar from '@src/components/global/APAvatar';
 import EditProfile from '@src/views/Preferences/components/EditProfile';
 import Layout from '@src/components/layout';
 import React, {useState} from 'react';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H2, H3, LoadingIndicator, LucideIcon} from '@tryghost/shade';
-import {useAccountForUser, useFollowMutationForUser, useSearchForUser} from '@hooks/use-activity-pub-queries';
-import {useLocation} from '@tryghost/admin-x-framework';
+import {AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+    Button,
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    H2,
+    H3,
+    LoadingIndicator,
+    LucideIcon,
+    buttonVariants} from '@tryghost/shade';
+import {toast} from 'sonner';
+import {useAccountForUser, useDisableBlueskyMutationForUser, useEnableBlueskyMutationForUser} from '@hooks/use-activity-pub-queries';
 
 const BlueskySharing: React.FC = () => {
-    const {state: {blueskyAccount, isEnabled}} = useLocation();
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
-    const [enabled, setEnabled] = useState(isEnabled);
     const [loading, setLoading] = useState(false);
     const [copied, setCopied] = useState(false);
     const [isEditingProfile, setIsEditingProfile] = useState(false);
-    const {updateAccountSearchResult} = useSearchForUser('index', blueskyAccount.handle);
-
-    const handle = account?.handle || '';
-    const convertedHandle = handle.replace(/@([^@]+)@/, '$1.');
+    const [showConfirm, setShowConfirm] = useState(false);
+    const enableBlueskyMutation = useEnableBlueskyMutationForUser('index');
+    const disableBlueskyMutation = useDisableBlueskyMutationForUser('index');
+    const enabled = account?.blueskyEnabled ?? false;
 
     const handleCopy = async () => {
         setCopied(true);
-        await navigator.clipboard.writeText(`@${convertedHandle}.ap.brid.gy`);
+        await navigator.clipboard.writeText(account?.blueskyHandle || '');
         setTimeout(() => setCopied(false), 2000);
     };
 
-    const followMutation = useFollowMutationForUser('index',
-        () => {
-            setEnabled(true);
-            setLoading(false);
-            updateAccountSearchResult(blueskyAccount.id, {followedByMe: true});
-        },
-        () => {
-            setEnabled(false);
-            setLoading(false);
-            updateAccountSearchResult(blueskyAccount.id, {followedByMe: false});
-        }
-    );
-
-    const handleEnable = () => {
+    const handleEnable = async () => {
         if (!account?.avatarUrl) {
             setIsEditingProfile(true);
         } else {
             setLoading(true);
-            followMutation.mutate('@bsky.brid.gy@bsky.brid.gy');
+            try {
+                await enableBlueskyMutation.mutateAsync();
+                toast.success('Bluesky sharing enabled');
+            } finally {
+                setLoading(false);
+            }
+        }
+    };
+
+    const handleDisable = async () => {
+        setLoading(true);
+        try {
+            await disableBlueskyMutation.mutateAsync();
+            setShowConfirm(false);
+            toast.success('Bluesky sharing disabled');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -66,7 +85,11 @@ const BlueskySharing: React.FC = () => {
             <div className='mx-auto max-w-[620px] py-[min(4vh,48px)]'>
                 <div className='flex items-center justify-between gap-8'>
                     <H2>Bluesky sharing</H2>
-                    {enabled && <span className='flex items-center gap-1 font-medium text-green'><LucideIcon.Check size={20} /> Enabled</span>}
+                    {enabled && <Button className='group w-24 translate-y-1 px-2 hover:!bg-red/5 hover:text-red' size='default' variant='outline' onClick={() => setShowConfirm(true)}>
+                        <span className='size-2 rounded-full bg-green group-hover:hidden'></span>
+                        <span className='group-hover:hidden'>Enabled</span>
+                        <span className='hidden group-hover:!visible group-hover:!inline'>Disable</span>
+                    </Button>}
                 </div>
                 {!enabled ?
                     <div className='mt-3 flex flex-col gap-5'>
@@ -98,7 +121,7 @@ const BlueskySharing: React.FC = () => {
                         )}
                     </div> :
                     <>
-                        <p className='mt-3 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky profile shown below. Allow a few minutes for your Bluesky profile to activate before posts appear. This profile automatically displays everything you publish on Ghost.</p>
+                        <p className='mt-2 pr-32 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky profile shown below. Allow a few minutes for your Bluesky profile to activate before posts appear. This profile automatically displays everything you publish on Ghost.</p>
                         <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                             <div className='relative'>
                                 <APAvatar
@@ -120,7 +143,7 @@ const BlueskySharing: React.FC = () => {
                             <div className='flex grow flex-col items-center'>
                                 <H3>{account?.name || ''}</H3>
                                 <div className='flex items-center gap-1 text-gray-800'>
-                                    <span className='text-lg font-medium'>@{convertedHandle}.ap.brid.gy</span>
+                                    <span className='text-lg font-medium'>{account?.blueskyHandle}</span>
                                     <Button className='size-6 p-0 hover:opacity-80' title='Copy handle' variant='link' onClick={handleCopy}>
                                         {!copied ?
                                             <LucideIcon.Copy size={16} /> :
@@ -130,7 +153,7 @@ const BlueskySharing: React.FC = () => {
                                 </div>
                             </div>
                             <Button className='mt-2 w-full' size='lg' variant='secondary' asChild>
-                                <a href={`https://bsky.app/profile/${convertedHandle}.ap.brid.gy`} rel='noreferrer' target='_blank'>
+                                <a href={`https://bsky.app/profile/${account?.blueskyHandle?.replace(/^@/, '')}`} rel='noreferrer' target='_blank'>
                                         Open profile
                                     <LucideIcon.ExternalLink size={14} strokeWidth={1.25} />
                                 </a>
@@ -139,6 +162,34 @@ const BlueskySharing: React.FC = () => {
                     </>
                 }
             </div>
+
+            <AlertDialog open={showConfirm} onOpenChange={setShowConfirm}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>
+                            Disable Bluesky sharing?
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Your bridged Bluesky account will be deactivated and your content will no longer be shared on Bluesky. You can re-enable sharing at any time.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>
+                            Cancel
+                        </AlertDialogCancel>
+                        <AlertDialogAction
+                            className={buttonVariants({variant: 'destructive'})}
+                            disabled={loading}
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleDisable();
+                            }}
+                        >
+                            {loading ? <LoadingIndicator color='light' size='sm' /> : 'Disable'}
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </Layout>
     );
 };
