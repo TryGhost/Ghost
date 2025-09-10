@@ -109,6 +109,12 @@ export class MySQLManager {
 
     /**
      * Execute a command in a container and wait for completion
+     *
+     * This is primarily needed to run CLI commands like mysqldump inside the container
+     *
+     * Dockerode's exec API is a bit low-level and requires some boilerplate to handle the streams
+     * and detect errors, so we encapsulate that complexity here.
+     *
      * @param container - The Docker container to execute the command in
      * @param command - The shell command to execute
      * @returns The command output
