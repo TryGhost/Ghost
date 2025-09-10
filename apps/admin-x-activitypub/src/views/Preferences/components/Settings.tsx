@@ -1,9 +1,8 @@
 import EditProfile from './EditProfile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LoadingIndicator, LucideIcon, cn} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, H4, LucideIcon, cn} from '@tryghost/shade';
 import {Link, useNavigate} from '@tryghost/admin-x-framework';
-import {useSearchForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
     account?: Account;
@@ -13,11 +12,6 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const navigate = useNavigate();
-
-    const {searchQuery: blueskySearchQuery} = useSearchForUser('index', '@bsky.brid.gy@bsky.brid.gy');
-    const {data: blueskyData, isFetching: blueskyIsFetching} = blueskySearchQuery;
-
-    const blueskyEnabled = blueskyData?.accounts[0]?.followedByMe;
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -50,13 +44,13 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
-            <SettingItem withHover onClick={() => !blueskyIsFetching && navigate('/preferences/bluesky-sharing', {state: {account, blueskyAccount: blueskyData?.accounts[0], isEnabled: blueskyEnabled}})}>
+            <SettingItem withHover onClick={() => navigate('/preferences/bluesky-sharing')}>
                 <SettingHeader>
                     <SettingTitle>Bluesky sharing</SettingTitle>
                     <SettingDescription>Share content directly on Bluesky</SettingDescription>
                 </SettingHeader>
                 <SettingAction className='flex items-center gap-2'>
-                    {blueskyIsFetching ? <LoadingIndicator size='sm' /> : blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
+                    {account?.blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
                     <LucideIcon.ChevronRight size={20} />
                 </SettingAction>
             </SettingItem>
