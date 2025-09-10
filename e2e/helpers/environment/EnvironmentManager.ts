@@ -4,9 +4,10 @@ import type {Container} from 'dockerode';
 import logging from '@tryghost/logging';
 import baseDebug from '@tryghost/debug';
 import path from 'path';
-import {execSync} from 'child_process';
+// No direct docker compose CLI usage here; handled by DockerCompose helper
 import {randomUUID} from 'crypto';
 import {PassThrough} from 'stream';
+import {DockerCompose} from './DockerCompose';
 
 // Extended Container type with modem access
 interface ContainerWithModem extends Container {
@@ -53,15 +54,19 @@ export interface TinybirdState {
  * ````
  */
 export class EnvironmentManager {
-    private readonly composeFilePath = path.resolve(__dirname, '../../compose.e2e.yml');
-    private readonly composeProjectName = 'ghost-e2e';
     private readonly stateDir = path.resolve(__dirname, '../../data/state');
     private readonly tinybirdStateFile = path.join(this.stateDir, 'tinybird.json');
     private docker: Docker;
+    private dockerCompose: DockerCompose;
 
     constructor() {
         this.ensureDataDir();
         this.docker = new Docker();
+        this.dockerCompose = new DockerCompose({
+            composeFilePath: path.resolve(__dirname, '../../compose.e2e.yml'),
+            projectName: 'ghost-e2e',
+            docker: this.docker
+        });
     }
 
     /**
@@ -75,7 +80,7 @@ export class EnvironmentManager {
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        this.startDockerComposeServices();
+        this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
         await this.createDatabaseSnapshot();
         this.fetchTinybirdTokens();
         logging.info('Global environment setup complete');
@@ -90,7 +95,7 @@ export class EnvironmentManager {
             return;
         }
         logging.info('Starting global environment teardown...');
-        this.stopDockerComposeServices();
+        this.dockerCompose.down();
         this.cleanupStateFiles();
         logging.info('Global environment teardown complete');
     }
@@ -141,7 +146,7 @@ export class EnvironmentManager {
     private async setupTestDatabase(database: string, siteUuid: string): Promise<void> {
         try {
             debug('Setting up test database:', database);
-            const mysqlContainer = await this.getContainerForService('mysql');
+            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
             await this.execInContainer(
                 mysqlContainer,
                 'mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS \\`' + database + '\\`;"'
@@ -174,7 +179,7 @@ export class EnvironmentManager {
     private async cleanupTestDatabase(database: string): Promise<void> {
         try {
             debug('Cleaning up test database:', database);
-            const mysqlContainer = await this.getContainerForService('mysql');
+            const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
             await this.execInContainer(
                 mysqlContainer,
                 'mysql -uroot -proot -e "DROP DATABASE IF EXISTS \\`' + database + '\\`;"'
@@ -213,7 +218,7 @@ export class EnvironmentManager {
      */
     private async createGhostContainer(config: GhostContainerConfig): Promise<Container> {
         try {
-            const network = await this.getNetwork();
+            const network = await this.dockerCompose.getNetwork();
             const tinybirdState = this.loadTinybirdState();
             const environment = {
                 server__host: '0.0.0.0',
@@ -388,52 +393,6 @@ export class EnvironmentManager {
      */
 
     /**
-     * Get a Docker container entity by its Docker Compose service name
-     * @param service - The Docker Compose service name
-     * @returns The Docker container entity
-     * @throws Error if no container or multiple containers are found for the service
-     */
-    private async getContainerForService(service: string): Promise<Container> {
-        debug('getContainerForService called for service:', service);
-        const containers = await this.docker.listContainers({all: true,
-            filters: {label: [
-                `com.docker.compose.project=${this.composeProjectName}`,
-                `com.docker.compose.service=${service}`
-            ]}});
-        if (containers.length === 0) {
-            throw new Error(`No container found for service: ${service}`);
-        }
-        if (containers.length > 1) {
-            throw new Error(`Multiple containers found for service: ${service}`);
-        }
-        const container = this.docker.getContainer(containers[0].Id);
-        debug('getContainerForService returning container:', container.id);
-        return container;
-    }
-
-    /**
-     * Get the Docker network ID used by the Compose setup
-     * @returns The Docker network entity
-     * @throws Error if no network or multiple networks are found for the Compose project
-     */
-    private async getNetwork(): Promise<Docker.Network> {
-        debug('getNetwork called');
-        const networks = await this.docker.listNetworks({filters: {label: [`com.docker.compose.project=${this.composeProjectName}`]}});
-        debug('getNetwork found networks:', networks.map(n => n.Id));
-        if (networks.length === 0) {
-            throw new Error('No Docker network found for the Compose project');
-        }
-        if (networks.length > 1) {
-            throw new Error('Multiple Docker networks found for the Compose project');
-        }
-        const networkId = networks[0].Id;
-        debug('getNetwork returning network ID:', networkId);
-        const network = this.docker.getNetwork(networkId);
-        debug('getNetwork returning network:', network.id);
-        return network;
-    }
-
-    /**
      * Execute a command in a container and wait for completion
      * @param container - The Docker container to execute the command in
      * @param command - The shell command to execute
@@ -513,23 +472,9 @@ export class EnvironmentManager {
         }
     }
 
-    private startDockerComposeServices() {
-        try {
-            logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} up -d`, {stdio: 'inherit'});
-            // Wait for ghost migrations and tb migrations to complete
-            // NOTE: `docker compose up -d --wait` will fail if one-shot services are included
-            execSync(`docker compose -f ${this.composeFilePath} wait ghost-migrations tb-cli`);
-        } catch (error) {
-            logging.error('Failed to start docker compose services:', error);
-            throw error;
-        }
-        logging.info('Docker compose services are up');
-    }
-
     private async createDatabaseSnapshot() {
         logging.info('Creating database snapshot...');
-        const mysqlContainer = await this.getContainerForService('mysql');
+        const mysqlContainer = await this.dockerCompose.getContainerForService('mysql');
         await this.execInContainer(
             mysqlContainer,
             'mysqldump -uroot -proot --opt --single-transaction ghost_testing > /tmp/dump.sql'
@@ -541,10 +486,7 @@ export class EnvironmentManager {
         logging.info('Fetching Tinybird tokens...');
         // The tb-cli entrypoint grabs these values and stores them in /mnt/shared-config/.env.tinybird
         // We can read that file to get the tokens
-        const rawTinybirdEnv = execSync(
-            `docker compose -f ${this.composeFilePath} run --rm -T --entrypoint sh tb-cli -c "cat /mnt/shared-config/.env.tinybird"`,
-            {encoding: 'utf-8'}
-        ).toString();
+        const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', '/mnt/shared-config/.env.tinybird');
         const envLines = rawTinybirdEnv.split('\n');
         const envVars: Record<string, string> = {};
         for (const line of envLines) {
@@ -562,17 +504,7 @@ export class EnvironmentManager {
         logging.info('Tinybird tokens fetched');
     }
 
-    private stopDockerComposeServices() {
-        try {
-            execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
-        } catch (error) {
-            logging.error('Failed to stop docker compose services:', error);
-            throw error;
-        }
-    }
-
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
     }
 }
-
