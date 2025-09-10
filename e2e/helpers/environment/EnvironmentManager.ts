@@ -11,14 +11,14 @@ const debug = baseDebug('e2e:EnvironmentManager');
 export interface GhostContainerConfig {
     instanceId: string;
     database: string;
-    exposedPort: number;
     siteUuid: string;
     workingDir?: string;
     command?: string[];
 }
 
 export interface GhostInstance {
-    containerId: string;
+    containerId: string; // docker container ID
+    instanceId: string; // unique instance name (e.g. ghost_<siteUuid>)
     database: string;
     port: number;
     baseUrl: string;
@@ -134,31 +134,31 @@ export class EnvironmentManager {
     /**
      * Setup an isolated Ghost instance for a test
      */
-    public async setupGhostInstance(workerId: number): Promise<GhostInstance> {
+    public async setupGhostInstance(): Promise<GhostInstance> {
         try {
-            debug('Setting up Ghost instance for worker %d, test %s', workerId);
             const siteUuid = crypto.randomUUID();
             const instanceId = `ghost_${siteUuid}`;
-            const port = 2368 + workerId; ;
 
             await this.setupTestDatabase(instanceId, siteUuid);
 
             const ghostConfig: GhostContainerConfig = {
                 instanceId,
                 database: instanceId,
-                exposedPort: port,
                 siteUuid: siteUuid
             };
-            const containerId = await this.createGhostContainer(ghostConfig);
+            const container = await this.createGhostContainer(ghostConfig);
+            const containerInfo = await container.inspect();
+            const hostPort = parseInt(containerInfo.NetworkSettings.Ports['2368/tcp'][0].HostPort, 10);
+            await this.waitForGhostReady(hostPort, 30000); // 30 second timeout
 
             const ghostInstance: GhostInstance = {
-                containerId,
+                containerId: container.id,
+                instanceId,
                 database: instanceId,
-                port,
-                baseUrl: `http://localhost:${port}`,
-                siteUuid
+                port: hostPort,
+                baseUrl: `http://localhost:${hostPort}`,
+                siteUuid: siteUuid
             };
-
             debug('Ghost instance setup completed:', ghostInstance);
             return ghostInstance;
         } catch (error) {
@@ -245,7 +245,7 @@ export class EnvironmentManager {
     /**
      * Create and start a Ghost container
      */
-    private async createGhostContainer(config: GhostContainerConfig): Promise<string> {
+    private async createGhostContainer(config: GhostContainerConfig): Promise<Container> {
         try {
             const network = await this.getNetwork();
             const tinybirdState = this.loadTinybirdState();
@@ -283,7 +283,7 @@ export class EnvironmentManager {
                 },
                 HostConfig: {
                     PortBindings: {
-                        '2368/tcp': [{HostPort: config.exposedPort.toString()}]
+                        '2368/tcp': [{HostPort: '0'}]
                     }
                 },
                 Labels: {
@@ -303,12 +303,8 @@ export class EnvironmentManager {
             debug('Starting Ghost container...');
             const container = await this.docker.createContainer(containerConfig);
             await container.start();
-            debug('Ghost container started...');
-            await this.waitForGhostReady(config.exposedPort);
-            debug('Ghost is healthy');
-
-            debug('Ghost container started successfully:', container.id);
-            return container.id;
+            debug('Ghost container started:', container.id);
+            return container;
         } catch (error) {
             logging.error('Failed to create Ghost container:', error);
             throw new Error(`Failed to create Ghost container: ${error}`);

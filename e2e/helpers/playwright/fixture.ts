@@ -17,45 +17,37 @@ export interface GhostInstanceFixture {
 export const test = base.extend<GhostInstanceFixture>({
     ghostInstance: async ({ }, use, testInfo: TestInfo) => {
         debug('Setting up Ghost instance for test:', testInfo.title);
-
         const environmentManager = new EnvironmentManager();
-
-        // Generate unique test ID from test info
-        const workerId = testInfo.workerIndex;
-
-        // Setup Ghost instance for this test
-        const ghostInstance = await environmentManager.setupGhostInstance(workerId);
-
+        const ghostInstance = await environmentManager.setupGhostInstance();
         debug('Ghost instance ready for test:', {
             testTitle: testInfo.title,
-            workerId,
-            baseUrl: ghostInstance.baseUrl,
-            database: ghostInstance.database
+            ...ghostInstance
         });
-
-        // Provide the instance to the test
         await use(ghostInstance);
-
-        // Cleanup after test completes
         debug('Tearing down Ghost instance for test:', testInfo.title);
         await environmentManager.teardownGhostInstance(ghostInstance);
+        debug('Teardown completed for test:', testInfo.title);
     },
-
-    // Override page fixture to provide authenticated page
-    page: async ({browser, ghostInstance}, use) => {
-        debug('Setting up authenticated page for Ghost instance:', ghostInstance.baseUrl);
+    baseURL: async ({ghostInstance}, use) => {
+        await use(ghostInstance.baseUrl);
+    },
+    page: async ({browser, baseURL}, use) => {
+        debug('Setting up authenticated page for Ghost instance:', baseURL);
+        if (!baseURL) {
+            throw new Error('baseURL is not defined');
+        }
 
         // Create user in this Ghost instance
-        await setupUser(ghostInstance.baseUrl, {
+        await setupUser(baseURL, {
             email: appConfig.auth.email,
             password: appConfig.auth.password
         });
 
         // Create browser context with correct baseURL and extra HTTP headers
         const context = await browser.newContext({
-            baseURL: ghostInstance.baseUrl,
+            baseURL: baseURL,
             extraHTTPHeaders: {
-                Origin: ghostInstance.baseUrl
+                Origin: baseURL
             }
         });
         const page = await context.newPage();
