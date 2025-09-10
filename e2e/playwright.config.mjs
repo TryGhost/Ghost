@@ -8,7 +8,7 @@ const config = {
         timeout: process.env.CI ? 30 * 1000 : 10 * 1000
     },
     retries: 0, // Retries open the door to flaky tests. If the test needs retries, it's not a good test or the app is broken.
-    workers: process.env.CI ? 4 : 10,
+    workers: process.env.CI ? 2 : 10,
     fullyParallel: true,
     reporter: process.env.CI ? [['list', {printSteps: true}], ['html']] : [['list', {printSteps: true}]],
     use: {
