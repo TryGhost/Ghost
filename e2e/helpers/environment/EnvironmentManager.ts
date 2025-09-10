@@ -7,6 +7,7 @@ import path from 'path';
 import {randomUUID} from 'crypto';
 import {DockerCompose} from './DockerCompose';
 import {MySQLManager} from './MySQLManager';
+import {TinybirdManager} from './TinybirdManager';
 
 const debug = baseDebug('e2e:EnvironmentManager');
 
@@ -27,11 +28,7 @@ export interface GhostInstance {
     siteUuid: string;
 }
 
-export interface TinybirdState {
-    workspaceId: string;
-    adminToken: string;
-    trackerToken: string;
-}
+// Tinybird state type is managed by TinybirdManager
 
 /**
  * Manages the lifecycle of Docker containers and shared services for end-to-end tests
@@ -47,13 +44,12 @@ export interface TinybirdState {
  */
 export class EnvironmentManager {
     private readonly stateDir = path.resolve(__dirname, '../../data/state');
-    private readonly tinybirdStateFile = path.join(this.stateDir, 'tinybird.json');
     private docker: Docker;
     private dockerCompose: DockerCompose;
     private mysql: MySQLManager;
+    private tinybird: TinybirdManager;
 
     constructor() {
-        this.ensureDataDir();
         this.docker = new Docker();
         this.dockerCompose = new DockerCompose({
             composeFilePath: path.resolve(__dirname, '../../compose.e2e.yml'),
@@ -61,6 +57,7 @@ export class EnvironmentManager {
             docker: this.docker
         });
         this.mysql = new MySQLManager(this.dockerCompose);
+        this.tinybird = new TinybirdManager(this.dockerCompose);
     }
 
     /**
@@ -76,7 +73,7 @@ export class EnvironmentManager {
         logging.info('Starting global environment setup...');
         this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
         await this.mysql.createSnapshot();
-        this.fetchTinybirdTokens();
+        this.tinybird.fetchTokens();
         logging.info('Global environment setup complete');
     }
 
@@ -163,7 +160,7 @@ export class EnvironmentManager {
     private async createGhostContainer(config: GhostContainerConfig): Promise<Container> {
         try {
             const network = await this.dockerCompose.getNetwork();
-            const tinybirdState = this.loadTinybirdState();
+            const tinybirdState = this.tinybird.loadState();
             const environment = {
                 server__host: '0.0.0.0',
                 server__port: '2368',
@@ -267,46 +264,7 @@ export class EnvironmentManager {
      * ==============
      */
 
-    private ensureDataDir(): void {
-        try {
-            if (!fs.existsSync(this.stateDir)) {
-                fs.mkdirSync(this.stateDir, {recursive: true});
-                debug('created state directory:', this.stateDir);
-            }
-        } catch (error) {
-            // handle race condition where directory might be created between existssync and mkdirsync
-            if (!fs.existsSync(this.stateDir)) {
-                logging.error('failed to ensure state directory exists:', error);
-                throw new Error(`failed to ensure state directory exists: ${error}`);
-            }
-        }
-    }
-
-    private saveTinybirdState(state: TinybirdState): void {
-        try {
-            this.ensureDataDir();
-            fs.writeFileSync(this.tinybirdStateFile, JSON.stringify(state, null, 2));
-            debug('Tinybird state saved:', state);
-        } catch (error) {
-            logging.error('Failed to save Tinybird state:', error);
-            throw new Error(`Failed to save Tinybird state: ${error}`);
-        }
-    }
-
-    private loadTinybirdState(): TinybirdState {
-        try {
-            if (!fs.existsSync(this.tinybirdStateFile)) {
-                throw new Error('Tinybird state file does not exist');
-            }
-            const data = fs.readFileSync(this.tinybirdStateFile, 'utf8');
-            const state = JSON.parse(data) as TinybirdState;
-            debug('Tinybird state loaded:', state);
-            return state;
-        } catch (error) {
-            logging.error('Failed to load Tinybird state:', error);
-            throw new Error(`Failed to load Tinybird state: ${error}`);
-        }
-    }
+    // Tinybird state management handled by TinybirdManager
 
     private cleanupStateFiles(): void {
         try {
@@ -350,27 +308,7 @@ export class EnvironmentManager {
         }
     }
 
-    private fetchTinybirdTokens() {
-        logging.info('Fetching Tinybird tokens...');
-        // The tb-cli entrypoint grabs these values and stores them in /mnt/shared-config/.env.tinybird
-        // We can read that file to get the tokens
-        const rawTinybirdEnv = this.dockerCompose.readFileFromService('tb-cli', '/mnt/shared-config/.env.tinybird');
-        const envLines = rawTinybirdEnv.split('\n');
-        const envVars: Record<string, string> = {};
-        for (const line of envLines) {
-            const [key, value] = line.split('=');
-            if (key && value) {
-                envVars[key.trim()] = value.trim();
-            }
-        }
-        const tinybirdState = {
-            workspaceId: envVars.TINYBIRD_WORKSPACE_ID,
-            adminToken: envVars.TINYBIRD_ADMIN_TOKEN,
-            trackerToken: envVars.TINYBIRD_TRACKER_TOKEN
-        };
-        this.saveTinybirdState(tinybirdState);
-        logging.info('Tinybird tokens fetched');
-    }
+    // Token fetching handled by TinybirdManager
 
     private shouldPreserveEnvironment(): boolean {
         return process.env.PRESERVE_ENV === 'true';
