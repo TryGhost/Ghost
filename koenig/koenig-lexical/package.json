@@ -48,7 +48,7 @@
     "@babel/core": "7.28.4",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
     "@codemirror/lang-css": "6.3.1",
-    "@codemirror/lang-html": "6.4.9",
+    "@codemirror/lang-html": "6.4.10",
     "@codemirror/lang-javascript": "6.2.4",
     "@emoji-mart/data": "^1.1.2",
     "@emoji-mart/react": "^1.1.1",
