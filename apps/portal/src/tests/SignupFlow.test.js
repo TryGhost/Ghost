@@ -233,9 +233,6 @@ describe('Signup', () => {
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            const description = await within(popupIframeDocument).findByText(/To complete signup, click the confirmation link in your inbox/i);
-            expect(description).toBeInTheDocument();
-
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signup',

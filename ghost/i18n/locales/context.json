@@ -275,7 +275,6 @@
     "This site is not accepting payments at the moment.": "An error message shown when a tips or donations link is opened but the site has donations disabled",
     "This site only accepts paid members.": "error message for sign-up",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A confirmation message displayed during the signup process, indicating that the person signing up needs to go and check their email - and reminding them to check their spam folder, too",
-    "To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn't arrive within 3 minutes, check your spam folder!": "",
     "To continue to stay up to date, subscribe to {publication} below.": "In the portal support section",
     "Too many attempts try again in {number} days.": "Error message when a user has tried to sign in too many times",
     "Too many attempts try again in {number} hours.": "Error message when a user has tried to sign in too many times",
