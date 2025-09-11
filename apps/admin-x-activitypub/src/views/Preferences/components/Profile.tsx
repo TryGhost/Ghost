@@ -50,6 +50,34 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
     backgroundColor,
     accentColor
 }) => {
+    const [copied, setCopied] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (copyTimeoutRef.current) {
+            window.clearTimeout(copyTimeoutRef.current);
+        }
+    }, []);
+
+    const handleCopy = async () => {
+        if (!account?.handle || !navigator?.clipboard?.writeText) {
+            toast.error('Unable to copy handle');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(account.handle);
+            setCopied(true);
+            toast.success('Handle copied');
+            if (copyTimeoutRef.current) {
+                window.clearTimeout(copyTimeoutRef.current);
+            }
+            copyTimeoutRef.current = window.setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error('Failed to copy handle');
+            setCopied(false);
+        }
+    };
+
     const getBackgroundColor = () => {
         switch (backgroundColor) {
         case 'light':
@@ -129,7 +157,23 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
                         background: accentColor ? `linear-gradient(to top right, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.12 : 0.04)}, ${hexToRgba(backgroundColor === 'accent' ? '#ffffff' : accentColor, backgroundColor === 'dark' ? 0.48 : 0.16)})` : undefined
                     }}
                 >
-                    {account?.handle}
+                    <div className='mb-0.5'>
+                        {account?.handle}
+                        {!isScreenshot && account?.handle && (
+                            <Button
+                                className='relative top-[3px] ml-1.5 size-4 p-0 hover:opacity-80'
+                                style={{color: backgroundColor !== 'light' ? '#fff' : accentColor}}
+                                title='Copy handle'
+                                variant='link'
+                                onClick={handleCopy}
+                            >
+                                {!copied ?
+                                    <LucideIcon.Copy size={12} /> :
+                                    <LucideIcon.Check size={12} />
+                                }
+                            </Button>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
