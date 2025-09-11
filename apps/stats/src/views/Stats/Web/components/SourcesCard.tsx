@@ -1,7 +1,7 @@
 import React from 'react';
 import SourceIcon from '../../components/SourceIcon';
 import {BaseSourceData, ProcessedSourceData, extendSourcesWithPercentages, processSources} from '@tryghost/admin-x-framework';
-import {Button, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, formatNumber, formatPercentage} from '@tryghost/shade';
+import {Button, CampaignType, Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, EmptyIndicator, HTable, LucideIcon, Separator, Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger, SkeletonTable, SourceTabs, TabType, formatNumber, formatPercentage} from '@tryghost/shade';
 import {getPeriodText} from '@src/utils/chart-helpers';
 
 // Default source icon URL - apps can override this
@@ -75,6 +75,11 @@ interface SourcesCardProps {
     siteIcon?: string;
     defaultSourceIconUrl?: string;
     isLoading: boolean;
+    selectedTab: TabType;
+    selectedCampaign: CampaignType;
+    utmTrackingEnabled?: boolean;
+    onTabChange: (tab: TabType) => void;
+    onCampaignChange: (campaign: CampaignType) => void;
 }
 
 export const SourcesCard: React.FC<SourcesCardProps> = ({
@@ -84,7 +89,12 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     siteUrl,
     siteIcon,
     defaultSourceIconUrl = DEFAULT_SOURCE_ICON_URL,
-    isLoading
+    isLoading,
+    selectedTab,
+    selectedCampaign,
+    utmTrackingEnabled = false,
+    onTabChange,
+    onCampaignChange
 }) => {
     // Process and group sources data with pre-computed icons and display values
     const processedData = React.useMemo(() => {
@@ -109,10 +119,11 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const topSources = extendedData.slice(0, 11);
 
     // Generate description based on mode and range
-    const title = 'Top sources';
+    const title = selectedTab === 'campaigns' && selectedCampaign ? `${selectedCampaign}` : 'Top sources';
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
-    if (isLoading) {
+    // Only show skeleton on initial load, not when switching between tabs
+    if (isLoading && !data) {
         return (
             <Card className='group/datalist'>
                 <CardHeader>
@@ -136,6 +147,16 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                 <HTable className='mr-2'>Visitors</HTable>
             </div>
             <CardContent className='overflow-hidden'>
+                {utmTrackingEnabled && (
+                    <div className='mb-2'>
+                        <SourceTabs
+                            selectedCampaign={selectedCampaign}
+                            selectedTab={selectedTab}
+                            onCampaignChange={onCampaignChange}
+                            onTabChange={onTabChange}
+                        />
+                    </div>
+                )}
                 <Separator />
                 {topSources.length > 0 ? (
                     <SourcesTable

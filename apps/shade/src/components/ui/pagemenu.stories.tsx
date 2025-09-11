@@ -2,10 +2,15 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {PageMenu, PageMenuItem} from './pagemenu';
 
 const meta: Meta<typeof PageMenu> = {
-    title: 'Components/PageMenu',
+    title: 'Components / PageMenu',
     component: PageMenu,
     parameters: {
-        layout: 'padded'
+        layout: 'padded',
+        docs: {
+            description: {
+                component: 'Responsive page navigation menu that automatically collapses overflowing items into a dropdown. Perfect for horizontal navigation with many options.'
+            }
+        }
     },
     tags: ['autodocs'],
     argTypes: {
@@ -23,7 +28,6 @@ const meta: Meta<typeof PageMenu> = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-// Basic story
 export const Default: Story = {
     render: args => (
         <PageMenu {...args}>
@@ -35,10 +39,16 @@ export const Default: Story = {
     ),
     args: {
         responsive: false
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Basic page menu with static items that always remain visible.'
+            }
+        }
     }
 };
 
-// Responsive story
 export const Responsive: Story = {
     render: args => (
         <div className="w-full rounded-lg border border-border p-4">
@@ -54,10 +64,16 @@ export const Responsive: Story = {
     ),
     args: {
         responsive: true
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Responsive menu that automatically moves overflow items to a dropdown when space is limited.'
+            }
+        }
     }
 };
 
-// Small container
 export const SmallContainer: Story = {
     render: args => (
         <div className="w-64 rounded-lg border border-border p-4">
@@ -73,10 +89,16 @@ export const SmallContainer: Story = {
     ),
     args: {
         responsive: true
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Menu in a constrained container showing how it adapts to limited horizontal space.'
+            }
+        }
     }
 };
 
-// Many items
 export const ManyItems: Story = {
     render: args => (
         <div className="w-full max-w-2xl rounded-lg border border-border p-4">
@@ -97,5 +119,12 @@ export const ManyItems: Story = {
     ),
     args: {
         responsive: true
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Menu with many items demonstrating overflow behavior and dropdown functionality.'
+            }
+        }
     }
 };
