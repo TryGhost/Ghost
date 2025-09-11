@@ -6,7 +6,14 @@ import {AnimatedNumber} from './animated-number';
 const meta = {
     title: 'Components / Animated number',
     component: AnimatedNumber,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Animated numeric transitions using `@number-flow/react`. Pass any `Intl.NumberFormat` options via the `format` prop.'
+            }
+        }
+    }
 } satisfies Meta<typeof AnimatedNumber>;
 
 export default meta;
