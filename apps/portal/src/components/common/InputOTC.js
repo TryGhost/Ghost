@@ -32,7 +32,7 @@ function InputOTC({
     ...props
 }) {
     return (
-        <div className="gh-portal-inputotc-root" data-invalid={hasError}>
+        <div className="gh-portal-input-otc-root" data-invalid={hasError}>
             <label htmlFor={id} className="sr-only">
                 {label}
             </label>
@@ -41,10 +41,10 @@ function InputOTC({
                 type="text"
                 data-slot="input-otc"
                 containerClassName={cn(
-                    'gh-portal-inputotc-container',
+                    'gh-portal-input-otc-container',
                     containerClassName
                 )}
-                className={cn('gh-portal-inputotc', hasError && 'error', className)}
+                className={cn('gh-portal-input-otc', hasError && 'error', className)}
                 data-invalid={hasError}
                 aria-invalid={hasError}
                 aria-label={label}
@@ -65,7 +65,7 @@ function InputOTCGroup({className, ...props}) {
     return (
         <div
             data-slot="input-otc-group"
-            className={cn('gh-portal-inputotc-group', className)}
+            className={cn('gh-portal-input-otc-group', className)}
             {...props}
         />
     );
@@ -87,15 +87,15 @@ function InputOTCSlot({
             data-slot="input-otc-slot"
             data-active={isActive}
             className={cn(
-                'gh-portal-inputotc-slot',
+                'gh-portal-input-otc-slot',
                 className
             )}
             {...props}
         >
             {char}
             {hasFakeCaret && (
-                <div className="gh-portal-inputotc-caret-overlay">
-                    <div className="gh-portal-inputotc-caret" />
+                <div className="gh-portal-input-otc-caret-overlay">
+                    <div className="gh-portal-input-otc-caret" />
                 </div>
             )}
         </div>
