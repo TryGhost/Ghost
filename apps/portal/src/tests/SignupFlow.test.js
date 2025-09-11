@@ -233,7 +233,7 @@ describe('Signup', () => {
             const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
             expect(magicLink).toBeInTheDocument();
 
-            const desc = await within(popupIframeDocument).findByText(/To complete signup, click the confirmation link sent to jamie@example.com/i);
+            const desc = await within(popupIframeDocument).findByText(/To complete signup, click the confirmation link in your inbox/i);
             expect(desc).toBeInTheDocument();
 
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
