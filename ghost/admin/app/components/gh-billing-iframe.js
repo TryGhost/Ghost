@@ -122,11 +122,11 @@ export default class GhBillingIframe extends Component {
         if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
             try {
                 // React Query v5+
-                window.adminXQueryClient.invalidateQueries({queryKey: ['ConfigResponseType']});
+                window.adminXQueryClient.invalidateQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
             } catch (_) {
                 // TODO: remove this fallback when Admin-X-Settings updates to React Query v5+ (@tanstack/react-query)
                 // React Query v4 fallback
-                window.adminXQueryClient.invalidateQueries(['ConfigResponseType']);
+                window.adminXQueryClient.invalidateQueries(['ConfigResponseType']).catch(() => {});
             }
         }
 
