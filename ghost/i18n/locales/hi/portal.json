@@ -179,7 +179,6 @@
     "This site is not accepting payments at the moment.": "यह साइट इस समय भुगतान स्वीकार नहीं कर रही है।",
     "This site only accepts paid members.": "यह साइट केवल भुगतान करने वाले सदस्यों को स्वीकार करती है।",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "साइनअप पूरा करने के लिए, अपने इनबॉक्स में पुष्टिकरण लिंक पर क्लिक करें। यदि यह 3 मिनट के भीतर नहीं आता है, तो अपना स्पैम फ़ोल्डर जांचें!",
-    "To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn't arrive within 3 minutes, check your spam folder!": "",
     "To continue to stay up to date, subscribe to {publication} below.": "नवीनतम जानकारी प्राप्त करने के लिए, नीचे दिए गए {publication} की सदस्यता लें",
     "Too many attempts try again in {number} days.": "बहुत बार प्रयास {number} दिनों में फिर से करें।",
     "Too many attempts try again in {number} hours.": "बहुत बार प्रयास {number} घंटों में फिर से करें।",

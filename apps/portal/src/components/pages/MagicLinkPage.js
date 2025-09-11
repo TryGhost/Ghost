@@ -45,30 +45,22 @@ export default class MagicLinkPage extends React.Component {
         let popupTitle = t(`Now check your email!`);
         let popupDescription = t(`A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`);
 
-        if (lastPage === 'signup') {
-            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
-        }
-        
-        // When the labs flag is removed, these descriptions will be used and the above will be deleted
-        if (labs?.membersSigninOTC) {
-            popupDescription = t(
-                `A sign in link has been sent to {submittedEmailOrInbox}. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`,
-                {submittedEmailOrInbox}
-            );
-    
-            if (lastPage === 'signup') {
-                popupDescription = t(
-                    `To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn't arrive within 3 minutes, check your spam folder!`,
-                    {submittedEmailOrInbox}
-                );
-            }
-
-            if (lastPage === 'signin' && otcRef) {
+        if (labs?.membersSigninOTC && lastPage === 'signin') {
+            if (otcRef) {
                 popupDescription = t(
                     `An email has been sent to {submittedEmailOrInbox}. Click the link inside or enter your code below.`,
                     {submittedEmailOrInbox}
                 );
+            } else {
+                popupDescription = t(
+                    `A sign in link has been sent to {submittedEmailOrInbox}. If it doesn't arrive in 3 minutes, be sure to check your spam folder.`,
+                    {submittedEmailOrInbox}
+                );
             }
+        }
+
+        if (lastPage === 'signup') {
+            popupDescription = t(`To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!`);
         }
 
         return (
