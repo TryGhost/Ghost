@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.0.6",
+  "version": "6.0.7",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -29,7 +29,7 @@
     "node": "^22.13.1"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.0",
+    "@babel/eslint-parser": "7.28.4",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-decorators": "7.28.0",
     "@ember/jquery": "2.0.0",

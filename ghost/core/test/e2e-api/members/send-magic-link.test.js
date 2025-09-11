@@ -302,12 +302,12 @@ describe('sendMagicLink', function () {
 
         function scrubEmailContent(mail) {
             const scrub = s => s && s
-                .replace(/([?&])token=[^&\s'"]+/gi, '$1token=<TOKEN>')
+                .replace(/([?&])token=[^&\s'\"]+/gi, '$1token=<TOKEN>')
                 .replace(/\d{6}/g, '<OTC>');
 
             return {
                 to: mail.to,
-                subject: mail.subject,
+                subject: scrub(mail.subject),
                 html: scrub(mail.html),
                 text: scrub(mail.text)
             };
@@ -956,6 +956,59 @@ describe('sendMagicLink', function () {
 
                 // Should still process the request normally for non-existent members
                 assert(!response.body.otc_ref, 'Should not return otc_ref for non-existent member');
+            });
+
+            async function sendAndVerifyOTC(email, emailType = 'signin', options = {}) {
+                const response = await sendMagicLinkRequest(email, emailType, true)
+                    .expectStatus(201);
+
+                const mail = mockManager.assert.sentEmail({
+                    to: email
+                });
+
+                const otcRef = response.body.otc_ref;
+                const otc = mail.text.match(/\d{6}/)[0];
+
+                const verifyResponse = await membersAgent
+                    .post('/api/verify-otc')
+                    .header('Referer', options.referer)
+                    .body({
+                        otcRef,
+                        otc,
+                        redirect: options.redirect
+                    })
+                    .expectStatus(200);
+
+                return verifyResponse;
+            }
+
+            it('Can verify provided OTC using /verify-otc endpoint', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin');
+
+                assert(verifyResponse.body.redirectUrl, 'Response should contain redirectUrl');
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert(redirectUrl.pathname.endsWith('members/'), 'Redirect URL should end with /members');
+
+                const token = redirectUrl.searchParams.get('token');
+                const otcVerification = redirectUrl.searchParams.get('otc_verification');
+
+                assert(token, 'Redirect URL should contain token');
+                assert(otcVerification, 'Redirect URL should contain otc_verification');
+            });
+
+            it('/verify-otc endpoint returns correct redirectUrl using Referer header', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com'});
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com');
+            });
+
+            it('/verify-otc endpoint returns correct redirectUrl using redirect body param', async function () {
+                const verifyResponse = await sendAndVerifyOTC('member1@test.com', 'signin', {referer: 'https://www.test.com/signin', redirect: 'https://www.test.com/post'});
+
+                const redirectUrl = new URL(verifyResponse.body.redirectUrl);
+                assert.equal(redirectUrl.searchParams.get('r'), 'https://www.test.com/post');
             });
         });
     });

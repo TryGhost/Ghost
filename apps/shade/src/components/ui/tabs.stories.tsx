@@ -4,7 +4,21 @@ import {Tabs, TabsContent, TabsList, TabsTrigger, KpiTabTrigger, KpiTabValue} fr
 const meta = {
     title: 'Components / Tabs',
     component: Tabs,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Versatile tabs component with multiple variants including segmented, buttons, underline, and specialized KPI tabs for analytics dashboards.'
+            }
+        }
+    },
+    decorators: [
+        Story => (
+            <div style={{padding: '24px'}}>
+                <Story />
+            </div>
+        )
+    ]
 } satisfies Meta<typeof Tabs>;
 
 export default meta;
@@ -28,6 +42,13 @@ export const Default: Story = {
                 Password contents
             </TabsContent>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Basic tabs with button-sm variant for simple content switching.'
+            }
+        }
     }
 };
 
@@ -75,6 +96,13 @@ export const KPIBasic: Story = {
                 <div className="p-6">Engagement analytics and charts would go here.</div>
             </TabsContent>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'KPI tabs displaying metrics with trend indicators - perfect for dashboard analytics.'
+            }
+        }
     }
 };
 
@@ -138,6 +166,13 @@ export const KPIWithIcons: Story = {
                 <div className="p-6">Conversion analytics would go here.</div>
             </TabsContent>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'KPI tabs enhanced with icons for better visual recognition of different metrics.'
+            }
+        }
     }
 };
 
@@ -201,6 +236,13 @@ export const KPIWithColors: Story = {
                 <div className="p-6">Direct traffic breakdown would go here.</div>
             </TabsContent>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'KPI tabs with color-coded indicators to categorize different data sources or types.'
+            }
+        }
     }
 };
 
@@ -248,6 +290,84 @@ export const KPIWithoutTrends: Story = {
                 <div className="p-6">Comments overview would go here.</div>
             </TabsContent>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'KPI tabs showing absolute values without trend indicators - useful for cumulative or static metrics.'
+            }
+        }
+    }
+};
+
+export const Segmented: Story = {
+    args: {
+        defaultValue: 'overview',
+        variant: 'segmented',
+        children: [
+            <TabsList key="list">
+                <TabsTrigger value="overview">Overview</TabsTrigger>
+                <TabsTrigger value="analytics">Analytics</TabsTrigger>
+                <TabsTrigger value="reports">Reports</TabsTrigger>
+            </TabsList>,
+
+            <TabsContent key="overview" value="overview">
+                <div className="p-4">Overview content here</div>
+            </TabsContent>,
+
+            <TabsContent key="analytics" value="analytics">
+                <div className="p-4">Analytics content here</div>
+            </TabsContent>,
+
+            <TabsContent key="reports" value="reports">
+                <div className="p-4">Reports content here</div>
+            </TabsContent>
+        ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Segmented control style tabs with rounded background for clear selection.'
+            }
+        }
+    }
+};
+
+export const Underline: Story = {
+    args: {
+        defaultValue: 'home',
+        variant: 'underline',
+        children: [
+            <TabsList key="list">
+                <TabsTrigger value="home">Home</TabsTrigger>
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="services">Services</TabsTrigger>
+                <TabsTrigger value="contact">Contact</TabsTrigger>
+            </TabsList>,
+
+            <TabsContent key="home" value="home">
+                <div className="p-4">Home page content</div>
+            </TabsContent>,
+
+            <TabsContent key="about" value="about">
+                <div className="p-4">About page content</div>
+            </TabsContent>,
+
+            <TabsContent key="services" value="services">
+                <div className="p-4">Services page content</div>
+            </TabsContent>,
+
+            <TabsContent key="contact" value="contact">
+                <div className="p-4">Contact page content</div>
+            </TabsContent>
+        ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Underline style tabs commonly used for website navigation sections.'
+            }
+        }
     }
 };
 

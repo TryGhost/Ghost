@@ -260,7 +260,7 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
     }
     if (!emailTrackClicksEnabled && !emailTrackOpensEnabled) {
         chartHeaderClass = 'grid-cols-1';
-        chartClass = 'aspect-square w-full max-w-[320px] md:max-w-none max-h-[220px] md:max-h-[240px] xl:max-h-[320px]';
+        chartClass = 'aspect-square w-full sm:aspect-[16/10] md:max-w-[320px] md:max-h-[320px] lg:aspect-[12/10]';
     }
 
     return (
@@ -433,9 +433,9 @@ const Newsletter: React.FC<postAnalyticsProps> = () => {
                                 <HTable className='mr-2'>Members</HTable>
                             </div>
                             {isLoading ?
-                                <CardContent className='p-6'>
+                                <CardContent className='p-6 pt-0'>
                                     <Separator />
-                                    <SkeletonTable />
+                                    <SkeletonTable className='mt-6' />
                                 </CardContent>
                                 :
                                 <CardContent className='pb-0'>

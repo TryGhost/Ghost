@@ -1,0 +1,66 @@
+name: 'Load Docker Image'
+description: 'Load Docker image from registry or artifact based on build source'
+inputs:
+  is-fork:
+    description: 'Whether this is a fork PR build'
+    required: true
+  image-tags:
+    description: 'Docker image tags (multi-line string)'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download image artifact (fork PR)
+      if: inputs.is-fork == 'true'
+      uses: actions/download-artifact@v4
+      with:
+        name: docker-image
+
+    - name: Load image from artifact (fork PR)
+      if: inputs.is-fork == 'true'
+      shell: bash
+      run: |
+        echo "Loading Docker image from artifact..."
+        gunzip -c docker-image.tar.gz | docker load
+        echo "Available images after load:"
+        docker images
+
+    - name: Log in to GitHub Container Registry
+      if: inputs.is-fork == 'false'
+      uses: docker/login-action@v3
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    - name: Pull image from registry (main repo/branch)
+      if: inputs.is-fork == 'false'
+      shell: bash
+      run: |
+        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
+        echo "Pulling image from registry: $IMAGE_TAG"
+        docker pull "$IMAGE_TAG"
+
+    - name: Verify image is available
+      id: verify
+      shell: bash
+      run: |
+        IMAGE_TAG=$(echo "${{ inputs.image-tags }}" | head -n1)
+        echo "Checking for image: $IMAGE_TAG"
+        echo "image-tag=$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+        if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
+          echo "✅ Image $IMAGE_TAG is available"
+        else
+          echo "❌ Image $IMAGE_TAG is not available"
+          echo "Available images:"
+          docker images
+          exit 1
+        fi
+
+
+outputs:
+  image-tag:
+    description: 'The Docker image tag to use'
+    value: ${{ steps.verify.outputs.image-tag }}

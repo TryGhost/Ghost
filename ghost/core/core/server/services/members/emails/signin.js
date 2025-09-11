@@ -6,7 +6,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
     <meta name="viewport" content="width=device-width">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     ${otc
-        ? `<title>🔑 ${t('Your verification code for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`
+        ? `<title>🔑 ${t('Sign in to {siteTitle} with code {otc}', {siteTitle, otc, interpolation: {escapeValue: false}})}</title>`
         : `<title>🔑 ${t('Secure sign in link for {siteTitle}', {siteTitle, interpolation: {escapeValue: false}})}</title>`
     }
     <style>
@@ -111,7 +111,11 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
           <div class="content" style="box-sizing: border-box; display: block; Margin: 0 auto; max-width: 600px; padding: 30px 20px;">
 
             <!-- START CENTERED CONTAINER -->
-            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${t('Welcome back to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}</span>
+            <span class="preheader" style="color: transparent; display: none; height: 0; max-height: 0; max-width: 0; opacity: 0; overflow: hidden; mso-hide: all; visibility: hidden; width: 0;">${otc ? t('Welcome back to {siteTitle}! Your verification code is {otc}.', {siteTitle, otc, interpolation: {escapeValue: false}}) : t('Welcome back to {siteTitle}!', {siteTitle, interpolation: {escapeValue: false}})}</span>
+            <!-- SPACING FOR PREVIEW TEXT -->
+            <div style="display:none; max-height:0; overflow:hidden; mso-hide: all;" aria-hidden="true" role="presentation">
+              ${'&zwnj;&nbsp;'.repeat(75)}
+            </div>
             <table class="main" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; background: #ffffff; border-radius: 8px;">
 
               <!-- START MAIN CONTENT AREA -->
@@ -122,7 +126,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top;">
                         <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 20px; color: #15212A; font-weight: bold; line-height: 24px; margin: 0; margin-bottom: 15px;">${t('Hey there,')}</p>
                         ${otc ?
-                        `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t(`Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's valid for 24 hours`, {siteTitle, interpolation: {escapeValue: false}})}:</p>
+                        `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t(`Welcome back! Here's your code to sign in to {siteTitle}. For your security, it's only valid for 24 hours`, {siteTitle, interpolation: {escapeValue: false}})}:</p>
                         <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box; margin-bottom: 32px;">
                           <tbody>
                             <tr>
@@ -132,7 +136,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
                             </tr>
                           </tbody>
                         </table>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t('Or, skip the code and log in directly')}:</p>
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 24px;">${t('Or, skip the code and sign in directly')}:</p>
                         <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">
                           <tbody>
                             <tr>
@@ -148,7 +152,7 @@ module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteD
                             </tr>
                           </tbody>
                         </table>
-                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px;">${t('Alternatively you can copy and paste this URL to your browser')}:</p>`
+                        <p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 15px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px;">${t('You can also copy & paste this URL into your browser:')}</p>`
                         :
                         `<p style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 16px; color: #3A464C; font-weight: normal; margin: 0; line-height: 24px; margin-bottom: 32px;">${t('Welcome back! Use this link to securely sign in to your {siteTitle} account:', {siteTitle, interpolation: {escapeValue: false}})}</p>
                         <table border="0" cellpadding="0" cellspacing="0" class="btn btn-primary" style="border-collapse: separate; mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%; box-sizing: border-box;">

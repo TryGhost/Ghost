@@ -4,7 +4,6 @@ import CloseButton from '../common/CloseButton';
 import AppContext from '../../AppContext';
 import {ReactComponent as EnvelopeIcon} from '../../images/icons/envelope.svg';
 
-import {ValidateInputForm} from '../../utils/form';
 import InputField from '../common/InputField';
 
 export const MagicLinkStyles = `
@@ -102,7 +101,7 @@ export default class MagicLinkPage extends React.Component {
         e.preventDefault();
         const {action} = this.context;
         const isRunning = (action === 'verifyOTC:running');
-        
+
         if (!isRunning) {
             this.doVerifyOTC();
         }
@@ -110,23 +109,20 @@ export default class MagicLinkPage extends React.Component {
 
     doVerifyOTC() {
         this.setState((state) => {
+            const {t} = this.context;
+            const code = (state.otc || '').trim();
             return {
-                errors: ValidateInputForm({fields: [{
-                    name: OTC_FIELD_NAME,
-                    value: state.otc,
-                    required: true
-                }], t: this.context.t})
+                errors: {
+                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
+                }
             };
         }, () => {
-            // eslint-disable-next-line no-unused-vars
             const {otc, errors} = this.state;
             const {otcRef} = this.context;
+            const {redirect} = this.context.pageData ?? {};
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors && otcRef) {
-                // @TODO: replace with verifyOTC action
-                // For now, just log for development
-                // eslint-disable-next-line no-console
-                console.log('otc_ref and otc submitted');
+                this.context.onAction('verifyOTC', {otc, otcRef, redirect});
             }
         }
         );

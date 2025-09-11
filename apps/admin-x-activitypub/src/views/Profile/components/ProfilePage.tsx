@@ -92,7 +92,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
         if (contentRef.current) {
             setIsOverflowing(contentRef.current.scrollHeight > 160); // Compare content height to max height
         }
-    }, [isExpanded]);
+    }, [isExpanded, account?.bio, customFields, isLoadingAccount]);
 
     if (!isLoadingAccount && !account) {
         return (
@@ -188,14 +188,14 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                             </div>
                             <H2 className='mt-4 truncate break-anywhere'>{!isLoadingAccount ? account?.name : <Skeleton className='w-32' />}</H2>
                             <div className='mb-4 flex items-center gap-2'>
-                                <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900' href={account?.url} rel='noopener noreferrer' target='_blank'>
+                                <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-500' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                     <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 </a>
                                 {account?.followsMe && !isLoadingAccount && (
                                     <Badge className='mt-px whitespace-nowrap' variant='secondary'>Follows you</Badge>
                                 )}
                             </div>
-                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content transition-max-height relative text-[1.5rem] duration-300 ease-in-out break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
+                            {(account?.bio || customFields?.length > 0) && (<div ref={contentRef} className={`ap-profile-content relative text-[1.5rem] break-anywhere [&>p]:mb-3 ${isExpanded ? 'max-h-none pb-7' : 'max-h-[160px] overflow-hidden'} relative`}>
                                 {!isLoadingAccount ?
                                     <div dangerouslySetInnerHTML={{__html: account?.bio ?? ''}} /> :
                                     <>
@@ -210,10 +210,10 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                     </span>
                                 ))}
                                 {!isExpanded && isOverflowing && (
-                                    <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/90 via-60% to-transparent' />
+                                    <div className='absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-white via-white/100 via-60% to-transparent dark:from-black dark:via-black/100' />
                                 )}
                                 {isOverflowing && <Button
-                                    className='absolute bottom-0 h-auto p-0'
+                                    className='absolute bottom-0 h-auto p-0 text-md'
                                     variant='link'
                                     onClick={toggleExpand}
                                 >{isExpanded ? 'Show less' : 'Show all'}</Button>}
