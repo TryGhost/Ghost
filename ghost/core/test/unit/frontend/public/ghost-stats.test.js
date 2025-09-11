@@ -310,11 +310,11 @@ describe('ghost-stats.js', function () {
             
             // Verify UTM fields are present at top level
             expect(payload).to.include({
-                utmSource: 'test-source',
-                utmMedium: 'test-medium',
-                utmCampaign: 'test-campaign',
-                utmTerm: 'test-term',
-                utmContent: 'test-content'
+                utm_source: 'test-source',
+                utm_medium: 'test-medium',
+                utm_campaign: 'test-campaign',
+                utm_term: 'test-term',
+                utm_content: 'test-content'
             });
         });
 
@@ -385,11 +385,11 @@ describe('ghost-stats.js', function () {
             
             // Verify UTM tracking fields are present
             expect(innerPayload).to.include({
-                utmSource: 'test-source',
-                utmMedium: 'test-medium',
-                utmCampaign: 'test-campaign',
-                utmTerm: 'test-term',
-                utmContent: 'test-content'
+                utm_source: 'test-source',
+                utm_medium: 'test-medium',
+                utm_campaign: 'test-campaign',
+                utm_term: 'test-term',
+                utm_content: 'test-content'
             });
             
             // Verify data types
@@ -403,7 +403,7 @@ describe('ghost-stats.js', function () {
             
             // Verify referrer structure is clean (no UTM fields)
             expect(innerPayload.parsedReferrer).to.have.all.keys(['url', 'source', 'medium']);
-            expect(innerPayload.parsedReferrer).to.not.have.any.keys(['utmSource', 'utmMedium', 'utmCampaign', 'utmTerm', 'utmContent']);
+            expect(innerPayload.parsedReferrer).to.not.have.any.keys(['utm_source', 'utm_medium', 'utm_campaign', 'utm_term', 'utm_content']);
         });
 
         it('should handle missing token gracefully', async function () {
