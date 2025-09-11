@@ -15,6 +15,10 @@ Shade is built on three powerful foundations:
 - [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
 - [Radix UI](https://www.radix-ui.com/) - Accessible component primitives
 
+### Scope & Reuse
+
+Shade contains reusable, system-wide components and patterns. Keep one-off, app-specific components in the consuming application rather than adding them to Shade.
+
 ### Target Audience
 
 - **Designers**: Understand our design language and component capabilities
@@ -42,6 +46,8 @@ yarn add @tryghost/shade
 yarn add react react-dom tailwindcss
 ```
 
+> Note: The package is currently private and primarily consumed internally in the monorepo. The snippet above reflects usage once published.
+
 ### Basic Usage
 
 ```tsx
@@ -66,6 +72,30 @@ module.exports = {
     // Your custom config...
 }
 ```
+
+### Scope Styles & Dark Mode
+
+Shade scopes all styles to a `.shade` container and toggles dark mode with a `.dark` class inside that scope.
+
+Use `ShadeApp` to handle scoping and provide context:
+
+```tsx
+import ShadeApp from '@tryghost/shade';
+import {Button} from '@tryghost/shade';
+
+export default function App() {
+    // Toggle dark mode by switching the `darkMode` prop
+    return (
+        <ShadeApp darkMode={false}>
+            <div>
+                <Button>Continue</Button>
+            </div>
+        </ShadeApp>
+    );
+}
+```
+
+Alternatively, wrap your UI in a div with `className="shade"` and toggle a nested `.dark` class when needed.
 
 ## Documentation Structure
 

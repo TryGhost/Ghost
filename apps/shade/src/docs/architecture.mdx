@@ -15,7 +15,8 @@ import { Meta } from '@storybook/blocks';
 ├── src/
 │   ├── components/
 │   │   ├── ui/           # Base ShadCN components
-│   │   └── <feature>/    # Composed components
+│   │   ├── layout/       # Composed, reusable layout components
+│   │   └── features/     # Feature-specific, higher-level components
 │   ├── hooks/            # Custom React hooks
 │   ├── providers/        # Context providers
 │   ├── lib/utils.ts      # Utilities
@@ -33,12 +34,17 @@ Located in `/src/components/ui/`:
 - Follow composable pattern
 - Examples: Button, Input, Card
 
-### Composed Components
-Located in `/src/components/<feature>/`:
-- Combine base components
-- Feature-specific implementations
+### Layout Components (Composed)
+Located in `/src/components/layout/`:
+- Compose base UI into reusable layout primitives (Page, Header, Heading, ViewHeader)
+- Shared across surfaces; no product logic
 - Follow same patterns as base components
-- Examples: SearchBar, UserCard
+
+### Feature Components
+Located in `/src/components/features/`:
+- Higher-level, feature-specific compositions (e.g., PostShareModal, SourceTabs)
+- May bundle multiple UI and layout parts for a specific workflow
+- Still reusable across apps when the feature exists
 
 ## Dependencies
 
@@ -55,9 +61,9 @@ Located in `/src/components/<feature>/`:
 
 ### Naming Conventions
 
-- `PascalCase` for React components
-- `kebab-case` for utilities, hooks
-- `camelCase` for functions, objects, types
+- Filenames: ShadCN-generated files keep kebab-case; file-scoped components live alongside their stories
+- Components: `PascalCase`
+- Functions/vars/types: `camelCase`
 
 > ⚠️ Note: ShadCN/UI CLI creates files in kebab-case. We accept this inconsistency due to case-sensitivity issues.
 
@@ -65,7 +71,7 @@ Located in `/src/components/<feature>/`:
 
 ```tsx
 // Basic component structure
-import { cn } from "@/utils"
+import { cn } from "@/lib/utils"
 import { cva } from "class-variance-authority"
 
 const componentVariants = cva(
@@ -104,20 +110,12 @@ export function Component({ className, ...props }: ComponentProps) {
 
 ## Icons
 
-Shade uses two types of icons:
+Shade defaults to using Lucide icons. Since all exports are aliased as `LucideIcon` in `index.ts`, the way to use icons in apps happens through referencing the LucideIcon package:
 
-1. **Lucide Icons** (default)
    ```tsx
-   import { Search } from 'lucide-react';
+   import { LucideIcon } from 'lucide-react';
 
-   <Search size={16} />
-   ```
-
-2. **Custom Icons**
-   ```tsx
-   import { Icon } from '@tryghost/shade';
-
-   <Icon.CustomIcon size="md" />
+   <LucideIcon.Search size={16} />
    ```
 
 ## ShadCN/UI Configuration
