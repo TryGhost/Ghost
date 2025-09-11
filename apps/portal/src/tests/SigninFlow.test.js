@@ -170,8 +170,8 @@ describe('Signin', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.click(submitButton);
 
-            const desc = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
-            expect(desc).toBeInTheDocument();
+            const description = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
+            expect(description).toBeInTheDocument();
         });
 
         test('with OTC enabled', async () => {
