@@ -185,9 +185,9 @@ export default class MagicLinkPage extends React.Component {
         return (
             <form onSubmit={e => this.handleSubmit(e)}>
                 <section className='gh-portal-section'>
-                    <div className='gh-portal-inputotc-outer'>
-                        <div className='gh-portal-inputotc-wrap'>
-                            <p className='gh-portal-inputotc-error gh-portal-error' data-visible={hasError}>
+                    <div className='gh-portal-input-otc-outer'>
+                        <div className='gh-portal-input-otc-wrapper'>
+                            <p className='gh-portal-input-otc-error gh-portal-error' data-visible={hasError}>
                                 {errorMessage}
                             </p>
                             <InputOTC 
