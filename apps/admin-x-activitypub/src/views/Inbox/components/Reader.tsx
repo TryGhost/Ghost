@@ -427,7 +427,6 @@ export const Reader: React.FC<ReaderProps> = ({
     const modalRef = useRef<HTMLElement>(null);
     const [isCustomizerOpen, setIsCustomizerOpen] = useState(false);
     const [isTOCOpen, setIsTOCOpen] = useState(false);
-    const scrollPositionSavedRef = useRef(false);
 
     const [expandedChains, setExpandedChains] = useState<Set<string>>(new Set());
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
@@ -699,10 +698,8 @@ export const Reader: React.FC<ReaderProps> = ({
     useEffect(() => {
         const container = modalRef.current;
         return () => {
-            // Save scroll position when component unmounts
-            if (container && postId && !scrollPositionSavedRef.current) {
+            if (container && postId) {
                 scrollPositionCache.set(postId, container.scrollTop);
-                scrollPositionSavedRef.current = true;
             }
         };
     }, [postId]);
