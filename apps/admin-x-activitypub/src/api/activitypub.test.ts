@@ -1596,4 +1596,145 @@ describe('ActivityPubAPI', function () {
             expect(result).toBe(true);
         });
     });
+
+    describe('enableBluesky', function () {
+        test('It enables bluesky', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/enable`]: {
+                    response: JSONResponse({
+                        handle: '@foo@bar.baz'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.enableBluesky();
+
+            expect(result).toBe('@foo@bar.baz');
+        });
+
+        test('It returns an empty string if the response is null', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/enable`]: {
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.enableBluesky();
+
+            expect(result).toBe('');
+        });
+
+        test('It returns an empty string if the response does not contain a handle property', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/enable`]: {
+                    response: JSONResponse({
+                        foo: 'bar'
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.enableBluesky();
+
+            expect(result).toBe('');
+        });
+
+        test('It returns an empty string if the response contains an invalid handle property', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/enable`]: {
+                    response: JSONResponse({
+                        handle: ['@foo@bar.baz']
+                    })
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            const result = await api.enableBluesky();
+
+            expect(result).toBe('');
+        });
+    });
+
+    describe('disableBluesky', function () {
+        test('It disables bluesky', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                [`https://activitypub.api/.ghost/activitypub/v1/actions/bluesky/disable`]: {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('POST');
+                    },
+                    response: JSONResponse(null)
+                }
+            });
+
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await api.disableBluesky();
+        });
+    });
 });
