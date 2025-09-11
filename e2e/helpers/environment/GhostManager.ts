@@ -48,6 +48,10 @@ export class GhostManager {
         try {
             const network = await this.dockerCompose.getNetwork();
             const tinybirdState = this.tinybird.loadState();
+            
+            // Use deterministic port based on worker index (or 0 if not in parallel)
+            const hostPort = 30000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
+            
             const environment = {
                 server__host: '0.0.0.0',
                 server__port: String(GHOST_PORT),
@@ -57,6 +61,7 @@ export class GhostManager {
                 database__connection__user: MYSQL.USER,
                 database__connection__password: MYSQL.PASSWORD,
                 database__connection__database: config.instanceId,
+                url: `http://localhost:${hostPort}`,
                 NODE_ENV: 'development',
                 TB_HOST: `http://${TB.LOCAL_HOST}:${TB.PORT}`,
                 TB_LOCAL_HOST: TB.LOCAL_HOST,
@@ -66,7 +71,7 @@ export class GhostManager {
                 tinybird__workspaceId: tinybirdState.workspaceId,
                 tinybird__adminToken: tinybirdState.adminToken
             } as Record<string, string>;
-
+            
             const containerConfig: ContainerCreateOptions = {
                 Image: DEFAULT_GHOST_IMAGE,
                 Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
@@ -82,7 +87,7 @@ export class GhostManager {
                 },
                 HostConfig: {
                     PortBindings: {
-                        [`${GHOST_PORT}/tcp`]: [{HostPort: '0'}]
+                        [`${GHOST_PORT}/tcp`]: [{HostPort: String(hostPort)}]
                     }
                 },
                 Labels: {
