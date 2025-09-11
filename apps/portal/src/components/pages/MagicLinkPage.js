@@ -187,13 +187,10 @@ export default class MagicLinkPage extends React.Component {
                 <section className='gh-portal-section'>
                     <div className='gh-portal-input-otc-outer'>
                         <div className='gh-portal-input-otc-wrapper'>
-                            <p className='gh-portal-input-otc-error gh-portal-error' data-visible={hasError}>
-                                {errorMessage}
-                            </p>
-                            <InputOTC 
+                            <InputOTC
                                 id={`input-${OTC_FIELD_NAME}`}
-                                name={OTC_FIELD_NAME} 
-                                maxLength={6}  
+                                name={OTC_FIELD_NAME}
+                                maxLength={6}
                                 value={this.state.otc}
                                 label={t('Code')}
                                 hasError={hasError}
@@ -205,6 +202,9 @@ export default class MagicLinkPage extends React.Component {
                                     ))}
                                 </InputOTCGroup>
                             </InputOTC>
+                            <p className='gh-portal-input-otc-error gh-portal-error' data-visible={hasError}>
+                                {errorMessage}
+                            </p>
                         </div>
                     </div>
                 </section>
