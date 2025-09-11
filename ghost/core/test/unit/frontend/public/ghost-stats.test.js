@@ -615,11 +615,11 @@ describe('ghost-stats.js', function () {
             
             // Verify UTM data is at top level
             expect(innerPayload).to.include({
-                utmSource: 'twitter',
-                utmMedium: 'social',
-                utmCampaign: 'test-campaign',
-                utmTerm: 'test-term',
-                utmContent: 'test-content'
+                utm_source: 'twitter',
+                utm_medium: 'social',
+                utm_campaign: 'test-campaign',
+                utm_term: 'test-term',
+                utm_content: 'test-content'
             });
         });
 
@@ -639,11 +639,11 @@ describe('ghost-stats.js', function () {
             
             // UTM fields should still be present and null
             expect(innerPayload).to.include({
-                utmSource: null,
-                utmMedium: null,
-                utmCampaign: null,
-                utmTerm: null,
-                utmContent: null
+                utm_source: null,
+                utm_medium: null,
+                utm_campaign: null,
+                utm_term: null,
+                utm_content: null
             });
         });
 
@@ -664,11 +664,11 @@ describe('ghost-stats.js', function () {
             
             // UTM fields should be present and null
             expect(innerPayload).to.include({
-                utmSource: null,
-                utmMedium: null,
-                utmCampaign: null,
-                utmTerm: null,
-                utmContent: null
+                utm_source: null,
+                utm_medium: null,
+                utm_campaign: null,
+                utm_term: null,
+                utm_content: null
             });
         });
     });

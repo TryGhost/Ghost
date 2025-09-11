@@ -182,11 +182,11 @@ export class GhostStats {
                 },
                 pathname: location?.pathname,
                 href: location?.href,
-                utmSource: referrerData.utmSource,
-                utmMedium: referrerData.utmMedium,
-                utmCampaign: referrerData.utmCampaign,
-                utmTerm: referrerData.utmTerm,
-                utmContent: referrerData.utmContent
+                utm_source: referrerData.utmSource,
+                utm_medium: referrerData.utmMedium,
+                utm_campaign: referrerData.utmCampaign,
+                utm_term: referrerData.utmTerm,
+                utm_content: referrerData.utmContent
             });
         }, 300);
     }
