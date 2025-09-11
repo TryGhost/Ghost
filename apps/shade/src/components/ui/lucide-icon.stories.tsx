@@ -3,13 +3,13 @@ import type {Meta, StoryObj} from '@storybook/react';
 import {Smile} from 'lucide-react';
 
 const meta = {
-    title: 'Experimental / Lucide icons',
+    title: 'Components / Icons',
     component: Smile,
     tags: ['autodocs'],
     parameters: {
         docs: {
             description: {
-                component: 'Note: right now we are experimenting whether we should switch to Lucide Icons instead of Streamline. Read the [Lucide Icons docs](https://lucide.dev/guide/packages/lucide-react) to learn more about it.'
+                component: 'Shade uses Lucide Icons by default, following the standard in ShadCN/UI. To learn how to use them, read the [Lucide Icons docs](https://lucide.dev/guide/packages/lucide-react). \n\nIn Ghost apps you can\'t directly reference icons as you would normally in ShadCN/UI, instead you need to use the `LucideIcon` component, e.g. `<LucideIcon.Smile size="20" />`.'
             }
         }
     }
