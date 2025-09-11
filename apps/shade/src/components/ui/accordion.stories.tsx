@@ -11,7 +11,14 @@ const meta = {
     title: 'Components / Accordion',
     component: Accordion,
     tags: ['autodocs'],
-    parameters: {}
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Disclosure component for toggling sections of content. Use `type="single"` for one-at-a-time expansion or `type="multiple"` to allow several items open.'
+            }
+        }
+    }
 } satisfies Meta<typeof Accordion>;
 
 export default meta;
@@ -43,6 +50,13 @@ export const Default: Story = {
                 </AccordionContent>
             </AccordionItem>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Single mode with collapsible behavior; only one section is expanded at a time.'
+            }
+        }
     }
 };
 
@@ -79,6 +93,13 @@ export const Multiple: Story = {
                 </AccordionContent>
             </AccordionItem>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Multiple mode allows several items to be expanded simultaneously.'
+            }
+        }
     }
 };
 
@@ -115,6 +136,38 @@ export const CustomStyling: Story = {
                 </AccordionContent>
             </AccordionItem>
         ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Tailor borders, padding, and hover states via `className` on the wrapper and subcomponents.'
+            }
+        }
     }
 };
 
+export const WithDefaultOpen: Story = {
+    args: {
+        type: 'single',
+        defaultValue: 'item-1',
+        children: [
+            <AccordionItem key="item-1" value="item-1">
+                <AccordionTrigger>Opens by default</AccordionTrigger>
+                <AccordionContent>
+                    Use `defaultValue` (uncontrolled) or `value` (controlled) to manage open state.
+                </AccordionContent>
+            </AccordionItem>,
+            <AccordionItem key="item-2" value="item-2">
+                <AccordionTrigger>Second item</AccordionTrigger>
+                <AccordionContent>Closed initially.</AccordionContent>
+            </AccordionItem>
+        ]
+    },
+    parameters: {
+        docs: {
+            description: {
+                story: 'Demonstrates initial open state using `defaultValue`.'
+            }
+        }
+    }
+};
