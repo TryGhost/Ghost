@@ -896,6 +896,7 @@ module.exports = {
     tokens: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         token: {type: 'string', maxlength: 32, nullable: false, index: true},
+        uuid: {type: 'string', maxlength: 36, nullable: false, unique: true, validations: {isUUID: true}},
         data: {type: 'string', maxlength: 2000, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
