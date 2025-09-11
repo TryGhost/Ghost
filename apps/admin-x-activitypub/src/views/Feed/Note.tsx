@@ -46,14 +46,8 @@ const Note = () => {
 
     const object = currentPost?.object;
 
-    const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
+    const replyCount = object?.replyCount ?? 0;
     const [hasScrolledToPost, setHasScrolledToPost] = useState(false);
-
-    useEffect(() => {
-        if (object?.replyCount !== undefined) {
-            setReplyCount(object.replyCount);
-        }
-    }, [object?.replyCount]);
 
     useEffect(() => {
         if (postRef.current && threadParents.length > 0 && !hasScrolledToPost) {
@@ -146,12 +140,8 @@ const Note = () => {
         );
     }
 
-    function handleReplyCountChange(increment: number) {
-        setReplyCount((current: number) => current + increment);
-    }
-
     function handleDelete() {
-        handleReplyCountChange(-1);
+        // Reply count will be updated via cache invalidation
     }
 
     function toggleChain(chainId: string) {
@@ -258,8 +248,6 @@ const Note = () => {
                                     />
                                     <APReplyBox
                                         object={object}
-                                        onReply={() => handleReplyCountChange(1)}
-                                        onReplyError={() => handleReplyCountChange(-1)}
                                     />
                                     <FeedItemDivider />
                                     <div ref={repliesRef}>

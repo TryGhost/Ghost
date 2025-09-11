@@ -533,7 +533,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
 function updateReplyCacheOnce(queryClient: QueryClient, id: string, delta: number) {
     // Update reply chain cache (used by Note.tsx and Reader.tsx)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey, exact: false}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
