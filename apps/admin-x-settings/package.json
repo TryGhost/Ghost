@@ -59,7 +59,7 @@
     "eslint-plugin-react-refresh": "0.4.20",
     "eslint-plugin-tailwindcss": "3.18.2",
     "stylelint": "15.11.0",
-    "vite": "5.4.19",
+    "vite": "5.4.20",
     "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "3.3.0",
     "vitest": "1.6.1"

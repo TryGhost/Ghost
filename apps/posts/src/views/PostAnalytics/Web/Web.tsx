@@ -181,7 +181,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                         <div className='grow'>
                             <EmptyIndicator
                                 className='h-full'
-                                description='Try adjusting your date range to see more data.'
+                                description='Try adjusting filters to see more data.'
                                 title={`No visitors ${getPeriodText(range)}`}
                             >
                                 <LucideIcon.Globe strokeWidth={1.5} />
