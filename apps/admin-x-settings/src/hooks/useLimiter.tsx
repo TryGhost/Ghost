@@ -74,8 +74,18 @@ export const useLimiter = () => {
     }, [config.hostSettings?.billing]);
 
     return useMemo(() => {
+        // Return a stable no-op API when the limiter isn't ready
+        // This prevents runtime errors while maintaining backward compatibility
+        const noOpLimiter = {
+            isLimited: (): boolean => false,
+            isDisabled: (): boolean => false,
+            checkWouldGoOverLimit: (): Promise<boolean> => Promise.resolve(false),
+            errorIfWouldGoOverLimit: (): Promise<void> => Promise.resolve(),
+            errorIfIsOverLimit: (): Promise<void> => Promise.resolve()
+        };
+
         if (!LimitService || !config.hostSettings?.limits || isLoading) {
-            return;
+            return noOpLimiter;
         }
 
         const limits = {...config.hostSettings.limits} as LimiterLimits;
