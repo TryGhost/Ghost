@@ -34,7 +34,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@codemirror/lang-html": "6.4.9",
+    "@codemirror/lang-html": "6.4.10",
     "@tryghost/color-utils": "0.2.10",
     "@tryghost/kg-unsplash-selector": "0.3.6",
     "@tryghost/limit-service": "1.4.1",
