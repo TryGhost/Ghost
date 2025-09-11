@@ -170,7 +170,7 @@ describe('Signin', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.click(submitButton);
 
-            const desc = await within(popupIframeDocument).findByText(/A sign in link has been sent to jamie@example.com/i);
+            const desc = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
             expect(desc).toBeInTheDocument();
         });
 

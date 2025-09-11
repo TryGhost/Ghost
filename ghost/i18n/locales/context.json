@@ -2,6 +2,7 @@
     "(save {highestYearlyDiscount}%)": "Appears in portal next to the yearly plan selector",
     "+1 (123) 456-7890": "Placeholder for phone number input field",
     "1 comment": "Comment count displayed above the comments section in case there is only one",
+    "A login link has been sent to your inbox. If it doesn't arrive in 3 minutes, be sure to check your spam folder.": "",
     "A sign in link has been sent to {submittedEmailOrInbox}. If it doesn't arrive in 3 minutes, be sure to check your spam folder.": "",
     "Account": "A label in Portal for your account area",
     "Account details updated successfully": "Popover message in Portal",
