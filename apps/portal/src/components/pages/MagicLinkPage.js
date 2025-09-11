@@ -191,6 +191,7 @@ export default class MagicLinkPage extends React.Component {
                                 id={`input-${OTC_FIELD_NAME}`}
                                 name={OTC_FIELD_NAME}
                                 maxLength={6}
+                                autoFocus
                                 value={this.state.otc}
                                 label={t('Code')}
                                 hasError={hasError}

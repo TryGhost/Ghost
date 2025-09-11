@@ -44,7 +44,7 @@ export const InputOTCStyles = `
     justify-content: center;
     width: 36px;
     height: 36px;
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     color: inherit;
     background: transparent;
     /* deliberately leaves out left border to avoid doubling up */
