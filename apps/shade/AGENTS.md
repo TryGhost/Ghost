@@ -25,6 +25,12 @@
 - Always forward and merge `className` with `cn(...)`. Use CVA for variants when useful.
 - Tailwind is scoped via `.shade`; dark mode uses `.dark`. Follow ESLint and `tailwindcss/*` rules.
 
+## Component API Patterns
+- Prefer compound subcomponents for multi‑region components (e.g., `Header.Title`, `Header.Meta`, `Header.Actions`) instead of many props.
+- Keep parts small and focused; attach them as static properties and export as named exports.
+- Expose Radix/HTML props where sensible; always include `className` and merge with `cn(...)`.
+- Demonstrate each part in Storybook stories (e.g., “With actions”, “With meta”).
+
 ## Adding New Components
 - Prefer ShadCN first: search for an equivalent and add via `npx shadcn@latest add <component>`. Follow the guardrails above to avoid accidental overwrites.
 - Location & exports: place new UI components under `src/components/ui` and export them from `src/index.ts`.
