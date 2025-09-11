@@ -119,7 +119,7 @@ export default class GhBillingIframe extends Component {
         await this.limit.reload();
 
         // Invalidate React Query cache for config data in admin-x-settings
-        if (window.adminXQueryClient) {
+        if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
             window.adminXQueryClient.invalidateQueries(['ConfigResponseType']);
         }
 
