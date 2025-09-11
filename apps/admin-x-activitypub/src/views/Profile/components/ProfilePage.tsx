@@ -52,6 +52,14 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const isBlocked = account?.blockedByMe;
     const isDomainBlocked = account?.domainBlockedByMe;
     const [viewBlockedPosts, setViewBlockedPosts] = useState(false);
+    const [copied, setCopied] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (copyTimeoutRef.current) {
+            window.clearTimeout(copyTimeoutRef.current);
+        }
+    }, []);
 
     const handleBlock = () => {
         if (isBlocked) {
@@ -74,8 +82,22 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     };
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(account.handle);
-        toast.success('Handle copied');
+        if (!account?.handle || !navigator?.clipboard?.writeText) {
+            toast.error('Unable to copy handle');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(account.handle);
+            setCopied(true);
+            toast.success('Handle copied');
+            if (copyTimeoutRef.current) {
+                window.clearTimeout(copyTimeoutRef.current);
+            }
+            copyTimeoutRef.current = window.setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error('Failed to copy handle');
+            setCopied(false);
+        }
     };
 
     const [isExpanded, setisExpanded] = useState(false);
@@ -191,6 +213,12 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                                 <a className='inline-flex max-w-full truncate text-[1.5rem] text-gray-800 hover:text-gray-900 dark:text-gray-600 dark:hover:text-gray-500' href={account?.url} rel='noopener noreferrer' target='_blank'>
                                     <span className='truncate'>{!isLoadingAccount ? account?.handle : <Skeleton className='w-full max-w-56' />}</span>
                                 </a>
+                                <Button className='-ml-1.5 size-6 p-0 text-gray-800 hover:text-gray-900 dark:text-gray-700 dark:hover:text-gray-600' title='Copy handle' variant='link' onClick={handleCopy}>
+                                    {!copied ?
+                                        <LucideIcon.Copy size={16} /> :
+                                        <LucideIcon.Check size={16} />
+                                    }
+                                </Button>
                                 {account?.followsMe && !isLoadingAccount && (
                                     <Badge className='mt-px whitespace-nowrap' variant='secondary'>Follows you</Badge>
                                 )}
