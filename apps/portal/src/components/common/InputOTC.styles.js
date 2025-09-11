@@ -100,11 +100,12 @@ export const InputOTCStyles = `
 
 /* Error message above OTC input */
 .gh-portal-input-otc-error {
-    position: absolute;
     visibility: hidden;
-    margin: 0;
-    top: -20px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+    margin-bottom: -8px;
 }
 
 .gh-portal-input-otc-error[data-visible="true"] {
