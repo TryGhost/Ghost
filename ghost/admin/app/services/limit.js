@@ -34,9 +34,16 @@ export default class LimitsService extends Service {
     constructor() {
         super(...arguments);
 
-        let limits = this.config.hostSettings?.limits;
-
         this.limiter = new LimitService();
+        this.loadLimits();
+    }
+
+    async checkWouldGoOverLimit(limitName, metadata = {}) {
+        return this.limiter.checkWouldGoOverLimit(limitName, metadata);
+    }
+
+    loadLimits() {
+        let limits = this.config.hostSettings?.limits;
 
         if (!limits) {
             return;
@@ -60,8 +67,8 @@ export default class LimitsService extends Service {
         });
     }
 
-    async checkWouldGoOverLimit(limitName, metadata = {}) {
-        return this.limiter.checkWouldGoOverLimit(limitName, metadata);
+    reload() {
+        this.loadLimits();
     }
 
     decorateWithCountQueries(limits) {
