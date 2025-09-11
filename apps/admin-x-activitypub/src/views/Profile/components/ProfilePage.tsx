@@ -53,6 +53,13 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     const isDomainBlocked = account?.domainBlockedByMe;
     const [viewBlockedPosts, setViewBlockedPosts] = useState(false);
     const [copied, setCopied] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (copyTimeoutRef.current) {
+            window.clearTimeout(copyTimeoutRef.current);
+        }
+    }, []);
 
     const handleBlock = () => {
         if (isBlocked) {
@@ -75,10 +82,22 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
     };
 
     const handleCopy = async () => {
-        setCopied(true);
-        await navigator.clipboard.writeText(account.handle);
-        toast.success('Handle copied');
-        setTimeout(() => setCopied(false), 2000);
+        if (!account?.handle || !navigator?.clipboard?.writeText) {
+            toast.error('Unable to copy handle');
+            return;
+        }
+        try {
+            await navigator.clipboard.writeText(account.handle);
+            setCopied(true);
+            toast.success('Handle copied');
+            if (copyTimeoutRef.current) {
+                window.clearTimeout(copyTimeoutRef.current);
+            }
+            copyTimeoutRef.current = window.setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error('Failed to copy handle');
+            setCopied(false);
+        }
     };
 
     const [isExpanded, setisExpanded] = useState(false);

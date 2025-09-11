@@ -51,15 +51,31 @@ const ProfileCard: React.FC<ProfileCardProps> = memo(({
     accentColor
 }) => {
     const [copied, setCopied] = useState(false);
+    const copyTimeoutRef = useRef<number | null>(null);
+
+    useEffect(() => () => {
+        if (copyTimeoutRef.current) {
+            window.clearTimeout(copyTimeoutRef.current);
+        }
+    }, []);
 
     const handleCopy = async () => {
-        if (!account?.handle) {
+        if (!account?.handle || !navigator?.clipboard?.writeText) {
+            toast.error('Unable to copy handle');
             return;
         }
-        setCopied(true);
-        await navigator.clipboard.writeText(account.handle);
-        toast.success('Handle copied');
-        setTimeout(() => setCopied(false), 2000);
+        try {
+            await navigator.clipboard.writeText(account.handle);
+            setCopied(true);
+            toast.success('Handle copied');
+            if (copyTimeoutRef.current) {
+                window.clearTimeout(copyTimeoutRef.current);
+            }
+            copyTimeoutRef.current = window.setTimeout(() => setCopied(false), 2000);
+        } catch {
+            toast.error('Failed to copy handle');
+            setCopied(false);
+        }
     };
 
     const getBackgroundColor = () => {
