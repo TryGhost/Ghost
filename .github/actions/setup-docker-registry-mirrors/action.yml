@@ -1,0 +1,11 @@
+name: 'Setup Docker Registry Mirrors'
+description: 'Configure Docker daemon to use mirror.gcr.io registry mirror'
+runs:
+  using: 'composite'
+  steps:
+    - name: Configure Docker daemon for mirror.gcr.io
+      shell: bash
+      run: |
+        echo '{"registry-mirrors": ["https://mirror.gcr.io"]}' | sudo tee /etc/docker/daemon.json
+        sudo systemctl restart docker
+        docker logout || echo "No Docker Hub login found"

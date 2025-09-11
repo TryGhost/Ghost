@@ -105,6 +105,6 @@
     // "skipDefaultLibCheck": true,                      /* Skip type checking .d.ts files that are included with TypeScript. */
     "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
   },
-  "include": ["helpers/**/*", "tests/**/*", "data-factory/**/*"],
+  "include": ["helpers/**/*", "tests/**/*", "data-factory/**/*", "types.d.ts"],
   "exclude": ["**/*.test.ts", "**/*.test.js", "node_modules"]
 }

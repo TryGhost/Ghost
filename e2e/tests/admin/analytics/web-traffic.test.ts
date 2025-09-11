@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test';
+import {test, expect} from '../../../helpers/playwright';
 import {AnalyticsWebTrafficPage} from '../../../helpers/pages/admin';
 
 test.describe('Ghost Admin - Analytics Web Traffic', () => {
