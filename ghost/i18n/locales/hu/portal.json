@@ -179,7 +179,6 @@
     "This site is not accepting payments at the moment.": "A weboldal jelenleg nem fogad el fizetést.",
     "This site only accepts paid members.": "Ez az oldal csak fizetős tagokat fogad.",
     "To complete signup, click the confirmation link in your inbox. If it doesn't arrive within 3 minutes, check your spam folder!": "A regisztráció befejezéséhez kérjük, kattints az e-mailben kapott linkre. Ha a link nem érkezik meg 3 percen belül, kérjük, ellenőrizd a spam mappát.",
-    "To complete signup, click the confirmation link sent to {submittedEmailOrInbox}. If it doesn't arrive within 3 minutes, check your spam folder!": "",
     "To continue to stay up to date, subscribe to {publication} below.": "Ha a jövőben is naprakész szeretnél lenni, iratkozz fel ide {publication}",
     "Too many attempts try again in {number} days.": "Túl sok próbálkozás történt. Próbáld meg ennyi nap múlva újra: {number}",
     "Too many attempts try again in {number} hours.": "Túl sok próbálkozás történt. Próbáld meg ennyi óra múlva újra: {number}",
