@@ -2,7 +2,7 @@ import {render, fireEvent} from '../../utils/test-utils';
 import MagicLinkPage from './MagicLinkPage';
 
 const OTC_LABEL_REGEX = /Code/i;
-const OTC_ERROR_REGEX = /Enter code below/i;
+const OTC_ERROR_REGEX = /Enter code above/i;
 
 const setupTest = (options = {}) => {
     const {
