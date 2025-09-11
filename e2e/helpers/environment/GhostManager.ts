@@ -64,7 +64,12 @@ export class GhostManager {
                 tinybird__stats__endpointBrowser: 'http://localhost:7181',
                 tinybird__tracker__endpoint: 'http://localhost/.ghost/analytics/api/v1/page_hit',
                 tinybird__workspaceId: tinybirdState.workspaceId,
-                tinybird__adminToken: tinybirdState.adminToken
+                tinybird__adminToken: tinybirdState.adminToken,
+                // Email configuration to use Mailhog
+                mail__transport: 'SMTP',
+                mail__options__host: 'mailhog',
+                mail__options__port: '1025',
+                mail__options__secure: 'false'
             } as Record<string, string>;
 
             const containerConfig: ContainerCreateOptions = {
