@@ -25,7 +25,7 @@ const MenuItem: React.FC<{
     selected?: boolean
 }> = ({children, selected}) => {
     return (
-        <div className={`flex h-[30px] items-center gap-1.5 rounded-sm px-2 text-sm font-medium  ${selected ? 'bg-gray-100 text-black' : 'text-gray-700'}`}>
+        <div className={`flex h-[30px] items-center gap-1.5 rounded-sm px-2 text-sm font-medium  ${selected ? 'bg-gray-100 text-black' : 'text-gray-700 dark:text-gray-600'}`}>
             {children}
         </div>
     );
@@ -40,7 +40,7 @@ const TabButton: React.FC<{
 }> = ({children, selected, onClick, onMouseEnter, onMouseLeave}) => {
     return (
         <Button
-            className={`h-auto rounded-full px-3 py-0.5 font-mono text-sm font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700'}`}
+            className={`h-auto rounded-full px-3 py-0.5 font-mono text-sm font-medium uppercase tracking-wide ${!selected && 'bg-transparent text-gray-700 dark:text-gray-600'}`}
             onClick={onClick}
             onMouseEnter={onMouseEnter}
             onMouseLeave={onMouseLeave}
@@ -131,7 +131,7 @@ const LongFormContent: React.FC = () => {
                         <div key={item.publisher} className='flex items-center justify-between gap-8 border-b border-gray-200 py-4 dark:border-gray-900'>
                             <div className='flex flex-col gap-1'>
                                 <div className='flex items-center gap-1.5 text-sm font-semibold'>
-                                    <div className='h-4 w-4 rounded-full bg-cover bg-center bg-no-repeat' style={{
+                                    <div className='size-4 rounded-full bg-cover bg-center bg-no-repeat' style={{
                                         backgroundImage: `url(${item.avatar})`
                                     }}></div>
                                     {item.publisher}
@@ -139,7 +139,7 @@ const LongFormContent: React.FC = () => {
                                 <div className='font-semibold'>
                                     {item.title}
                                 </div>
-                                <div className='text-sm text-gray-600'>
+                                <div className='text-sm text-gray-700 dark:text-gray-600'>
                                     {item.excerpt}
                                 </div>
                             </div>
@@ -216,7 +216,7 @@ const ShortFormContent: React.FC = () => {
             <div className='grid h-full grid-cols-[auto_248px] gap-4'>
                 <div className='mx-auto flex w-full max-w-[524px] flex-col items-center gap-4 pt-8'>
                     <div className='mb-5 flex w-full items-center gap-3 rounded-md bg-white p-3 text-gray-600 shadow-sm dark:bg-gray-950'>
-                        <Avatar className='h-9 w-9'>
+                        <Avatar className='size-9'>
                             <AvatarImage src={account?.avatarUrl} />
                             <AvatarFallback><LucideIcon.User strokeWidth={1.5} /></AvatarFallback>
                         </Avatar>
@@ -225,14 +225,14 @@ const ShortFormContent: React.FC = () => {
                     {feedList.map(item => (
                         <>
                             <div className='flex w-full items-start gap-3 px-3'>
-                                <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                                <div className='size-9 max-h-9 min-h-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                                     style={{
                                         backgroundImage: `url(${item.avatar})`
                                     }}></div>
                                 <div className='flex flex-col gap-3 text-sm'>
                                     <div className='mt-0.5 flex flex-col gap-0.5'>
                                         <div className='font-semibold leading-tighter'>{item.publisher}</div>
-                                        <div className='leading-tighter text-gray-700'>{item.handle}</div>
+                                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>{item.handle}</div>
                                     </div>
                                     <div>
                                         {item.post}
@@ -268,13 +268,13 @@ const Reader: React.FC = () => {
         <>
             <div className='relative flex w-full items-center justify-center border-b border-gray-200 py-5 dark:border-gray-900'>
                 <div className='flex w-full max-w-[520px] items-center gap-3 text-sm'>
-                    <div className='h-9 max-h-9 min-h-9 w-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
+                    <div className='size-9 max-h-9 min-h-9 min-w-9 max-w-9 rounded-full bg-cover bg-center bg-no-repeat'
                         style={{
                             backgroundImage: `url(${fourOFourAvatar})`
                         }}></div>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
                         <div className='font-semibold leading-tighter'>404 Media</div>
-                        <div className='leading-tighter text-gray-700'>@index@404media.co — Yesterday</div>
+                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
                     </div>
                 </div>
                 <div className='absolute right-0 flex items-center gap-4 text-gray-500'>
@@ -321,7 +321,7 @@ const Step3: React.FC = () => {
     };
 
     return (
-        <div className='flex h-full max-h-screen w-full flex-col gap-4 overflow-hidden px-14'>
+        <div className='flex size-full max-h-screen flex-col gap-4 overflow-hidden px-14'>
             <Header>
                 <div className='flex flex-col justify-between gap-4 text-xl font-medium'>
                     <h1 className='max-w-[680px]'>Find inspiration & follow what you love.</h1>
@@ -369,9 +369,9 @@ const Step3: React.FC = () => {
                 <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
                     <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl dark:bg-[#101114]'>
                         <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2 dark:bg-gray-950'>
-                            <div className='h-2 w-2 rounded-full bg-gray-300'></div>
-                            <div className='h-2 w-2 rounded-full bg-gray-300'></div>
-                            <div className='h-2 w-2 rounded-full bg-gray-300'></div>
+                            <div className='size-2 rounded-full bg-gray-300'></div>
+                            <div className='size-2 rounded-full bg-gray-300'></div>
+                            <div className='size-2 rounded-full bg-gray-300'></div>
                         </div>
                         <div className='h-full px-8'>
                             {activeTab === 1 && <LongFormContent />}
