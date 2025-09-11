@@ -60,7 +60,7 @@ export class EnvironmentManager {
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
      * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
-     * 3. Fetch Tinybird tokens from the tinybird-local service
+     * 3. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
@@ -72,6 +72,10 @@ export class EnvironmentManager {
 
     /**
      * Teardown global environment
+     * This should be called once after all tests have finished.
+     * 1. Stop and remove all docker-compose services
+     * 2. Clean up any state files created during the tests
+     3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
     public async globalTeardown(): Promise<void> {
         if (this.shouldPreserveEnvironment()) {
