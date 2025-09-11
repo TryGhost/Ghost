@@ -170,8 +170,8 @@ describe('Signin', () => {
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.click(submitButton);
 
-            const desc = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
-            expect(desc).toBeInTheDocument();
+            const description = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
+            expect(description).toBeInTheDocument();
         });
 
         test('with OTC enabled', async () => {
@@ -185,8 +185,8 @@ describe('Signin', () => {
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
-            const desc = await within(popupIframeDocument).findByText(/A sign in link has been sent to jamie@example.com/i);
-            expect(desc).toBeInTheDocument();
+            const description = await within(popupIframeDocument).findByText(/A sign in link has been sent to jamie@example.com/i);
+            expect(description).toBeInTheDocument();
             
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
@@ -562,8 +562,8 @@ describe('OTC Integration Flow', () => {
 
         await submitSigninForm(popupIframeDocument, 'jamie@example.com');
 
-        const descWithEmail = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
-        expect(descWithEmail).toBeInTheDocument();
+        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(description).toBeInTheDocument();
     });
     
     test('OTC verification with invalid code shows error', async () => {
