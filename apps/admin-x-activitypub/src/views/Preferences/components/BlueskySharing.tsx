@@ -121,7 +121,7 @@ const BlueskySharing: React.FC = () => {
                         )}
                     </div> :
                     <>
-                        <p className='mt-2 pr-32 text-base'>Your content is now live on Bluesky! We&apos;ve created a dedicated Bluesky profile shown below. Allow a few minutes for your Bluesky profile to activate before posts appear. This profile automatically displays everything you publish on Ghost.</p>
+                        <p className='mt-2 pr-32 text-base'>Your social web profile is now connected to Bluesky, via <a className="text-purple hover:text-purple-600" href="https://fed.brid.gy" rel="noreferrer" target="_blank">Bridgy Fed</a>. Posts are automatically synced after a short delay to complete activation.</p>
                         <div className='mt-6 flex flex-col items-center gap-4 rounded-lg border border-gray-200 p-8 dark:border-gray-950'>
                             <div className='relative'>
                                 <APAvatar
