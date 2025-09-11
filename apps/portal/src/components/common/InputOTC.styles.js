@@ -10,14 +10,15 @@ export const InputOTCStyles = `
 .gh-portal-input-otc-outer {
     display: flex;
     justify-content: center;
-    margin-top: -20px;
-    margin-bottom: -20px;
+    margin-top: -8px;
+    margin-bottom: -24px;
 }
 
 .gh-portal-input-otc-wrapper {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    position: relative;
 }
 
 /* Dim container if it has any disabled descendants */
@@ -97,11 +98,13 @@ export const InputOTCStyles = `
     box-shadow: 0 0 0 3px rgba(240, 37, 37, 0.2);
 }
 
-/* Reserved error area above OTC input */
+/* Error message above OTC input */
 .gh-portal-input-otc-error {
-    min-height: 22px;
-    margin: 0 0 6px;
+    position: absolute;
     visibility: hidden;
+    margin: 0;
+    top: -20px;
+    font-size: 1.2rem;
 }
 
 .gh-portal-input-otc-error[data-visible="true"] {
