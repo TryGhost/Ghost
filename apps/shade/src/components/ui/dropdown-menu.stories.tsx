@@ -5,13 +5,28 @@ import {Button} from './button';
 const meta = {
     title: 'Components / Dropdown menu',
     component: DropdownMenu,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Contextual menu for grouped actions. Use for navigation or object-specific commands triggered from a button or icon.'
+            }
+        }
+    }
 } satisfies Meta<typeof DropdownMenu>;
 
 export default meta;
 type Story = StoryObj<typeof DropdownMenu>;
 
 export const Default: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story: 'Includes groups, separators, submenus, disabled items, and keyboard shortcuts.'
+            }
+        }
+    },
     args: {
         children: [
             <DropdownMenuTrigger key="trigger" asChild>

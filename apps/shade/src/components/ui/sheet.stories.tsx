@@ -14,6 +14,14 @@ const meta = {
     title: 'Components / Sheet',
     component: Sheet,
     tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component:
+                    'Slide-over panel for lightweight tasks or secondary content. Great for filters, editing contextual data, or multi-step wizards.'
+            }
+        }
+    },
     argTypes: {
         children: {
             table: {
@@ -27,6 +35,13 @@ export default meta;
 type Story = StoryObj<typeof Sheet>;
 
 export const Default: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story: 'Standard right-side Sheet with header, body, and footer actions.'
+            }
+        }
+    },
     args: {
         children: (
             <>
@@ -52,6 +67,13 @@ export const Default: Story = {
 };
 
 export const SideVariants: Story = {
+    parameters: {
+        docs: {
+            description: {
+                story: 'Sheets can open from any side. Choose based on context and available space.'
+            }
+        }
+    },
     args: {
         children: (
             <div className="flex flex-wrap gap-4">
