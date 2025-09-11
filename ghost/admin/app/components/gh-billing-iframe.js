@@ -109,14 +109,25 @@ export default class GhBillingIframe extends Component {
 
     async _handleSubscriptionUpdate(data) {
         // Refresh config which includes billing limits and other plan-related settings
-        await this.configManager.fetch();
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // proceed anyway so we at least re-evaluate limits and nudge Admin-X to refetch
+        }
 
         // Reload the limit service to ensure all admin pages can enforce limits
         this.limit.reload();
 
         // Invalidate React Query cache for config data in admin-x-settings
         if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
-            window.adminXQueryClient.invalidateQueries(['ConfigResponseType']);
+            try {
+                // React Query v5+
+                window.adminXQueryClient.invalidateQueries({queryKey: ['ConfigResponseType']});
+            } catch (_) {
+                // TODO: remove this fallback when Admin-X-Settings updates to React Query v5+ (@tanstack/react-query)
+                // React Query v4 fallback
+                window.adminXQueryClient.invalidateQueries(['ConfigResponseType']);
+            }
         }
 
         this.billing.subscription = data.subscription;
