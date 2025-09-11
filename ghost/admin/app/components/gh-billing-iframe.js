@@ -112,7 +112,7 @@ export default class GhBillingIframe extends Component {
         await this.configManager.fetch();
 
         // Reload the limit service to ensure all admin pages can enforce limits
-        await this.limit.reload();
+        this.limit.reload();
 
         // Invalidate React Query cache for config data in admin-x-settings
         if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
