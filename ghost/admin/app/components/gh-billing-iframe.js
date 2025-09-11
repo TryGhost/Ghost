@@ -48,10 +48,6 @@ export default class GhBillingIframe extends Component {
             if (event.data?.subscription) {
                 this._handleSubscriptionUpdate(event.data);
             }
-
-            if (event.data?.request === 'refreshRequired') {
-                this._handleRefreshRequired();
-            }
         }
     }
 
