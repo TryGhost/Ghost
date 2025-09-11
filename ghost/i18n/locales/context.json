@@ -138,6 +138,7 @@
     "If you've completed all these checks and you're still not receiving emails, you can reach out to get support by contacting {supportAddress}.": "Email receiving FAQ",
     "In the event a permanent failure is received when attempting to send a newsletter, emails will be disabled on the account.": "Paragraph in the email suppression FAQ",
     "In your email client add {senderEmail} to your contacts list. This signals to your mail provider that emails sent from this address should be trusted.": "Email receiving FAQ",
+    "Invalid Code. Try again.": "",
     "Invalid email address": "Error message when a provided email address is invalid",
     "Invalid verification code": "",
     "Jamie Larson": "An unisex name of a person we use in examples",

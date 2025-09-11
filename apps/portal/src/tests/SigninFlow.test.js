@@ -4,6 +4,7 @@ import {site as FixtureSite} from '../utils/test-fixtures';
 import setupGhostApi from '../utils/api.js';
 
 const OTC_LABEL_REGEX = /Code/i;
+const VERIFY_OTC_ERROR_RESPONSE_REGEX = /Invalid code. Try again./i;
 
 const setup = async ({site, member = null, labs = {}}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
@@ -565,7 +566,7 @@ describe('OTC Integration Flow', () => {
             });
         });
 
-        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        const errorNotification = await within(popupIframeDocument).findByText(VERIFY_OTC_ERROR_RESPONSE_REGEX);
         expect(errorNotification).toBeInTheDocument();
     });
 
@@ -588,7 +589,7 @@ describe('OTC Integration Flow', () => {
             });
         });
 
-        const errorNotification = await within(popupIframeDocument).findByText(/Invalid verification code/i);
+        const errorNotification = await within(popupIframeDocument).findByText(VERIFY_OTC_ERROR_RESPONSE_REGEX);
         expect(errorNotification).toBeInTheDocument();
     });
 
@@ -612,7 +613,7 @@ describe('OTC Integration Flow', () => {
             });
         });
 
-        const errorNotification = await within(popupIframeDocument).findByText(/Failed to verify code, please try again/i);
+        const errorNotification = await within(popupIframeDocument).findByText(VERIFY_OTC_ERROR_RESPONSE_REGEX);
         expect(errorNotification).toBeInTheDocument();
     });
 
