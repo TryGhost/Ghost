@@ -147,7 +147,7 @@ export default class MagicLinkPage extends React.Component {
             const code = (state.otc || '').trim();
             return {
                 errors: {
-                    [OTC_FIELD_NAME]: code ? '' : t('Enter code below')
+                    [OTC_FIELD_NAME]: code ? '' : t('Enter code above')
                 }
             };
         }, () => {
