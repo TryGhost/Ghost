@@ -8482,6 +8482,18 @@
     ajv "^6.12.6"
     lodash "^4.17.11"
 
+"@tryghost/admin-x-activitypub@file:apps/admin-x-activitypub":
+  version "1.0.0"
+  dependencies:
+    "@radix-ui/react-form" "0.1.7"
+    "@tryghost/admin-x-framework" "0.0.0"
+    "@tryghost/shade" "0.0.0"
+    clsx "2.1.1"
+    html2canvas-objectfit-fix "1.2.0"
+    react "18.3.1"
+    react-dom "18.3.1"
+    use-debounce "10.0.6"
+
 "@tryghost/api-framework@1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/api-framework/-/api-framework-1.0.2.tgz#ae294e4c8e3182e5e11b108ca2e2eb6fb6e25366"

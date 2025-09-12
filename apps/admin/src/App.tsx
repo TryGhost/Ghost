@@ -1,35 +1,49 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import {
+    FrameworkProvider,
+    Outlet,
+    RouterProvider,
+    AppProvider,
+} from "@tryghost/admin-x-framework";
+import { ShadeApp } from "@tryghost/shade";
+import { routes } from "./routes.tsx";
+
+window.__ghost_admin_bridge__ = {};
+
+const framework = {
+    ghostVersion: "",
+    externalNavigate: () => {},
+    unsplashConfig: {
+        Authorization: "",
+        "Accept-Version": "",
+        "Content-Type": "",
+        "App-Pragma": "",
+        "X-Unsplash-Cache": true,
+    },
+    sentryDSN: null,
+    onUpdate: () => {},
+    onInvalidate: () => {},
+    onDelete: () => {},
+};
+
+console.log("window.__ghost_admin_bridge__", window.__ghost_admin_bridge__);
+import "./App.css";
 
 function App() {
-  const [count, setCount] = useState(0)
-
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    return (
+        <AppProvider>
+            <FrameworkProvider {...framework}>
+                <RouterProvider prefix={"/"} routes={routes}>
+                    <ShadeApp
+                        className="shade-posts"
+                        darkMode={false}
+                        fetchKoenigLexical={null}
+                    >
+                        <Outlet />
+                    </ShadeApp>
+                </RouterProvider>
+            </FrameworkProvider>
+        </AppProvider>
+    );
 }
 
-export default App
+export default App;
