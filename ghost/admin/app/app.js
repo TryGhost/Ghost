@@ -13,6 +13,8 @@ moment.updateLocale('en', {
     }
 });
 
+const rootElement = document.getElementById('ember-app');
+
 const App = Application.extend({
     Resolver,
     modulePrefix: config.modulePrefix,
@@ -24,7 +26,11 @@ const App = Application.extend({
         touchmove: null,
         touchend: null,
         touchcancel: null
-    }
+    },
+
+    ...(rootElement ? {
+        rootElement: '#ember-app'
+    } : {})
 });
 
 // TODO: remove once the validations refactor is complete
