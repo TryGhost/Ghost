@@ -30,6 +30,23 @@ services:
       mysql:
         condition: service_healthy
 
+  caddy:
+    image: caddy:latest
+    ports:
+      - "8080:80"
+    volumes:
+      - ../.docker/caddy/Caddyfile.e2e:/etc/caddy/Caddyfile:ro
+    environment:
+      - ANALYTICS_PROXY_TARGET=analytics:3000
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:80"]
+      interval: 1s
+      timeout: 5s
+      retries: 30
+    depends_on:
+      analytics:
+        condition: service_healthy
+
   analytics:
     image: ghost/traffic-analytics:1
     platform: linux/amd64
@@ -57,6 +74,8 @@ services:
     image: tinybirdco/tinybird-local:latest
     platform: linux/amd64
     stop_grace_period: 2s
+    ports:
+      - "7181:7181"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:7181/v0/health" ]
       interval: 1s
