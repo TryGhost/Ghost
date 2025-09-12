@@ -162,6 +162,18 @@ describe('Signin', () => {
             });
         });
 
+        test('shows non-OTC MagicLink description with submitted email', async () => {
+            const {popupIframeDocument, emailInput, submitButton} = await setup({
+                site: FixtureSite.singleTier.basic
+            });
+
+            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+            fireEvent.click(submitButton);
+
+            const description = await within(popupIframeDocument).findByText(/A login link has been sent to your inbox/i);
+            expect(description).toBeInTheDocument();
+        });
+
         test('with OTC enabled', async () => {
             const {ghostApi, emailInput, submitButton, popupIframeDocument} = await setup({
                 site: FixtureSite.singleTier.basic,
@@ -173,7 +185,9 @@ describe('Signin', () => {
 
             const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
             expect(magicLink).toBeInTheDocument();
-
+            const description = await within(popupIframeDocument).findByText(/A sign in link has been sent to jamie@example.com/i);
+            expect(description).toBeInTheDocument();
+            
             expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 emailType: 'signin',
@@ -541,6 +555,17 @@ describe('OTC Integration Flow', () => {
         expect(otcInput).toBeInTheDocument();
     });
 
+    test('MagicLink description shows submitted email on OTC flow', async () => {
+        const {popupIframeDocument} = await setupOTCFlow({
+            site: FixtureSite.singleTier.basic
+        });
+
+        await submitSigninForm(popupIframeDocument, 'jamie@example.com');
+
+        const description = await within(popupIframeDocument).findByText(/An email has been sent to jamie@example.com/i);
+        expect(description).toBeInTheDocument();
+    });
+    
     test('OTC verification with invalid code shows error', async () => {
         const {ghostApi, popupIframeDocument} = await setupOTCFlow({
             site: FixtureSite.singleTier.basic
