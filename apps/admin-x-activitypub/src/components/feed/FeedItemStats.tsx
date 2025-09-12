@@ -2,8 +2,9 @@ import NewNoteModal from '@components/modals/NewNoteModal';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {AnimatedNumber, Button, LucideIcon, formatNumber} from '@tryghost/shade';
-import {useDerepostMutationForUser, useLikeMutationForUser, useRepostMutationForUser, useUnlikeMutationForUser} from '@hooks/use-activity-pub-queries';
+import {useDerepostMutationForUser, useRepostMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useKeyboardShortcuts} from '@hooks/use-keyboard-shortcuts';
+import {useLikeAction} from '@src/hooks/use-like-action';
 
 interface FeedItemStatsProps {
     actor: ActorProperties;
@@ -52,24 +53,16 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         setRepostCount(initialRepostCount);
     }, [initialRepostCount]);
 
-    const likeMutation = useLikeMutationForUser('index');
-    const unlikeMutation = useUnlikeMutationForUser('index');
+    const {toggleLike} = useLikeAction('index');
     const repostMutation = useRepostMutationForUser('index');
     const derepostMutation = useDerepostMutationForUser('index');
     const [repostCount, setRepostCount] = useState(initialRepostCount);
 
     const handleLikeClick = async (e: React.MouseEvent<HTMLElement>) => {
         e.stopPropagation();
-        if (!isLiked) {
-            likeMutation.mutate(object.id, {
-                onError() {
-                    setIsLiked(false);
-                }
-            });
-        } else {
-            unlikeMutation.mutate(object.id);
-        }
-        setIsLiked(!isLiked);
+        const next = !isLiked;
+        toggleLike(object.id, next);
+        setIsLiked(next);
         onLikeClick();
     };
 
