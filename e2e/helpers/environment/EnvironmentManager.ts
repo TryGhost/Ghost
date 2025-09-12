@@ -64,7 +64,17 @@ export class EnvironmentManager {
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        this.dockerCompose.upAndWaitFor(['ghost-migrations', 'tb-cli']);
+        // Start services
+        this.dockerCompose.up();
+        // Wait for long-running services to be healthy and one-shot services to complete
+        await this.dockerCompose.waitForServices([
+            'mysql',
+            'tinybird-local',
+            'analytics'
+        ], [
+            'ghost-migrations',
+            'tb-cli'
+        ]);
         await this.mysql.createSnapshot();
         this.tinybird.fetchTokens();
         logging.info('Global environment setup complete');
