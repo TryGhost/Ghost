@@ -17,17 +17,11 @@ export class DockerCompose {
         this.docker = options.docker;
     }
 
-    /**
-     * Bring up services and wait for specific one-shot services to complete.
-     */
-    upAndWaitFor(servicesToWait: string[] = []): void {
+    /** Bring all services up (detached). */
+    up(): void {
         try {
             logging.info('Starting docker compose services...');
-            execSync(`docker compose -f ${this.composeFilePath} up -d`, {stdio: 'inherit'});
-            if (servicesToWait.length > 0) {
-                // NOTE: `docker compose up -d --wait` will fail if one-shot services are included
-                execSync(`docker compose -f ${this.composeFilePath} wait ${servicesToWait.join(' ')}`);
-            }
+            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} up -d`, {stdio: 'inherit'});
             logging.info('Docker compose services are up');
         } catch (error) {
             logging.error('Failed to start docker compose services:', error);
@@ -36,11 +30,66 @@ export class DockerCompose {
     }
 
     /**
+     * Wait until specified services are healthy/completed.
+     * - healthyServices: services with healthchecks that should report healthy
+     * - completedServices: one-shot services that should exit with code 0
+     */
+    async waitForServices(healthyServices: string[] = [], completedServices: string[] = [], timeoutMs = 120000): Promise<void> {
+        const start = Date.now();
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+        const isHealthy = async (service: string) => {
+            try {
+                const container = await this.getContainerForService(service);
+                const info = await container.inspect();
+                const status = info.State?.Health?.Status;
+                return status === 'healthy';
+            } catch (e) {
+                return false;
+            }
+        };
+
+        const isCompleted = async (service: string) => {
+            try {
+                const container = await this.getContainerForService(service);
+                const info = await container.inspect();
+                const state = info.State?.Status;
+                if (state === 'exited') {
+                    const code = info.State?.ExitCode ?? 1;
+                    if (code !== 0) {
+                        throw new Error(`${service} exited with code ${code}`);
+                    }
+                    return true;
+                }
+                return false;
+            } catch (e) {
+                // If not found yet, keep waiting
+                if ((e as Error).message?.includes('No container found')) {
+                    return false;
+                }
+                throw e;
+            }
+        };
+
+        while (Date.now() - start < timeoutMs) {
+            const healthyStatuses = await Promise.all(healthyServices.map(isHealthy));
+            const completedStatuses = await Promise.all(completedServices.map(isCompleted));
+            const allHealthy = healthyStatuses.every(Boolean);
+            const allCompleted = completedStatuses.every(Boolean);
+            if (allHealthy && allCompleted) {
+                return;
+            }
+            await sleep(500);
+        }
+        throw new Error(`Timeout waiting for services. Healthy: [${healthyServices.join(', ')}], Completed: [${completedServices.join(', ')}]`);
+    }
+
+    /**
      * Stop and remove all services for the project (including volumes).
      */
     down(): void {
         try {
-            execSync(`docker compose -f ${this.composeFilePath} down -v`, {stdio: 'inherit'});
+            execSync(`docker compose -f ${this.composeFilePath} -p ${this.projectName} down -v`, {stdio: 'inherit'});
         } catch (error) {
             logging.error('Failed to stop docker compose services:', error);
             throw error;
@@ -51,7 +100,7 @@ export class DockerCompose {
      * Read a file from a service container using `docker compose run`.
      */
     readFileFromService(service: string, filePath: string): string {
-        const cmd = `docker compose -f ${this.composeFilePath} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
+        const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} run --rm -T --entrypoint sh ${service} -c "cat ${filePath}"`;
         debug('readFileFromService running:', cmd);
         const output = execSync(cmd, {encoding: 'utf-8'}).toString();
         return output;
@@ -104,4 +153,3 @@ export class DockerCompose {
         return network;
     }
 }
-

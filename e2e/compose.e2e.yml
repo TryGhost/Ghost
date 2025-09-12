@@ -30,6 +30,29 @@ services:
       mysql:
         condition: service_healthy
 
+  analytics:
+    image: ghost/traffic-analytics:1
+    platform: linux/amd64
+    command: ["node", "--enable-source-maps", "dist/server.js"]
+    entrypoint: [ "/app/entrypoint.sh" ]
+    expose:
+      - "3000"
+    healthcheck:
+      # Simpler: use Node's global fetch (Node 18+)
+      test: ["CMD-SHELL", "node -e \"fetch('http://localhost:3000').then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))\"" ]
+      interval: 1s
+      retries: 120
+    volumes:
+      - ../.docker/analytics/entrypoint.sh:/app/entrypoint.sh:ro
+      - shared-config:/mnt/shared-config:ro
+    environment:
+      - PROXY_TARGET=http://tinybird-local:7181/v0/events
+    depends_on:
+      tinybird-local:
+        condition: service_healthy
+      tb-cli:
+        condition: service_completed_successfully
+
   tinybird-local:
     image: tinybirdco/tinybird-local:latest
     platform: linux/amd64
