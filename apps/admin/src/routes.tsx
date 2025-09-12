@@ -4,13 +4,14 @@ import GlobalDataProvider from "@tryghost/stats/src/providers/GlobalDataProvider
 import {FeatureFlagsProvider} from "@tryghost/activitypub/src/lib/feature-flags";
 import { routes as statsRoutes, APP_ROUTE_PREFIX as statsAppRoutePrefix } from "@tryghost/stats/src/routes";
 import { routes as activityPubRoutes, APP_ROUTE_PREFIX as activityPubAppRoutePrefix } from "@tryghost/activitypub/src/routes";
+import EmberFallback from "./ember-bridge/EmberFallback";
 
 export const routes: RouteObject[] = [
     {
         path: "/",
         element: <div>Hello World</div>
     },
-    ...postRoutes[0].children!,
+    ...postRoutes[0].children!.filter(route => route.path !== "*"),
     {
         path: `${statsAppRoutePrefix}`,
         element: <GlobalDataProvider><Outlet /></GlobalDataProvider>,
@@ -37,6 +38,6 @@ export const routes: RouteObject[] = [
     },
     {
         path: "*",
-        element: <div>404</div>
+        Component: EmberFallback
     }
 ];

@@ -1,18 +1,1 @@
 @import "@tryghost/shade/styles.css";
-
-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-areas: "react ember";
-  width: 100%;
-  height: 100%;
-}
-
-#root { 
-    grid-area: react;
-}
-
-.gh-app {
-    position: static !important;
-    grid-area: ember;
-}
