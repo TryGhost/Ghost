@@ -29,40 +29,54 @@ export class DockerCompose {
         }
     }
 
-    /** Wait until all services from the compose file are ready. */
-    async waitForAll(timeoutMs = 60000): Promise<void> {
+    /**
+     * Wait until all services from the compose file are ready.
+     * A service is considered ready if:
+     * - It has a healthcheck and is healthy (i.e. mysql)
+     * - It has exited with code 0 (no healthcheck) (i.e. migrations)
+     *
+     * This method will poll the status of all containers until they are all ready or the timeout is reached.
+     *
+     * NOTE: `docker compose up -d --wait` does not work here because it will exit with code 1 if any container exited
+     *
+     * @param timeoutMs Maximum time to wait for all services to be ready (default: 60000ms)
+     * @param intervalMs Interval between status checks (default: 500ms)
+     *
+    */
+    async waitForAll(timeoutMs = 60000, intervalMs = 500): Promise<void> {
         const deadline = Date.now() + timeoutMs;
-        
+
         while (Date.now() < deadline) {
+            // Get the status of all containers in the project in JSON format
             const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
             const output = execSync(cmd, {encoding: 'utf-8'}).trim();
-            
+
             if (!output) {
                 await new Promise((resolve) => {
-                    setTimeout(resolve, 500);
+                    setTimeout(resolve, intervalMs);
                 });
                 continue;
             }
-            
+
             // Parse docker compose ps output (newline-delimited JSON)
             const containers = output.split('\n')
                 .filter(line => line.trim())
                 .map(line => JSON.parse(line));
-            
+
             if (containers.length === 0) {
                 await new Promise((resolve) => {
-                    setTimeout(resolve, 500);
+                    setTimeout(resolve, intervalMs);
                 });
                 continue;
             }
-            
+
             // Check if all containers are ready
             const allReady = containers.every((container) => {
                 // If container has healthcheck, wait for healthy status
                 if (container.Health) {
                     return container.Health === 'healthy';
                 }
-                
+
                 // If container exited, check exit code
                 if (container.State === 'exited') {
                     if (container.ExitCode !== 0) {
@@ -70,20 +84,20 @@ export class DockerCompose {
                     }
                     return true;
                 }
-                
+
                 // Running container without healthcheck is not considered ready
                 return false;
             });
-            
+
             if (allReady) {
                 return;
             }
-            
+
             await new Promise((resolve) => {
-                setTimeout(resolve, 500);
+                setTimeout(resolve, intervalMs);
             });
         }
-        
+
         throw new Error('Timeout waiting for services to be ready');
     }
 
