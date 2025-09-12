@@ -59,16 +59,16 @@ export class EnvironmentManager {
      * This should be called once before all tests run.
      *
      * 1. Start docker-compose services (including running Ghost migrations on the default database)
+     * 2. Wait for all services to be ready (healthy or exited with code 0)
      * 2. Create a MySQL snapshot of the database after migrations, so we can quickly clone from it for each test without re-running migrations
      * 3. Fetch Tinybird tokens from the tinybird-local service and store in /data/state/tinybird.json
+     *
+     * NOTE: Playwright workers run in their own processes, so each worker gets its own instance of EnvironmentManager.
+     * This is why we need to use a shared state file for Tinybird tokens - this.tinybird instance is not shared between workers.
      */
     public async globalSetup(): Promise<void> {
         logging.info('Starting global environment setup...');
-        // Start services
         this.dockerCompose.up();
-        // Wait for all services based on compose config:
-        // - healthchecked services become healthy
-        // - others complete successfully (or run without healthcheck)
         await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
         this.tinybird.fetchTokens();
@@ -78,7 +78,7 @@ export class EnvironmentManager {
     /**
      * Teardown global environment
      * This should be called once after all tests have finished.
-     * 1. Stop and remove all docker-compose services
+     * 1. Stop and remove all docker-compose services and volumes
      * 2. Clean up any state files created during the tests
      3. If PRESERVE_ENV=true is set, skip the teardown to allow manual inspection
      */
