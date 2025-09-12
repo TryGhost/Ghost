@@ -6,6 +6,8 @@ import {
 } from "@tryghost/admin-x-framework";
 import { ShadeApp } from "@tryghost/shade";
 import { routes } from "./routes.tsx";
+import { EmberProvider } from "./ember-bridge/EmberProvider.tsx";
+import EmberRoot from "./ember-bridge/EmberRoot.tsx";
 
 window.__ghost_admin_bridge__ = {};
 
@@ -31,17 +33,20 @@ import "./App.css";
 function App() {
     return (
         <AppProvider>
-            <FrameworkProvider {...framework}>
-                <RouterProvider prefix={"/"} routes={routes}>
-                    <ShadeApp
-                        className="shade-posts"
-                        darkMode={false}
-                        fetchKoenigLexical={null}
-                    >
-                        <Outlet />
-                    </ShadeApp>
-                </RouterProvider>
-            </FrameworkProvider>
+            <EmberProvider>
+                <FrameworkProvider {...framework}>
+                    <RouterProvider prefix={"/"} routes={routes}>
+                        <ShadeApp
+                            className="shade-posts"
+                            darkMode={false}
+                            fetchKoenigLexical={null}
+                        >
+                            <Outlet />
+                            <EmberRoot />
+                        </ShadeApp>
+                    </RouterProvider>
+                </FrameworkProvider>
+            </EmberProvider>
         </AppProvider>
     );
 }
