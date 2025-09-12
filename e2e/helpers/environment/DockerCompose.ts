@@ -29,59 +29,56 @@ export class DockerCompose {
         }
     }
 
-    /**
-     * Wait until specified services are healthy/completed.
-     * - healthyServices: services with healthchecks that should report healthy
-     * - completedServices: one-shot services that should exit with code 0
-     */
-    async waitForServices(healthyServices: string[] = [], completedServices: string[] = [], timeoutMs = 120000): Promise<void> {
-        const start = Date.now();
-        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
-        const isHealthy = async (service: string) => {
-            try {
-                const container = await this.getContainerForService(service);
-                const info = await container.inspect();
-                const status = info.State?.Health?.Status;
-                return status === 'healthy';
-            } catch (e) {
-                return false;
+    /** Wait until all services from the compose file are ready. */
+    async waitForAll(timeoutMs = 120000): Promise<void> {
+        const deadline = Date.now() + timeoutMs;
+        
+        while (Date.now() < deadline) {
+            const cmd = `docker compose -f ${this.composeFilePath} -p ${this.projectName} ps -a --format json`;
+            const output = execSync(cmd, {encoding: 'utf-8'}).trim();
+            
+            if (!output) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                continue;
             }
-        };
-
-        const isCompleted = async (service: string) => {
-            try {
-                const container = await this.getContainerForService(service);
-                const info = await container.inspect();
-                const state = info.State?.Status;
-                if (state === 'exited') {
-                    const code = info.State?.ExitCode ?? 1;
-                    if (code !== 0) {
-                        throw new Error(`${service} exited with code ${code}`);
+            
+            // Parse docker compose ps output (newline-delimited JSON)
+            const containers = output.split('\n')
+                .filter(line => line.trim())
+                .map(line => JSON.parse(line));
+            
+            if (containers.length === 0) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+                continue;
+            }
+            
+            // Check if all containers are ready
+            const allReady = containers.every(container => {
+                // If container has healthcheck, wait for healthy status
+                if (container.Health) {
+                    return container.Health === 'healthy';
+                }
+                
+                // If container exited, check exit code
+                if (container.State === 'exited') {
+                    if (container.ExitCode !== 0) {
+                        throw new Error(`${container.Name || container.Service} exited with code ${container.ExitCode}`);
                     }
                     return true;
                 }
+                
+                // Running container without healthcheck is not considered ready
                 return false;
-            } catch (e) {
-                // If not found yet, keep waiting
-                if ((e as Error).message?.includes('No container found')) {
-                    return false;
-                }
-                throw e;
-            }
-        };
-
-        while (Date.now() - start < timeoutMs) {
-            const healthyStatuses = await Promise.all(healthyServices.map(isHealthy));
-            const completedStatuses = await Promise.all(completedServices.map(isCompleted));
-            const allHealthy = healthyStatuses.every(Boolean);
-            const allCompleted = completedStatuses.every(Boolean);
-            if (allHealthy && allCompleted) {
+            });
+            
+            if (allReady) {
                 return;
             }
-            await sleep(500);
+            
+            await new Promise(resolve => setTimeout(resolve, 500));
         }
-        throw new Error(`Timeout waiting for services. Healthy: [${healthyServices.join(', ')}], Completed: [${completedServices.join(', ')}]`);
+        
+        throw new Error('Timeout waiting for services to be ready');
     }
 
     /**
