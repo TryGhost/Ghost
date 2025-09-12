@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
 import type { PluginOption, HtmlTagDescriptor } from "vite";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 import path from "path";
 import fs from "fs";
@@ -87,7 +88,7 @@ function ghostAdminAssetsPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [react(), ghostAdminAssetsPlugin()],
+    plugins: [react(), ghostAdminAssetsPlugin(), tsconfigPaths()],
     server: {
         proxy: {
             "^/ghost/api/.*": {

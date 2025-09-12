@@ -10,15 +10,15 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/shade": "0.0.0",
-    "@tryghost/posts": "0.0.0",
-    "@tryghost/stats": "0.0.0",
-    "@tryghost/admin-x-settings": "0.0.0",
     "@tryghost/admin-x-activitypub": "file:../admin-x-activitypub",
+    "@tryghost/admin-x-framework": "0.0.0",
+    "@tryghost/admin-x-settings": "0.0.0",
+    "@tryghost/posts": "0.0.0",
+    "@tryghost/shade": "0.0.0",
+    "@tryghost/stats": "0.0.0",
     "react": "18.3.1",
     "react-dom": "18.3.1"
-},
+  },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
     "@types/react": "18.3.24",
@@ -30,6 +30,7 @@
     "globals": "^16.3.0",
     "typescript": "~5.8.3",
     "typescript-eslint": "^8.39.1",
-    "vite": "^7.1.2"
+    "vite": "^7.1.2",
+    "vite-tsconfig-paths": "^5.1.4"
   }
 }
