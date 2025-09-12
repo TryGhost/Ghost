@@ -38,7 +38,9 @@ export class DockerCompose {
             const output = execSync(cmd, {encoding: 'utf-8'}).trim();
             
             if (!output) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 500);
+                });
                 continue;
             }
             
@@ -48,12 +50,14 @@ export class DockerCompose {
                 .map(line => JSON.parse(line));
             
             if (containers.length === 0) {
-                await new Promise(resolve => setTimeout(resolve, 500));
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 500);
+                });
                 continue;
             }
             
             // Check if all containers are ready
-            const allReady = containers.every(container => {
+            const allReady = containers.every((container) => {
                 // If container has healthcheck, wait for healthy status
                 if (container.Health) {
                     return container.Health === 'healthy';
@@ -75,7 +79,9 @@ export class DockerCompose {
                 return;
             }
             
-            await new Promise(resolve => setTimeout(resolve, 500));
+            await new Promise((resolve) => {
+                setTimeout(resolve, 500);
+            });
         }
         
         throw new Error('Timeout waiting for services to be ready');
