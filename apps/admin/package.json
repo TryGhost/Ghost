@@ -10,12 +10,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@tryghost/admin-x-activitypub": "file:../admin-x-activitypub",
-    "@tryghost/admin-x-framework": "0.0.0",
-    "@tryghost/admin-x-settings": "0.0.0",
-    "@tryghost/posts": "0.0.0",
-    "@tryghost/shade": "0.0.0",
-    "@tryghost/stats": "0.0.0",
+    "@tryghost/admin-x-activitypub": "*",
+    "@tryghost/admin-x-framework": "*",
+    "@tryghost/admin-x-settings": "*",
+    "@tryghost/posts": "*",
+    "@tryghost/shade": "*",
+    "@tryghost/stats": "*",
     "react": "18.3.1",
     "react-dom": "18.3.1"
   },
