@@ -30,7 +30,7 @@ export class DockerCompose {
     }
 
     /** Wait until all services from the compose file are ready. */
-    async waitForAll(timeoutMs = 120000): Promise<void> {
+    async waitForAll(timeoutMs = 60000): Promise<void> {
         const deadline = Date.now() + timeoutMs;
         
         while (Date.now() < deadline) {
