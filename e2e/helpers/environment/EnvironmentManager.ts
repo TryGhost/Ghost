@@ -66,15 +66,10 @@ export class EnvironmentManager {
         logging.info('Starting global environment setup...');
         // Start services
         this.dockerCompose.up();
-        // Wait for long-running services to be healthy and one-shot services to complete
-        await this.dockerCompose.waitForServices([
-            'mysql',
-            'tinybird-local',
-            'analytics'
-        ], [
-            'ghost-migrations',
-            'tb-cli'
-        ]);
+        // Wait for all services based on compose config:
+        // - healthchecked services become healthy
+        // - others complete successfully (or run without healthcheck)
+        await this.dockerCompose.waitForAll();
         await this.mysql.createSnapshot();
         this.tinybird.fetchTokens();
         logging.info('Global environment setup complete');
