@@ -1,14 +1,6 @@
-body {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  height: 100vh;
-  width: 100vw;
-}
+@import "@tryghost/shade/styles.css";
 
-#root, #ember-app {
-  position: relative;
-}
-
-#ember-app .gh-app {
-  left: 50%;
+.shade .hidden {
+  display: unset !important;
+  visibility: visible !important;
 }
