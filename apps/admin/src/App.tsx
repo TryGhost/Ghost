@@ -8,6 +8,8 @@ import { ShadeApp } from "@tryghost/shade";
 import { routes } from "./routes.tsx";
 import { EmberProvider } from "./ember-bridge/EmberProvider.tsx";
 import EmberRoot from "./ember-bridge/EmberRoot.tsx";
+import { AdminLayout } from "./layout/AdminLayout.tsx";
+
 
 window.__ghost_admin_bridge__ = {};
 
@@ -27,9 +29,6 @@ const framework = {
     onDelete: () => {},
 };
 
-console.log("window.__ghost_admin_bridge__", window.__ghost_admin_bridge__);
-import "./App.css";
-
 function App() {
     return (
         <AppProvider>
@@ -37,12 +36,14 @@ function App() {
                 <FrameworkProvider {...framework}>
                     <RouterProvider prefix={"/"} routes={routes}>
                         <ShadeApp
-                            className="shade-posts"
-                            darkMode={false}
+                            className="shade-admin"
+                            darkMode={true}
                             fetchKoenigLexical={null}
                         >
-                            <Outlet />
-                            <EmberRoot />
+                            <AdminLayout>
+                                <Outlet />
+                                <EmberRoot />
+                            </AdminLayout>
                         </ShadeApp>
                     </RouterProvider>
                 </FrameworkProvider>

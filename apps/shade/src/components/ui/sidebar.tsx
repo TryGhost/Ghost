@@ -19,9 +19,9 @@ import {
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = '16rem';
+const SIDEBAR_WIDTH = '32rem';
 const SIDEBAR_WIDTH_MOBILE = '18rem';
-const SIDEBAR_WIDTH_ICON = '3rem';
+const SIDEBAR_WIDTH_ICON = '4rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
 const SIDEBAR_MENU_HEIGHT = '9';
 
@@ -205,7 +205,7 @@ const Sidebar = React.forwardRef<
             } as React.CSSProperties
                         }
                     >
-                        <div className="flex h-full w-full flex-col">{children}</div>
+                        <div className="flex size-full flex-col">{children}</div>
                     </SheetContent>
                 </Sheet>
             );
@@ -246,7 +246,7 @@ const Sidebar = React.forwardRef<
                     {...props}
                 >
                     <div
-                        className="flex h-full w-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
+                        className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:border group-data-[variant=floating]:border-sidebar-border group-data-[variant=floating]:shadow"
                         data-sidebar="sidebar"
                     >
                         {children}
