@@ -8376,6 +8376,18 @@
     ajv "^6.12.6"
     lodash "^4.17.11"
 
+"@tryghost/admin-x-activitypub@file:apps/admin-x-activitypub":
+  version "1.0.0"
+  dependencies:
+    "@radix-ui/react-form" "0.1.7"
+    "@tryghost/admin-x-framework" "0.0.0"
+    "@tryghost/shade" "0.0.0"
+    clsx "2.1.1"
+    html2canvas-objectfit-fix "1.2.0"
+    react "18.3.1"
+    react-dom "18.3.1"
+    use-debounce "10.0.6"
+
 "@tryghost/api-framework@1.0.2":
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/@tryghost/api-framework/-/api-framework-1.0.2.tgz#ae294e4c8e3182e5e11b108ca2e2eb6fb6e25366"
@@ -9708,11 +9720,6 @@
   dependencies:
     "@types/react" "^17"
 
-"@types/react-dom@^19.1.7":
-  version "19.1.9"
-  resolved "https://registry.yarnpkg.com/@types/react-dom/-/react-dom-19.1.9.tgz#5ab695fce1e804184767932365ae6569c11b4b4b"
-  integrity sha512-qXRuZaOsAdXKFyOhRBg6Lqqc0yay13vN7KrIg4L7N4aaHN68ma9OK3NE1BoDFgFOTfM7zg+3/8+2n8rLUH3OKQ==
-
 "@types/react-svg-map@2.1.4":
   version "2.1.4"
   resolved "https://registry.yarnpkg.com/@types/react-svg-map/-/react-svg-map-2.1.4.tgz#3448f04e0639741230be530012731e276abdd808"
@@ -9749,13 +9756,6 @@
   dependencies:
     "@types/prop-types" "*"
     "@types/scheduler" "*"
-    csstype "^3.0.2"
-
-"@types/react@^19.1.10":
-  version "19.1.12"
-  resolved "https://registry.yarnpkg.com/@types/react/-/react-19.1.12.tgz#7bfaa76aabbb0b4fe0493c21a3a7a93d33e8937b"
-  integrity sha512-cMoR+FoAf/Jyq6+Df2/Z41jISvGZZ2eTlnsaJRptmZ76Caldwy1odD4xTr/gNV9VLj0AWgg/nmkevIyUfIIq5w==
-  dependencies:
     csstype "^3.0.2"
 
 "@types/resolve@^1.20.2":
@@ -28664,13 +28664,6 @@ react-dom@18.3.1:
   dependencies:
     scheduler "^0.26.0"
 
-react-dom@^19.1.1:
-  version "19.1.1"
-  resolved "https://registry.yarnpkg.com/react-dom/-/react-dom-19.1.1.tgz#2daa9ff7f3ae384aeb30e76d5ee38c046dc89893"
-  integrity sha512-Dlq/5LAZgF0Gaz6yiqZCf6VCcZs1ghAJyrsu84Q/GT0gV+mCxbfmKNoGRKBYMJ8IEdGPqu49YWXD02GCknEDkw==
-  dependencies:
-    scheduler "^0.26.0"
-
 react-error-boundary@^3.1.0:
   version "3.1.4"
   resolved "https://registry.yarnpkg.com/react-error-boundary/-/react-error-boundary-3.1.4.tgz#255db92b23197108757a888b01e5b729919abde0"
@@ -28831,11 +28824,6 @@ react@18.3.1:
   version "19.1.0"
   resolved "https://registry.yarnpkg.com/react/-/react-19.1.0.tgz#926864b6c48da7627f004795d6cce50e90793b75"
   integrity sha512-FS+XFBNvn3GTAWq26joslQgWNoFu08F4kl0J4CgdNKADkdSGXQyTCnKteIAJy96Br6YbpEU1LSzV5dYtjMkMDg==
-
-react@^19.1.1:
-  version "19.1.1"
-  resolved "https://registry.yarnpkg.com/react/-/react-19.1.1.tgz#06d9149ec5e083a67f9a1e39ce97b06a03b644af"
-  integrity sha512-w8nqGImo45dmMIfljjMwOGtbmC/mk4CMYhWIicdSflH91J9TyCyczcPFXJzrZ/ZXcgGRFeP6BU0BEJTw6tZdfQ==
 
 read-cache@^1.0.0:
   version "1.0.0"
