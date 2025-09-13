@@ -1,4 +1,6 @@
 {
+    "Welcome to Ghost": "Benvenuto in Ghost",
+  "Your subscription status is {status}": "Il tuo stato di sottoscrizione è {status}",
     "{amount} characters left": "{amount} tegn tilbage",
     "{amount} comments": "{amount} kommentarer",
     "{amount} hrs ago": "{amount} timer siden",

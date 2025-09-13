@@ -1,4 +1,6 @@
 {
+    "Welcome to Ghost": "Benvenuto in Ghost",
+  "Your subscription status is {status}": "Il tuo stato di sottoscrizione è {status}",
     "{amount} characters left": "Zostáva {amount} znakov",
     "{amount} comments": "{amount} komentárov",
     "{amount} hrs ago": "Pred {amount} hodinami",

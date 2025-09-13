@@ -1,4 +1,6 @@
 {
+    "Welcome to Ghost": "Benvenuto in Ghost",
+  "Your subscription status is {status}": "Il tuo stato di sottoscrizione è {status}",
     "{amount} characters left": "{amount} likę simboliai",
     "{amount} comments": "{amount} komentarai",
     "{amount} hrs ago": "Prieš {amount} val.",

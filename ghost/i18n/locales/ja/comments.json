@@ -1,4 +1,6 @@
 {
+    "Welcome to Ghost": "Benvenuto in Ghost",
+  "Your subscription status is {status}": "Il tuo stato di sottoscrizione è {status}",
     "{amount} characters left": "残り{amount}文字",
     "{amount} comments": "{amount}のコメント",
     "{amount} hrs ago": "{amount}時間前",
