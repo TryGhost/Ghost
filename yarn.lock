@@ -9329,10 +9329,10 @@
   dependencies:
     undici-types "~7.10.0"
 
-"@types/node@22.18.2":
-  version "22.18.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.2.tgz#948b44ec218a10842b1977d58195233c2e45fefc"
-  integrity sha512-lif9hF9afNk39jMUVYk5eyYEojLZQqaYX61LfuwUJJ1+qiQbh7jVaZXskYgzyjAIFDFQRf5Sd6MVM7EyXkfiRw==
+"@types/node@22.18.3":
+  version "22.18.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.3.tgz#e1a4eb680a688141cdd369c5a035f48cf8ece9e3"
+  integrity sha512-gTVM8js2twdtqM+AE2PdGEe9zGQY4UvmFjan9rZcVb6FGdStfjWoWejdmy4CfWVO9rh5MiYQGZloKAGkJt8lMw==
   dependencies:
     undici-types "~6.21.0"
 
