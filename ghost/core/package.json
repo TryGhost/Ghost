@@ -232,7 +232,7 @@
     "@types/bookshelf": "1.2.9",
     "@types/common-tags": "1.8.4",
     "@types/jsonwebtoken": "9.0.10",
-    "@types/node": "22.18.2",
+    "@types/node": "22.18.3",
     "@types/node-jose": "1.1.13",
     "@types/nodemailer": "6.4.19",
     "@types/sinon": "17.0.4",
