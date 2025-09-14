@@ -446,4 +446,38 @@ describe('Posts Content API', function () {
         assert.doesNotMatch(response.body.posts[0].html, /Visible to free\/paid members/);
         assert.match(response.body.posts[0].html, /Visible to anonymous viewers/);
     });
+
+    it('has consistent ordering of posts across pages with the same published_at timestamp', async function () {
+        const publishedAt = moment().toDate().toISOString();
+
+        const post1 = await models.Post.add({
+            title: 'title',
+            status: 'published',
+            published_at: publishedAt,
+            slug: 'consistent-ordering-1',
+            tags: [{slug: 'consistent-order-test'}],
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 1')
+        }, {context: {internal: true}});
+
+        const post2 = await models.Post.add({
+            title: 'title',
+            status: 'published',
+            published_at: publishedAt,
+            slug: 'consistent-ordering-2',
+            tags: [{slug: 'consistent-order-test'}],
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 2')
+        }, {context: {internal: true}});
+
+        const page1Response = await agent
+            .get('posts/?filter=tags:consistent-order-test&page=1&limit=1')
+            .expectStatus(200);
+
+        const page2Response = await agent
+            .get('posts/?filter=tags:consistent-order-test&page=2&limit=1')
+            .expectStatus(200);
+
+        // published_at desc, id desc. First page should have post 2, second page should have post 1.
+        assert.equal(page1Response.body.posts[0].id, post2.id, 'First page should have post 2');
+        assert.equal(page2Response.body.posts[0].id, post1.id, 'Second post should have post 1');
+    });
 });

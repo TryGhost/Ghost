@@ -69,7 +69,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
     return (
-        <Card className='group/card w-full lg:col-span-2'>
+        <Card className='group/card w-full lg:col-span-2' data-testid='top-posts-card'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between font-medium  leading-snug text-muted-foreground'>
                     Top posts {getPeriodText(range)}
@@ -107,7 +107,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                         </div>
                                         <div className='z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
                                             {showWebAnalytics &&
-                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
+                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-visitors' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/web`, {crossApp: true});
                                                 }}>
@@ -189,7 +189,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 </div>
                                             }
                                             {appSettings?.analytics.membersTrackSources &&
-                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' onClick={(e) => {
+                                                <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-members' onClick={(e) => {
                                                     e.stopPropagation();
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
                                                 }}>

@@ -265,7 +265,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }
         },
 
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, otc}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -281,7 +281,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 honeypot: phonenumber,
                 token,
                 autoRedirect,
-                otc
+                includeOTC
             };
             const urlHistory = customUrlHistory ?? getUrlHistory();
             if (urlHistory) {
@@ -298,6 +298,14 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
 
             if (res.ok) {
+                const contentType = (res.headers.get('content-type') || '').toLowerCase();
+                if (contentType.includes('application/json')) {
+                    try {
+                        return await res.json();
+                    } catch (e) {
+                        // fall through to response used pre-OTC
+                    }
+                }
                 return 'Success';
             } else {
                 const humanError = await HumanReadableError.fromApiResponse(res);
@@ -305,6 +313,35 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     throw humanError;
                 }
                 throw new Error('Failed to send magic link email');
+            }
+        },
+
+        async verifyOTC({otc, otcRef, redirect, integrityToken}) {
+            const url = endpointFor({type: 'members', resource: 'verify-otc'});
+            const body = {
+                otc,
+                otcRef,
+                redirect,
+                integrityToken
+            };
+
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                return await res.json();
+            } else {
+                const humanError = await HumanReadableError.fromApiResponse(res);
+                if (humanError) {
+                    throw humanError;
+                }
+                throw new Error('Failed to verify code');
             }
         },
 

@@ -32,7 +32,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
 
     return (
         <>
-            <Card className={`group/datalist overflow-hidden ${!isNewsletterShown && 'col-span-2'}`}>
+            <Card className={`group/datalist overflow-hidden ${!isNewsletterShown && 'col-span-2'}`} data-testid='web-performance'>
                 <div className='relative flex items-center justify-between gap-6'>
                     <CardHeader>
                         <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -41,7 +41,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                         </CardTitle>
                     </CardHeader>
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                        navigate(`/analytics/${postId}/web`);
+                        navigate(`/posts/analytics/${postId}/web`);
                     }}>View more</Button>
                 </div>
                 <CardContent>
