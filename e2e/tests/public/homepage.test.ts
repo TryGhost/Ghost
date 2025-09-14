@@ -1,4 +1,4 @@
-import {test, expect} from '@playwright/test';
+import {test, expect} from '../../helpers/playwright';
 import {HomePage} from '../../helpers/pages/public';
 
 test.describe('Ghost Homepage', () => {

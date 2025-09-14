@@ -407,6 +407,8 @@ interface ReaderProps {
     onClose?: () => void;
 }
 
+const scrollPositionCache = new Map<string, number>();
+
 export const Reader: React.FC<ReaderProps> = ({
     postId = null,
     onClose
@@ -448,13 +450,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
-    const [replyCount, setReplyCount] = useState(object?.replyCount ?? 0);
-
-    useEffect(() => {
-        if (object?.replyCount !== undefined) {
-            setReplyCount(object.replyCount);
-        }
-    }, [object?.replyCount]);
+    const replyCount = object?.replyCount ?? 0;
 
     useEffect(() => {
         // Only set up infinite scroll if pagination is supported
@@ -499,12 +495,8 @@ export const Reader: React.FC<ReaderProps> = ({
         };
     }, [hasMoreChildren, isLoadingMoreTopLevelReplies, loadMoreChildren]);
 
-    function handleReplyCountChange(increment: number) {
-        setReplyCount((current: number) => current + increment);
-    }
-
     function handleDelete() {
-        handleReplyCountChange(-1);
+        // Reply count will be updated via cache invalidation
     }
 
     function toggleChain(chainId: string) {
@@ -692,6 +684,30 @@ export const Reader: React.FC<ReaderProps> = ({
 
     const navigate = useNavigate();
 
+    // Save scroll position when navigating away
+    useEffect(() => {
+        const container = modalRef.current;
+        return () => {
+            if (container && postId) {
+                scrollPositionCache.set(postId, container.scrollTop);
+            }
+        };
+    }, [postId]);
+
+    // Restore scroll position after content loads
+    useEffect(() => {
+        if (!isLoading && !isLoadingContent && postId && modalRef.current) {
+            const savedPosition = scrollPositionCache.get(postId);
+            if (savedPosition !== undefined && savedPosition > 0) {
+                setTimeout(() => {
+                    if (modalRef.current) {
+                        modalRef.current.scrollTop = savedPosition;
+                    }
+                }, 100);
+            }
+        }
+    }, [isLoading, isLoadingContent, postId]);
+
     if (isLoadingContent) {
         return (
             <div className={`max-h-full overflow-auto rounded-md ${backgroundColor === 'DARK' && 'dark'} ${(backgroundColor === 'LIGHT' || backgroundColor === 'SEPIA') && 'light'} ${COLOR_OPTIONS[backgroundColor].background}`}>
@@ -853,7 +869,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                                 object={object}
                                                 repostCount={object.repostCount ?? 0}
                                                 onLikeClick={onLikeClick}
-                                                onReplyCountChange={handleReplyCountChange}
                                             />
                                         </div>
                                     </div>
@@ -864,8 +879,6 @@ export const Reader: React.FC<ReaderProps> = ({
                                     <div className='mx-auto w-full border-t border-black/[8%] dark:border-gray-950' style={{maxWidth: currentGridWidth}}>
                                         <APReplyBox
                                             object={object}
-                                            onReply={() => handleReplyCountChange(1)}
-                                            onReplyError={() => handleReplyCountChange(-1)}
                                         />
                                         <FeedItemDivider />
                                     </div>
@@ -898,6 +911,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
                                                             type='Note'
                                                             onClick={() => {
+                                                                const container = modalRef.current;
+                                                                if (container && postId) {
+                                                                    scrollPositionCache.set(postId, container.scrollTop);
+                                                                }
                                                                 navigate(`/notes/${encodeURIComponent(replyGroup.mainReply.id)}`);
                                                             }}
                                                             onDelete={handleDelete}
@@ -919,6 +936,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
                                                                 type='Note'
                                                                 onClick={() => {
+                                                                    const container = modalRef.current;
+                                                                    if (container && postId) {
+                                                                        scrollPositionCache.set(postId, container.scrollTop);
+                                                                    }
                                                                     navigate(`/notes/${encodeURIComponent(replyGroup.chain[0].id)}`);
                                                                 }}
                                                                 onDelete={handleDelete}
@@ -946,6 +967,10 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     repostCount={chainItem.object.repostCount ?? 0}
                                                                     type='Note'
                                                                     onClick={() => {
+                                                                        const container = modalRef.current;
+                                                                        if (container && postId) {
+                                                                            scrollPositionCache.set(postId, container.scrollTop);
+                                                                        }
                                                                         navigate(`/notes/${encodeURIComponent(chainItem.id)}`);
                                                                     }}
                                                                     onDelete={handleDelete}

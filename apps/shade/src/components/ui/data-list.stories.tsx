@@ -4,7 +4,14 @@ import {DataList, DataListBar, DataListBody, DataListHead, DataListHeader, DataL
 const meta = {
     title: 'Components / Data List',
     component: DataList,
-    tags: ['autodocs']
+    tags: ['autodocs'],
+    parameters: {
+        docs: {
+            description: {
+                component: 'Display structured data with visual bars for comparison. Ideal for analytics dashboards, leaderboards, and any data requiring visual ranking or comparison.'
+            }
+        }
+    }
 } satisfies Meta<typeof DataList>;
 
 export default meta;
@@ -85,3 +92,43 @@ export const Default: Story = {
         ]
     }
 };
+
+export const WithoutHeader: Story = {
+    args: {
+        children: [
+            <DataListBody className='group/datalist'>
+                <DataListRow>
+                    <DataListBar style={{width: '100%'}} />
+                    <DataListItemContent>
+                        <div className='flex items-center space-x-4 overflow-hidden'>
+                            <div>🏆</div>
+                            <div className='truncate font-medium'>
+                                Top Performer
+                            </div>
+                        </div>
+                    </DataListItemContent>
+                    <DataListItemValue>
+                        <DataListItemValueAbs>1,500</DataListItemValueAbs>
+                        <DataListItemValuePerc>100%</DataListItemValuePerc>
+                    </DataListItemValue>
+                </DataListRow>
+                <DataListRow>
+                    <DataListBar style={{width: '80%'}} />
+                    <DataListItemContent>
+                        <div className='flex items-center space-x-4 overflow-hidden'>
+                            <div>🥈</div>
+                            <div className='truncate font-medium'>
+                                Second Place
+                            </div>
+                        </div>
+                    </DataListItemContent>
+                    <DataListItemValue>
+                        <DataListItemValueAbs>1,200</DataListItemValueAbs>
+                        <DataListItemValuePerc>80%</DataListItemValuePerc>
+                    </DataListItemValue>
+                </DataListRow>
+            </DataListBody>
+        ]
+    }
+};
+
