@@ -60,8 +60,8 @@ const preview: Preview = {
 			storySort: {
 				method: 'alphabetical',
 				order: [
-					'Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons',
-					'Components', 'Layout', 'Experimental', 'Meta'],
+					'Introduction', 'Principles', 'Architecture', 'Tokens', 'Contributing',
+					'Components', 'Layout', 'Experimental'],
 			},
 		},
 		docs: {
