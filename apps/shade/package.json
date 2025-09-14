@@ -70,7 +70,7 @@
         "@dnd-kit/core": "6.3.1",
         "@dnd-kit/sortable": "7.0.2",
         "@ebay/nice-modal-react": "1.2.13",
-        "@hookform/resolvers": "5.2.1",
+        "@hookform/resolvers": "5.2.2",
         "@number-flow/react": "0.5.10",
         "@radix-ui/react-accordion": "1.2.12",
         "@radix-ui/react-alert-dialog": "1.1.14",
