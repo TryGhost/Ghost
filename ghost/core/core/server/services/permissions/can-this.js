@@ -56,7 +56,23 @@ class CanThisResult {
         }
 
         // Check api key permissions if they were passed
-        hasApiKeyPermission = true;
+        const apiKeyResult = this.checkApiKeyPermissions(loadedPermissions, apiKeyPermissions, actType, objType);
+        if (apiKeyResult.hasUserPermission !== undefined) {
+            hasUserPermission = apiKeyResult.hasUserPermission;
+        }
+        hasApiKeyPermission = apiKeyResult.hasApiKeyPermission;
+
+        return {
+            hasUserPermission,
+            hasApiKeyPermission,
+            hasMemberPermission
+        };
+    }
+
+    checkApiKeyPermissions(loadedPermissions, apiKeyPermissions, actType, objType) {
+        let hasUserPermission;
+        let hasApiKeyPermission = true;
+
         if (!_.isNull(apiKeyPermissions)) {
             if (loadedPermissions.user) {
                 // Staff API key scenario: both user and API key present
@@ -70,11 +86,7 @@ class CanThisResult {
             }
         }
 
-        return {
-            hasUserPermission,
-            hasApiKeyPermission,
-            hasMemberPermission
-        };
+        return {hasUserPermission, hasApiKeyPermission};
     }
 
     extractModelId(modelOrId) {
