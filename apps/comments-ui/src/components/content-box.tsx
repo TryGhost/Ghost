@@ -8,17 +8,36 @@ type Props = {
     done: boolean
 };
 const ContentBox: React.FC<Props> = ({done}) => {
-    const luminance = (r: number, g: number, b: number) => {
-        const a = [r, g, b].map(function (v) {
-            v /= 255;
-            return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-        });
-        return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    const luminance = (colorString: string) => {
+        if (colorString.startsWith('oklab') || colorString.startsWith('oklch')) {
+            const regexMatches = colorString.match(/ok(?:lab|lch)\(([^ ]+)/);
+            if (!regexMatches || regexMatches.length < 2) {
+                return 0;
+            }
+            const lum = regexMatches[1];
+            if (lum === 'none') {
+                return 0;
+            } else {
+                return parseFloat(lum);
+            }
+        } else if (colorString.startsWith('rgb')) {
+            const colorsOnly = colorString.substring(colorString.indexOf('(') + 1, colorString.lastIndexOf(')')).split(/,\s*/);
+            const r = parseInt(colorsOnly[0]);
+            const g = parseInt(colorsOnly[1]);
+            const b = parseInt(colorsOnly[2]);
+
+            const a = [r, g, b].map(function (v) {
+                v /= 255;
+                return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+            });
+            return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+        } else {
+            // Unknown color space, assume 0 luminance
+            return 0;
+        }
     };
 
-    const contrast = (rgb1: [number, number, number], rgb2: [number, number, number]) => {
-        const lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
-        const lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
+    const contrast = (lum1: number, lum2: number) => {
         const brightest = Math.max(lum1, lum2);
         const darkest = Math.min(lum1, lum2);
         return (brightest + 0.05) / (darkest + 0.05);
@@ -38,12 +57,13 @@ const ContentBox: React.FC<Props> = ({done}) => {
             }
             const containerColor = getComputedStyle(el.parentElement).getPropertyValue('color');
 
-            const colorsOnly = containerColor.substring(containerColor.indexOf('(') + 1, containerColor.lastIndexOf(')')).split(/,\s*/);
-            const red = parseInt(colorsOnly[0]);
-            const green = parseInt(colorsOnly[1]);
-            const blue = parseInt(colorsOnly[2]);
-
-            return contrast([255, 255, 255], [red, green, blue]) < 5;
+            if (containerColor.startsWith('oklab') || containerColor.startsWith('oklch')) {
+                // For oklab/oklch, use simple lightness threshold since L already represents perceptual lightness
+                return luminance(containerColor) > 0.6;
+            } else {
+                // For RGB, use contrast calculation with sRGB relative luminance
+                return contrast(1, luminance(containerColor)) < 5;
+            }
         }
     }, [colorScheme, contrast]);
 
