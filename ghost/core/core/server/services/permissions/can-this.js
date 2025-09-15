@@ -171,6 +171,9 @@ class CanThisResult {
 
         if (context.member) {
             memberPermissionLoad = providers.member(context.member.id);
+        } else {
+            // Resolve null if no context.member
+            memberPermissionLoad = Promise.resolve(null);
         }
 
         // Wait for both user and app permissions to load
