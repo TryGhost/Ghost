@@ -13,7 +13,59 @@ const messages = {
 };
 
 class CanThisResult {
+    checkUserPermissions(loadedPermissions, actType, objType) {
+        const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
+        const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
+        const memberPermissions = loadedPermissions.member ? loadedPermissions.member.permissions : null;
+
+        let hasUserPermission;
+        let hasApiKeyPermission;
+        let hasMemberPermission = false;
+
+        const checkPermission = function (perm) {
+            // Look for a matching action type and object type first
+            if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
+                return false;
+            }
+
+            return true;
+        };
+
+        const {isOwner} = setIsRoles(loadedPermissions);
+        if (isOwner) {
+            hasUserPermission = true;
+        } else if (!_.isEmpty(userPermissions)) {
+            hasUserPermission = _.some(userPermissions, checkPermission);
+        }
+
+        if (loadedPermissions.member) {
+            hasMemberPermission = _.some(memberPermissions, checkPermission);
+        }
+
+        // Check api key permissions if they were passed
+        hasApiKeyPermission = true;
+        if (!_.isNull(apiKeyPermissions)) {
+            if (loadedPermissions.user) {
+                // Staff API key scenario: both user and API key present
+                // Use USER permissions and ignore API key permissions
+                hasApiKeyPermission = true; // Allow API key check to pass
+            } else {
+                // Traditional API key scenario: API key only, no user
+                // Use API key permissions as before
+                hasUserPermission = true;
+                hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+            }
+        }
+
+        return {
+            hasUserPermission,
+            hasApiKeyPermission,
+            hasMemberPermission
+        };
+    }
+
     buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
+        const self = this;
         const objectTypeModelMap = {
             post: models.Post,
             role: models.Role,
@@ -50,48 +102,8 @@ class CanThisResult {
                 }
                 // Wait for the user loading to finish
                 return permissionLoad.then(function (loadedPermissions) {
-                    // Iterate through the user permissions looking for an affirmation
-                    const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
-                    const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
-                    const memberPermissions = loadedPermissions.member ? loadedPermissions.member.permissions : null;
-
-                    let hasUserPermission;
-                    let hasApiKeyPermission;
-                    let hasMemberPermission = false;
-
-                    const checkPermission = function (perm) {
-                        // Look for a matching action type and object type first
-                        if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
-                            return false;
-                        }
-
-                        return true;
-                    };
-                    const {isOwner} = setIsRoles(loadedPermissions);
-                    if (isOwner) {
-                        hasUserPermission = true;
-                    } else if (!_.isEmpty(userPermissions)) {
-                        hasUserPermission = _.some(userPermissions, checkPermission);
-                    }
-
-                    if (loadedPermissions.member) {
-                        hasMemberPermission = _.some(memberPermissions, checkPermission);
-                    }
-
-                    // Check api key permissions if they were passed
-                    hasApiKeyPermission = true;
-                    if (!_.isNull(apiKeyPermissions)) {
-                        if (loadedPermissions.user) {
-                            // Staff API key scenario: both user and API key present
-                            // Use USER permissions and ignore API key permissions
-                            hasApiKeyPermission = true; // Allow API key check to pass
-                        } else {
-                            // Traditional API key scenario: API key only, no user
-                            // Use API key permissions as before
-                            hasUserPermission = true;
-                            hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
-                        }
-                    }
+                    // Check user permissions using extracted method
+                    const {hasUserPermission, hasApiKeyPermission, hasMemberPermission} = self.checkUserPermissions(loadedPermissions, actType, objType);
 
                     // Offer a chance for the TargetModel to override the results
                     if (TargetModel && _.isFunction(TargetModel.permissible)) {
