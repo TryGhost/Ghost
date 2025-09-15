@@ -101,10 +101,8 @@ class CanThisResult {
     }
 
     buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
-        const self = this;
-
         // Iterate through the object types, i.e. ['post', 'tag', 'user']
-        return _.reduce(objTypes, function (objTypeHandlers, objType) {
+        return _.reduce(objTypes, (objTypeHandlers, objType) => {
             // Grab the TargetModel through the objectTypeModelMap
             const TargetModel = CanThisResult.objectTypeModelMap[objType];
 
@@ -118,14 +116,14 @@ class CanThisResult {
                     return Promise.resolve();
                 }
 
-                const modelId = self.extractModelId(modelOrId);
+                const modelId = this.extractModelId(modelOrId);
                 // Wait for the user loading to finish
                 return permissionLoad.then(function (loadedPermissions) {
                     // Check user permissions using extracted method
-                    const {hasUserPermission, hasApiKeyPermission, hasMemberPermission} = self.checkUserPermissions(loadedPermissions, actType, objType);
+                    const {hasUserPermission, hasApiKeyPermission, hasMemberPermission} = this.checkUserPermissions(loadedPermissions, actType, objType);
 
                     // Evaluate permissions and handle model override or rejection
-                    return self.evaluatePermissions(TargetModel, modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission);
+                    return this.evaluatePermissions(TargetModel, modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission);
                 });
             };
 
