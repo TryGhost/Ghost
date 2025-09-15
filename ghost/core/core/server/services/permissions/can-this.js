@@ -124,23 +124,28 @@ class CanThisResult {
                     // Check user permissions using extracted method
                     const {hasUserPermission, hasApiKeyPermission, hasMemberPermission} = self.checkUserPermissions(loadedPermissions, actType, objType);
 
-                    // Offer a chance for the TargetModel to override the results
-                    if (TargetModel && _.isFunction(TargetModel.permissible)) {
-                        return TargetModel.permissible(
-                            modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
-                        );
-                    }
-
-                    if (hasUserPermission && hasApiKeyPermission) {
-                        return;
-                    }
-
-                    return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
+                    // Evaluate permissions and handle model override or rejection
+                    return self.evaluatePermissions(TargetModel, modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission);
                 });
             };
 
             return objTypeHandlers;
         }, {});
+    }
+
+    evaluatePermissions(TargetModel, modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission) {
+        // Offer a chance for the TargetModel to override the results
+        if (TargetModel && _.isFunction(TargetModel.permissible)) {
+            return TargetModel.permissible(
+                modelId, actType, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasApiKeyPermission, hasMemberPermission
+            );
+        }
+
+        if (hasUserPermission && hasApiKeyPermission) {
+            return;
+        }
+
+        return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
     }
 
     loadPermissions(context) {
