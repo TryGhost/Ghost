@@ -146,33 +146,20 @@ class CanThisResult {
         return Promise.reject(new errors.NoPermissionError({message: tpl(messages.noPermissionToAction)}));
     }
 
+    loadPermissionForContext(context, contextKey, provider, idAccessor) {
+        if (context[contextKey]) {
+            const identifier = idAccessor ? context[contextKey][idAccessor] : context[contextKey];
+            return provider(identifier);
+        } else {
+            return Promise.resolve(null);
+        }
+    }
+
     loadPermissions(context) {
-        let userPermissionLoad;
-        let apiKeyPermissionLoad;
-        let memberPermissionLoad;
-
-        // Kick off loading of user permissions if necessary
-        if (context.user) {
-            userPermissionLoad = providers.user(context.user);
-        } else {
-            // Resolve null if no context.user to prevent db call
-            userPermissionLoad = Promise.resolve(null);
-        }
-
-        // Kick off loading of api key permissions if necessary
-        if (context.api_key) {
-            apiKeyPermissionLoad = providers.apiKey(context.api_key.id);
-        } else {
-            // Resolve null if no context.api_key
-            apiKeyPermissionLoad = Promise.resolve(null);
-        }
-
-        if (context.member) {
-            memberPermissionLoad = providers.member(context.member.id);
-        } else {
-            // Resolve null if no context.member
-            memberPermissionLoad = Promise.resolve(null);
-        }
+        // Kick off loading of permissions for each context type
+        const userPermissionLoad = this.loadPermissionForContext(context, 'user', providers.user);
+        const apiKeyPermissionLoad = this.loadPermissionForContext(context, 'api_key', providers.apiKey, 'id');
+        const memberPermissionLoad = this.loadPermissionForContext(context, 'member', providers.member, 'id');
 
         // Wait for both user and app permissions to load
         return Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
