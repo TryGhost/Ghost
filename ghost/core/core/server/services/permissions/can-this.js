@@ -127,19 +127,10 @@ class CanThisResult {
         }, {});
     }
 
-    beginCheck(context) {
-        const self = this;
+    loadPermissions(context) {
         let userPermissionLoad;
         let apiKeyPermissionLoad;
         let memberPermissionLoad;
-        let permissionsLoad;
-
-        // Get context.user, context.api_key and context.app
-        context = parseContext(context);
-
-        if (actionsMap.empty()) {
-            throw new errors.InternalServerError({message: tpl(messages.noActionsMapFoundError)});
-        }
 
         // Kick off loading of user permissions if necessary
         if (context.user) {
@@ -162,13 +153,27 @@ class CanThisResult {
         }
 
         // Wait for both user and app permissions to load
-        permissionsLoad = Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
+        return Promise.all([userPermissionLoad, apiKeyPermissionLoad, memberPermissionLoad]).then(function (result) {
             return {
                 user: result[0],
                 apiKey: result[1],
                 member: result[2]
             };
         });
+    }
+
+    beginCheck(context) {
+        const self = this;
+
+        // Get context.user, context.api_key and context.app
+        context = parseContext(context);
+
+        if (actionsMap.empty()) {
+            throw new errors.InternalServerError({message: tpl(messages.noActionsMapFoundError)});
+        }
+
+        // Load all permissions
+        const permissionsLoad = this.loadPermissions(context);
 
         // Iterate through the actions and their related object types
         _.each(actionsMap.getAll(), function (objTypes, actType) {
