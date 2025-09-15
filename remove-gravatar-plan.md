@@ -110,12 +110,14 @@
   - `/ghost/core/test/e2e-webhooks/__snapshots__/members.test.js.snap`
   - `/ghost/core/test/e2e-server/__snapshots__/click-tracking.test.js.snap`
   - `/ghost/core/test/e2e-api/members-comments/__snapshots__/comments.test.js.snap`
-- Update test fixtures:
-  - `/ghost/core/test/utils/fixtures/export/v4_export.json`
-  - `/ghost/core/test/utils/fixtures/export/v3_export.json`
-  - `/ghost/core/test/utils/fixtures/export/v2_export.json`
+- Update current test fixtures only:
   - `/apps/comments-ui/test/utils/fixtures.ts`
   - `/apps/admin-x-framework/src/test/responses/config.json`
+- **DO NOT update historical export fixtures** (these represent older Ghost versions):
+  - Keep `/ghost/core/test/utils/fixtures/export/v4_export.json` unchanged
+  - Keep `/ghost/core/test/utils/fixtures/export/v3_export.json` unchanged
+  - Keep `/ghost/core/test/utils/fixtures/export/v2_export.json` unchanged
+  - These files preserve the historical data format and should remain as-is
 
 ## 6. Frontend/Theme Updates
 
@@ -138,11 +140,12 @@
 
 1. **Start with backend core changes** - Remove Gravatar class, update models
 2. **Update configuration files** - Remove Gravatar settings from config
-3. **Update API serializers** - Ensure avatar_image returns null or placeholder
+3. **Update API serializers** - Ensure avatar_image returns SVG data URLs
 4. **Update frontend components** - Handle missing avatars gracefully
 5. **Update all tests** - Reflect the changes in test expectations
 6. **Update snapshots and fixtures** - Remove Gravatar URLs from test data
 7. **Run full test suite** - Ensure everything works correctly
+8. **Final verification** - Run `rg -i gravatar` to ensure no references remain in the codebase (case-insensitive search)
 
 ## Notes
 
