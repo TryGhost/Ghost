@@ -13,6 +13,19 @@ const messages = {
 };
 
 class CanThisResult {
+    static get objectTypeModelMap() {
+        return {
+            post: models.Post,
+            role: models.Role,
+            user: models.User,
+            permission: models.Permission,
+            setting: models.Settings,
+            invite: models.Invite,
+            integration: models.Integration,
+            comment: models.Comment
+        };
+    }
+
     checkUserPermissions(loadedPermissions, actType, objType) {
         const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
         const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
@@ -66,21 +79,11 @@ class CanThisResult {
 
     buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
         const self = this;
-        const objectTypeModelMap = {
-            post: models.Post,
-            role: models.Role,
-            user: models.User,
-            permission: models.Permission,
-            setting: models.Settings,
-            invite: models.Invite,
-            integration: models.Integration,
-            comment: models.Comment
-        };
 
         // Iterate through the object types, i.e. ['post', 'tag', 'user']
         return _.reduce(objTypes, function (objTypeHandlers, objType) {
             // Grab the TargetModel through the objectTypeModelMap
-            const TargetModel = objectTypeModelMap[objType];
+            const TargetModel = CanThisResult.objectTypeModelMap[objType];
 
             // Create the 'handler' for the object type;
             // the '.post()' in canThis(user).edit.post()
