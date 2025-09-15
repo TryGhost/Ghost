@@ -186,9 +186,25 @@ class CanThisResult {
         });
     }
 
-    beginCheck(context) {
-        const self = this;
+    attachActionHandlers(context, permissionsLoad) {
+        // Iterate through the actions and their related object types
+        _.each(actionsMap.getAll(), (objTypes, actType) => {
+            // Build up the object type handlers;
+            // the '.post()' parts in canThis(user).edit.post()
+            const objTypeHandlers = this.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
 
+            // Define a property for the action on the result;
+            // the '.edit' in canThis(user).edit.post()
+            Object.defineProperty(this, actType, {
+                writable: false,
+                enumerable: false,
+                configurable: false,
+                value: objTypeHandlers
+            });
+        });
+    }
+
+    beginCheck(context) {
         // Get context.user, context.api_key and context.app
         context = parseContext(context);
 
@@ -199,21 +215,8 @@ class CanThisResult {
         // Load all permissions
         const permissionsLoad = this.loadPermissions(context);
 
-        // Iterate through the actions and their related object types
-        _.each(actionsMap.getAll(), function (objTypes, actType) {
-            // Build up the object type handlers;
-            // the '.post()' parts in canThis(user).edit.post()
-            const objTypeHandlers = self.buildObjectTypeHandlers(objTypes, actType, context, permissionsLoad);
-
-            // Define a property for the action on the result;
-            // the '.edit' in canThis(user).edit.post()
-            Object.defineProperty(self, actType, {
-                writable: false,
-                enumerable: false,
-                configurable: false,
-                value: objTypeHandlers
-            });
-        });
+        // Attach action handlers to this instance
+        this.attachActionHandlers(context, permissionsLoad);
 
         // Return this for chaining
         return this;
