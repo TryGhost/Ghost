@@ -39,7 +39,10 @@
     ```
 - **Update Member Model's toJSON()**:
   - Extract initials from member name (or email if no name)
-  - Generate consistent color from member email/name using ported `stringToHslColor`
+  - Generate consistent color using ported `stringToHslColor`:
+    - Use member name for color generation if available (primary)
+    - Fall back to email address for color if no name exists
+    - This matches the frontend behavior in gh-member-avatar.js
   - Return SVG data URL as `avatar_image` instead of Gravatar URL
   - This maintains backwards compatibility for integrations/themes expecting an avatar_image URL
 - **Important: No Frontend Changes Required**:
