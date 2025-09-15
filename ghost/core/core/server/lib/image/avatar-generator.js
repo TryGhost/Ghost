@@ -16,7 +16,7 @@ function stringToHslColor(str, saturation = 75, lightness = 55) {
     for (let i = 0; i < str.length; i++) {
         hash = str.charCodeAt(i) + ((hash << 5) - hash);
     }
-    
+
     const h = hash % 360;
     return `hsl(${h}, ${saturation}%, ${lightness}%)`;
 }
@@ -63,12 +63,12 @@ function getInitials(nameOrEmail) {
  */
 function createInitialsAvatar(initials, color) {
     const text = initials.slice(0, 2).toUpperCase();
-    
+
     const svgContent = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
   <rect x="0" y="0" width="200" height="200" fill="${color}"/>
-  <text x="100" y="120" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="white">${text}</text>
+  <text x="100" y="125" font-family="Arial, sans-serif" font-size="84" font-weight="normal" text-anchor="middle" fill="white">${text}</text>
 </svg>`;
-    
+
     const base64 = Buffer.from(svgContent).toString('base64');
     return `data:image/svg+xml;base64,${base64}`;
 }
@@ -84,10 +84,10 @@ function generateMemberAvatar(member) {
     // Use name for both initials and color, fall back to email
     const nameForDisplay = member.name || member.email || 'Anonymous';
     const nameForColor = member.name || member.email || 'Anonymous';
-    
+
     const initials = getInitials(nameForDisplay);
     const color = stringToHslColor(nameForColor, 75, 55);
-    
+
     return createInitialsAvatar(initials, color);
 }
 
