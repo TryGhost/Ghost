@@ -77,6 +77,17 @@ class CanThisResult {
         };
     }
 
+    extractModelId(modelOrId) {
+        if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
+            // It's an id already, do nothing
+            return modelOrId;
+        } else if (modelOrId) {
+            // It's a model, get the id
+            return modelOrId.id;
+        }
+        return undefined;
+    }
+
     buildObjectTypeHandlers(objTypes, actType, context, permissionLoad) {
         const self = this;
 
@@ -88,7 +99,6 @@ class CanThisResult {
             // Create the 'handler' for the object type;
             // the '.post()' in canThis(user).edit.post()
             objTypeHandlers[objType] = function (modelOrId, unsafeAttrs) {
-                let modelId;
                 unsafeAttrs = unsafeAttrs || {};
 
                 // If it's an internal request, resolve immediately
@@ -96,13 +106,7 @@ class CanThisResult {
                     return Promise.resolve();
                 }
 
-                if (_.isNumber(modelOrId) || _.isString(modelOrId)) {
-                    // It's an id already, do nothing
-                    modelId = modelOrId;
-                } else if (modelOrId) {
-                    // It's a model, get the id
-                    modelId = modelOrId.id;
-                }
+                const modelId = self.extractModelId(modelOrId);
                 // Wait for the user loading to finish
                 return permissionLoad.then(function (loadedPermissions) {
                     // Check user permissions using extracted method
