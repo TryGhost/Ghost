@@ -13,18 +13,41 @@
 
 ### Update Member Model  
 - Modify `/ghost/core/core/server/models/member.js` to remove automatic avatar_image assignment using Gravatar (lines 396-402)
-- Return a URL to a static default avatar image to maintain backwards compatibility
-- **Create Default Avatar Image**:
-  - Generate a static PNG image (250x250px to match current Gravatar size) with:
-    - Grey background (#F5F5F5 or similar neutral color)
-    - The user icon from `/apps/portal/src/images/icons/user.svg` centered
-  - Store this as `/ghost/core/core/frontend/public/default-avatar.png`
-  - Update the Member model's `toJSON()` method to return the static default image URL instead of Gravatar
+- Return a dynamically generated SVG avatar as a base64 data URL to maintain backwards compatibility
+- **Create Avatar Generation Utility**:
+  - Create `/ghost/core/core/server/lib/image/avatar-generator.js` with:
+    - Port `getInitials` logic from `/apps/comments-ui/src/utils/helpers.ts` (lines 87-102)
+    - Port `stringToHslColor` logic from `/ghost/admin/app/components/gh-member-avatar.js` (lines 4-12)
+    - Implement `createInitialsAvatar(initials, colorHex)` function that:
+      - Takes initials (max 2 characters) and color hex
+      - Generates an SVG with colored background and white text
+      - Returns base64 encoded data URL: `data:image/svg+xml;base64,{encoded}`
+  - Example implementation:
+    ```javascript
+    function createInitialsAvatar(initials, colorHex) {
+      const text = initials.slice(0, 2).toUpperCase();
+      const color = colorHex.startsWith('#') ? colorHex : `#${colorHex}`;
+      
+      const svgContent = `<svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <rect x="10" y="10" width="180" height="180" fill="${color}"/>
+        <text x="100" y="120" font-family="Arial, sans-serif" font-size="72" font-weight="bold" text-anchor="middle" fill="white">${text}</text>
+      </svg>`;
+      
+      const base64 = btoa(svgContent);
+      return `data:image/svg+xml;base64,${base64}`;
+    }
+    ```
+- **Update Member Model's toJSON()**:
+  - Extract initials from member name (or email if no name)
+  - Generate consistent color from member email/name using ported `stringToHslColor`
+  - Return SVG data URL as `avatar_image` instead of Gravatar URL
   - This maintains backwards compatibility for integrations/themes expecting an avatar_image URL
-- **Frontend Behavior**:
-  - The Ghost Admin and Portal apps already have fallback logic to show initials when appropriate
-  - These will continue to work, showing initials over the default image
-  - This satisfies the Linear issue requirement while maintaining API compatibility
+- **Important: No Frontend Changes Required**:
+  - The Ghost Admin and Portal apps already have their own initials rendering logic
+  - They will continue to use their existing components (gh-member-avatar, MemberGravatar)
+  - The frontend ignores the API's avatar_image and renders initials locally for better UI performance
+  - The API-provided SVG avatars are primarily for external integrations, emails, and webhooks
+  - This approach requires ZERO frontend changes while maintaining full backward compatibility
 
 ### Configuration Changes
 - Remove gravatar configuration from `/ghost/core/core/shared/config/defaults.json` (lines 244-245)
