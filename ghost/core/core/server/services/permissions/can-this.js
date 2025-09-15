@@ -26,6 +26,15 @@ class CanThisResult {
         };
     }
 
+    matchesPermission(perm, actType, objType) {
+        // Look for a matching action type and object type first
+        if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
+            return false;
+        }
+
+        return true;
+    }
+
     checkUserPermissions(loadedPermissions, actType, objType) {
         const userPermissions = loadedPermissions.user ? loadedPermissions.user.permissions : null;
         const apiKeyPermissions = loadedPermissions.apiKey ? loadedPermissions.apiKey.permissions : null;
@@ -35,24 +44,15 @@ class CanThisResult {
         let hasApiKeyPermission;
         let hasMemberPermission = false;
 
-        const checkPermission = function (perm) {
-            // Look for a matching action type and object type first
-            if (perm.get('action_type') !== actType || perm.get('object_type') !== objType) {
-                return false;
-            }
-
-            return true;
-        };
-
         const {isOwner} = setIsRoles(loadedPermissions);
         if (isOwner) {
             hasUserPermission = true;
         } else if (!_.isEmpty(userPermissions)) {
-            hasUserPermission = _.some(userPermissions, checkPermission);
+            hasUserPermission = _.some(userPermissions, perm => this.matchesPermission(perm, actType, objType));
         }
 
         if (loadedPermissions.member) {
-            hasMemberPermission = _.some(memberPermissions, checkPermission);
+            hasMemberPermission = _.some(memberPermissions, perm => this.matchesPermission(perm, actType, objType));
         }
 
         // Check api key permissions if they were passed
@@ -66,7 +66,7 @@ class CanThisResult {
                 // Traditional API key scenario: API key only, no user
                 // Use API key permissions as before
                 hasUserPermission = true;
-                hasApiKeyPermission = _.some(apiKeyPermissions, checkPermission);
+                hasApiKeyPermission = _.some(apiKeyPermissions, perm => this.matchesPermission(perm, actType, objType));
             }
         }
 
