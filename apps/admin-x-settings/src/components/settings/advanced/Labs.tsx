@@ -1,17 +1,24 @@
 import BetaFeatures from './labs/BetaFeatures';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
 import PrivateFeatures from './labs/PrivateFeatures';
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import TopLevelGroup from '../../TopLevelGroup';
 import {Button, SettingGroupHeader, Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../providers/GlobalDataProvider';
+import {useSearch} from '../../providers/SettingsAppProvider';
 
 type LabsTab = 'labs-private-features' | 'labs-beta-features';
 
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
     const [isOpen, setIsOpen] = useState(false);
+    // Tracks if we opened the panel due to search-only-labs condition
+    const autoOpenedRef = useRef(false);
+    // Tracks if the user manually toggled the panel (overrides auto-open while the search term is unchanged)
+    const userOverrodeRef = useRef(false);
+    const lastFilterRef = useRef<string | undefined>(undefined);
     const {config} = useGlobalData();
+    const {filter, autoOpenTarget} = useSearch();
 
     const tabs = [
         {
@@ -26,6 +33,27 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
         })
     ].filter(Boolean) as Tab<LabsTab>[];
 
+    useEffect(() => {
+        // Reset user override if the filter changed
+        if (lastFilterRef.current !== filter) {
+            lastFilterRef.current = filter;
+            userOverrodeRef.current = false;
+        }
+    }, [filter]);
+
+    useEffect(() => {
+        const targetIsLabs = autoOpenTarget === 'labs';
+        if (targetIsLabs) {
+            if (!userOverrodeRef.current) {
+                setIsOpen(true);
+                autoOpenedRef.current = true;
+            }
+        } else if (autoOpenedRef.current) {
+            setIsOpen(false);
+            autoOpenedRef.current = false;
+        }
+    }, [autoOpenTarget]);
+
     return (
         <TopLevelGroup
             customHeader={
@@ -35,9 +63,13 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         !isOpen ?
                             <Button className='mt-[-5px]' color='clear' label='Open' size='sm' onClick={() => {
                                 setIsOpen(true);
+                                userOverrodeRef.current = true;
+                                autoOpenedRef.current = false;
                             }} /> :
                             <Button className='mt-[-5px]' color='grey' label='Close' size='sm' onClick={() => {
                                 setIsOpen(false);
+                                userOverrodeRef.current = true;
+                                autoOpenedRef.current = false;
                             }} />
                     }
                 </div>

@@ -9,7 +9,7 @@ interface TopLevelGroupProps extends Omit<SettingGroupProps, 'isVisible' | 'high
 }
 
 const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children, ...props}) => {
-    const {checkVisible, noResult} = useSearch();
+    const {checkVisible, noResult, registerSearchTarget, unregisterSearchTarget} = useSearch();
     const {route} = useRouting();
     const [highlight, setHighlight] = useState(false);
     const {ref} = useScrollSection(navid);
@@ -21,6 +21,15 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children,
             return () => clearTimeout(timer);
         }
     }, [route, navid]);
+
+    // Register this group as a searchable target for auto-open detection
+    useEffect(() => {
+        if (navid) {
+            registerSearchTarget(navid, keywords);
+            return () => unregisterSearchTarget(navid);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [navid, JSON.stringify(keywords)]);
 
     const hasImageChild = React.Children.toArray(children).some(
         child => React.isValidElement(child) && child.type === 'img'
