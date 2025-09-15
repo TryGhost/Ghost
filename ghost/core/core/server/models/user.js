@@ -203,20 +203,6 @@ User = ghostBookshelf.Model.extend({
             });
         }
 
-        // If the user's email is set & has changed & we are not importing
-        if (self.hasChanged('email') && self.get('email') && !options.importing) {
-            tasks.push((function lookUpGravatar() {
-                const {gravatar} = require('../lib/image');
-
-                return gravatar.lookup({
-                    email: self.get('email')
-                }).then(function (response) {
-                    if (response && response.image) {
-                        self.set('profile_image', response.image);
-                    }
-                });
-            })());
-        }
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             tasks.push((function generateSlug() {

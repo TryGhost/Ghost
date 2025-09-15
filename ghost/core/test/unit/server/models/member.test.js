@@ -29,26 +29,33 @@ describe('Unit: models/member', function () {
             };
         });
 
-        it('avatar_image: generates gravatar url', function () {
+        it('avatar_image: generates SVG avatar', function () {
             const member = {
-                email: 'test@example.com'
+                email: 'test@example.com',
+                name: 'Test User'
             };
 
-            config.set('privacy:useGravatar', true);
             const json = toJSON(member);
 
-            json.avatar_image.should.eql(`https://www.gravatar.com/avatar/55502f40dc8b7c769880b10874abc9d0?s=250&r=g&d=blank`);
+            json.avatar_image.should.startWith('data:image/svg+xml;base64,');
+            // Decode base64 and check it contains expected initials
+            const base64Part = json.avatar_image.split(',')[1];
+            const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
+            decoded.should.containEql('TU'); // Initials for "Test User"
         });
 
-        it('avatar_image: skips gravatar when privacy.useGravatar=false', function () {
+        it('avatar_image: generates SVG avatar from email when no name', function () {
             const member = {
                 email: 'test@example.com'
             };
 
-            config.set('privacy:useGravatar', false);
             const json = toJSON(member);
 
-            should(json.avatar_image).eql(null);
+            json.avatar_image.should.startWith('data:image/svg+xml;base64,');
+            // Decode base64 and check it contains expected initial
+            const base64Part = json.avatar_image.split(',')[1];
+            const decoded = Buffer.from(base64Part, 'base64').toString('utf-8');
+            decoded.should.containEql('T'); // Initial for "test"
         });
     });
 

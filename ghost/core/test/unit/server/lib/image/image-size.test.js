@@ -201,16 +201,16 @@ describe('lib/image: image size', function () {
             }).catch(done);
         });
 
-        it('[success] should return image dimensions for gravatar images request', function (done) {
-            const url = '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x';
+        it('[success] should return image dimensions for external images request', function (done) {
+            const url = '//example.com/images/avatar.png';
             const expectedImageObject = {
                 height: 1,
-                url: '//www.gravatar.com/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x',
+                url: '//example.com/images/avatar.png',
                 width: 1
             };
 
-            const requestMock = nock('http://www.gravatar.com')
-                .get('/avatar/ef6dcde5c99bb8f685dd451ccc3e050a?s=250&d=mm&r=x')
+            const requestMock = nock('http://example.com')
+                .get('/images/avatar.png')
                 .reply(200, GIF1x1);
 
             const imageSize = new ImageSize({config: {

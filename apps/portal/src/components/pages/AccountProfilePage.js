@@ -1,6 +1,6 @@
 import React from 'react';
 import AppContext from '../../AppContext';
-import MemberAvatar from '../common/MemberGravatar';
+import MemberAvatar from '../common/MemberAvatar';
 import ActionButton from '../common/ActionButton';
 import CloseButton from '../common/CloseButton';
 import BackButton from '../common/BackButton';
@@ -103,7 +103,7 @@ export default class AccountProfilePage extends React.Component {
     }
 
     renderUserAvatar() {
-        const avatarImg = (this.context.member && this.context.member.avatar_image);
+        const member = this.context.member;
 
         const avatarContainerStyle = {
             position: 'relative',
@@ -121,7 +121,7 @@ export default class AccountProfilePage extends React.Component {
 
         return (
             <div style={avatarContainerStyle}>
-                <MemberAvatar gravatar={avatarImg} style={{userIcon: {color: 'black', width: '56px', height: '56px'}}} />
+                <MemberAvatar member={member} style={{userIcon: {color: 'black', width: '56px', height: '56px'}}} />
             </div>
         );
     }

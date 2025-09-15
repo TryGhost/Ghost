@@ -119,14 +119,6 @@ export default function () {
 
     /* External sites ------------------------------------------------------- */
 
-    this.head('http://www.gravatar.com/avatar/:md5', function () {
-        return '';
-    }, 200);
-
-    this.get('http://www.gravatar.com/avatar/:md5', function () {
-        return '';
-    }, 200);
-
     this.get('https://ghost.org/changelog.json', function () {
         return {
             changelog: [

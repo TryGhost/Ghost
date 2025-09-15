@@ -1,6 +1,5 @@
 const BlogIcon = require('./BlogIcon');
 const CachedImageSizeFromUrl = require('./CachedImageSizeFromUrl');
-const Gravatar = require('./Gravatar');
 const ImageSize = require('./ImageSize');
 const probe = require('probe-image-size');
 
@@ -12,7 +11,6 @@ class ImageUtils {
             getImageSizeFromUrl: this.imageSize.getImageSizeFromUrl.bind(this.imageSize),
             cache: cacheStore
         });
-        this.gravatar = new Gravatar({config, request});
     }
 }
 

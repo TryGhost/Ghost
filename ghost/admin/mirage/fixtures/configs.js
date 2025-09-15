@@ -6,7 +6,6 @@ export default [{
     labs: {},
     mail: 'SMTP',
     version: '2.15.0',
-    useGravatar: 'true',
     editor: {
         url: 'http://localhost:2368/editor.js'
     },

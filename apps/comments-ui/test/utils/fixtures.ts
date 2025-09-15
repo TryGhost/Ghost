@@ -6,7 +6,7 @@ export function buildMember(override: any = {}) {
 
     return {
         id: ObjectId().toString(),
-        avatar_image: 'https://www.gravatar.com/avatar/7a68f69cc9c9e9b45d97ecad6f24184a?s=250&r=g&d=blank',
+        avatar_image: null,
         expertise: 'Head of Testing',
         name: 'Test Member ' + memberCounter,
         uuid: ObjectId().toString(),

@@ -6,7 +6,7 @@ export default Factory.extend({
     coverImage: null,
     createdAt: '2015-09-02T13:41:50.000Z',
     email(i) { return `user-${i}@example.com`; },
-    profileImage: '//www.gravatar.com/avatar/3ae045bc198a157401827c8455cd7c99?s=250&d=mm&r=x',
+    profileImage: null,
     lastLogin: '2015-11-02T16:12:05.000Z',
     location: null,
     metaDescription: null,

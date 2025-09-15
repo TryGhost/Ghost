@@ -11,7 +11,6 @@ module.exports = function getConfigProperties() {
         environment: config.get('env'),
         database: databaseInfo.getEngine(),
         mail: isPlainObject(config.get('mail')) ? config.get('mail').transport : '',
-        useGravatar: !config.isPrivacyDisabled('useGravatar'),
         labs: labs.getAll(),
         clientExtensions: config.get('clientExtensions') || {},
         enableDeveloperExperiments: config.get('enableDeveloperExperiments') || false,

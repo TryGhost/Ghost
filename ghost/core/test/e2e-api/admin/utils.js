@@ -36,7 +36,6 @@ const expectedProperties = {
         'labs',
         'clientExtensions',
         'enableDeveloperExperiments',
-        'useGravatar',
         'stripeDirect',
         'emailAnalytics',
         'tenor',

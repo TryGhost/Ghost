@@ -4,7 +4,6 @@
         "environment": "development",
         "database": "sqlite3",
         "mail": "SMTP",
-        "useGravatar": true,
         "labs": {},
         "clientExtensions": {},
         "enableDeveloperExperiments": true,

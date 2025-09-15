@@ -10,7 +10,6 @@ module.exports = {
             'environment',
             'database',
             'mail',
-            'useGravatar',
             'labs',
             'clientExtensions',
             'enableDeveloperExperiments',

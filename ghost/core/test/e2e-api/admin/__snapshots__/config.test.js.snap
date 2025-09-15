@@ -45,7 +45,6 @@ Object {
       "contentFilter": "off",
       "googleApiKey": null,
     },
-    "useGravatar": false,
     "version": StringMatching /\\\\d\\+\\\\\\.\\\\d\\+\\\\\\.\\\\d\\+/,
   },
 }

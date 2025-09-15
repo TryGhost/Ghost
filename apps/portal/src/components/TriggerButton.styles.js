@@ -1,5 +1,5 @@
 import {GlobalStyles} from './Global.styles';
-import {AvatarStyles} from './common/MemberGravatar';
+import {AvatarStyles} from './common/MemberAvatar';
 
 const TriggerButtonStyles = `
     .gh-portal-triggerbtn-wrapper {

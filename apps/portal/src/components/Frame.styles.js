@@ -12,7 +12,7 @@ import {AccountPlanPageStyles} from './pages/AccountPlanPage';
 import {InputFieldStyles} from './common/InputField';
 import {SignupPageStyles} from './pages/SignupPage';
 import {ProductsSectionStyles} from './common/ProductsSection';
-import {AvatarStyles} from './common/MemberGravatar';
+import {AvatarStyles} from './common/MemberAvatar';
 import {MagicLinkStyles} from './pages/MagicLinkPage';
 import {PopupNotificationStyles} from './common/PopupNotification';
 import {OfferPageStyles} from './pages/OfferPage';

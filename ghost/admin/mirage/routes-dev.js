@@ -18,7 +18,6 @@ export default function () {
     this.passthrough();
 
     // add any external domains to make sure those get passed through too
-    this.passthrough('http://www.gravatar.com/**');
     this.passthrough('https://cdn.jsdelivr.net/**');
     this.passthrough('https://api.unsplash.com/**');
     this.passthrough('https://ghost.org/**');

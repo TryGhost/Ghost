@@ -1,6 +1,6 @@
 import React from 'react';
 import Frame from './Frame';
-import MemberGravatar from './common/MemberGravatar';
+import MemberAvatar from './common/MemberAvatar';
 import AppContext from '../AppContext';
 import {ReactComponent as UserIcon} from '../images/icons/user.svg';
 import {ReactComponent as ButtonIcon1} from '../images/icons/button-icon-1.svg';
@@ -104,21 +104,15 @@ class TriggerButtonContent extends React.Component {
     renderTriggerIcon() {
         const {portal_button_icon: buttonIcon = '', portal_button_style: buttonStyle = ''} = this.context.site || {};
         const Style = Styles({brandColor: this.context.brandColor});
-        const memberGravatar = this.context.member && this.context.member.avatar_image;
+        const member = this.context.member;
 
-        if (!buttonStyle.includes('icon') && !this.context.member) {
+        if (!buttonStyle.includes('icon') && !member) {
             return null;
         }
 
-        if (memberGravatar) {
+        if (member) {
             return (
-                <MemberGravatar gravatar={memberGravatar} />
-            );
-        }
-
-        if (this.context.member) {
-            return (
-                <UserIcon style={Style.userIcon} />
+                <MemberAvatar member={member} />
             );
         } else {
             if (Object.keys(ICON_MAPPING).includes(buttonIcon)) {

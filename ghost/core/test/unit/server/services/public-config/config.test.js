@@ -13,7 +13,6 @@ const allowedKeys = [
     'environment',
     'database',
     'mail',
-    'useGravatar',
     'labs',
     'clientExtensions',
     'enableDeveloperExperiments',
