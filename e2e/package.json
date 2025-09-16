@@ -29,7 +29,7 @@
     "typescript": "5.8.3",
     "@tryghost/logging": "2.4.23",
     "@tryghost/debug": "0.1.35",
-    "@types/dockerode": "3.3.43"
+    "@types/dockerode": "3.3.44"
   },
   "dependencies": {}
 }
