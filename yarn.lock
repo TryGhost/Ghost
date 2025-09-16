@@ -9074,10 +9074,10 @@
     "@types/node" "*"
     "@types/ssh2" "*"
 
-"@types/dockerode@3.3.43":
-  version "3.3.43"
-  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.43.tgz#df63180efa8cc910720c778b729548817afe3de8"
-  integrity sha512-YCi0aKKpKeC9dhKTbuglvsWDnAyuIITd6CCJSTKiAdbDzPH4RWu0P9IK2XkJHdyplH6mzYtDYO+gB06JlzcPxg==
+"@types/dockerode@3.3.44":
+  version "3.3.44"
+  resolved "https://registry.yarnpkg.com/@types/dockerode/-/dockerode-3.3.44.tgz#1e6d5b291646820e9daabfa132cdb33c9d535b56"
+  integrity sha512-fUpIHlsbYpxAJb285xx3vp7q5wf5mjqSn3cYwl/MhiM+DB99OdO5sOCPlO0PjO+TyOtphPs7tMVLU/RtOo/JjA==
   dependencies:
     "@types/docker-modem" "*"
     "@types/node" "*"
@@ -9329,10 +9329,10 @@
   dependencies:
     undici-types "~7.10.0"
 
-"@types/node@22.18.4":
-  version "22.18.4"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.4.tgz#cecc2120443ec4224e930caf84c66a47fb9e1e47"
-  integrity sha512-UJdblFqXymSBhmZf96BnbisoFIr8ooiiBRMolQgg77Ea+VM37jXw76C2LQr9n8wm9+i/OvlUlW6xSvqwzwqznw==
+"@types/node@22.18.5":
+  version "22.18.5"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.18.5.tgz#6b90a0087660cce4e956c3932c7f4357ef06bccf"
+  integrity sha512-g9BpPfJvxYBXUWI9bV37j6d6LTMNQ88hPwdWWUeYZnMhlo66FIg9gCc1/DZb15QylJSKwOZjwrckvOTWpOiChg==
   dependencies:
     undici-types "~6.21.0"
 
