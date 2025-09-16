@@ -1,7 +1,5 @@
 @import './preflight.css' layer(base);
 
-@import 'tailwindcss';
-
 @import url(https://fonts.bunny.net/css?family=cardo:400,700) layer(utilities);
 @import url(https://fonts.bunny.net/css?family=manrope:300,500,700)
 layer(utilities);
@@ -38,6 +36,9 @@ layer(utilities);
 layer(utilities);
 @import url(https://fonts.bunny.net/css?family=jetbrains-mono:400,700)
 layer(utilities);
+
+@import 'tailwindcss/theme.css';
+@import 'tailwindcss/utilities.css';
 
 @config './tailwind.config.cjs';
 
