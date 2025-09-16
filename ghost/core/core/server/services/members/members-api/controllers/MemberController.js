@@ -211,4 +211,50 @@ module.exports = class MemberController {
             res.end(err.message);
         }
     }
+
+    async generateRssToken(req, res) {
+        const identity = req.body.identity;
+
+        if (!identity) {
+            res.writeHead(403);
+            return res.end('No Permission.');
+        }
+
+        try {
+            const token = await this._tokenService.decodeToken(identity);
+            const member = await this._memberRepository.get({email: token.sub});
+
+            if (!member) {
+                res.writeHead(404);
+                return res.end('Member not found.');
+            }
+
+            // Generate RSS token if it doesn't exist
+            if (!member.rss_token) {
+                const rssToken = await this._memberRepository.generateRssToken({
+                    id: member.id,
+                    email: member.email
+                });
+                member.rss_token = rssToken;
+            }
+
+            // Generate the authenticated RSS URL
+            const siteUrl = this._settingsCache.get('url');
+            const rssUrl = new URL('/rss/', siteUrl);
+            rssUrl.searchParams.set('token', member.rss_token);
+
+            res.writeHead(200, {
+                'Content-Type': 'application/json'
+            });
+            res.end(JSON.stringify({
+                rss_url: rssUrl.toString(),
+                rss_token: member.rss_token
+            }));
+        } catch (err) {
+            res.writeHead(err.statusCode || 500, {
+                'Content-Type': 'text/plain;charset=UTF-8'
+            });
+            res.end(err.message);
+        }
+    }
 };
