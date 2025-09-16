@@ -231,10 +231,27 @@ module.exports = class MemberRepository {
         return crypto.randomUUID();
     }
 
+    _generateRssToken() {
+        // Generate a secure random token for RSS feeds
+        return crypto.randomBytes(32).toString('hex');
+    }
+
     async cycleTransientId({id, email}) {
         await this.update({
             transient_id: this._generateTransientId()
         }, {id, email});
+    }
+
+    async generateRssToken({id, email}) {
+        const rssToken = this._generateRssToken();
+        await this.update({
+            rss_token: rssToken
+        }, {id, email});
+        return rssToken;
+    }
+
+    async regenerateRssToken({id, email}) {
+        return this.generateRssToken({id, email});
     }
 
     /**

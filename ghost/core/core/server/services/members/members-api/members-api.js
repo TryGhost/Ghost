@@ -399,6 +399,7 @@ module.exports = function MembersAPI({
         getMagicLink,
         members: users,
         memberBREADService,
+        memberRepository,
         events: eventRepository,
         productRepository,
 

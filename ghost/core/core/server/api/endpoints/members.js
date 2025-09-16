@@ -510,6 +510,54 @@ const controller = {
         async query(frame) {
             return await membersService.api.events.getEventTimeline(frame.options);
         }
+    },
+
+    generateRssToken: {
+        statusCode: 200,
+        headers: {
+            cacheInvalidate: true
+        },
+        options: [
+            'id'
+        ],
+        validation: {
+            options: {
+                id: {
+                    required: true
+                }
+            }
+        },
+        permissions: true,
+        async query(frame) {
+            const member = await membersService.api.members.get({id: frame.options.id}, {
+                withRelated: []
+            });
+
+            if (!member) {
+                throw new errors.NotFoundError({
+                    message: tpl(messages.memberNotFound)
+                });
+            }
+
+            // Generate RSS token if it doesn't exist
+            if (!member.rss_token) {
+                const rssToken = await membersService.api.memberRepository.generateRssToken({
+                    id: member.id,
+                    email: member.email
+                });
+                member.rss_token = rssToken;
+            }
+
+            // Generate the authenticated RSS URL
+            const siteUrl = settingsCache.get('url');
+            const rssUrl = new URL('/rss/', siteUrl);
+            rssUrl.searchParams.set('token', member.rss_token);
+
+            return {
+                rss_url: rssUrl.toString(),
+                rss_token: member.rss_token
+            };
+        }
     }
 };
 
