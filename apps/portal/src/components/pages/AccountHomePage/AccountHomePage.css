@@ -119,6 +119,24 @@ footer.gh-portal-account-footer {
     }
 }
 
+/* RSS Feed Button States */
+.gh-portal-btn-success {
+    background: #30cf43 !important;
+    color: #fff !important;
+    cursor: default !important;
+}
+
+.gh-portal-btn-error {
+    background: #f02d2d !important;
+    color: #fff !important;
+    cursor: default !important;
+}
+
+.gh-portal-btn-success:hover,
+.gh-portal-btn-error:hover {
+    opacity: 1 !important;
+}
+
 @media (max-width: 340px) {
     .gh-portal-account-footer {
         padding: 0 !important;

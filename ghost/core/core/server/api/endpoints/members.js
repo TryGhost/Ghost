@@ -5,6 +5,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
 const membersService = require('../../services/members');
+const rssUrlHelper = require('../../services/members/rss-url-helper');
 
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
@@ -60,6 +61,14 @@ const controller = {
         async query(frame) {
             const page = await membersService.api.memberBREADService.browse(frame.options);
 
+            // Add RSS URL to each member in the results
+            if (page && page.data) {
+                page.data = page.data.map(member => {
+                    member.rss_url = rssUrlHelper.generateMemberRSSUrl(member);
+                    return member;
+                });
+            }
+
             return page;
         }
     },
@@ -90,6 +99,11 @@ const controller = {
                 throw new errors.NotFoundError({
                     message: tpl(messages.memberNotFound)
                 });
+            }
+
+            // Add RSS URL to member response for Portal
+            if (member) {
+                member.rss_url = rssUrlHelper.generateMemberRSSUrl(member);
             }
 
             return member;

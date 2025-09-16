@@ -5,9 +5,12 @@ module.exports.render = function render(res, baseUrl, data) {
     // Format data - this is the same as what Express does
     const rssData = _.merge({}, res.locals, data);
 
+    // Extract member UUID for cache key isolation
+    const memberUuid = res.locals.member ? res.locals.member.uuid : null;
+
     // Fetch RSS from the cache
     return rssCache
-        .getXML(baseUrl, rssData)
+        .getXML(baseUrl, rssData, memberUuid)
         .then(function then(feedXml) {
             res.set('Content-Type', 'application/rss+xml; charset=UTF-8');
             res.send(feedXml);

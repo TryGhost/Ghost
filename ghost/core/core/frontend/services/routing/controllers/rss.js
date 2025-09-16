@@ -41,6 +41,12 @@ module.exports = function rssController(req, res, next) {
             const response = _.pick(result, ['posts', 'meta']);
 
             response.title = getTitle(result.data);
+
+            // Add member indicator to feed title if authenticated
+            if (res.locals.member) {
+                response.title += ' (Member Feed)';
+            }
+
             response.description = settingsCache.get('description');
 
             return response;

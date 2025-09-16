@@ -16,6 +16,7 @@ const onHeaders = require('on-headers');
 const tiersService = require('../tiers/service');
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
+const rssUrlHelper = require('./rss-url-helper');
 
 const messages = {
     missingUuid: 'Missing uuid.',
@@ -91,6 +92,12 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         Object.assign(req, {member});
         res.locals.member = req.member;
+
+        // Add RSS URL to member context for themes
+        if (res.locals.member) {
+            res.locals.member.rss_url = rssUrlHelper.generateMemberRSSUrl(res.locals.member);
+        }
+
         next();
     } catch (err) {
         Object.assign(req, {member: null});
@@ -215,7 +222,10 @@ const getMemberData = async function getMemberData(req, res) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
-            res.json(formattedMemberResponse(member));
+            const memberData = formattedMemberResponse(member);
+            // Add RSS URL to member data for Portal
+            memberData.rss_url = rssUrlHelper.generateMemberRSSUrl(member);
+            res.json(memberData);
         } else {
             res.json(null);
         }
