@@ -1,6 +1,10 @@
 // Used for eslint and storybook. Styles should not be compiled directly with this, they should be compiled by calling the function in tailwind.cjs
 module.exports = {
     content: ['./src/**/*.{js,ts,jsx,tsx}'],
+    // Temporarily generate all classes for debugging
+    safelist: [
+        {pattern: /.*/}
+    ],
 
     corePlugins: {
         preflight: false // we're providing our own scoped CSS reset
