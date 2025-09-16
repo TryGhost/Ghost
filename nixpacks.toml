@@ -1,2 +1,8 @@
-[variables]
-NODE_VERSION = "22.13.1"
+[phases.install]
+cmds = [
+  "wget -qO- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash",
+  ". ~/.nvm/nvm.sh",
+  "nvm install 22.13.1",
+  "nvm use 22.13.1",
+  "corepack enable && yarn install --frozen-lockfile"
+]
