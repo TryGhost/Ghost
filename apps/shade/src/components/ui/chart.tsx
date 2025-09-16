@@ -237,7 +237,7 @@ React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
                                                 </span>
                                             </div>
                                             {item.value && (
-                                                <span className="font-mono font-medium tabular-nums text-foreground">
+                                                <span className="text-foreground font-mono font-medium tabular-nums">
                                                     {item.value.toLocaleString()}
                                                 </span>
                                             )}
@@ -405,12 +405,12 @@ const DateTooltipContent = ({color, active, payload, range}: DateTooltipProps) =
     const displayValue = formattedValue || payload[0].value;
 
     return (
-        <div className="min-w-[120px] rounded-lg border bg-background px-3 py-2 shadow-lg">
-            {date && <div className="text-sm text-foreground">{range ? formatDisplayDateWithRange(date, range) : formatDisplayDate(date)}</div>}
+        <div className="bg-background min-w-[120px] rounded-lg border px-3 py-2 shadow-lg">
+            {date && <div className="text-foreground text-sm">{range ? formatDisplayDateWithRange(date, range) : formatDisplayDate(date)}</div>}
             <div className='flex items-center gap-2'>
                 <span className='inline-block size-[9px] rounded-[2px] opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-blue))'}}></span>
                 <div className='flex grow items-center justify-between gap-3'>
-                    {label && <div className="text-sm text-muted-foreground">{label}</div>}
+                    {label && <div className="text-muted-foreground text-sm">{label}</div>}
                     <div className="font-mono font-medium">{displayValue}</div>
                 </div>
             </div>

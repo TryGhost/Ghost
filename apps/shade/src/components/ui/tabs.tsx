@@ -48,12 +48,12 @@ const Tabs = React.forwardRef<
 Tabs.displayName = TabsPrimitive.Root.displayName;
 
 const tabsListVariants = cva(
-    'inline-flex items-center text-muted-foreground',
+    'text-muted-foreground inline-flex items-center',
     {
         variants: {
             variant: {
-                segmented: 'h-[34px] rounded-lg bg-muted px-[3px]',
-                'segmented-sm': 'h-8 rounded-lg bg-muted px-[3px]',
+                segmented: 'bg-muted h-[34px] rounded-lg px-[3px]',
+                'segmented-sm': 'bg-muted h-8 rounded-lg px-[3px]',
                 button: 'gap-2',
                 'button-sm': 'gap-1',
                 underline: 'w-full gap-5 border-b border-b-gray-200 dark:border-gray-950',
@@ -84,18 +84,18 @@ const TabsList = React.forwardRef<
 TabsList.displayName = TabsPrimitive.List.displayName;
 
 const tabsTriggerVariants = cva(
-    'inline-flex items-center justify-center whitespace-nowrap px-3 py-1 ring-offset-background transition-all focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground [&_svg]:size-4 [&_svg]:shrink-0',
+    'ring-offset-background focus-visible:outline-hidden focus-visible:ring-ring data-[state=active]:bg-background data-[state=active]:text-foreground inline-flex items-center justify-center whitespace-nowrap px-3 py-1 transition-all focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4 [&_svg]:shrink-0',
     {
         variants: {
             variant: {
                 segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
                 'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
-                button: 'h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium',
-                'button-sm': 'font-regular h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-medium data-[state=active]:text-foreground',
-                underline: 'relative h-[36px] px-0 text-md font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-gray-800 hover:text-foreground data-[state=active]:bg-muted-foreground/15 data-[state=active]:font-semibold data-[state=active]:text-foreground dark:text-gray-500 dark:data-[state=active]:text-foreground',
-                kpis: 'relative rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 not-last:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
+                button: 'hover:bg-muted data-[state=active]:bg-muted-foreground/15 h-[34px] gap-1.5 rounded-md py-2 text-sm font-normal data-[state=active]:font-medium',
+                'button-sm': 'font-regular hover:bg-muted data-[state=active]:bg-muted-foreground/15 data-[state=active]:text-foreground h-6 gap-1.5 rounded-md p-2 text-xs text-gray-800 data-[state=active]:font-medium',
+                underline: 'text-md after:bg-foreground data-[state=active]:text-foreground data-[state=active]:after:opacity-100! relative h-[36px] px-0 font-semibold text-gray-700 after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent',
+                navbar: 'text-md text-muted-foreground after:bg-foreground hover:text-foreground data-[state=active]:text-foreground data-[state=active]:after:opacity-100! relative h-[52px] px-px font-semibold after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:opacity-0 after:content-[""] data-[state=active]:bg-transparent',
+                pill: 'text-md hover:text-foreground data-[state=active]:bg-muted-foreground/15 data-[state=active]:text-foreground dark:data-[state=active]:text-foreground relative h-[30px] rounded-md px-3 font-medium text-gray-800 data-[state=active]:font-semibold dark:text-gray-500',
+                kpis: 'border-border text-foreground after:bg-foreground hover:bg-accent/50 not-last:border-r [&[data-state=active]_[data-type="value"]]:text-foreground relative rounded-none bg-transparent px-6 py-5 ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md data-[state=active]:bg-transparent data-[state=active]:after:opacity-100'
             }
         },
         defaultVariants: {
@@ -132,7 +132,7 @@ const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', chil
 TabsTriggerCount.displayName = 'TabsTriggerCount';
 
 const tabsContentVariants = cva(
-    'ring-offset-background focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+    'ring-offset-background focus-visible:outline-hidden focus-visible:ring-ring focus-visible:ring-2 focus-visible:ring-offset-2',
     {
         variants: {
             variant: {
@@ -208,7 +208,7 @@ const KpiTabValue: React.FC<KpiTabValueProps> = ({
     );
     return (
         <div className={cn('group flex w-full flex-col items-start gap-2', className)}>
-            <div className='flex h-[22px] items-center gap-1.5 text-base font-medium text-muted-foreground transition-all group-hover:text-foreground' data-type="value">
+            <div className='text-muted-foreground group-hover:text-foreground flex h-[22px] items-center gap-1.5 text-base font-medium transition-all' data-type="value">
                 {color && <div className='ml-1 size-2 rounded-full opacity-50' style={{backgroundColor: color}}></div>}
                 {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
                 {label}
@@ -270,7 +270,7 @@ const TabsDropdownTrigger = React.forwardRef<HTMLButtonElement, TabsDropdownTrig
 }, ref) => {
     const variant = React.useContext(TabsVariantContext);
     return (
-        <div className="relative rounded-md hover:bg-muted">
+        <div className="hover:bg-muted relative rounded-md">
             <TabsPrimitive.Trigger
                 ref={ref}
                 className={cn(tabsTriggerVariants({variant, className}))}

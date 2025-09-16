@@ -11,11 +11,11 @@ export interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
 }
 
 const cardVariants = cva(
-    'flex flex-col bg-card text-card-foreground',
+    'bg-card text-card-foreground flex flex-col',
     {
         variants: {
             variant: {
-                outline: 'rounded-xl border transition-all hover:shadow-xs',
+                'outline-solid': 'hover:shadow-xs rounded-xl border transition-all',
                 plain: ''
             }
         },
@@ -44,7 +44,7 @@ const cardHeaderVariants = cva(
     {
         variants: {
             variant: {
-                outline: 'p-6',
+                'outline-solid': 'p-6',
                 plain: 'border-b py-5'
             }
         },
@@ -98,7 +98,7 @@ const cardContentVariants = cva(
     {
         variants: {
             variant: {
-                outline: 'p-6 pt-0',
+                'outline-solid': 'p-6 pt-0',
                 plain: 'border-b'
             }
         },
@@ -124,7 +124,7 @@ const cardFooterVariants = cva(
     {
         variants: {
             variant: {
-                outline: 'p-6 pt-0',
+                'outline-solid': 'p-6 pt-0',
                 plain: 'py-5'
             }
         },
@@ -205,7 +205,7 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                         <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
                     }
                     {diffTooltip &&
-                        <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
+                        <div className='bg-background text-foreground pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm px-3 py-2 text-sm opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>
                             {diffTooltip}
                         </div>
                     }

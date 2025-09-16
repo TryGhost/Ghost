@@ -8,7 +8,7 @@ interface NoValueLabelProps {
 
 const NoValueLabel: React.FC<NoValueLabelProps> = ({className = '', children}) => {
     return (
-        <div className={`my-10 flex flex-col items-center gap-1 text-sm text-grey-600 ${className}`}>
+        <div className={`text-grey-600 my-10 flex flex-col items-center gap-1 text-sm ${className}`}>
             {children}
         </div>
     );
