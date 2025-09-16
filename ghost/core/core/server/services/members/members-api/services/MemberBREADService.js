@@ -236,6 +236,15 @@ module.exports = class MemberBREADService {
             subscriptionIdMap.set(subscription.get('subscription_id'), subscription.id);
         }
 
+        // Generate RSS token if it doesn't exist
+        if (!model.get('rss_token')) {
+            const rssToken = await this.memberRepository.generateRssToken({
+                id: model.get('id'),
+                email: model.get('email')
+            });
+            model.set('rss_token', rssToken);
+        }
+
         const member = model.toJSON(options);
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);

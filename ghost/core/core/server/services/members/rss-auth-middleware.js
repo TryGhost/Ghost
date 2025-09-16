@@ -47,14 +47,20 @@ module.exports = {
         }
 
         try {
+            // Debug logging
+            logging.info(`RSS auth: Looking for token: ${token}`);
+
             // Look up member by RSS token
             const member = await models.Member.findOne({rss_token: token});
 
             if (!member) {
+                logging.error(`RSS auth: No member found with token: ${token}`);
                 return next(new errors.UnauthorizedError({
                     message: tpl(messages.invalidToken)
                 }));
             }
+
+            logging.info(`RSS auth: Found member: ${member.get('email')}`)
 
             // Check if member has active status
             const memberStatus = member.get('status');
