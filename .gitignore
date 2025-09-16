@@ -161,8 +161,6 @@ Caddyfile
 # Build files
 /apps/*/build
 /ghost/*/build
-/e2e/build
-
 # Typescript build artifacts
 tsconfig.tsbuildinfo
 
@@ -194,3 +192,6 @@ yalc.lock
 
 # e2e test suite
 /e2e/test-results
+/e2e/build
+/e2e/playwright
+/e2e/data

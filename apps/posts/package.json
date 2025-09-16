@@ -30,11 +30,12 @@
     },
     "devDependencies": {
         "@tanstack/react-query": "4.36.1",
+        "@tanstack/react-virtual": "3.13.12",
         "@testing-library/react": "14.3.1",
         "@types/jest": "29.5.14",
-        "@types/react": "18.3.23",
-        "msw": "2.10.4",
-        "vite": "5.4.19",
+        "@types/react": "18.3.24",
+        "msw": "2.11.2",
+        "vite": "5.4.20",
         "vitest": "1.6.1"
     },
     "dependencies": {

@@ -50,10 +50,10 @@ const stubUrlUtilsFromConfig = () => {
     return stubUrlUtils(options, defaultSandbox);
 };
 
-const restore = () => {
+const restore = async () => {
     defaultSandbox.restore();
     // eslint-disable-next-line no-console
-    configUtils.restore().catch(console.error);
+    await configUtils.restore().catch(console.error);
 };
 
 module.exports.stubUrlUtilsFromConfig = stubUrlUtilsFromConfig;

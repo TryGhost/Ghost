@@ -267,6 +267,49 @@ function updateFollowCache(queryClient: QueryClient, handle: string, authorHandl
     });
 }
 
+function updateAccountFollowsCaches(queryClient: QueryClient, targetHandle: string, isFollowing: boolean) {
+    // Get all account follows queries from the cache
+    const cache = queryClient.getQueryCache();
+    const queries = cache.getAll();
+
+    queries.forEach((query) => {
+        const queryKey = query.queryKey;
+        // Check if this is an account_follows query
+        if (Array.isArray(queryKey) && queryKey[0] === 'account_follows') {
+            queryClient.setQueryData(queryKey, (oldData?: {
+                pages: Array<{
+                    accounts: Array<{
+                        id: string;
+                        handle: string;
+                        isFollowing: boolean;
+                        [key: string]: unknown;
+                    }>;
+                }>;
+            }) => {
+                if (!oldData?.pages) {
+                    return oldData;
+                }
+
+                return {
+                    ...oldData,
+                    pages: oldData.pages.map(page => ({
+                        ...page,
+                        accounts: page.accounts.map((account) => {
+                            if (account.handle === targetHandle) {
+                                return {
+                                    ...account,
+                                    isFollowing: isFollowing
+                                };
+                            }
+                            return account;
+                        })
+                    }))
+                };
+            });
+        }
+    });
+}
+
 // Update non-paginated caches (should only be called once per mutation)
 function updateLikeCacheOnce(queryClient: QueryClient, id: string, liked: boolean) {
     // Handle reply chain cache (used by Note.tsx and Reader.tsx)
@@ -490,7 +533,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
 function updateReplyCacheOnce(queryClient: QueryClient, id: string, delta: number) {
     // Update reply chain cache (used by Note.tsx and Reader.tsx)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey, exact: false}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
@@ -996,7 +1039,7 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
             const followingHandle = handle === 'index' ? 'me' : handle;
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
             const existingData = queryClient.getQueryData(accountFollowsQueryKey);
-            
+
             // Update the following list cache if it exists, otherwise invalidate
             if (existingData) {
                 queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
@@ -1028,6 +1071,8 @@ export function useUnfollowMutationForUser(handle: string, onSuccess: () => void
                 // Cache doesn't exist, invalidate to fetch fresh data when needed
                 queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
             }
+            // Update isFollowing status in all account follows caches
+            updateAccountFollowsCaches(queryClient, fullHandle, false);
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1144,7 +1189,7 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             const followingHandle = handle === 'index' ? 'me' : handle;
             const accountFollowsQueryKey = QUERY_KEYS.accountFollows(followingHandle, 'following');
             const existingData = queryClient.getQueryData(accountFollowsQueryKey);
-            
+
             // Update the following list cache if it exists, otherwise invalidate
             if (existingData) {
                 queryClient.setQueryData(accountFollowsQueryKey, (oldData?: {
@@ -1190,6 +1235,8 @@ export function useFollowMutationForUser(handle: string, onSuccess: () => void, 
             } else {
                 queryClient.invalidateQueries({queryKey: accountFollowsQueryKey});
             }
+            // Update isFollowing status in all account follows caches
+            updateAccountFollowsCaches(queryClient, fullHandle, true);
 
             // Update explore profiles cache
             queryClient.setQueryData(QUERY_KEYS.exploreProfiles(handle), (current: {pages: Array<{results: Record<string, { categoryName: string; sites: Account[] }>}>} | undefined) => {
@@ -1582,7 +1629,7 @@ export function useAccountForUser(handle: string, profileHandle: string) {
 
 export function useAccountFollowsForUser(profileHandle: string, type: AccountFollowsType) {
     const queryClient = useQueryClient();
-    
+
     return useInfiniteQuery({
         queryKey: QUERY_KEYS.accountFollows(profileHandle, type),
         async queryFn({pageParam}: {pageParam?: string}) {
@@ -1590,14 +1637,14 @@ export function useAccountFollowsForUser(profileHandle: string, type: AccountFol
             const api = createActivityPubAPI('index', siteUrl);
 
             const response = await api.getAccountFollows(profileHandle, type, pageParam);
-            
+
             // Cache individual account data for follow mutations
             if (response.accounts) {
                 response.accounts.forEach((account) => {
                     queryClient.setQueryData(QUERY_KEYS.account(account.handle), account);
                 });
             }
-            
+
             return response;
         },
         getNextPageParam(prevPage) {
@@ -2576,4 +2623,76 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
+}
+
+function updateAccountBlueskyCache(queryClient: QueryClient, blueskyHandle: string | null) {
+    const profileQueryKey = QUERY_KEYS.account('index');
+
+    queryClient.setQueryData(profileQueryKey, (currentProfile?: {blueskyEnabled: boolean, blueskyHandle: string | null}) => {
+        if (!currentProfile) {
+            return currentProfile;
+        }
+
+        return {
+            ...currentProfile,
+            blueskyEnabled: blueskyHandle !== null,
+            blueskyHandle
+        };
+    });
+}
+
+export function useEnableBlueskyMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.enableBluesky();
+        },
+        onSuccess(blueskyHandle: string) {
+            updateAccountBlueskyCache(queryClient, blueskyHandle);
+
+            // Invalidate the following query as enabling bluesky will cause
+            // the account to follow the brid.gy account (and we want this to
+            // be reflected in the UI)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.accountFollows('index', 'following')
+            });
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+        }
+    });
+}
+
+export function useDisableBlueskyMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.disableBluesky();
+        },
+        onSuccess() {
+            updateAccountBlueskyCache(queryClient, null);
+
+            // Invalidate the following query as disabling bluesky will cause
+            // the account to unfollow the brid.gy account (and we want this to
+            // be reflected in the UI)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.accountFollows('index', 'following')
+            });
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+        }
+    });
 }

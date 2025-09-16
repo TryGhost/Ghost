@@ -74,7 +74,7 @@ const Network: React.FC<{ keywords: string[] }> = ({keywords}) => {
                             <div className='flex w-full gap-1.5 rounded-md border border-grey-200 bg-grey-75 p-3 text-sm dark:border-grey-900 dark:bg-grey-925'>
                                 <Icon name='info' size={16} />
                                 <div className='-mt-0.5'>
-                                You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/" rel="noopener noreferrer" target="_blank">Help &rarr;</a>
+                                You need to configure a supported custom domain to use this feature. <a className='text-green' href="https://ghost.org/help/social-web/#custom-domain-required" rel="noopener noreferrer" target="_blank">Help &rarr;</a>
                                 </div>
                             </div>
                     }

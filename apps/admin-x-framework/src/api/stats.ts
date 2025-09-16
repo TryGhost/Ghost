@@ -117,14 +117,14 @@ export type NewsletterStatsResponseType = {
     meta: Meta;
 };
 
-export type NewsletterSubscriberDelta = {
+export type NewsletterSubscriberValue = {
     date: string;
-    value: number;
+    value: number; // Cumulative subscriber count for this date
 };
 
 export type NewsletterSubscriberStats = {
     total: number;
-    deltas: NewsletterSubscriberDelta[];
+    values: NewsletterSubscriberValue[];
 };
 
 export type NewsletterSubscriberStatsResponseType = {

@@ -41,10 +41,13 @@ export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} fro
 export * from './components/layout/page';
 export {ErrorPage} from './components/layout/error-page';
 export * from './components/layout/heading';
+export * from './components/layout/header';
 export * from './components/layout/view-header';
 
 // Feature components — Complete functional components (share modal, etc.)
 export {default as PostShareModal} from './components/features/post_share_modal';
+export {default as SourceTabs} from './components/features/sources/source-tabs';
+export type {CampaignType, TabType} from './components/features/sources/source-tabs';
 
 // Third party components
 export * as Recharts from 'recharts';

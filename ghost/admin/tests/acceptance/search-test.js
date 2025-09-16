@@ -1,5 +1,6 @@
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import {authenticateSession} from 'ember-simple-auth/test-support';
+import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
 import {click, currentURL, find, findAll, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
@@ -15,21 +16,25 @@ const suites = [{
     name: 'Acceptance: Search (flex)',
     beforeEach() {
         // noop - default locale is 'en'
+        mockAnalyticsApps();
     },
     confirmProvider() {
         const searchService = this.owner.lookup('service:search');
         expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderFlexService');
+        cleanupMockAnalyticsApps();
     }
 }, {
     name: 'Acceptance: Search (basic)',
     beforeEach() {
         this.server.db.settings.update({key: 'locale'}, {value: 'de'});
+        mockAnalyticsApps();
     },
     confirmProvider() {
         const settingsService = this.owner.lookup('service:settings');
         expect(settingsService.locale, 'settings.locale').to.equal('de');
         const searchService = this.owner.lookup('service:search');
         expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderBasicService');
+        cleanupMockAnalyticsApps();
     }
 }];
 
@@ -61,20 +66,20 @@ suites.forEach((suite) => {
         });
 
         it('is using correct provider', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             suite.confirmProvider.bind(this)();
         });
 
         it('opens search modal when clicking icon', async function () {
-            await visit('/dashboard');
-            expect(currentURL(), 'currentURL').to.equal('/dashboard');
+            await visit('/analytics');
+            expect(currentURL(), 'currentURL').to.equal('/analytics');
             expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
             await click('[data-test-button="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
         });
 
         it('opens search icon when pressing Ctrl/Cmd+K', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
             await triggerKeyEvent(document, 'keydown', 'K', {
                 metaKey: ctrlOrCmd === 'command',
@@ -84,7 +89,7 @@ suites.forEach((suite) => {
         });
 
         it('closes search modal on escape key', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
             await triggerKeyEvent(document, 'keydown', 'Escape');
@@ -92,7 +97,7 @@ suites.forEach((suite) => {
         });
 
         it('closes search modal on click outside', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
             await click('.epm-backdrop');
@@ -100,7 +105,7 @@ suites.forEach((suite) => {
         });
 
         it('finds posts, pages, staff, and tags when typing', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first'); // search is not case sensitive
 
@@ -119,7 +124,7 @@ suites.forEach((suite) => {
         });
 
         it('up/down arrows move selected item', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first post');
             expect(findAll('.ember-power-select-option')[0], 'first option (initial)').to.have.attribute('aria-current', 'true');
@@ -130,7 +135,7 @@ suites.forEach((suite) => {
         });
 
         it('navigates to editor when post selected (Enter)', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first post');
             await triggerKeyEvent(trigger, 'keydown', 'Enter');
@@ -138,7 +143,7 @@ suites.forEach((suite) => {
         });
 
         it('navigates to editor when post selected (Clicked)', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first post');
             await click('.ember-power-select-option[aria-current="true"]');
@@ -146,7 +151,7 @@ suites.forEach((suite) => {
         });
 
         it('navigates to editor when highlighted text is clicked', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first post');
             
@@ -159,7 +164,7 @@ suites.forEach((suite) => {
         });
 
         it('navigates to editor when page selected', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('page');
             await triggerKeyEvent(trigger, 'keydown', 'Enter');
@@ -167,7 +172,7 @@ suites.forEach((suite) => {
         });
 
         it('navigates to tag edit screen when tag selected', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('tag');
             await triggerKeyEvent(trigger, 'keydown', 'Enter');
@@ -176,7 +181,7 @@ suites.forEach((suite) => {
 
         // TODO: Staff settings are now part of AdminX so this isn't working, can we test AdminX from Ember tests?
         it.skip('navigates to user edit screen when user selected', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('user');
             await triggerKeyEvent(trigger, 'keydown', 'Enter');
@@ -184,7 +189,7 @@ suites.forEach((suite) => {
         });
 
         it('shows no results message when no results', async function () {
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('x');
             expect(find('.ember-power-select-option--no-matches-message'), 'no results message').to.contain.text('No results found');
@@ -194,7 +199,7 @@ suites.forEach((suite) => {
         it('handles refresh on first search being slow', async function () {
             this.server.get('/posts/', getPosts, {timing: 200});
 
-            await visit('/dashboard');
+            await visit('/analytics');
             await click('[data-test-button="search"]');
             await typeInSearch('first'); // search is not case sensitive
 

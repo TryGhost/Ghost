@@ -205,6 +205,7 @@ const InvitesUserList: React.FC<InviteListProps> = ({users}) => {
 const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords, highlight = true}) => {
     const {
         totalUsers,
+        totalInvites,
         users,
         ownerUser,
         adminUsers,
@@ -213,7 +214,9 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         contributorUsers,
         invites,
         hasNextPage,
-        fetchNextPage
+        fetchNextPage,
+        invitesHasNextPage,
+        fetchNextInvitePage
     } = useStaffUsers();
     const {updateRoute} = useRouting();
     const {settings, config, currentUser} = useGlobalData();
@@ -272,7 +275,7 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
             id: 'invited',
             title: 'Invited',
             contents: (<InvitesUserList users={invites} />),
-            counter: invites.length ? invites.length : undefined
+            counter: totalInvites ? totalInvites : undefined
         }
     ];
 
@@ -291,10 +294,16 @@ const Users: React.FC<{ keywords: string[], highlight?: boolean }> = ({keywords,
         >
             <Owner user={ownerUser} />
             {(users.length > 1 || invites.length > 0) && <TabView selectedTab={selectedTab} tabs={tabs} testId='user-tabview' onTabChange={updateSelectedTab} />}
-            {hasNextPage && <Button
+            
+            {hasNextPage && selectedTab !== 'invited' && <Button
                 label={`Load more (showing ${users.length}/${totalUsers} users)`}
                 link
                 onClick={() => fetchNextPage()}
+            />}
+            {invitesHasNextPage && selectedTab === 'invited' && <Button
+                label={`Load more (showing ${invites.length}/${totalInvites} invites)`}
+                link
+                onClick={() => fetchNextInvitePage()}
             />}
 
             {config?.security?.staffDeviceVerification && hasAdminAccess(currentUser) && (

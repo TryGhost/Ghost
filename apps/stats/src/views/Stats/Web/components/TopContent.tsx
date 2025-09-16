@@ -34,11 +34,11 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
     const getTableHeader = () => {
         switch (contentType) {
         case CONTENT_TYPES.POSTS:
-            return 'Post';
+            return 'Posts';
         case CONTENT_TYPES.PAGES:
-            return 'Page';
+            return 'Pages';
         default:
-            return 'Post';
+            return 'Posts & pages';
         }
     };
 
@@ -144,7 +144,7 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors}) => {
     const topContent = transformedData?.slice(0, 10) || [];
 
     return (
-        <Card className='group/datalist'>
+        <Card className='group/datalist' data-testid='top-content-card'>
             <div className='flex items-center justify-between gap-6 p-6'>
                 <CardHeader className='p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>

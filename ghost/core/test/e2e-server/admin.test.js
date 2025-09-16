@@ -89,7 +89,7 @@ describe('Admin Routing', function () {
         });
 
         after(async function () {
-            urlUtils.restore();
+            await urlUtils.restore();
             await configUtils.restore();
         });
 
