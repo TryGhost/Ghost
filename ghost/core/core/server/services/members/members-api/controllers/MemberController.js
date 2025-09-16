@@ -16,18 +16,22 @@ module.exports = class MemberController {
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {any} deps.settingsCache
+     * @param {any} deps.urlUtils
      */
     constructor({
         memberRepository,
+        memberBREADService,
         productRepository,
         paymentsService,
         tiersService,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink,
-        settingsCache
+        settingsCache,
+        urlUtils
     }) {
         this._memberRepository = memberRepository;
+        this._memberBREADService = memberBREADService;
         this._productRepository = productRepository;
         this._paymentsService = paymentsService;
         this._tiersService = tiersService;
@@ -35,6 +39,7 @@ module.exports = class MemberController {
         this._tokenService = tokenService;
         this._sendEmailWithMagicLink = sendEmailWithMagicLink;
         this._settingsCache = settingsCache;
+        this._urlUtils = urlUtils;
     }
 
     async updateEmailAddress(req, res) {
@@ -222,14 +227,17 @@ module.exports = class MemberController {
 
         try {
             const token = await this._tokenService.decodeToken(identity);
-            const member = await this._memberRepository.get({email: token.sub});
+
+            // Use memberBREADService to get member with RSS token properly handled
+            const member = await this._memberBREADService.read({email: token.sub});
 
             if (!member) {
                 res.writeHead(404);
                 return res.end('Member not found.');
             }
 
-            // Generate RSS token if it doesn't exist
+            // The memberBREADService should have already ensured the RSS token exists
+            // But as a fallback, generate one if it's missing
             if (!member.rss_token) {
                 const rssToken = await this._memberRepository.generateRssToken({
                     id: member.id,
@@ -239,9 +247,30 @@ module.exports = class MemberController {
             }
 
             // Generate the authenticated RSS URL
-            const siteUrl = this._settingsCache.get('url');
-            const rssUrl = new URL('/rss/', siteUrl);
-            rssUrl.searchParams.set('token', member.rss_token);
+            let siteUrl;
+
+            // Try to use urlUtils if available, fallback to settingsCache
+            if (this._urlUtils && this._urlUtils.getSiteUrl) {
+                siteUrl = this._urlUtils.getSiteUrl();
+            } else if (this._settingsCache) {
+                siteUrl = this._settingsCache.get('url');
+            }
+
+            // Ensure siteUrl is valid
+            if (!siteUrl) {
+                throw new Error('Site URL is not configured');
+            }
+
+            let rssUrl;
+            try {
+                // Create the RSS URL with the token
+                rssUrl = new URL('/rss/', siteUrl);
+                rssUrl.searchParams.set('token', member.rss_token);
+            } catch (urlError) {
+                console.error('Error creating RSS URL:', urlError);
+                console.error('Site URL:', siteUrl);
+                throw new Error(`Invalid URL configuration: ${urlError.message}`);
+            }
 
             res.writeHead(200, {
                 'Content-Type': 'application/json'

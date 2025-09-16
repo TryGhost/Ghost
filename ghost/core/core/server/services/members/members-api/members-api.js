@@ -174,13 +174,15 @@ module.exports = function MembersAPI({
 
     const memberController = new MemberController({
         memberRepository,
+        memberBREADService,
         productRepository,
         paymentsService,
         tiersService,
         StripePrice,
         tokenService,
         sendEmailWithMagicLink,
-        settingsCache
+        settingsCache,
+        urlUtils
     });
 
     const routerController = new RouterController({

@@ -247,6 +247,11 @@ module.exports = class MemberBREADService {
 
         const member = model.toJSON(options);
 
+        // Ensure RSS token is included in the member object
+        if (!member.rss_token && model.get('rss_token')) {
+            member.rss_token = model.get('rss_token');
+        }
+
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
         this.attachSubscriptionsToMember(member);
         this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
