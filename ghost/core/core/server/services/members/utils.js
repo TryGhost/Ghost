@@ -1,3 +1,5 @@
+const rssUrlHelper = require('./rss-url-helper');
+
 function formatNewsletterResponse(newsletters) {
     return newsletters.map(({id, uuid, name, description, sort_order: sortOrder}) => {
         return {
@@ -23,6 +25,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         expertise: member.expertise,
         avatar_image: member.avatar_image,
         unsubscribe_url: member.unsubscribe_url,
+        rss_url: rssUrlHelper.generateMemberRSSUrl(member),
         subscribed: !!member.subscribed,
         subscriptions: member.subscriptions || [],
         paid: member.status !== 'free',

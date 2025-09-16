@@ -89,6 +89,13 @@ const accessInfoSession = async function accessInfoSession(req, res, next) {
 const loadMemberSession = async function loadMemberSession(req, res, next) {
     try {
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
+
+        // Add RSS URL to member data for theme context
+        if (member) {
+            const rssUrlHelper = require('./rss-url-helper');
+            member.rss_url = rssUrlHelper.generateMemberRSSUrl(member);
+        }
+
         Object.assign(req, {member});
         res.locals.member = req.member;
         next();
