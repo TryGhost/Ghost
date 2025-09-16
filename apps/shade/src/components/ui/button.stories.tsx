@@ -50,7 +50,7 @@ export const Destructive: Story = {
 
 export const Outline: Story = {
     args: {
-        variant: 'outline',
+        variant: 'outline-solid',
         children: 'Secondary action'
     },
     parameters: {

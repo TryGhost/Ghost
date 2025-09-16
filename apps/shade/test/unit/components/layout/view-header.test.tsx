@@ -21,7 +21,7 @@ describe('ViewHeader Components', () => {
         assert.ok(header, 'ViewHeader should be rendered');
         assert.equal(header.tagName.toLowerCase(), 'header', 'Should be a header element');
         assert.ok(header.className.includes('sticky top-0'), 'Should have sticky positioning');
-        assert.ok(header.className.includes('backdrop-blur-md'), 'Should have backdrop blur');
+        assert.ok(header.className.includes('backdrop-blur-md'), 'Should have backdrop blur-sm');
         
         const headerContent = screen.getByText('Header Content');
         assert.ok(headerContent, 'Header content should be rendered');

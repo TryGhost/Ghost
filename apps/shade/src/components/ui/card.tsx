@@ -3,8 +3,8 @@ import {cn} from '@/lib/utils';
 import {cva} from 'class-variance-authority';
 import {TrendingDown, TrendingUp} from 'lucide-react';
 
-type CardsVariant = 'outline' | 'plain';
-const CardsVariantContext = React.createContext<CardsVariant>('outline');
+type CardsVariant = 'outline-solid' | 'plain';
+const CardsVariantContext = React.createContext<CardsVariant>('outline-solid');
 
 export interface CardProps extends React.ComponentPropsWithoutRef<'div'> {
     variant?: CardsVariant;
@@ -20,7 +20,7 @@ const cardVariants = cva(
             }
         },
         defaultVariants: {
-            variant: 'outline'
+            variant: 'outline-solid'
         }
     }
 );
@@ -28,7 +28,7 @@ const cardVariants = cva(
 const Card = React.forwardRef<
     HTMLDivElement,
     CardProps
->(({variant = 'outline', className, ...props}, ref) => (
+>(({variant = 'outline-solid', className, ...props}, ref) => (
     <CardsVariantContext.Provider value={variant}>
         <div
             ref={ref}
@@ -49,7 +49,7 @@ const cardHeaderVariants = cva(
             }
         },
         defaultVariants: {
-            variant: 'outline'
+            variant: 'outline-solid'
         }
     }
 );
@@ -103,7 +103,7 @@ const cardContentVariants = cva(
             }
         },
         defaultVariants: {
-            variant: 'outline'
+            variant: 'outline-solid'
         }
     }
 );
@@ -129,7 +129,7 @@ const cardFooterVariants = cva(
             }
         },
         defaultVariants: {
-            variant: 'outline'
+            variant: 'outline-solid'
         }
     }
 );
@@ -199,10 +199,10 @@ const KpiCardHeaderValue: React.FC<KpiCardValueProps> = ({value, diffDirection, 
                 <div className={diffContainerClassName}>
                     <span className='font-medium leading-none'>{diffValue}</span>
                     {diffDirection === 'up' &&
-                        <TrendingUp className='!size-[12px]' size={14} strokeWidth={2} />
+                        <TrendingUp className='size-[12px]!' size={14} strokeWidth={2} />
                     }
                     {diffDirection === 'down' &&
-                        <TrendingDown className='!size-[12px]' size={14} strokeWidth={2} />
+                        <TrendingDown className='size-[12px]!' size={14} strokeWidth={2} />
                     }
                     {diffTooltip &&
                         <div className='pointer-events-none absolute inset-x-0 top-0 z-50 w-full max-w-[240px] -translate-y-full text-pretty rounded-sm bg-background px-3 py-2 text-sm text-foreground opacity-0 shadow-md transition-all group-hover/diff:translate-y-[calc(-100%-8px)] group-hover/diff:opacity-100'>

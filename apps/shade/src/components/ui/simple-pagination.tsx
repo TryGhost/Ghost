@@ -41,7 +41,7 @@ const SimplePaginationNavigation = React.forwardRef<HTMLDivElement, React.HTMLAt
 SimplePaginationNavigation.displayName = 'SimplePaginationNavigation';
 
 const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({variant = 'outline', ...props}, ref) => {
+    ({variant = 'outline-solid', ...props}, ref) => {
         return (
             <Button ref={ref} size='sm' variant={variant} {...props}><ArrowLeft /></Button>
         );
@@ -51,7 +51,7 @@ const SimplePaginationPreviousButton = React.forwardRef<HTMLButtonElement, Butto
 SimplePaginationPreviousButton.displayName = 'SimplePaginationPreviousButton';
 
 const SimplePaginationNextButton = React.forwardRef<HTMLButtonElement, ButtonProps>(
-    ({variant = 'outline', ...props}, ref) => {
+    ({variant = 'outline-solid', ...props}, ref) => {
         return (
             <Button ref={ref} size='sm' variant={variant} {...props}><ArrowRight /></Button>
         );
