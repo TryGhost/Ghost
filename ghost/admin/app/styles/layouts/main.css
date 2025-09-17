@@ -479,6 +479,8 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 .modal-content .gh-nav-search-modal .ember-power-select-option {
     height: auto;
+    margin: 0 10px;
+    border-radius: 9px;
 }
 
 .gh-nav-search-modal .gh-nav-search-option {
@@ -488,16 +490,22 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-nav-search-modal .gh-nav-search-label {
-    /* flex-grow: 1; */
-    background: rgba(236, 22, 111, 0.1);
-    color: var(--pink);
     font-size: 1.2rem;
-    text-transform: uppercase;
     font-weight: 600;
     letter-spacing: 0.1px;
     white-space: nowrap;
-    padding: 1px 3px;
+    padding: 1px 8px;
     border-radius: 5px;
+}
+
+.gh-nav-search-modal .gh-nav-search-label.draft {
+    background: rgba(236, 22, 111, 0.1);
+    color: var(--pink);
+}
+
+.gh-nav-search-modal .gh-nav-search-label.scheduled {
+    background: rgba(48, 207, 67, 0.1);
+    color: var(--green);
 }
 
 @media (max-width: 800px) {

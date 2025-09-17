@@ -19,7 +19,9 @@
         >
             <div class="gh-nav-search-option">
                 <div>{{highlighted-text name.title select.searchText}}</div>
-                <div class="gh-nav-search-label">Draft</div>
+                {{#if (or (eq name.status "draft") (eq name.status "scheduled"))}}
+                    <div class="gh-nav-search-label {{if (eq name.status "draft") "draft"}} {{if (eq name.status "scheduled") "scheduled"}}">{{capitalize name.status}}</div>
+                {{/if}}
             </div>
         </PowerSelect>
     </div>
