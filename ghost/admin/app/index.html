@@ -51,21 +51,16 @@
 
                 if (!video || !source) return;
 
-                // Check system preference first
-                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                let isDarkMode = false;
 
-                // Check for stored dark mode preference (Ghost uses nightShift setting)
-                let isDarkMode = prefersDark;
-                try {
-                    const ghostSettings = localStorage.getItem('ghost-admin-settings');
-                    if (ghostSettings) {
-                        const settings = JSON.parse(ghostSettings);
-                        if (settings.nightShift !== undefined) {
-                            isDarkMode = settings.nightShift;
-                        }
-                    }
-                } catch (e) {
-                    // Fallback to system preference if localStorage fails
+                // Priority 1: Check our own stored dark mode state
+                const storedDarkMode = localStorage.getItem('ghost-admin-theme');
+                if (storedDarkMode === 'dark') {
+                    isDarkMode = true;
+                }
+                // Priority 2: Check system preference
+                else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    isDarkMode = true;
                 }
 
                 const videoSrc = isDarkMode ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4';
@@ -75,8 +70,49 @@
                     video.load(); // Reload video with new source
                 }
 
-                // Update document class for CSS styling
+                // Update background color to match theme
+                const loadingContent = document.querySelector('.gh-loading-content');
+                if (loadingContent) {
+                    loadingContent.style.backgroundColor = isDarkMode ? '#15171A' : '#fff';
+                }
+
+                // Update document class and store state for next reload
                 document.documentElement.classList.toggle('dark', isDarkMode);
+                if (isDarkMode) {
+                    localStorage.setItem('ghost-admin-theme', 'dark');
+                } else {
+                    localStorage.removeItem('ghost-admin-theme');
+                }
+            }
+
+            // Listen for dark mode changes from Ghost admin and persist them
+            function setupDarkModeSync() {
+                // Watch for changes to the document's dark class
+                const observer = new MutationObserver((mutations) => {
+                    mutations.forEach((mutation) => {
+                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                            const isDark = document.documentElement.classList.contains('dark');
+                            
+                            // Update stored preference
+                            if (isDark) {
+                                localStorage.setItem('ghost-admin-theme', 'dark');
+                            } else {
+                                localStorage.removeItem('ghost-admin-theme');
+                            }
+                            
+                            // Update loader background if still visible
+                            const loadingContent = document.querySelector('.gh-loading-content');
+                            if (loadingContent) {
+                                loadingContent.style.backgroundColor = isDark ? '#15171A' : '#fff';
+                            }
+                        }
+                    });
+                });
+
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ['class']
+                });
             }
 
             // Add artificial delay for testing loader (remove in production)
@@ -95,6 +131,9 @@
 
             // Update video on load
             updateLoaderVideo();
+
+            // Setup dark mode persistence
+            setupDarkModeSync();
 
             // Add testing delay if enabled
             addTestingDelay();
