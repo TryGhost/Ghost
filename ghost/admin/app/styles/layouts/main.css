@@ -481,6 +481,25 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     height: auto;
 }
 
+.gh-nav-search-modal .gh-nav-search-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.gh-nav-search-modal .gh-nav-search-label {
+    /* flex-grow: 1; */
+    background: rgba(236, 22, 111, 0.1);
+    color: var(--pink);
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+    padding: 1px 3px;
+    border-radius: 5px;
+}
+
 @media (max-width: 800px) {
     .gh-nav-search {
         min-width: 220px;

@@ -17,7 +17,10 @@
             }}
             as |name select|
         >
-            {{highlighted-text name.title select.searchText}}
+            <div class="gh-nav-search-option">
+                <div>{{highlighted-text name.title select.searchText}}</div>
+                <div class="gh-nav-search-label">Draft</div>
+            </div>
         </PowerSelect>
     </div>
 </div>
