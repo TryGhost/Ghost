@@ -6,10 +6,11 @@ export function createSingleTierSite(server) {
     const freeProduct = server.create('product', 'free');
     const paidProduct = server.create('product', 'bronze');
 
-    const site = server.create('site', 'singleTier', {
-        products: [freeProduct, paidProduct],
-        portal_products: [paidProduct.id],
-    });
+    const site = server.create('site', 'singleTier');
+
+    // Associate products with the site
+    freeProduct.update({ site });
+    paidProduct.update({ site });
 
     return { site, products: [freeProduct, paidProduct] };
 }
@@ -21,11 +22,11 @@ export function createMultiTierSite(server) {
     const premiumProduct = server.create('product', 'premium');
 
     const products = [freeProduct, bronzeProduct, silverProduct, premiumProduct];
-    const paidProducts = [bronzeProduct, silverProduct, premiumProduct];
+    const site = server.create('site', 'multipleTiers');
 
-    const site = server.create('site', 'multipleTiers', {
-        products: products,
-        portal_products: paidProducts.map(p => p.id),
+    // Associate products with the site
+    products.forEach(product => {
+        product.update({ site });
     });
 
     return { site, products };

@@ -14,16 +14,29 @@ export function makeServer({ environment = 'test' } = {}) {
         environment,
 
         models: {
-            site: Model,
-            member: Model,
+            site: Model.extend({
+                products: hasMany('product'),
+                newsletters: hasMany('newsletter'),
+            }),
+            member: Model.extend({
+                subscriptions: hasMany('subscription'),
+                newsletters: hasMany('newsletter'),
+            }),
             product: Model.extend({
                 monthlyPrice: belongsTo('price'),
                 yearlyPrice: belongsTo('price'),
+                site: belongsTo('site'),
             }),
             price: Model,
-            subscription: Model,
-            offer: Model,
-            newsletter: Model,
+            subscription: Model.extend({
+                member: belongsTo('member'),
+            }),
+            offer: Model.extend({
+                tier: belongsTo('product'),
+            }),
+            newsletter: Model.extend({
+                site: belongsTo('site'),
+            }),
         },
 
         factories: {

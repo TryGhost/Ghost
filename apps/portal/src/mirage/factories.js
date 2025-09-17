@@ -90,19 +90,12 @@ export const memberFactory = Factory.extend({
     paid: trait({
         paid: true,
         status: 'paid',
-        subscriptions: () => [
-            {
-                id: 'sub_test123',
-                status: 'active',
-                currency: 'USD',
-                interval: 'year',
-                amount: 5000,
-                card_last4: '4242',
-                start_date: '2021-10-05T03:18:30.000Z',
-                current_period_end: '2022-10-05T03:18:30.000Z',
-                cancel_at_period_end: false,
-            }
-        ],
+        // Note: Subscriptions will be created separately and associated
+        afterCreate(member, server) {
+            const subscription = server.create('subscription', { member });
+            member.subscriptions = [subscription];
+            member.save();
+        },
     }),
 
     complimentary: trait({
@@ -139,7 +132,7 @@ export const productFactory = Factory.extend({
     updated_at: '2021-10-05T03:18:30.000Z',
     monthly_price: null, // Will be set via relationships
     yearly_price: null, // Will be set via relationships
-    benefits: () => [
+    benefits: [
         { name: 'Access to all members articles' },
         { name: 'Weekly newsletter' },
         { name: 'Community access' }
@@ -150,7 +143,7 @@ export const productFactory = Factory.extend({
         name: 'Free',
         type: 'free',
         description: 'Free tier description',
-        benefits: () => [
+        benefits: [
             { name: 'Access to free articles' },
             { name: 'Community access' }
         ],
@@ -187,7 +180,7 @@ export const productFactory = Factory.extend({
             currency: 'USD',
             interval: 'year',
         },
-        benefits: () => [
+        benefits: [
             { name: 'Access to all members articles' },
             { name: 'Weekly newsletter' },
             { name: 'Weekly podcast' },
@@ -210,7 +203,7 @@ export const productFactory = Factory.extend({
             currency: 'USD',
             interval: 'year',
         },
-        benefits: () => [
+        benefits: [
             { name: 'Access to all members articles' },
             { name: 'Weekly newsletter' },
             { name: 'Weekly podcast' },
@@ -255,7 +248,7 @@ export const offerFactory = Factory.extend({
     currency: 'USD',
     status: 'active',
     redemption_count: 0,
-    tier: () => ({}), // Will be linked to a tier
+    // tier relationship will be set when creating offers
 });
 
 export const newsletterFactory = Factory.extend({
