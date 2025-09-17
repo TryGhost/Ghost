@@ -7,8 +7,6 @@ import type { Preview } from "@storybook/react-vite";
 import ShadeProvider from '../src/providers/ShadeProvider';
 import shadeTheme from './shade-theme';
 
-// import { MINIMAL_VIEWPORTS } from 'storybook/viewport';
-
 const customViewports = {
 	sm: {
 		name: 'sm',
