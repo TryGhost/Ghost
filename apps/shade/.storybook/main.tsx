@@ -1,30 +1,30 @@
+import { createRequire } from "node:module";
 import type { StorybookConfig } from "@storybook/react-vite";
-import path from 'path';
+import path, { dirname, join } from 'path';
+
+const require = createRequire(import.meta.url);
 
 const config: StorybookConfig = {
-	stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
-	addons: [
-		"@storybook/addon-links",
-		"@storybook/addon-essentials",
-		"@storybook/addon-interactions",
-		{
-			name: '@storybook/addon-styling',
-		},
-	],
-	framework: {
-		name: "@storybook/react-vite",
+    stories: ["../src/**/*.mdx", "../src/**/*.stories.@(js|jsx|ts|tsx)"],
+
+    addons: [getAbsolutePath("@storybook/addon-links"), getAbsolutePath("@storybook/addon-docs")],
+
+    framework: {
+		name: getAbsolutePath("@storybook/react-vite"),
 		options: {},
 	},
-	docs: {
-		autodocs: "tag",
-	},
-    async viteFinal(config, options) {
+
+    async viteFinal(config) {
 		config.resolve!.alias = {
 			...config.resolve!.alias,
 			'@': path.resolve(__dirname, '../src'),
 			crypto: require.resolve('rollup-plugin-node-builtins')
 		}
 		return config;
-	},
+	}
 };
 export default config;
+
+function getAbsolutePath(value: string): any {
+    return dirname(require.resolve(join(value, "package.json")));
+}

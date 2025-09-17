@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Bell, User} from 'lucide-react';
 
 import {Navbar, NavbarActions} from './navbar';

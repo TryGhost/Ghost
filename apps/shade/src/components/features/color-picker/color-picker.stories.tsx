@@ -1,5 +1,5 @@
-import type {Meta, StoryObj} from '@storybook/react';
-import {fn} from '@storybook/test';
+import type {Meta, StoryObj} from '@storybook/react-vite';
+import {fn} from 'storybook/test';
 import ColorPicker from './color-picker';
 
 import {Popover, PopoverTrigger, PopoverContent} from '@/components/ui/popover';

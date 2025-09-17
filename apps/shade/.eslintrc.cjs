@@ -1,9 +1,5 @@
 module.exports = {
-    extends: [
-        'plugin:ghost/ts',
-        'plugin:react/recommended',
-        'plugin:react-hooks/recommended'
-    ],
+    extends: ['plugin:ghost/ts', 'plugin:react/recommended', 'plugin:react-hooks/recommended', 'plugin:storybook/recommended'],
     plugins: [
         'ghost',
         'react-refresh',
