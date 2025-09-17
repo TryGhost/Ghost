@@ -94,6 +94,5 @@
     "postinstall-postinstall": "2.1.0",
     "rimraf": "5.0.10",
     "typescript": "5.8.3"
-  },
-  "dependencies": {}
+  }
 }
