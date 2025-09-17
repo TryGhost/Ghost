@@ -22,6 +22,19 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig();
     const currentUser = useCurrentUser();
     const [isDarkMode, setIsDarkMode] = useState(false);
+    const [testingDelay, setTestingDelay] = useState(false);
+
+    // Add artificial delay for testing loader (remove in production)
+    useEffect(() => {
+        const shouldDelay = localStorage.getItem('ghost-loader-test-delay') === 'true';
+        if (shouldDelay) {
+            setTestingDelay(true);
+            const timer = setTimeout(() => {
+                setTestingDelay(false);
+            }, 3000); // 3 second delay for testing
+            return () => clearTimeout(timer);
+        }
+    }, []);
 
     // Check for dark mode on mount and when settings change
     useEffect(() => {
@@ -75,7 +88,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         throw error;
     }
 
-    if (requests.some(request => request.isLoading)) {
+    if (requests.some(request => request.isLoading) || testingDelay) {
         return (
             <div className='gh-loading-orb-container' style={{
                 width: '100vw',

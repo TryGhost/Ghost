@@ -48,12 +48,12 @@
             function updateLoaderVideo() {
                 const video = document.getElementById('gh-loader-video');
                 const source = document.getElementById('gh-loader-source');
-                
+
                 if (!video || !source) return;
-                
+
                 // Check system preference first
                 const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-                
+
                 // Check for stored dark mode preference (Ghost uses nightShift setting)
                 let isDarkMode = prefersDark;
                 try {
@@ -67,21 +67,38 @@
                 } catch (e) {
                     // Fallback to system preference if localStorage fails
                 }
-                
+
                 const videoSrc = isDarkMode ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4';
-                
+
                 if (source.src !== videoSrc) {
                     source.src = videoSrc;
                     video.load(); // Reload video with new source
                 }
-                
+
                 // Update document class for CSS styling
                 document.documentElement.classList.toggle('dark', isDarkMode);
             }
-            
+
+            // Add artificial delay for testing loader (remove in production)
+            function addTestingDelay() {
+                const shouldDelay = localStorage.getItem('ghost-loader-test-delay') === 'true';
+                if (shouldDelay) {
+                    const loader = document.querySelector('.ember-load-indicator');
+                    if (loader) {
+                        // Keep loader visible for testing
+                        setTimeout(() => {
+                            loader.style.display = 'none';
+                        }, 3000); // 3 second delay
+                    }
+                }
+            }
+
             // Update video on load
             updateLoaderVideo();
-            
+
+            // Add testing delay if enabled
+            addTestingDelay();
+
             // Listen for system preference changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateLoaderVideo);
         })();

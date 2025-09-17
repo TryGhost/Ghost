@@ -277,6 +277,43 @@ export default class AdminXComponent extends Component {
     additionalProps = () => ({});
 
     ReactComponent = () => {
+        const TestableLoader = () => {
+            const [showTestingLoader, setShowTestingLoader] = React.useState(false);
+
+            React.useEffect(() => {
+                const shouldDelay = localStorage.getItem('ghost-loader-test-delay') === 'true';
+                if (shouldDelay) {
+                    setShowTestingLoader(true);
+                    const timer = setTimeout(() => {
+                        setShowTestingLoader(false);
+                    }, 3000); // 3 second delay for testing
+                    return () => clearTimeout(timer);
+                }
+            }, []);
+
+            if (showTestingLoader) {
+                return (
+                    <div className="admin-x-settings-container--loading" style={{
+                        width: '100%',
+                        height: '100vh',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        paddingBottom: '8vh'
+                    }}>
+                        <video width="100" height="100" loop autoPlay muted playsInline preload="metadata" style={{
+                            width: '100px',
+                            height: '100px'
+                        }}>
+                            <source src={this.feature.nightShift ? "assets/videos/logo-loader-dark.mp4" : "assets/videos/logo-loader.mp4"} type="video/mp4" />
+                            <div className="gh-loading-spinner"></div>
+                        </video>
+                    </div>
+                );
+            }
+            return null;
+        };
+
         const fallback = (
             <div className="admin-x-settings-container--loading" style={{
                 width: '100%',
@@ -297,6 +334,7 @@ export default class AdminXComponent extends Component {
         );
         return (
             <div className={['admin-x-settings-container-', this.args.className].filter(Boolean).join(' ')}>
+                <TestableLoader />
                 <ErrorHandler>
                     <Suspense fallback={fallback}>
                         <this.AdminXApp
