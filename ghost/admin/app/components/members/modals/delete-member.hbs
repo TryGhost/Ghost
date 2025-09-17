@@ -22,12 +22,30 @@
                         <span class="input-toggle-component"></span>
                         <div>
                             <h4>Also cancel subscription in Stripe</h4>
-                            <p>If disabled, the member’s premium subscription will continue</p>
+                            <p>If disabled, the member's premium subscription will continue</p>
                         </div>
                     </label>
                 </div>
             </div>
         {{/if}}
+
+        <div class="flex justify-between">
+            <div class="form-group for-checkbox gh-member-deletecomments-checkbox">
+                <label class="checkbox">
+                    <input
+                        class="gh-input"
+                        type="checkbox"
+                        checked={{this.shouldDeleteComments}}
+                        {{on "click" (toggle "shouldDeleteComments" this)}}
+                    />
+                    <span class="input-toggle-component"></span>
+                    <div>
+                        <h4>Remove comments made by this member</h4>
+                        <p>If disabled, comments will continue to show from a "Deleted member"</p>
+                    </div>
+                </label>
+            </div>
+        </div>
     </div>
 
     <div class="modal-footer">
@@ -40,7 +58,7 @@
             <span>Cancel</span>
         </button>
         <GhTaskButton
-            @buttonText={{if this.shouldCancelSubscriptions "Delete member + Cancel subscription" "Delete member"}}
+            @buttonText="Delete member"
             @successText="Deleted"
             @task={{this.deleteMemberTask}}
             @class="gh-btn gh-btn-red gh-btn-icon"

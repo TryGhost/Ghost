@@ -16,8 +16,13 @@ export default class Member extends ApplicationAdapter {
         let url = super.urlForDeleteRecord(...arguments);
         let parsedUrl = new URL(url);
 
-        if (snapshot && snapshot.adapterOptions && snapshot.adapterOptions.cancel) {
-            parsedUrl.searchParams.set('cancel', 'true');
+        if (snapshot && snapshot.adapterOptions) {
+            if (snapshot.adapterOptions.cancel) {
+                parsedUrl.searchParams.set('cancel', 'true');
+            }
+            if (snapshot.adapterOptions.deleteComments) {
+                parsedUrl.searchParams.set('deleteComments', 'true');
+            }
         }
 
         return parsedUrl.toString();

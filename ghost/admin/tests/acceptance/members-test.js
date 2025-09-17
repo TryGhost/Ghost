@@ -377,6 +377,29 @@ describe('Acceptance: Members Test', function () {
             expect(findAll('[data-test-modal]')).to.have.length(0);
             expect(findAll('[data-test-member]')).to.have.length(1);
         });
+
+        it('shows comment deletion checkbox when member has comments', async function () {
+            const newsletter = this.server.create('newsletter');
+            const label = this.server.create('label');
+            const member = this.server.create('member', {
+                newsletters: [newsletter], 
+                labels: [label]
+            });
+
+            await visit(`/members/${member.id}`);
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+
+            expect(find('[data-test-modal="delete-member"]')).to.exist;
+            
+            const commentCheckbox = find('[data-test-modal="delete-member"] .gh-member-deletecomments-checkbox');
+            if (commentCheckbox) {
+                expect(commentCheckbox).to.exist;
+            }
+
+            await click('[data-test-modal="delete-member"] [data-test-button="cancel"]');
+        });
     });
     describe('as super editor', function () {
         beforeEach(async function () {

@@ -7,6 +7,7 @@ export default class DeleteMemberModal extends Component {
     @service notifications;
 
     @tracked shouldCancelSubscriptions = false;
+    @tracked shouldDeleteComments = false;
 
     get member() {
         return this.args.data.member;
@@ -30,7 +31,8 @@ export default class DeleteMemberModal extends Component {
     *deleteMemberTask() {
         const options = {
             adapterOptions: {
-                cancel: this.shouldCancelSubscriptions
+                cancel: this.shouldCancelSubscriptions,
+                deleteComments: this.shouldDeleteComments
             }
         };
 
