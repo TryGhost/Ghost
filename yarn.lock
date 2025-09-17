@@ -17883,10 +17883,10 @@ eslint-plugin-ghost@3.4.3:
     eslint-plugin-unicorn "42.0.0"
     typescript "5.2.2"
 
-eslint-plugin-i18next@6.1.1:
-  version "6.1.1"
-  resolved "https://registry.yarnpkg.com/eslint-plugin-i18next/-/eslint-plugin-i18next-6.1.1.tgz#f8cbce1844eb21db0c43d8541112d3bc4bf7e697"
-  integrity sha512-/Vy6BfX44njxpRnbJm7bbph0KaNJF2eillqN5W+u03hHuxmh9BjtjdPSrI9HPtyoEbG4j5nBn9gXm/dg99mz3Q==
+eslint-plugin-i18next@6.1.2:
+  version "6.1.2"
+  resolved "https://registry.yarnpkg.com/eslint-plugin-i18next/-/eslint-plugin-i18next-6.1.2.tgz#7574ed900375b485a1b1cf88a5f7c309aa3fa91b"
+  integrity sha512-hvTmws4kouNHkk314+9MHNj+RQmsqrkejWhTXGlRC0j8H+EXq2qDRLe6UqIjrFZo7/ogyd4btuqsnKCBi8wHbw==
   dependencies:
     lodash "^4.17.21"
     requireindex "~1.1.0"
