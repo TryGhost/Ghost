@@ -53,13 +53,9 @@
 
                 let isDarkMode = false;
 
-                // Priority 1: Check our own stored dark mode state
+                // Check our stored dark mode state
                 const storedDarkMode = localStorage.getItem('ghost-admin-theme');
                 if (storedDarkMode === 'dark') {
-                    isDarkMode = true;
-                }
-                // Priority 2: Check system preference
-                else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
                     isDarkMode = true;
                 }
 
@@ -120,9 +116,6 @@
 
             // Setup dark mode persistence
             setupDarkModeSync();
-
-            // Listen for system preference changes
-            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateLoaderVideo);
         })();
     </script>
 

@@ -26,11 +26,8 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     // Check for dark mode on mount and when settings change
     useEffect(() => {
         const checkDarkMode = () => {
-            // Check system preference first
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            
             // Check for stored dark mode preference (Ghost uses nightShift setting)
-            let darkMode = prefersDark;
+            let darkMode = false;
             try {
                 const ghostSettings = localStorage.getItem('ghost-admin-settings');
                 if (ghostSettings) {
@@ -40,26 +37,18 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
                     }
                 }
             } catch (e) {
-                // Fallback to system preference if localStorage fails
+                // Fallback to false if localStorage fails
             }
-            
+
             // Also check if document has dark class (set by Ghost admin)
             if (document.documentElement.classList.contains('dark')) {
                 darkMode = true;
             }
-            
+
             setIsDarkMode(darkMode);
         };
 
         checkDarkMode();
-
-        // Listen for system preference changes
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        mediaQuery.addEventListener('change', checkDarkMode);
-
-        return () => {
-            mediaQuery.removeEventListener('change', checkDarkMode);
-        };
     }, []);
 
     const requests = [
