@@ -290,7 +290,7 @@ export default class AdminXComponent extends Component {
                     width: '100px',
                     height: '100px'
                 }}>
-                    <source src={this.feature.nightShift ? "assets/videos/logo-loader-dark.mp4" : "assets/videos/logo-loader.mp4"} type="video/mp4" />
+                    <source src={this.feature.nightShift ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4'} type="video/mp4" />
                     <div className="gh-loading-spinner"></div>
                 </video>
             </div>
