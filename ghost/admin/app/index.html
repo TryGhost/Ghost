@@ -115,28 +115,11 @@
                 });
             }
 
-            // Add artificial delay for testing loader (remove in production)
-            function addTestingDelay() {
-                const shouldDelay = localStorage.getItem('ghost-loader-test-delay') === 'true';
-                if (shouldDelay) {
-                    const loader = document.querySelector('.ember-load-indicator');
-                    if (loader) {
-                        // Keep loader visible for testing
-                        setTimeout(() => {
-                            loader.style.display = 'none';
-                        }, 3000); // 3 second delay
-                    }
-                }
-            }
-
             // Update video on load
             updateLoaderVideo();
 
             // Setup dark mode persistence
             setupDarkModeSync();
-
-            // Add testing delay if enabled
-            addTestingDelay();
 
             // Listen for system preference changes
             window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateLoaderVideo);
