@@ -34,7 +34,7 @@
     },
     "devDependencies": {
         "@faker-js/faker": "9.9.0",
-        "@playwright/test": "1.54.1",
+        "@playwright/test": "1.55.0",
         "@tanstack/react-query": "4.36.1",
         "@testing-library/jest-dom": "5.17.0",
         "@testing-library/react": "14.3.1",
