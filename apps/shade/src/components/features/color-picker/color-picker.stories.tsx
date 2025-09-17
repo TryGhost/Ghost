@@ -19,19 +19,29 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 function ColorPickerDemo(args: Story['args']) {
-    const [value, setValue] = useState(args?.defaultValue);
-    return <div style={{height: 600}}> 
+    const [value, setValue] = useState<string>(
+        typeof args?.defaultValue === 'string' ? args.defaultValue : '#ffffff'
+    );
+
+    // Create a wrapper function that handles the onChange properly
+    const handleColorChange = (newValue: string | React.FormEvent<HTMLDivElement>) => {
+        if (typeof newValue === 'string') {
+            setValue(newValue);
+        }
+    };
+
+    return <div style={{height: 600}}>
         <Popover>
             <PopoverTrigger>
                 <div className="flex items-center gap-2">
                     <div className="flex-0 aspect-square size-9 rounded-full p-1" style={{background: `conic-gradient(from 0deg, hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%), hsl(360, 100%, 50%))`}}>
-                        <div className="size-full rounded-full border-2 border-white" style={{background: value || '#ffffff'}} />
+                        <div className="size-full rounded-full border-2 border-white" style={{background: value}} />
                     </div>
                     <Input className="font-mono" size={8} type="text" value={value} onChange={e => setValue(e.target.value)} />
                 </div>
             </PopoverTrigger>
             <PopoverContent align="start">
-                <ColorPicker {...args} defaultValue={value} onChange={setValue} />
+                <ColorPicker value={value} onChange={handleColorChange} />
             </PopoverContent>
         </Popover>
     </div>;
