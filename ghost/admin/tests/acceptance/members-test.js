@@ -32,7 +32,7 @@ describe('Acceptance: Members Test', function () {
 
     describe('as owner', function () {
         beforeEach(async function () {
-            this.server.loadFixtures('configs');
+            this.server.loadFixtures('configs', 'settings');
 
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
@@ -378,7 +378,10 @@ describe('Acceptance: Members Test', function () {
             expect(findAll('[data-test-member]')).to.have.length(1);
         });
 
-        it('shows comment deletion checkbox when member has comments', async function () {
+        it('shows comment deletion checkbox when comments are enabled', async function () {
+            // Enable comments
+            this.server.db.settings.update({key: 'comments_enabled'}, {value: 'all'});
+
             const newsletter = this.server.create('newsletter');
             const label = this.server.create('label');
             const member = this.server.create('member', {
@@ -394,9 +397,31 @@ describe('Acceptance: Members Test', function () {
             expect(find('[data-test-modal="delete-member"]')).to.exist;
             
             const commentCheckbox = find('[data-test-modal="delete-member"] .gh-member-deletecomments-checkbox');
-            if (commentCheckbox) {
-                expect(commentCheckbox).to.exist;
-            }
+            expect(commentCheckbox).to.exist;
+
+            await click('[data-test-modal="delete-member"] [data-test-button="cancel"]');
+        });
+
+        it('hides comment deletion checkbox when comments are disabled', async function () {
+            // Ensure comments are disabled (default state)
+            this.server.db.settings.update({key: 'comments_enabled'}, {value: 'off'});
+
+            const newsletter = this.server.create('newsletter');
+            const label = this.server.create('label');
+            const member = this.server.create('member', {
+                newsletters: [newsletter], 
+                labels: [label]
+            });
+
+            await visit(`/members/${member.id}`);
+
+            await click('[data-test-button="member-actions"]');
+            await click('[data-test-button="delete-member"]');
+
+            expect(find('[data-test-modal="delete-member"]')).to.exist;
+            
+            const commentCheckbox = find('[data-test-modal="delete-member"] .gh-member-deletecomments-checkbox');
+            expect(commentCheckbox).to.not.exist;
 
             await click('[data-test-modal="delete-member"] [data-test-button="cancel"]');
         });

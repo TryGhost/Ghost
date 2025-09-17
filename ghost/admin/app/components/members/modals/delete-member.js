@@ -5,6 +5,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class DeleteMemberModal extends Component {
     @service notifications;
+    @service settings;
 
     @tracked shouldCancelSubscriptions = false;
     @tracked shouldDeleteComments = false;
@@ -25,6 +26,10 @@ export default class DeleteMemberModal extends Component {
         });
 
         return firstActiveStripeSubscription !== undefined;
+    }
+
+    get areCommentsEnabled() {
+        return this.settings.commentsEnabled && this.settings.commentsEnabled !== 'off';
     }
 
     @task({drop: true})

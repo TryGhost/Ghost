@@ -29,23 +29,25 @@
             </div>
         {{/if}}
 
-        <div class="flex justify-between">
-            <div class="form-group for-checkbox gh-member-deletecomments-checkbox">
-                <label class="checkbox">
-                    <input
-                        class="gh-input"
-                        type="checkbox"
-                        checked={{this.shouldDeleteComments}}
-                        {{on "click" (toggle "shouldDeleteComments" this)}}
-                    />
-                    <span class="input-toggle-component"></span>
-                    <div>
-                        <h4>Remove comments made by this member</h4>
-                        <p>If disabled, comments will continue to show from a "Deleted member"</p>
-                    </div>
-                </label>
+        {{#if this.areCommentsEnabled}}
+            <div class="flex justify-between">
+                <div class="form-group for-checkbox gh-member-deletecomments-checkbox">
+                    <label class="checkbox">
+                        <input
+                            class="gh-input"
+                            type="checkbox"
+                            checked={{this.shouldDeleteComments}}
+                            {{on "click" (toggle "shouldDeleteComments" this)}}
+                        />
+                        <span class="input-toggle-component"></span>
+                        <div>
+                            <h4>Remove comments made by this member</h4>
+                            <p>If disabled, comments will continue to show from a "Deleted member"</p>
+                        </div>
+                    </label>
+                </div>
             </div>
-        </div>
+        {{/if}}
     </div>
 
     <div class="modal-footer">
