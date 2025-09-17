@@ -13,7 +13,7 @@ const TagsHeader: React.FC<TagsHeaderProps> = ({currentTab}) => {
             <Header.Title>Tags</Header.Title>
 
             <Header.Nav>
-                <PageMenu defaultValue={currentTab}>
+                <PageMenu data-testid="tags-header-tabs" defaultValue={currentTab}>
                     <PageMenuItem value="public" asChild>
                         <Link to="/tags">Public tags</Link>
                     </PageMenuItem>
