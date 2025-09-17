@@ -30088,10 +30088,10 @@ socks@^2.6.2, socks@^2.7.1:
     ip "^2.0.0"
     smart-buffer "^4.2.0"
 
-sonner@2.0.6:
-  version "2.0.6"
-  resolved "https://registry.yarnpkg.com/sonner/-/sonner-2.0.6.tgz#623b73faec55229d63ec35226d42021f2119bfa7"
-  integrity sha512-yHFhk8T/DK3YxjFQXIrcHT1rGEeTLliVzWbO0xN8GberVun2RiBnxAjXAYpZrqwEVHBG9asI/Li8TAAhN9m59Q==
+sonner@2.0.7:
+  version "2.0.7"
+  resolved "https://registry.yarnpkg.com/sonner/-/sonner-2.0.7.tgz#810c1487a67ec3370126e0f400dfb9edddc3e4f6"
+  integrity sha512-W6ZN4p58k8aDKA4XPcx2hpIQXBRAgyiWVkYhT7CvK6D3iAu7xjvVyhQHg2/iaKJZ1XVJ4r7XuwGL+WGEK37i9w==
 
 sort-keys@^5.0.0:
   version "5.0.0"
