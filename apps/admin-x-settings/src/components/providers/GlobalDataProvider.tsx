@@ -23,32 +23,10 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const currentUser = useCurrentUser();
     const [isDarkMode, setIsDarkMode] = useState(false);
 
-    // Check for dark mode on mount and when settings change
+    // Check for dark mode on mount
     useEffect(() => {
-        const checkDarkMode = () => {
-            // Check for stored dark mode preference (Ghost uses nightShift setting)
-            let darkMode = false;
-            try {
-                const ghostSettings = localStorage.getItem('ghost-admin-settings');
-                if (ghostSettings) {
-                    const parsedSettings = JSON.parse(ghostSettings);
-                    if (parsedSettings.nightShift !== undefined) {
-                        darkMode = parsedSettings.nightShift;
-                    }
-                }
-            } catch (e) {
-                // Fallback to false if localStorage fails
-            }
-
-            // Also check if document has dark class (set by Ghost admin)
-            if (document.documentElement.classList.contains('dark')) {
-                darkMode = true;
-            }
-
-            setIsDarkMode(darkMode);
-        };
-
-        checkDarkMode();
+        // Check if document has dark class (set by Ghost admin)
+        setIsDarkMode(document.documentElement.classList.contains('dark'));
     }, []);
 
     const requests = [

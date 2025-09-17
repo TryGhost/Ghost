@@ -35,48 +35,12 @@
 
     <div class="ember-load-indicator">
         <div class="gh-loading-content">
-            <video id="gh-loader-video" width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
-                <source id="gh-loader-source" src="assets/videos/logo-loader.mp4" type="video/mp4" />
+            <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
+                <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
                 <div class="gh-loading-spinner"></div>
             </video>
         </div>
     </div>
-
-    <script>
-        (function() {
-            // Check for dark mode preference and set appropriate video
-            function updateLoaderVideo() {
-                const video = document.getElementById('gh-loader-video');
-                const source = document.getElementById('gh-loader-source');
-
-                if (!video || !source) return;
-
-                let isDarkMode = false;
-
-                // Check our stored dark mode state
-                const storedDarkMode = localStorage.getItem('ghost-admin-theme');
-                if (storedDarkMode === 'dark') {
-                    isDarkMode = true;
-                }
-
-                const videoSrc = isDarkMode ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4';
-
-                if (source.src !== videoSrc) {
-                    source.src = videoSrc;
-                    video.load(); // Reload video with new source
-                }
-
-                // Update background color to match theme
-                const loadingContent = document.querySelector('.gh-loading-content');
-                if (loadingContent) {
-                    loadingContent.style.backgroundColor = isDarkMode ? '#15171A' : '#fff';
-                }
-            }
-
-            // Update video on load
-            updateLoaderVideo();
-        })();
-    </script>
 
     {{content-for "body"}}
 
