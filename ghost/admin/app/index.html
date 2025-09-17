@@ -71,51 +71,10 @@
                 if (loadingContent) {
                     loadingContent.style.backgroundColor = isDarkMode ? '#15171A' : '#fff';
                 }
-
-                // Update document class and store state for next reload
-                document.documentElement.classList.toggle('dark', isDarkMode);
-                if (isDarkMode) {
-                    localStorage.setItem('ghost-admin-theme', 'dark');
-                } else {
-                    localStorage.removeItem('ghost-admin-theme');
-                }
-            }
-
-            // Listen for dark mode changes from Ghost admin and persist them
-            function setupDarkModeSync() {
-                // Watch for changes to the document's dark class
-                const observer = new MutationObserver((mutations) => {
-                    mutations.forEach((mutation) => {
-                        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                            const isDark = document.documentElement.classList.contains('dark');
-                            
-                            // Update stored preference
-                            if (isDark) {
-                                localStorage.setItem('ghost-admin-theme', 'dark');
-                            } else {
-                                localStorage.removeItem('ghost-admin-theme');
-                            }
-                            
-                            // Update loader background if still visible
-                            const loadingContent = document.querySelector('.gh-loading-content');
-                            if (loadingContent) {
-                                loadingContent.style.backgroundColor = isDark ? '#15171A' : '#fff';
-                            }
-                        }
-                    });
-                });
-
-                observer.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ['class']
-                });
             }
 
             // Update video on load
             updateLoaderVideo();
-
-            // Setup dark mode persistence
-            setupDarkModeSync();
         })();
     </script>
 
