@@ -34,6 +34,17 @@ export default class GhSearchInputComponent extends Component {
             let id = selected.id.replace('tag.', '');
             this.router.transitionTo('tag', id);
         }
+
+        if (selected.groupName === 'Settings') {
+            // Use the path field if available, otherwise fallback to extracting from id
+            let path = selected.path;
+            if (!path) {
+                // Fallback: extract the section from the setting id
+                path = selected.id.replace('setting.', '').split('.')[0];
+            }
+            // Navigate to the settings section using the URL path
+            this.router.transitionTo(`/settings/${path}`);
+        }
     }
 
     @action

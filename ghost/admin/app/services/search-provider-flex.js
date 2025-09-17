@@ -36,6 +36,13 @@ export const SEARCHABLES = [
         pathField: 'id',
         titleField: 'title',
         index: ['title']
+    },
+    {
+        name: 'Settings',
+        model: 'setting',
+        pathField: 'id',
+        titleField: 'title',
+        index: ['title', 'keywords']
     }
 ];
 
@@ -82,6 +89,7 @@ export default class SearchProviderFlexService extends Service {
                         id: `${searchable.model}.${doc[searchable.pathField]}`,
                         title: doc[searchable.titleField],
                         url: doc.url,
+                        path: doc.path,
                         status: doc.status,
                         visibility: doc.visibility,
                         publishedAt: doc.published_at
@@ -119,9 +127,31 @@ export default class SearchProviderFlexService extends Service {
         try {
             const response = await this.ajax.request(url, {data: query});
 
-            response[pluralize(searchable.model)].forEach((item) => {
-                this.indexes[searchable.model].add(item);
-            });
+            // Special handling for settings which returns settings array
+            if (searchable.model === 'setting') {
+                const settings = response.settings || response.data;
+                if (settings && Array.isArray(settings)) {
+                    settings.forEach((item) => {
+                        // For settings, we need to index both title and keywords
+                        const indexItem = {
+                            id: item.id,
+                            url: item.url,
+                            path: item.path,
+                            title: item.title,
+                            section: item.section,
+                            keywords: item.keywords ? item.keywords.join(' ') : ''
+                        };
+                        this.indexes[searchable.model].add(indexItem);
+                    });
+                }
+            } else {
+                const items = response[pluralize(searchable.model)];
+                if (items) {
+                    items.forEach((item) => {
+                        this.indexes[searchable.model].add(item);
+                    });
+                }
+            }
         } catch (error) {
             console.error(error); // eslint-disable-line
 
