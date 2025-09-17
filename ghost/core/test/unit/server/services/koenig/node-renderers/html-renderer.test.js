@@ -57,5 +57,48 @@ describe('services/koenig/node-renderers/html-renderer', function () {
             const result = renderForEmail(getTestData({html: ''}));
             assert.equal(result.html, '');
         });
+
+        it('wraps uniqueid replacement strings when emailUniqueid feature is enabled', function () {
+            const htmlWithUniqueId = '<img src="https://ads.example.com/banner.jpg?id={uniqueid}" alt="Ad">';
+            const result = renderForEmail(getTestData({html: htmlWithUniqueId}), {
+                feature: {emailUniqueid: true}
+            });
+
+            assert.ok(result.html.includes('%%{uniqueid}%%'));
+            assert.ok(!result.html.includes('>{uniqueid}<')); // Should not have unwrapped version
+            assert.ok(result.html.includes('kg-card-begin: html'));
+        });
+
+        it('does not wrap uniqueid replacement strings when emailUniqueid feature is disabled', function () {
+            const htmlWithUniqueId = '<img src="https://ads.example.com/banner.jpg?id={uniqueid}" alt="Ad">';
+            const result = renderForEmail(getTestData({html: htmlWithUniqueId}), {
+                feature: {emailUniqueid: false}
+            });
+
+            assert.ok(!result.html.includes('%%{uniqueid}%%'));
+            assert.ok(result.html.includes('{uniqueid}'));
+            assert.ok(result.html.includes('kg-card-begin: html'));
+        });
+
+        it('does not wrap uniqueid replacement strings when feature object is missing', function () {
+            const htmlWithUniqueId = '<img src="https://ads.example.com/banner.jpg?id={uniqueid}" alt="Ad">';
+            const result = renderForEmail(getTestData({html: htmlWithUniqueId}));
+
+            assert.ok(!result.html.includes('%%{uniqueid}%%'));
+            assert.ok(result.html.includes('{uniqueid}'));
+            assert.ok(result.html.includes('kg-card-begin: html'));
+        });
+
+        it('wraps multiple replacement strings when emailUniqueid feature is enabled', function () {
+            const htmlWithMultiple = '<img src="https://ads.example.com/banner.jpg?id={uniqueid}&name={first_name}" alt="Ad">';
+            const result = renderForEmail(getTestData({html: htmlWithMultiple}), {
+                feature: {emailUniqueid: true}
+            });
+
+            assert.ok(result.html.includes('%%{uniqueid}%%'));
+            assert.ok(result.html.includes('%%{first_name}%%'));
+            assert.ok(!result.html.includes('>{uniqueid}<'));
+            assert.ok(!result.html.includes('>{first_name}<'));
+        });
     });
 });
