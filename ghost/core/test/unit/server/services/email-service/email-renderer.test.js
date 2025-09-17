@@ -2025,7 +2025,7 @@ describe('Email renderer', function () {
 
                 await validateHtml(response.html);
 
-                assert.equal(response.html.match(/This is an excerpt/g).length, 2, 'Excerpt should appear twice (preheader and excerpt section)');
+                assert.equal(response.html.match(/This is an excerpt/g).length, 1, 'Excerpt should appear only once (in excerpt section, not duplicated in preheader)');
             });
 
             it('is not rendered when disabled and customExcerpt is present', async function () {
