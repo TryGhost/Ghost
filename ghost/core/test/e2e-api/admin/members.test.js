@@ -2480,6 +2480,100 @@ describe('Members API', function () {
             });
     });
 
+    it('Can destroy member with comment deletion', async function () {
+        // Create a member with comments
+        const member = {
+            name: 'test',
+            email: 'memberTestDestroyWithComments@test.com'
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201);
+
+        const newMember = body.members[0];
+
+        // Add some comments for this member
+        const post = fixtureManager.get('posts', 0);
+        await models.Comment.add({
+            post_id: post.id,
+            member_id: newMember.id,
+            html: 'This is a test comment',
+            status: 'published'
+        });
+
+        await models.Comment.add({
+            post_id: post.id,
+            member_id: newMember.id,
+            html: 'This is another test comment',
+            status: 'published'
+        });
+
+        // Delete member with comment deletion enabled
+        await agent
+            .delete(`/members/${newMember.id}?deleteComments=true`)
+            .expectStatus(204)
+            .expectEmptyBody();
+
+        // Verify member is deleted
+        await agent
+            .get(`/members/${newMember.id}/`)
+            .expectStatus(404);
+
+        // Verify comments are soft-deleted (status = 'deleted')
+        const comments = await models.Comment.findAll({
+            filter: `member_id:${newMember.id}`
+        });
+        comments.models.forEach((comment) => {
+            comment.get('status').should.equal('deleted');
+        });
+    });
+
+    it('Can destroy member without comment deletion', async function () {
+        // Create a member with comments
+        const member = {
+            name: 'test',
+            email: 'memberTestDestroyWithoutComments@test.com'
+        };
+
+        const {body} = await agent
+            .post(`/members/`)
+            .body({members: [member]})
+            .expectStatus(201);
+
+        const newMember = body.members[0];
+
+        // Add some comments for this member
+        const post = fixtureManager.get('posts', 0);
+        await models.Comment.add({
+            post_id: post.id,
+            member_id: newMember.id,
+            html: 'This is a test comment',
+            status: 'published'
+        });
+
+        // Delete member without comment deletion
+        await agent
+            .delete(`/members/${newMember.id}?deleteComments=false`)
+            .expectStatus(204)
+            .expectEmptyBody();
+
+        // Verify member is deleted
+        await agent
+            .get(`/members/${newMember.id}/`)
+            .expectStatus(404);
+
+        // Verify comments still exist but member_id is null (due to setNullDelete)
+        const comments = await models.Comment.findAll({
+            filter: `member_id:${newMember.id}`
+        });
+        comments.models.forEach((comment) => {
+            should.not.exist(comment.get('member_id'));
+            comment.get('status').should.equal('published');
+        });
+    });
+
     // Export members to CSV
 
     it('Can export CSV', async function () {
