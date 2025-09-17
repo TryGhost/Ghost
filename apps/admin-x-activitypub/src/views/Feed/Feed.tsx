@@ -1,7 +1,9 @@
 import Error from '@components/layout/Error';
 import FeedList from './components/FeedList';
+import NotesStoreDebug from '@src/components/dev/NotesStoreDebug';
 import React from 'react';
 import {isApiError} from '@src/api/activitypub';
+import {useActivitiesForList} from '@src/stores/notesStore';
 import {
     useFeedForUser,
     useUserDataForUser
@@ -9,9 +11,12 @@ import {
 
 const Feed: React.FC = () => {
     const {feedQuery} = useFeedForUser({enabled: true});
-    const {data, error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQuery;
+    const {error, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading} = feedQuery;
 
-    const activities = (data?.pages.flatMap(page => page.posts) ?? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})));
+    const storeActivities = useActivitiesForList('feed');
+    const activities = (storeActivities.length > 0
+        ? storeActivities
+        : (isLoading ? Array.from({length: 5}, (_, index) => ({id: `placeholder-${index}`, object: {}})) : []));
 
     const {data: user} = useUserDataForUser('index');
 
@@ -19,14 +24,17 @@ const Feed: React.FC = () => {
         return <Error errorCode={error.code} statusCode={error.statusCode}/>;
     }
 
-    return <FeedList
-        activities={activities}
-        fetchNextPage={fetchNextPage}
-        hasNextPage={hasNextPage!}
-        isFetchingNextPage={isFetchingNextPage}
-        isLoading={isLoading}
-        user={user!}
-    />;
+    return <>
+        <FeedList
+            activities={activities}
+            fetchNextPage={fetchNextPage}
+            hasNextPage={hasNextPage!}
+            isFetchingNextPage={isFetchingNextPage}
+            isLoading={isLoading}
+            user={user!}
+        />
+        <NotesStoreDebug onlyInDev={false} />
+    </>;
 };
 
 export default Feed;
