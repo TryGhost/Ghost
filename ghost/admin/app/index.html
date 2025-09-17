@@ -35,12 +35,57 @@
 
     <div class="ember-load-indicator">
         <div class="gh-loading-content">
-            <video width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
-                <source src="assets/videos/logo-loader.mp4" type="video/mp4" />
+            <video id="gh-loader-video" width="100" height="100" loop autoplay muted playsinline preload="metadata" style="width: 100px; height: 100px;">
+                <source id="gh-loader-source" src="assets/videos/logo-loader.mp4" type="video/mp4" />
                 <div class="gh-loading-spinner"></div>
             </video>
         </div>
     </div>
+
+    <script>
+        (function() {
+            // Check for dark mode preference and set appropriate video
+            function updateLoaderVideo() {
+                const video = document.getElementById('gh-loader-video');
+                const source = document.getElementById('gh-loader-source');
+                
+                if (!video || !source) return;
+                
+                // Check system preference first
+                const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                
+                // Check for stored dark mode preference (Ghost uses nightShift setting)
+                let isDarkMode = prefersDark;
+                try {
+                    const ghostSettings = localStorage.getItem('ghost-admin-settings');
+                    if (ghostSettings) {
+                        const settings = JSON.parse(ghostSettings);
+                        if (settings.nightShift !== undefined) {
+                            isDarkMode = settings.nightShift;
+                        }
+                    }
+                } catch (e) {
+                    // Fallback to system preference if localStorage fails
+                }
+                
+                const videoSrc = isDarkMode ? 'assets/videos/logo-loader-dark.mp4' : 'assets/videos/logo-loader.mp4';
+                
+                if (source.src !== videoSrc) {
+                    source.src = videoSrc;
+                    video.load(); // Reload video with new source
+                }
+                
+                // Update document class for CSS styling
+                document.documentElement.classList.toggle('dark', isDarkMode);
+            }
+            
+            // Update video on load
+            updateLoaderVideo();
+            
+            // Listen for system preference changes
+            window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateLoaderVideo);
+        })();
+    </script>
 
     {{content-for "body"}}
 

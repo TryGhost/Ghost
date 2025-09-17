@@ -1,6 +1,7 @@
 import SpinningOrb from '../../assets/videos/logo-loader.mp4';
+import SpinningOrbDark from '../../assets/videos/logo-loader-dark.mp4';
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {ReactNode, createContext, useContext} from 'react';
+import {ReactNode, createContext, useContext, useEffect, useState} from 'react';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {SiteData, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {User} from '@tryghost/admin-x-framework/api/users';
@@ -20,6 +21,46 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const site = useBrowseSite();
     const config = useBrowseConfig();
     const currentUser = useCurrentUser();
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    // Check for dark mode on mount and when settings change
+    useEffect(() => {
+        const checkDarkMode = () => {
+            // Check system preference first
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            
+            // Check for stored dark mode preference (Ghost uses nightShift setting)
+            let darkMode = prefersDark;
+            try {
+                const ghostSettings = localStorage.getItem('ghost-admin-settings');
+                if (ghostSettings) {
+                    const parsedSettings = JSON.parse(ghostSettings);
+                    if (parsedSettings.nightShift !== undefined) {
+                        darkMode = parsedSettings.nightShift;
+                    }
+                }
+            } catch (e) {
+                // Fallback to system preference if localStorage fails
+            }
+            
+            // Also check if document has dark class (set by Ghost admin)
+            if (document.documentElement.classList.contains('dark')) {
+                darkMode = true;
+            }
+            
+            setIsDarkMode(darkMode);
+        };
+
+        checkDarkMode();
+
+        // Listen for system preference changes
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        mediaQuery.addEventListener('change', checkDarkMode);
+
+        return () => {
+            mediaQuery.removeEventListener('change', checkDarkMode);
+        };
+    }, []);
 
     const requests = [
         settings,
@@ -48,7 +89,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
                     width: '100px',
                     height: '100px'
                 }} width="100" loop muted playsInline>
-                    <source src={SpinningOrb} type="video/mp4" />
+                    <source src={isDarkMode ? SpinningOrbDark : SpinningOrb} type="video/mp4" />
                 </video>
             </div>
         );
