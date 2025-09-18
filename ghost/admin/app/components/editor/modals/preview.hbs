@@ -102,6 +102,7 @@
                     @previewUrl={{this.browserPreviewUrl}}
                     @skipAnimation={{this.skipAnimation}}
                     @mobile={{eq this.previewSize "mobile"}}
+                    @closeModal={{@close}}
                 />
             {{else}}
                 <Editor::Modals::Preview::Email
