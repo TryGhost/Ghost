@@ -1,15 +1,26 @@
 const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
+const loggingLib = require('@tryghost/logging');
 
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 const {SafeString} = require('express-hbs');
 
+const match = require('../../../../core/frontend/helpers/match');
+
 describe('Match helper', function () {
+    let logging;
+
     before(function () {
         registerHelper('match');
         registerHelper('title');
     });
+
+    beforeEach(function () {
+        logging = {
+            error: sinon.stub(loggingLib, 'error')
+        };
+    });    
 
     afterEach(function () {
         sinon.restore();
@@ -383,6 +394,190 @@ describe('Match helper', function () {
                 '{{match false "=" (match title "!=" "The Title")}}': 'true',
                 '{{match  "false" "=" (match (title) "!=" "The Title")}}': 'false'
             }, {title: 'The Title'});
+        });
+
+        describe('NQL', function () {
+            describe('Common NQL expressions', function () {
+                const context = {
+                    post: {
+                        slug: 'welcome',
+                        id: '5c7ece47da174000c0c5c6d7',
+                        title: 'Welcome',
+                        html: '<p>Welcome, it\'s great to have you here.</p>',
+                        feature_image: null,
+                        featured: true,
+                        url: 'https://demo.ghost.io/welcome-short/',
+                        excerpt: 'Welcome, it\'s great to have you here.',                     
+                        authors: [
+                            {
+                                id: '5951f5fca366002ebd5dbef7',
+                                name: 'Ghost',
+                                slug: 'ghost'
+                            },
+                            {
+                                id: '6151f5fca366002ebd5dbeb8',
+                                name: 'John Doe',
+                                slug: 'john-doe'
+                            }
+                        ],
+                        tags: [
+                            {
+                                id: '59799bbd6ebb2f00243a33db',
+                                name: 'Getting Started',
+                                slug: 'getting-started'
+                            },
+                            {
+                                id: '69799bbd6ebb2f00243a334e',
+                                name: '#Second Tag',
+                                slug: 'hash-second-tag'
+                            }
+                        ],
+                        primary_author: {
+                            id: '5951f5fca366002ebd5dbef7',
+                            name: 'Ghost',
+                            slug: 'ghost'
+                        },
+                        primary_tag: {
+                            id: '59799bbd6ebb2f00243a33db',
+                            name: 'Getting Started',
+                            slug: 'getting-started'
+                        }                                 
+                    }
+                };
+            
+                runTests({
+                    // basic
+                    '{{match post "slug:welcome" }}': 'true',
+                    '{{match post "slug:incorrect" }}': 'false',
+                    '{{match post "featured:true" }}': 'true',
+                    '{{match post "featured:false" }}': 'false',
+                    '{{match post "feature_image:null" }}': 'true',
+                    '{{match post "feature_image:\'null\'" }}': 'false',
+                    '{{match post "undefined_prop:null" }}': 'true',
+                    '{{match post "url:~^\'https\'" }}': 'true',
+                    '{{match post "url:~^\'ftp\'" }}': 'false',
+                    '{{match post "url:~\'ghost\'" }}': 'true',
+                    '{{match post "url:~\'wp\'" }}': 'false',
+                    '{{match post "url:~$\'/\'" }}': 'true',
+                    '{{match post "url:~$\'@\'" }}': 'false',
+    
+                    '{{match post "slug:-welcome" }}': 'false',
+                    '{{match post "slug:-incorrect" }}': 'true',
+                    '{{match post "featured:-true" }}': 'false',
+                    '{{match post "featured:-false" }}': 'true',
+                    '{{match post "feature_image:-null" }}': 'false',
+                    '{{match post "feature_image:-\'null\'" }}': 'true',
+                    '{{match post "undefined_prop:-null" }}': 'false',
+                    '{{match post "url:-~^\'https\'" }}': 'false',
+                    '{{match post "url:-~^\'ftp\'" }}': 'true',
+                    '{{match post "url:-~\'ghost\'" }}': 'false',
+                    '{{match post "url:-~\'wp\'" }}': 'true',
+                    '{{match post "url:-~$\'/\'" }}': 'false',
+                    '{{match post "url:-~$\'@\'" }}': 'true',
+    
+                    // nested objects
+                    '{{match post "primary_tag:getting-started" }}': 'true',
+                    '{{match post "primary_tag:incorrect" }}': 'false',
+                    '{{match post "primary_tag.slug:getting-started" }}': 'true',
+                    '{{match post "primary_tag.slug:incorrect" }}': 'false',
+                    '{{match post "primary_tag.name:\'Getting Started\'" }}': 'true',
+    
+                    '{{match post "primary_author:ghost" }}': 'true',
+                    '{{match post "primary_author:incorrect" }}': 'false',
+                    '{{match post "primary_author.slug:ghost" }}': 'true',
+                    '{{match post "primary_author.slug:incorrect" }}': 'false',
+                    '{{match post "primary_author.name:\'Ghost\'" }}': 'true',
+    
+                    // nested arrays
+                    '{{match post "tags:hash-second-tag" }}': 'true',
+                    '{{match post "tags:hash-incorrect" }}': 'false',
+                    '{{match post "tags.slug:hash-second-tag" }}': 'true',
+                    '{{match post "tags.slug:hash-incorrect" }}': 'false',
+                    '{{match post "tags.name:\'#Second Tag\'" }}': 'true',
+    
+                    '{{match post "authors:john-doe" }}': 'true',
+                    '{{match post "authors:incorrect" }}': 'false',
+                    '{{match post "authors.slug:john-doe" }}': 'true',
+                    '{{match post "authors.slug:incorrect" }}': 'false',
+                    '{{match post "authors.name:\'John Doe\'" }}': 'true',
+    
+                    // arrays
+                    '{{match post.tags "slug:hash-second-tag" }}': 'true',
+                    '{{match post.tags "slug:hash-incorrect" }}': 'false',
+                    '{{match post.tags "name:\'#Second Tag\'" }}': 'true',
+    
+                    '{{match post.authors "slug:john-doe" }}': 'true',
+                    '{{match post.authors "slug:incorrect" }}': 'false',
+                    '{{match post.authors "name:\'John Doe\'" }}': 'true',
+                    
+                    // and
+                    '{{match post "slug:welcome+tags.name:\'Getting Started\'" }}': 'true',
+                    '{{match post "slug:welcome+tags.name:\'Incorrect\'" }}': 'false',
+                    '{{match post "slug:incorrect+tags.name:\'Getting Started\'" }}': 'false',
+                    '{{match post "slug:incorrect+tags.name:\'Incorrect\'" }}': 'false',
+    
+                    // or
+                    '{{match post "slug:welcome,tags.name:\'Getting Started\'" }}': 'true',
+                    '{{match post "slug:welcome,tags.name:\'Incorrect\'" }}': 'true',
+                    '{{match post "slug:incorrect,tags.name:\'Getting Started\'" }}': 'true',
+                    '{{match post "slug:incorrect,tags.name:\'Incorrect\'" }}': 'false',
+                    '{{match post "tags:[getting-started,incorrect]" }}': 'true',
+                    '{{match post "tags:[not-getting-started,incorrect]" }}': 'false'
+                }, context);
+            });
+
+            it('Adds @matches to context when the data is an array and the result is "true"', function () {
+                const array = [
+                    {
+                        id: '59799bbd6ebb2f00243a33db',
+                        name: 'Getting Started',
+                        slug: 'getting-started'
+                    },
+                    {
+                        id: '69799bbd6ebb2f00243a334e',
+                        name: '#Second Tag',
+                        slug: 'hash-second-tag'
+                    },
+                    {
+                        id: '69799bbd6ebb2f00243a334e',
+                        name: '#Third Tag',
+                        slug: 'hash-third-tag'
+                    }
+                ];         
+                
+                let resultData = {};
+
+                const options = {
+                    fn: sinon.spy((input, data) => {
+                        resultData = _.cloneDeep(data);
+                    }),
+                    data: {},                    
+                    hash: {}
+                };
+
+                match.call({}, array, 'slug:~^\'hash\'', options);
+
+                options.fn.called.should.be.true();
+                resultData.data.should.have.property('matches');
+                resultData.data.matches.length.should.eql(2);
+                resultData.data.matches[0].should.eql(array[1]);
+                resultData.data.matches[1].should.eql(array[2]);
+            });
+
+            it('Returns "false" if the NQL expression is invalid', function () {
+                const context = {
+                    post: {
+                        slug: 'welcome',
+                        welcome: true
+                    }
+                };
+                const expected = 'false';
+                const templateString = '{{match post "welcome" }}';
+    
+                shouldCompileToExpected(templateString, context, expected);
+
+                logging.error.calledOnce.should.be.true();
+            });
         });
     });
 
