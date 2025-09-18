@@ -17,7 +17,9 @@ export default defineConfig({
     retries: process.env.CI ? 2 : 0,
     workers: process.env.CI ? 4 : undefined,
     /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-    reporter: [['html'], [process.env.CI ? 'github' : 'list']],
+    reporter: process.env.CI ? [['github'], ['html']] :
+              process.env.PLAYWRIGHT_HTML_REPORT ? [['html'], ['list']] :
+              [['list']],
     /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
     use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -31,7 +33,8 @@ export default defineConfig({
             // force GPU hardware acceleration
             // (even in headless mode)
             args: ['--use-gl=egl']
-        }
+        },
+        headless: process.env.PLAYWRIGHT_HEADED ? false : true
     },
     projects: [
         {
