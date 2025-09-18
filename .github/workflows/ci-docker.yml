@@ -2,7 +2,7 @@ name: CI (Docker)
 on:
   workflow_dispatch:
   pull_request:
-    types: [opened, synchronize, reopened, labeled, unlabeled]
+    types: [opened, synchronize, reopened]
   push:
     # Ref: GHA Filter pattern syntax: https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#filter-pattern-cheat-sheet
     # Run on pushes to main, release branches, and previous/future major version branches
