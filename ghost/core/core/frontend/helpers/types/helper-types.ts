@@ -1,3 +1,5 @@
+/* eslint-disable ghost/filenames/match-exported-class */
+
 // Type definitions for Ghost handlebars helpers
 
 export interface HelperOptions {

@@ -1,5 +1,5 @@
 import {SafeString} from '../services/handlebars';
-import {HelperOptions} from './types';
+import {HelperOptions} from './types/helper-types';
 
 // Extend base HelperOptions for concat-specific hash properties
 interface ConcatHelperOptions extends HelperOptions {
