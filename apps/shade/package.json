@@ -102,7 +102,6 @@
         "react-select": "5.10.2",
         "react-world-flags": "1.6.0",
         "recharts": "2.15.4",
-        "rollup-plugin-node-builtins": "2.1.2",
         "sonner": "2.0.7",
         "tailwind-merge": "2.6.0",
         "validator": "13.12.0",
