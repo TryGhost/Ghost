@@ -1,4 +1,4 @@
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {Table, TableCaption, TableHeader, TableBody, TableFooter, TableRow, TableHead, TableCell, TableHeadButton} from './table';
 import {CardDescription, CardHeader, CardTitle} from './card';
 import {Badge} from './badge';

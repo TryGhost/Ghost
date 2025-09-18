@@ -1,5 +1,5 @@
 import Icon, {IconName} from '@/components/ui/icon';
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 import {useState} from 'react';
 
 const meta = {
