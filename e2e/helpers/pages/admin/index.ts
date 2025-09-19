@@ -9,3 +9,4 @@ export * from './analytics/post-analytics/PostAnalyticsWebTrafficPage';
 export * from './LoginPage';
 export * from './AdminPage';
 export * from './MembersPage';
+export * from './PostEditorPage';
