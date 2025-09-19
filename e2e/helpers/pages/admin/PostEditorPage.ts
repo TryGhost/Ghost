@@ -145,24 +145,4 @@ export class PostEditorPage extends AdminPage {
     async getStatus(): Promise<string> {
         return await this.statusText.textContent() || '';
     }
-
-    // Helper method to test ESC key functionality
-    async testEscapeKey(): Promise<void> {
-        // First try normal keyboard press
-        await this.page.keyboard.press('Escape');
-
-        // Also dispatch event directly to the document to bypass iframe focus issues
-        await this.page.evaluate(() => {
-            const event = new KeyboardEvent('keydown', {
-                key: 'Escape',
-                code: 'Escape',
-                keyCode: 27,
-                which: 27,
-                bubbles: true,
-                cancelable: true
-            });
-            document.dispatchEvent(event);
-            window.dispatchEvent(event);
-        });
-    }
 }

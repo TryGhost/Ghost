@@ -10,7 +10,7 @@ test.describe('Post Preview Modal', () => {
         postFactory = createPostFactory(page);
     });
 
-    test('ESC key closes preview modal when iframe has focus', async ({page}) => {
+    test('closes preview modal with ESC key when iframe has focus', async ({page}) => {
         // Create a test post
         const post = await postFactory.create({
             title: 'Test Post for ESC Key',
@@ -29,16 +29,15 @@ test.describe('Post Preview Modal', () => {
         const iframeFocused = await postEditorPage.previewModal.isIframeFocused();
         expect(iframeFocused).toBe(true);
 
-        // Test ESC key functionality
-        await postEditorPage.testEscapeKey();
-        await page.waitForTimeout(500);
+        // Press ESC key - implementation should handle it regardless of iframe focus
+        await page.keyboard.press('Escape');
 
         // Verify modal is closed
-        const modalStillVisible = await postEditorPage.previewModal.isVisible();
-        expect(modalStillVisible).toBe(false);
+        await postEditorPage.previewModal.waitForHidden();
+        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
 
-    test('ESC key closes preview modal without iframe focus', async ({page}) => {
+    test('closes preview modal with ESC key when modal header has focus', async ({page}) => {
         const post = await postFactory.create({
             title: 'Test Post for ESC Key Baseline',
             status: 'draft'
@@ -54,16 +53,15 @@ test.describe('Post Preview Modal', () => {
         // Click on modal header to ensure focus is not on iframe
         await postEditorPage.previewModal.header.click();
 
-        // Test ESC key
-        await postEditorPage.testEscapeKey();
-        await page.waitForTimeout(500);
+        // Press ESC key to close modal
+        await page.keyboard.press('Escape');
 
         // Verify modal is closed
-        const modalClosed = await postEditorPage.previewModal.isVisible();
-        expect(modalClosed).toBe(false);
+        await postEditorPage.previewModal.waitForHidden();
+        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
 
-    test('Close button works as fallback', async ({page}) => {
+    test('closes preview modal using close button', async ({page}) => {
         const post = await postFactory.create({
             title: 'Test Post for Close Button',
             status: 'draft'
@@ -79,8 +77,7 @@ test.describe('Post Preview Modal', () => {
         // Use close button
         await postEditorPage.previewModal.close();
 
-        // Verify modal is closed
-        const modalClosed = await postEditorPage.previewModal.isVisible();
-        expect(modalClosed).toBe(false);
+        // Verify modal is closed (close() method already waits for hidden)
+        expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
 });
