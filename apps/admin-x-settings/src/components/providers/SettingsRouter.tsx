@@ -1,6 +1,8 @@
 import React, {useEffect} from 'react';
 import {useRouteChangeCallback, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSectionContext} from '../../hooks/useScrollSection';
+import {useSearch} from './SettingsAppProvider';
+import {getSectionTitles} from '../../utils/settings-search-index';
 import type {ModalName} from './routing/modals';
 
 export const modalPaths: {[key: string]: ModalName} = {
@@ -39,9 +41,14 @@ export const modalPaths: {[key: string]: ModalName} = {
 
 export const loadModals = () => import('./routing/modals');
 
+// Get section titles from centralized configuration
+const sectionTitles = getSectionTitles();
+
 const SettingsRouter: React.FC = () => {
     const {updateNavigatedSection, scrollToSection} = useScrollSectionContext();
     const {route} = useRouting();
+    const {setFilter} = useSearch();
+
     // get current route
     useRouteChangeCallback((newPath, oldPath) => {
         if (newPath === oldPath) {
@@ -51,9 +58,22 @@ const SettingsRouter: React.FC = () => {
 
     useEffect(() => {
         if (route !== undefined) {
-            updateNavigatedSection(route.split('/')[0]);
+            const section = route.split('/')[0];
+
+            // If we have a specific section route, set it as the search filter
+            if (section && sectionTitles[section]) {
+                setFilter(sectionTitles[section]);
+            } else if (section) {
+                // For sections without a specific title mapping, clear the filter
+                // This allows normal scrolling behavior for unmapped sections
+                setFilter('');
+                updateNavigatedSection(section);
+            } else {
+                // Clear filter when navigating to root settings
+                setFilter('');
+            }
         }
-    }, [route, updateNavigatedSection]);
+    }, [route, updateNavigatedSection, setFilter]);
 
     return null;
 };
