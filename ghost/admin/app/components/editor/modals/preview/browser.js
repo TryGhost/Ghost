@@ -39,8 +39,13 @@ export default class ModalPostPreviewBrowserComponent extends Component {
                     const iframeDoc = this.iframe.contentWindow.document;
                     if (iframeDoc && iframeDoc.body) {
                         const script = iframeDoc.createElement('script');
+                        // Add a data attribute to identify our injected script
+                        script.setAttribute('data-ghost-preview-escape-handler', 'true');
                         script.innerHTML = `
                             (function() {
+                                // Mark that the escape handler is ready
+                                window.ghostPreviewEscapeHandlerReady = true;
+
                                 // Listen for escape key and post message to parent
                                 document.addEventListener('keydown', function(e) {
                                     if (e.key === 'Escape') {

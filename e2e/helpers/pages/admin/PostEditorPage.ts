@@ -72,8 +72,26 @@ export class PostPreviewModal {
             // It's okay if there are no images
         }
 
-        // Wait for script injection to complete (we have a 500ms setTimeout in browser.js)
-        await this.page.waitForTimeout(1000);
+        // Wait for our escape handler script to be injected and ready
+        await this.page.waitForFunction(
+            () => {
+                const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        // Check if our script has been injected by looking for the marker we set
+                        const iframeWindow = iframe.contentWindow as Window & {
+                            ghostPreviewEscapeHandlerReady?: boolean;
+                        };
+                        return iframeWindow.ghostPreviewEscapeHandlerReady === true;
+                    } catch {
+                        // Cross-origin or access issues, script might not be injected yet
+                        return false;
+                    }
+                }
+                return false;
+            },
+            {timeout: 5000}
+        );
 
         // Return the content locators
         return {
