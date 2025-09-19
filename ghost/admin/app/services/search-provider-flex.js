@@ -89,6 +89,23 @@ export default class SearchProviderFlexService extends Service {
                 });
             });
 
+            // Sort posts/pages by status priority (scheduled > draft > published > sent)
+            if (searchable.model === 'post' || searchable.model === 'page') {
+                const statusPriority = {
+                    scheduled: 1,
+                    draft: 2,
+                    published: 3,
+                    sent: 4
+                };
+
+                groupResults.sort((a, b) => {
+                    const aPriority = statusPriority[a.status] || 5;
+                    const bPriority = statusPriority[b.status] || 5;
+
+                    return aPriority - bPriority;
+                });
+            }
+
             if (!isEmpty(groupResults)) {
                 results.push({
                     groupName: searchable.name,
