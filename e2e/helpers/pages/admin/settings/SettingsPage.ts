@@ -42,7 +42,7 @@ export class SettingsPage extends AdminPage {
         this.labsOpenButton = page.getByTestId('labs').getByRole('button', {name: 'Open'});
         this.labsCloseButton = page.getByTestId('labs').getByRole('button', {name: 'Close'});
         // Labs content is the tabpanel that appears when opened
-        this.labsContent = page.locator('[role="tabpanel"]').first();
+        this.labsContent = this.labsSection.locator('[role="tabpanel"]');
         this.labsBetaFeaturesTab = page.getByRole('tab', {name: 'Beta features'});
         this.labsPrivateFeaturesTab = page.getByRole('tab', {name: 'Private features'});
 
