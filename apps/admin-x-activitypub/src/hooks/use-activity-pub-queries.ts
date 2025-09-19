@@ -533,7 +533,7 @@ function updateReplyCache(queryClient: QueryClient, id: string, delta: number) {
 function updateReplyCacheOnce(queryClient: QueryClient, id: string, delta: number) {
     // Update reply chain cache (used by Note.tsx and Reader.tsx)
     const replyChainQueryKey = QUERY_KEYS.replyChain(null);
-    queryClient.setQueriesData(replyChainQueryKey, (current?: ReplyChainResponse) => {
+    queryClient.setQueriesData({queryKey: replyChainQueryKey, exact: false}, (current?: ReplyChainResponse) => {
         if (!current) {
             return current;
         }
@@ -2623,4 +2623,76 @@ export function useSuggestedProfilesForUser(handle: string, limit = 3) {
     };
 
     return {suggestedProfilesQuery, updateSuggestedProfile};
+}
+
+function updateAccountBlueskyCache(queryClient: QueryClient, blueskyHandle: string | null) {
+    const profileQueryKey = QUERY_KEYS.account('index');
+
+    queryClient.setQueryData(profileQueryKey, (currentProfile?: {blueskyEnabled: boolean, blueskyHandle: string | null}) => {
+        if (!currentProfile) {
+            return currentProfile;
+        }
+
+        return {
+            ...currentProfile,
+            blueskyEnabled: blueskyHandle !== null,
+            blueskyHandle
+        };
+    });
+}
+
+export function useEnableBlueskyMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.enableBluesky();
+        },
+        onSuccess(blueskyHandle: string) {
+            updateAccountBlueskyCache(queryClient, blueskyHandle);
+
+            // Invalidate the following query as enabling bluesky will cause
+            // the account to follow the brid.gy account (and we want this to
+            // be reflected in the UI)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.accountFollows('index', 'following')
+            });
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+        }
+    });
+}
+
+export function useDisableBlueskyMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.disableBluesky();
+        },
+        onSuccess() {
+            updateAccountBlueskyCache(queryClient, null);
+
+            // Invalidate the following query as disabling bluesky will cause
+            // the account to unfollow the brid.gy account (and we want this to
+            // be reflected in the UI)
+            queryClient.invalidateQueries({
+                queryKey: QUERY_KEYS.accountFollows('index', 'following')
+            });
+        },
+        onError(error: {message: string, statusCode: number}) {
+            if (error.statusCode === 429) {
+                renderRateLimitError();
+            }
+        }
+    });
 }

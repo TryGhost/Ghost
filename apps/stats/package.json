@@ -43,8 +43,8 @@
         "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "4.7.0",
         "dotenv": "16.6.1",
-        "msw": "2.10.5",
-        "vite": "5.4.19",
+        "msw": "2.11.2",
+        "vite": "5.4.20",
         "vite-plugin-svgr": "4.5.0",
         "vitest": "1.6.1"
     },
