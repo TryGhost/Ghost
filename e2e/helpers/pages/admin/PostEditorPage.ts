@@ -73,7 +73,7 @@ export class PostPreviewModal {
         }
 
         // Wait for script injection to complete (we have a 500ms setTimeout in browser.js)
-        await this.page.waitForTimeout(600);
+        await this.page.waitForTimeout(1000);
 
         // Return the content locators
         return {
