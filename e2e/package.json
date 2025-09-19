@@ -11,6 +11,8 @@
     "prepare": "tsc --noEmit",
     "test": "playwright test --project=main",
     "test:factory": "playwright test --project=factories",
+    "test:single": "playwright test --project=main -g",
+    "test:debug": "playwright test --project=main --headed --timeout=60000 -g",
     "test:types": "tsc --noEmit",
     "lint": "eslint . --ext .ts --cache"
   },

@@ -1,0 +1,192 @@
+import baseDebug from '@tryghost/debug';
+
+const debug = baseDebug('e2e:MailhogClient');
+
+export interface MailhogMessage {
+    ID: string;
+    From: {
+        Relays: string[] | null;
+        Mailbox: string;
+        Domain: string;
+        Params: string;
+    };
+    To: Array<{
+        Relays: string[] | null;
+        Mailbox: string;
+        Domain: string;
+        Params: string;
+    }>;
+    Content: {
+        Headers: {
+            [key: string]: string[];
+        };
+        Body: string;
+        Size: number;
+        MIME: any;
+    };
+    Created: string;
+    MIME: any;
+    Raw: {
+        From: string;
+        To: string[];
+        Data: string;
+    };
+}
+
+export interface MailhogSearchResult {
+    total: number;
+    count: number;
+    start: number;
+    items: MailhogMessage[];
+}
+
+export class MailhogClient {
+    private readonly baseUrl: string;
+
+    constructor(baseUrl: string = 'http://localhost:8025') {
+        this.baseUrl = baseUrl;
+    }
+
+    /**
+     * Get all messages from Mailhog
+     */
+    async getMessages(limit: number = 50): Promise<MailhogMessage[]> {
+        debug('Getting messages from Mailhog');
+        const response = await fetch(`${this.baseUrl}/api/v2/messages?limit=${limit}`);
+        if (!response.ok) {
+            throw new Error(`Failed to fetch messages: ${response.statusText}`);
+        }
+        const data = await response.json() as MailhogSearchResult;
+        debug(`Found ${data.items.length} messages`);
+        return data.items;
+    }
+
+    /**
+     * Search for messages by recipient email
+     */
+    async searchByRecipient(email: string, limit: number = 50): Promise<MailhogMessage[]> {
+        debug(`Searching for messages to ${email}`);
+        const response = await fetch(`${this.baseUrl}/api/v2/search?kind=to&query=${encodeURIComponent(email)}&limit=${limit}`);
+        if (!response.ok) {
+            throw new Error(`Failed to search messages: ${response.statusText}`);
+        }
+        const data = await response.json() as MailhogSearchResult;
+        debug(`Found ${data.items.length} messages for ${email}`);
+        return data.items;
+    }
+
+    /**
+     * Get the latest message for a recipient
+     */
+    async getLatestMessageFor(email: string): Promise<MailhogMessage | null> {
+        const messages = await this.searchByRecipient(email, 1);
+        return messages.length > 0 ? messages[0] : null;
+    }
+
+    /**
+     * Wait for an email to arrive for a specific recipient
+     */
+    async waitForEmail(email: string, timeoutMs: number = 10000): Promise<MailhogMessage> {
+        debug(`Waiting for email to ${email}`);
+        const startTime = Date.now();
+        
+        while (Date.now() - startTime < timeoutMs) {
+            const message = await this.getLatestMessageFor(email);
+            if (message) {
+                debug(`Email received for ${email}`);
+                return message;
+            }
+            
+            // Wait a bit before checking again
+            await new Promise(resolve => setTimeout(resolve, 500));
+        }
+        
+        throw new Error(`Timeout waiting for email to ${email}`);
+    }
+
+    /**
+     * Extract magic link from a Ghost member signup email
+     */
+    extractMagicLink(message: MailhogMessage): string | null {
+        // Get the decoded plain text content
+        const body = this.getPlainTextContent(message);
+        
+        // Look for magic link pattern in the email body
+        // Ghost magic links typically look like: http://localhost:30000/members/?token=...&action=signup
+        const magicLinkRegex = /https?:\/\/[^\s]+\/members\/\?token=[^\s&]+(&action=\w+)?(&r=[^\s]+)?/gi;
+        const matches = body.match(magicLinkRegex);
+        
+        if (matches && matches.length > 0) {
+            debug(`Found magic link: ${matches[0]}`);
+            return matches[0];
+        }
+        
+        debug('No magic link found in email');
+        debug('Email body searched:', body.substring(0, 500));
+        return null;
+    }
+
+    /**
+     * Clear all messages from Mailhog
+     */
+    async deleteAllMessages(): Promise<void> {
+        debug('Deleting all messages from Mailhog');
+        const response = await fetch(`${this.baseUrl}/api/v1/messages`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            throw new Error(`Failed to delete messages: ${response.statusText}`);
+        }
+        debug('All messages deleted');
+    }
+
+    /**
+     * Get message content as plain text
+     */
+    getPlainTextContent(message: MailhogMessage): string {
+        // Try to get plain text from MIME parts if available
+        if (message.MIME && message.MIME.Parts) {
+            for (const part of message.MIME.Parts) {
+                if (part.Headers && part.Headers['Content-Type'] && 
+                    part.Headers['Content-Type'][0].includes('text/plain')) {
+                    // Check if content is base64 encoded
+                    if (part.Headers['Content-Transfer-Encoding'] && 
+                        part.Headers['Content-Transfer-Encoding'][0] === 'base64') {
+                        try {
+                            return Buffer.from(part.Body, 'base64').toString('utf-8');
+                        } catch (e) {
+                            debug('Failed to decode base64 content:', e);
+                        }
+                    }
+                    return part.Body;
+                }
+            }
+        }
+        
+        // Fall back to main body
+        return message.Content.Body;
+    }
+
+    /**
+     * Get message content as HTML
+     */
+    getHtmlContent(message: MailhogMessage): string {
+        // Try to get HTML from MIME parts if available
+        if (message.MIME && message.MIME.Parts) {
+            for (const part of message.MIME.Parts) {
+                if (part.Headers && part.Headers['Content-Type'] && 
+                    part.Headers['Content-Type'][0].includes('text/html')) {
+                    return part.Body;
+                }
+            }
+        }
+        
+        // Fall back to main body if it looks like HTML
+        const body = message.Content.Body;
+        if (body.includes('<html') || body.includes('<body')) {
+            return body;
+        }
+        
+        return '';
+    }
+}

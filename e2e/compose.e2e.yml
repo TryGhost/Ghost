@@ -55,6 +55,16 @@ services:
       tinybird-local:
         condition: service_healthy
 
+  mailhog:
+    image: mailhog/mailhog:latest
+    platform: linux/amd64
+    ports:
+      - "1025:1025" # SMTP server
+      - "8025:8025" # Web interface
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8025"]
+      interval: 1s
+      retries: 30
 
 volumes:
   shared-config:
