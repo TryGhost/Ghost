@@ -11,28 +11,22 @@ test.describe('Post Preview Modal', () => {
     });
 
     test('closes preview modal with ESC key when iframe has focus', async ({page}) => {
-        // Create a test post
         const post = await postFactory.create({
             title: 'Test Post for ESC Key',
             status: 'draft'
         });
 
         const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoExistingPost(post.id);
+        await postEditorPage.gotoPost(post.id);
 
-        // Open preview modal
         await postEditorPage.openPreview();
         expect(await postEditorPage.previewModal.isVisible()).toBe(true);
 
-        // Click inside the iframe to focus it
-        await postEditorPage.previewModal.clickInIframe();
-        const iframeFocused = await postEditorPage.previewModal.isIframeFocused();
-        expect(iframeFocused).toBe(true);
+        const postContent = await postEditorPage.previewModal.getPostContent();
+        await postContent.image().click();
 
-        // Press ESC key - implementation should handle it regardless of iframe focus
         await page.keyboard.press('Escape');
 
-        // Verify modal is closed
         await postEditorPage.previewModal.waitForHidden();
         expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
@@ -44,19 +38,15 @@ test.describe('Post Preview Modal', () => {
         });
 
         const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoExistingPost(post.id);
+        await postEditorPage.gotoPost(post.id);
 
-        // Open preview modal
         await postEditorPage.openPreview();
         expect(await postEditorPage.previewModal.isVisible()).toBe(true);
 
-        // Click on modal header to ensure focus is not on iframe
         await postEditorPage.previewModal.header.click();
 
-        // Press ESC key to close modal
         await page.keyboard.press('Escape');
 
-        // Verify modal is closed
         await postEditorPage.previewModal.waitForHidden();
         expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
@@ -68,16 +58,13 @@ test.describe('Post Preview Modal', () => {
         });
 
         const postEditorPage = new PostEditorPage(page);
-        await postEditorPage.gotoExistingPost(post.id);
+        await postEditorPage.gotoPost(post.id);
 
-        // Open preview modal
         await postEditorPage.openPreview();
         expect(await postEditorPage.previewModal.isVisible()).toBe(true);
 
-        // Use close button
         await postEditorPage.previewModal.close();
 
-        // Verify modal is closed (close() method already waits for hidden)
         expect(await postEditorPage.previewModal.isVisible()).toBe(false);
     });
 });

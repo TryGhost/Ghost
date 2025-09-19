@@ -1,4 +1,4 @@
-import {Page, Locator} from '@playwright/test';
+import {Page, Locator, FrameLocator} from '@playwright/test';
 import {AdminPage} from './AdminPage';
 
 export class PostPreviewModal {
@@ -9,6 +9,7 @@ export class PostPreviewModal {
     readonly iframe: Locator;
     readonly webTabButton: Locator;
     readonly emailTabButton: Locator;
+    readonly previewFrame: FrameLocator;
 
     constructor(page: Page) {
         this.page = page;
@@ -16,6 +17,7 @@ export class PostPreviewModal {
         this.header = this.modal.getByRole('heading', {name: 'Preview'});
         this.closeButton = this.modal.getByRole('button', {name: 'Close'});
         this.iframe = page.locator('iframe[title*="preview"]');
+        this.previewFrame = page.frameLocator('iframe[title*="preview"]');
         this.webTabButton = this.modal.getByRole('button', {name: 'Web'});
         this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
     }
@@ -51,6 +53,43 @@ export class PostPreviewModal {
             const iframeElement = document.querySelector('iframe[title*="preview"]');
             return document.activeElement === iframeElement;
         });
+    }
+
+    // Get post content elements - automatically waits for content to be ready
+    async getPostContent() {
+        // Wait for the basic frame structure and content to load
+        await this.previewFrame.locator('body').waitFor({state: 'visible', timeout: 10000});
+
+        // Wait for the title to appear (indicates content is loaded)
+        const title = this.previewFrame.locator('h1').first();
+        await title.waitFor({state: 'visible', timeout: 10000});
+
+        // Wait for any images to load (they're often the slowest)
+        const anyImage = this.previewFrame.locator('img').first();
+        try {
+            await anyImage.waitFor({state: 'visible', timeout: 5000});
+        } catch {
+            // It's okay if there are no images
+        }
+
+        // Wait for script injection to complete (we have a 500ms setTimeout in browser.js)
+        await this.page.waitForTimeout(600);
+
+        // Return the content locators
+        return {
+            title: () => this.previewFrame.locator('h1').first(),
+            // Use a more generic selector for featured image - typically the first image in the post
+            featuredImage: () => this.previewFrame.locator('.gh-content img, article img, .post-content img, main img').first(),
+            // Fallback to any first image if no specific content wrapper
+            image: () => this.previewFrame.locator('img').first(),
+            content: () => this.previewFrame.locator('.gh-content, article, .post-content, main').first()
+        };
+    }
+
+    // Focus an element within the iframe
+    async focusElement(selector: string): Promise<void> {
+        const element = this.previewFrame.locator(selector);
+        await element.click();
     }
 }
 
@@ -88,7 +127,7 @@ export class PostEditorPage extends AdminPage {
         await this.titleInput.waitFor({state: 'visible'});
     }
 
-    async gotoExistingPost(postId: string): Promise<void> {
+    async gotoPost(postId: string): Promise<void> {
         await this.page.goto(`/ghost/#/editor/post/${postId}`);
         await this.titleInput.waitFor({state: 'visible'});
     }
