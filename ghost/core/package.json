@@ -212,7 +212,7 @@
     "simple-dom": "1.4.0",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
-    "superagent": "5.3.1",
+    "superagent": "10.2.1",
     "superagent-throttle": "1.0.1",
     "terser": "5.44.0",
     "tiny-glob": "0.2.9",
