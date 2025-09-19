@@ -68,7 +68,7 @@ function createApiInstance(config) {
                         logging.warn(message.text);
                     }
                     let msg = Object.assign({
-                        from: config.getEmailSupportAddress(),
+                        from: config.getEmailTransactionalAddress(),
                         subject: 'Signin',
                         forceTextContent: true
                     }, message);
