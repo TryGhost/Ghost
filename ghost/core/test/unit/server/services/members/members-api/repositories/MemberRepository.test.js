@@ -460,4 +460,139 @@ describe('MemberRepository', function () {
             })).should.be.true();
         });
     });
+
+    describe('#_deleteMemberComments', function () {
+        let mockComment;
+        let mockCommentCollection;
+
+        beforeEach(function () {
+            mockComment = {
+                save: sinon.stub().resolves()
+            };
+            
+            mockCommentCollection = {
+                models: [mockComment, mockComment]
+            };
+
+            this.repo = new MemberRepository({
+                Member: {
+                    findOne: sinon.stub(),
+                    destroy: sinon.stub()
+                },
+                Comment: {
+                    findAll: sinon.stub().resolves(mockCommentCollection)
+                },
+                OfferRedemption: mockOfferRedemption,
+                stripeAPIService: {
+                    configured: false
+                }
+            });
+        });
+
+        it('should find and delete all published comments for a member', async function () {
+            const memberId = 'member123';
+            const options = {};
+
+            await this.repo._deleteMemberComments(memberId, options);
+
+            this.repo._Comment.findAll.calledOnce.should.be.true();
+            this.repo._Comment.findAll.calledWith({
+                filter: `member_id:${memberId}+status:-deleted`
+            }, options).should.be.true();
+
+            mockComment.save.calledTwice.should.be.true();
+            mockComment.save.alwaysCalledWith({status: 'deleted'}, options).should.be.true();
+        });
+
+        it('should handle empty comment collection', async function () {
+            const memberId = 'member123';
+            const options = {};
+            
+            this.repo._Comment.findAll.resolves({models: []});
+
+            await this.repo._deleteMemberComments(memberId, options);
+
+            this.repo._Comment.findAll.calledOnce.should.be.true();
+            mockComment.save.called.should.be.false();
+        });
+    });
+
+    describe('#destroy with comment deletion', function () {
+        let mockMember;
+        let mockComment;
+        let mockCommentCollection;
+
+        beforeEach(function () {
+            mockMember = {
+                id: 'member123',
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().resolves(),
+                    models: []
+                })
+            };
+
+            mockComment = {
+                save: sinon.stub().resolves()
+            };
+            
+            mockCommentCollection = {
+                models: [mockComment]
+            };
+
+            this.repo = new MemberRepository({
+                Member: {
+                    findOne: sinon.stub().resolves(mockMember),
+                    destroy: sinon.stub().resolves()
+                },
+                Comment: {
+                    findAll: sinon.stub().resolves(mockCommentCollection)
+                },
+                OfferRedemption: mockOfferRedemption,
+                stripeAPIService: {
+                    configured: false
+                }
+            });
+        });
+
+        it('should delete comments when deleteComments option is true', async function () {
+            const data = {id: 'member123'};
+            const options = {deleteComments: true};
+
+            await this.repo.destroy(data, options);
+
+            this.repo._Comment.findAll.calledOnce.should.be.true();
+            this.repo._Comment.findAll.calledWith({
+                filter: 'member_id:member123+status:-deleted'
+            }, options).should.be.true();
+
+            mockComment.save.calledOnce.should.be.true();
+            mockComment.save.calledWith({status: 'deleted'}, options).should.be.true();
+            this.repo._Member.destroy.calledOnce.should.be.true();
+            this.repo._Member.destroy.calledWith({id: 'member123'}, options).should.be.true();
+        });
+
+        it('should not delete comments when deleteComments option is false', async function () {
+            const data = {id: 'member123'};
+            const options = {deleteComments: false};
+
+            await this.repo.destroy(data, options);
+
+            this.repo._Comment.findAll.called.should.be.false();
+            mockComment.save.called.should.be.false();
+            this.repo._Member.destroy.calledOnce.should.be.true();
+            this.repo._Member.destroy.calledWith({id: 'member123'}, options).should.be.true();
+        });
+
+        it('should not delete comments when deleteComments option is undefined', async function () {
+            const data = {id: 'member123'};
+            const options = {};
+
+            await this.repo.destroy(data, options);
+
+            this.repo._Comment.findAll.called.should.be.false();
+            mockComment.save.called.should.be.false();
+            this.repo._Member.destroy.calledOnce.should.be.true();
+            this.repo._Member.destroy.calledWith({id: 'member123'}, options).should.be.true();
+        });
+    });
 });
