@@ -6,11 +6,11 @@ export const useSearchableComponent = (componentName: string, keywords: string[]
     const componentId = `${componentName}-${useId()}`; // Create a unique ID combining name and React's useId
 
     useEffect(() => {
-        registerComponent(componentId);
+        registerComponent(componentId, keywords);
         return () => {
             unregisterComponent(componentId);
         };
-    }, [componentId, registerComponent, unregisterComponent]);
+    }, [componentId, keywords, registerComponent, unregisterComponent]);
 
     return {
         isVisible: checkVisible(keywords),
