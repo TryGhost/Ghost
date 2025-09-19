@@ -49,7 +49,8 @@ const PRIVATE_FEATURES = [
     'emailCustomization',
     'membersSigninOTC',
     'tagsX',
-    'utmTracking'
+    'utmTracking',
+    'emailUniqueid'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
