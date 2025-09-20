@@ -34,7 +34,8 @@ function updateLocalTemplateOptions(req, res, next) {
             });
         }),
         paid: req.member.status !== 'free',
-        status: req.member.status
+        status: req.member.status,
+        rss_token: req.member.rss_token
     } : null;
 
     hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
