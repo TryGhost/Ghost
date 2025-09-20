@@ -1,4 +1,9 @@
-const got = require('got');
+/**
+ * @typedef {import('got').Got} Got
+ * @typedef {import('got').ExtendOptions} ExtendOptions
+ */
+
+const got = /** @type {Got} */ (/** @type {unknown} */ (require('got')));
 const dnsPromises = require('dns').promises;
 const errors = require('@tryghost/errors');
 const config = require('../../shared/config');
@@ -66,6 +71,7 @@ async function disableRetries(options) {
 
 // same as our normal request lib but if any request in a redirect chain resolves
 // to a private IP address it will be blocked before the request is made.
+/** @type {ExtendOptions} */
 const gotOpts = {
     headers: {
         'user-agent': 'Ghost(https://github.com/TryGhost/Ghost)'
