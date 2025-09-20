@@ -1,4 +1,4 @@
-import React, {ReactNode, useState} from 'react';
+import React, {ReactNode, useEffect, useState} from 'react';
 
 export interface SearchService {
     filter: string;
@@ -7,11 +7,17 @@ export interface SearchService {
     highlightKeywords: (text: ReactNode) => ReactNode;
     noResult: boolean;
     setNoResult: (value: boolean) => void;
+    autoOpenTarget: string | null;
+    setAutoOpenTarget: (navid: string | null) => void;
+    registerSearchTarget: (navid: string, keywords: string[]) => void;
+    unregisterSearchTarget: (navid: string) => void;
 }
 
 const useSearchService = () => {
     const [filter, setFilter] = useState('');
     const [noResult, setNoResult] = useState(false);
+    const [autoOpenTarget, setAutoOpenTarget] = useState<string | null>(null);
+    const [targets, setTargets] = useState<Array<{navid: string; keywords: string[]}>>([]);
 
     const checkVisible = (keywords: string[]) => {
         if (!keywords.length) {
@@ -46,13 +52,39 @@ const useSearchService = () => {
         }
     };
 
+    // Compute autoOpenTarget centrally based on registered targets
+    useEffect(() => {
+        if (!filter) {
+            setAutoOpenTarget(null);
+            return;
+        }
+        const visible = targets.filter(t => checkVisible(t.keywords));
+        if (visible.length === 1) {
+            setAutoOpenTarget(visible[0].navid);
+        } else {
+            setAutoOpenTarget(null);
+        }
+    }, [filter, targets]);
+
     return {
         filter,
         setFilter,
         checkVisible,
         highlightKeywords,
         noResult,
-        setNoResult
+        setNoResult,
+        autoOpenTarget,
+        setAutoOpenTarget,
+        registerSearchTarget: (navid: string, keywords: string[]) => {
+            setTargets((prev) => {
+                // Replace existing if same navid
+                const filtered = prev.filter(t => t.navid !== navid);
+                return [...filtered, {navid, keywords}];
+            });
+        },
+        unregisterSearchTarget: (navid: string) => {
+            setTargets(prev => prev.filter(t => t.navid !== navid));
+        }
     };
 };
 

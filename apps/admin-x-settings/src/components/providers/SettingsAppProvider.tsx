@@ -49,7 +49,11 @@ const SettingsAppContext = createContext<SettingsAppContextType>({
         checkVisible: () => true,
         highlightKeywords: () => '',
         noResult: false,
-        setNoResult: () => {}
+        setNoResult: () => {},
+        autoOpenTarget: null,
+        setAutoOpenTarget: () => {},
+        registerSearchTarget: () => {},
+        unregisterSearchTarget: () => {}
     },
     sortingState: []
 });
