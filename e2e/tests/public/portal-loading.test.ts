@@ -2,14 +2,13 @@ import {test, expect} from '../../helpers/playwright';
 import {HomePage} from '../../helpers/pages/public';
 import {SignUpPage} from '../../helpers/pages/portal/SignUpPage';
 import {SignInPage} from '../../helpers/pages/portal/SignInPage';
-import {openPortalViaSubscribeButton} from '../../helpers/utils/portal-helpers';
 
 test.describe('Portal Loading', () => {
     test('can open Portal via Subscribe button', async ({page}) => {
         const homePage = new HomePage(page);
         await homePage.goto();
 
-        await openPortalViaSubscribeButton(page);
+        await homePage.openPortalViaSubscribeButton();
 
         const signUpPage = new SignUpPage(page);
         await expect(signUpPage.emailInput).toBeVisible();
@@ -20,13 +19,7 @@ test.describe('Portal Loading', () => {
         const homePage = new HomePage(page);
         await homePage.goto();
 
-        const signinLink = page.locator('a[href="#/portal/signin"]').first();
-        await signinLink.click();
-
-        await page.waitForSelector('iframe[title="portal-popup"]', {
-            state: 'visible',
-            timeout: 5000
-        });
+        await homePage.openPortalViaSignInLink();
 
         const signInPage = new SignInPage(page);
         await expect(signInPage.emailInput).toBeVisible();
@@ -37,7 +30,7 @@ test.describe('Portal Loading', () => {
         const homePage = new HomePage(page);
         await homePage.goto();
 
-        await openPortalViaSubscribeButton(page);
+        await homePage.openPortalViaSubscribeButton();
 
         const signUpPage = new SignUpPage(page);
         await expect(signUpPage.emailInput).toBeVisible();
