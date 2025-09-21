@@ -1,16 +1,25 @@
-import {Page} from '@playwright/test';
+import {Page, Locator} from '@playwright/test';
 import {BasePage} from '../BasePage';
 
 export default class PublicPage extends BasePage{
-    private readonly portalFrameSelector = '[data-testid="portal-popup-frame"]';
-    private readonly portalIframeSelector = 'iframe[title="portal-popup"]';
+    private readonly portalFrame: Locator;
+    private readonly portalIframe: Locator;
+    private readonly portalScript: Locator;
+    private readonly subscribeLink: Locator;
+    private readonly signInLink: Locator;
 
     constructor(page: Page) {
         super(page, '/');
+
+        this.portalFrame = page.locator('[data-testid="portal-popup-frame"]');
+        this.portalIframe = page.locator('iframe[title="portal-popup"]');
+        this.portalScript = page.locator('script[data-ghost][data-key][data-api]');
+        this.subscribeLink = page.locator('a[href="#/portal/signup"]').first();
+        this.signInLink = page.locator('a[href="#/portal/signin"]').first();
     }
 
     async waitForPortalScript(): Promise<void> {
-        await this.page.waitForSelector('script[data-ghost][data-key][data-api]', {
+        await this.portalScript.waitFor({
             state: 'attached',
             timeout: 10000
         });
@@ -20,11 +29,8 @@ export default class PublicPage extends BasePage{
 
     async openPortalViaSubscribeButton(): Promise<void> {
         await this.waitForPortalScript();
-
-        const subscribeLink = this.page.locator('a[href="#/portal/signup"]').first();
-        await subscribeLink.click();
-
-        await this.page.waitForSelector(this.portalIframeSelector, {
+        await this.subscribeLink.click();
+        await this.portalIframe.waitFor({
             state: 'visible',
             timeout: 5000
         });
@@ -32,29 +38,25 @@ export default class PublicPage extends BasePage{
 
     async openPortalViaSignInLink(): Promise<void> {
         await this.waitForPortalScript();
-
-        const signinLink = this.page.locator('a[href="#/portal/signin"]').first();
-        await signinLink.click();
-
-        await this.page.waitForSelector(this.portalIframeSelector, {
+        await this.signInLink.click();
+        await this.portalIframe.waitFor({
             state: 'visible',
             timeout: 5000
         });
     }
 
     async waitForPortalToOpen(): Promise<void> {
-        await this.page.waitForSelector(this.portalFrameSelector, {
+        await this.portalFrame.waitFor({
             state: 'visible',
             timeout: 2000
         });
     }
 
     async isPortalOpen(): Promise<boolean> {
-        const locator = this.page.locator(this.portalFrameSelector);
-        const count = await locator.count();
+        const count = await this.portalFrame.count();
         if (count === 0) {
             return false;
         }
-        return await locator.isVisible();
+        return await this.portalFrame.isVisible();
     }
 }
