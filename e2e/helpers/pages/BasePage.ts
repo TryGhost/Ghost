@@ -26,6 +26,10 @@ export class BasePage {
         await this.page.goto(urlToVisit);
     }
 
+    async pressKey(key: string) {
+        await this.page.keyboard.press(key);
+    }
+
     private isDebugEnabled(): boolean {
         return this.debugLogs;
     }
