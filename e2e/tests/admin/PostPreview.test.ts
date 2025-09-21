@@ -23,7 +23,7 @@ test.describe('Post Preview Modal', () => {
         expect(await postEditorPage.previewModal.isVisible()).toBe(true);
 
         const postContent = await postEditorPage.previewModal.getPostContent();
-        await postContent.image().click();
+        await postContent.image.click();
 
         await postEditorPage.pressKey('Escape');
 
