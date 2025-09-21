@@ -1,9 +1,7 @@
 import React, {ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 
-// Branded type for component IDs to ensure type safety
 export type ComponentId = string & { __brand: 'ComponentId' };
 
-// Helper function to create a typed component ID
 export const createComponentId = (base: string, unique: string): ComponentId => {
     return `${base}-${unique}` as ComponentId;
 };
@@ -15,7 +13,6 @@ export interface SearchService {
     highlightKeywords: (text: ReactNode) => ReactNode;
     noResult: boolean;
     setNoResult: (value: boolean) => void;
-    // New functionality for tracking visible components
     registerComponent: (id: ComponentId, keywords: string[]) => void;
     unregisterComponent: (id: ComponentId) => void;
     getVisibleComponents: () => Set<ComponentId>;
@@ -36,17 +33,14 @@ const useSearchService = () => {
         return keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
     };
 
-    // Register a component with its keywords
     const registerComponent = useCallback((id: ComponentId, keywords: string[]) => {
         registeredComponents.current.set(id, keywords);
-        // Immediately check if this component should be visible
         const isVisible = !filter || keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
         if (isVisible) {
             setVisibleComponents(prev => new Set(prev).add(id));
         }
     }, [filter]);
 
-    // Unregister a component when it unmounts
     const unregisterComponent = useCallback((id: ComponentId) => {
         registeredComponents.current.delete(id);
         setVisibleComponents((prev) => {
@@ -56,7 +50,6 @@ const useSearchService = () => {
         });
     }, []);
 
-    // Update visible components when filter changes
     useEffect(() => {
         const newVisible = new Set<ComponentId>();
         registeredComponents.current.forEach((keywords, id) => {
@@ -68,7 +61,6 @@ const useSearchService = () => {
         setVisibleComponents(newVisible);
     }, [filter]);
 
-    // Check if a specific component is the only visible one
     const isOnlyVisibleComponent = useCallback((id: ComponentId) => {
         return visibleComponents.size === 1 && visibleComponents.has(id);
     }, [visibleComponents]);

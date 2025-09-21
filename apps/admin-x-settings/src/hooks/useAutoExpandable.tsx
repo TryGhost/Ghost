@@ -10,21 +10,20 @@ export function useAutoExpandable(keywords: string[]) {
     const wasManuallyControlled = useRef(false);
     const {filter, getVisibleComponents, checkVisible} = useSearch();
 
-    // Reset manual control flag when search changes
     useEffect(() => {
         if (!filter) {
             wasManuallyControlled.current = false;
         }
     }, [filter]);
 
-    // Auto-expand when component is the only visible result
     useEffect(() => {
-        // Skip auto-behavior if user has manually controlled it
-        if (wasManuallyControlled.current) return;
+        if (wasManuallyControlled.current) {
+            return;
+        }
 
         const isVisible = checkVisible(keywords);
         const visibleComponents = getVisibleComponents();
-        const shouldAutoOpen = filter && isVisible && visibleComponents.size === 1;
+        const shouldAutoOpen = !!filter && isVisible && visibleComponents.size === 1;
 
         setIsOpen(shouldAutoOpen);
     }, [filter, keywords, checkVisible, getVisibleComponents]);

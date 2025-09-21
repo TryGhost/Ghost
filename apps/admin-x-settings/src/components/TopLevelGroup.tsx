@@ -17,7 +17,6 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children,
     const uniqueId = useId();
     const componentId = createComponentId(navid || 'component', uniqueId);
 
-    // Register this component with the search service
     useEffect(() => {
         registerComponent(componentId, keywords);
         return () => {
