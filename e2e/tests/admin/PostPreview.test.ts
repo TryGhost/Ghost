@@ -25,7 +25,7 @@ test.describe('Post Preview Modal', () => {
         const postContent = await postEditorPage.previewModal.getPostContent();
         await postContent.image().click();
 
-        await page.keyboard.press('Escape');
+        await postEditorPage.pressKey('Escape');
 
         await postEditorPage.previewModal.waitForHidden();
         expect(await postEditorPage.previewModal.isVisible()).toBe(false);
@@ -45,7 +45,7 @@ test.describe('Post Preview Modal', () => {
 
         await postEditorPage.previewModal.header.click();
 
-        await page.keyboard.press('Escape');
+        await postEditorPage.pressKey('Escape');
 
         await postEditorPage.previewModal.waitForHidden();
         expect(await postEditorPage.previewModal.isVisible()).toBe(false);
