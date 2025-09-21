@@ -20,7 +20,7 @@ test.describe('Settings Search - Labs Auto-open', () => {
         await expect(settingsPage.labsOpenButton).toBeVisible();
 
         // Search for "lab"
-        await settingsPage.searchInput.fill('redirect');
+        await settingsPage.searchInput.fill('lab');
 
         // Wait for filtering and auto-open to occur
         await page.waitForTimeout(300);

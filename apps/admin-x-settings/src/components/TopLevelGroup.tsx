@@ -1,12 +1,12 @@
-import React, {useEffect, useId, useState} from 'react';
+import React, {useEffect, useId, useMemo, useState} from 'react';
 import {SettingGroup as Base, SettingGroupProps} from '@tryghost/admin-x-design-system';
+import {createComponentId} from '../utils/search';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 import {useScrollSection} from '../hooks/useScrollSection';
 import {useSearch} from './providers/SettingsAppProvider';
 
 interface TopLevelGroupProps extends Omit<SettingGroupProps, 'isVisible' | 'highlight'> {
     keywords: string[];
-    onlyVisible?: boolean;
 }
 
 const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children, ...props}) => {
@@ -14,7 +14,8 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children,
     const {route} = useRouting();
     const [highlight, setHighlight] = useState(false);
     const {ref} = useScrollSection(navid);
-    const componentId = `${navid}-${useId()}`;
+    const uniqueId = useId();
+    const componentId = createComponentId(navid || 'component', uniqueId);
 
     // Register this component with the search service
     useEffect(() => {
@@ -22,8 +23,7 @@ const TopLevelGroup: React.FC<TopLevelGroupProps> = ({keywords, navid, children,
         return () => {
             unregisterComponent(componentId);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [componentId, keywords]);
+    }, [componentId, keywords, registerComponent, unregisterComponent]);
 
     useEffect(() => {
         setHighlight(route === navid);

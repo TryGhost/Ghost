@@ -1,5 +1,13 @@
 import React, {ReactNode, useCallback, useEffect, useRef, useState} from 'react';
 
+// Branded type for component IDs to ensure type safety
+export type ComponentId = string & { __brand: 'ComponentId' };
+
+// Helper function to create a typed component ID
+export const createComponentId = (base: string, unique: string): ComponentId => {
+    return `${base}-${unique}` as ComponentId;
+};
+
 export interface SearchService {
     filter: string;
     setFilter: (value: string) => void;
@@ -8,17 +16,17 @@ export interface SearchService {
     noResult: boolean;
     setNoResult: (value: boolean) => void;
     // New functionality for tracking visible components
-    registerComponent: (id: string, keywords: string[]) => void;
-    unregisterComponent: (id: string) => void;
-    getVisibleComponents: () => Set<string>;
-    isOnlyVisibleComponent: (id: string) => boolean;
+    registerComponent: (id: ComponentId, keywords: string[]) => void;
+    unregisterComponent: (id: ComponentId) => void;
+    getVisibleComponents: () => Set<ComponentId>;
+    isOnlyVisibleComponent: (id: ComponentId) => boolean;
 }
 
 const useSearchService = () => {
     const [filter, setFilter] = useState('');
     const [noResult, setNoResult] = useState(false);
-    const registeredComponents = useRef<Map<string, string[]>>(new Map());
-    const [visibleComponents, setVisibleComponents] = useState<Set<string>>(new Set());
+    const registeredComponents = useRef<Map<ComponentId, string[]>>(new Map());
+    const [visibleComponents, setVisibleComponents] = useState<Set<ComponentId>>(new Set());
 
     const checkVisible = (keywords: string[]) => {
         if (!keywords.length) {
@@ -29,17 +37,17 @@ const useSearchService = () => {
     };
 
     // Register a component with its keywords
-    const registerComponent = useCallback((id: string, keywords: string[]) => {
+    const registerComponent = useCallback((id: ComponentId, keywords: string[]) => {
         registeredComponents.current.set(id, keywords);
         // Immediately check if this component should be visible
-        if (!filter || checkVisible(keywords)) {
+        const isVisible = !filter || keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
+        if (isVisible) {
             setVisibleComponents(prev => new Set(prev).add(id));
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter]);
 
     // Unregister a component when it unmounts
-    const unregisterComponent = useCallback((id: string) => {
+    const unregisterComponent = useCallback((id: ComponentId) => {
         registeredComponents.current.delete(id);
         setVisibleComponents((prev) => {
             const next = new Set(prev);
@@ -50,18 +58,18 @@ const useSearchService = () => {
 
     // Update visible components when filter changes
     useEffect(() => {
-        const newVisible = new Set<string>();
+        const newVisible = new Set<ComponentId>();
         registeredComponents.current.forEach((keywords, id) => {
-            if (!filter || checkVisible(keywords)) {
+            const isVisible = !filter || keywords.some(keyword => keyword.toLowerCase().includes(filter.toLowerCase()));
+            if (isVisible) {
                 newVisible.add(id);
             }
         });
         setVisibleComponents(newVisible);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [filter]);
 
     // Check if a specific component is the only visible one
-    const isOnlyVisibleComponent = useCallback((id: string) => {
+    const isOnlyVisibleComponent = useCallback((id: ComponentId) => {
         return visibleComponents.size === 1 && visibleComponents.has(id);
     }, [visibleComponents]);
 
