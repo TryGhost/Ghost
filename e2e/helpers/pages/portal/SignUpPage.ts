@@ -10,14 +10,12 @@ export class SignUpPage extends PortalPage {
     constructor(page: Page) {
         super(page);
 
-        // Use role-based selectors for better reliability
         this.nameInput = this.portalFrame.getByRole('textbox', {name: 'Name'});
         this.emailInput = this.portalFrame.getByRole('textbox', {name: 'Email'});
         this.signupButton = this.portalFrame.getByRole('button', {name: 'Sign up'});
         this.signinLink = this.portalFrame.getByRole('button', {name: 'Sign in'});
     }
 
-    // Keep composite action method that combines multiple steps
     async fillAndSubmit(email: string, name?: string): Promise<void> {
         if (name) {
             await this.nameInput.fill(name);
