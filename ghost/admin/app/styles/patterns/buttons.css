@@ -46,6 +46,28 @@
     letter-spacing: .4px;
 }
 
+@media (max-width: 400px) {
+    .gh-btn-large span {
+        font-size: 0.9em;
+        height: 40px;
+        padding: 0 20px;
+        font-weight: 500;
+        line-height: 40px;
+        letter-spacing: .4px;
+    }
+}
+
+@media (max-width: 350px) {
+    .gh-btn-large span {
+        font-size: 0.7em;
+        height: 40px;
+        padding: 0 20px;
+        font-weight: 500;
+        line-height: 40px;
+        letter-spacing: .4px;
+    }
+}
+
 .gh-btn:hover {
     background: var(--whitegrey-l1);
 }
@@ -396,7 +418,7 @@ svg.gh-btn-icon-right {
 }
 
 /* Vertically space out multiple block buttons */
-.gh-btn-block + .gh-btn-block {
+.gh-btn-block+.gh-btn-block {
     margin-top: 5px;
 }
 
@@ -490,7 +512,7 @@ Usage: CTA buttons grouped together horizontally.
     font-size: 0.9rem;
 }
 
-.gh-btn-block + .gh-btn-block {
+.gh-btn-block+.gh-btn-block {
     margin-top: 5px;
 }
 
@@ -556,7 +578,7 @@ Usage: CTA buttons grouped together horizontally.
     margin: -2px 0;
     width: 14px;
     height: 14px;
-    border: rgba(0,0,0,0.2) solid 4px;
+    border: rgba(0, 0, 0, 0.2) solid 4px;
     border-radius: 100px;
     animation: spin 1s linear infinite;
 }
@@ -567,7 +589,7 @@ Usage: CTA buttons grouped together horizontally.
     margin-top: 6px;
     width: 4px;
     height: 4px;
-    background: rgba(0,0,0,0.6);
+    background: rgba(0, 0, 0, 0.6);
     border-radius: 100px;
 }
 
@@ -747,5 +769,7 @@ Usage: CTA buttons grouped together horizontally.
 }
 
 @keyframes spinner {
-    to {transform: rotate(360deg);}
+    to {
+        transform: rotate(360deg);
+    }
 }
