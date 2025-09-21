@@ -1,7 +1,7 @@
 import {Locator, Page} from '@playwright/test';
-import {AdminPage} from '../AdminPage';
+import {BasePage} from '../../BasePage';
 
-export class SettingsPage extends AdminPage {
+export class SettingsPage extends BasePage {
     readonly searchInput: Locator;
     readonly searchClearButton: Locator;
 
@@ -23,7 +23,7 @@ export class SettingsPage extends AdminPage {
     readonly integrationsSidebarItem: Locator;
 
     constructor(page: Page) {
-        super(page);
+        super(page, '/ghost/#/settings');
 
         this.searchInput = page.locator('input[placeholder="Search settings"]');
         this.searchClearButton = page.locator('button[aria-label="close"]').first();
@@ -44,6 +44,12 @@ export class SettingsPage extends AdminPage {
 
         this.labsSidebarItem = page.locator('nav').locator('li').filter({hasText: 'Labs'});
         this.integrationsSidebarItem = page.locator('nav').locator('li').filter({hasText: 'Integrations'});
+    }
+
+    async goto() {
+        await super.goto();
+        await this.page.waitForLoadState('networkidle');
+        await this.page.waitForSelector('h5', {timeout: 10000});
     }
 
     async isLabsOpen(): Promise<boolean> {
