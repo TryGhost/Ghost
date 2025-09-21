@@ -130,6 +130,23 @@ const assertSelectedText = (expectedText) => {
     expect(getTitleText(selectedOption)).to.equal(expectedText);
 };
 
+const assertResultHasStatus = (resultIndex, expectedStatus) => {
+    const searchOptions = getSearchOptions();
+    const statusLabel = searchOptions[resultIndex].querySelector('.gh-nav-search-label');
+    if (expectedStatus) {
+        expect(statusLabel, `result at index ${resultIndex} should have status label`).to.exist;
+        expect(statusLabel.textContent.trim()).to.equal(expectedStatus);
+        // Check the status has the correct class
+        if (expectedStatus === 'Draft') {
+            expect(statusLabel.classList.contains('draft')).to.be.true;
+        } else if (expectedStatus === 'Scheduled') {
+            expect(statusLabel.classList.contains('scheduled')).to.be.true;
+        }
+    } else {
+        expect(statusLabel, `result at index ${resultIndex} should not have status label`).to.not.exist;
+    }
+};
+
 const assertNoResults = () => {
     const noResultsMessage = find(NO_RESULTS_MESSAGE);
     expect(noResultsMessage).to.exist;
@@ -143,10 +160,13 @@ const createTestData = function (server) {
             slug: 'owner',
             name: 'First user'
         }),
-        firstPost: server.create('post', {title: 'First post', slug: 'first-post'}),
+        firstPost: server.create('post', {title: 'First post', slug: 'first-post', status: 'draft'}),
         secondPost: server.create('post', {title: 'Second post', slug: 'second-post'}),
-        firstPage: server.create('page', {title: 'First page', slug: 'first-page'}),
-        firstTag: server.create('tag', {name: 'First tag', slug: 'first-tag'})
+        firstPage: server.create('page', {title: 'First page', slug: 'first-page', status: 'draft'}),
+        firstTag: server.create('tag', {name: 'First tag', slug: 'first-tag'}),
+        draftPost: server.create('post', {title: 'Draft post', slug: 'draft-post', status: 'draft'}),
+        scheduledPost: server.create('post', {title: 'Scheduled post', slug: 'scheduled-post', status: 'scheduled', publishedAt: new Date(Date.now() + 86400000).toISOString()}),
+        publishedPost: server.create('post', {title: 'Published post', slug: 'published-post', status: 'published', publishedAt: new Date(Date.now() - 86400000).toISOString()})
     };
 };
 
@@ -297,6 +317,48 @@ describe('Acceptance: Search', function () {
             await selectWithEnter();
 
             expect(currentURL()).to.equal(`/tags/${testData.firstTag.slug}`);
+        });
+
+        it('shows status labels for draft and scheduled posts', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('post');
+
+            const searchOptions = getSearchOptions();
+
+            // Posts are sorted by status priority: scheduled > draft > published > sent
+            // We created: 1 scheduled, 1 draft, 2 published posts
+            // So the order should be: Scheduled post, Draft post, First post, Published post
+
+            // Verify scheduled post appears first with Scheduled label
+            expect(getTitleText(searchOptions[0])).to.equal('Scheduled post');
+            assertResultHasStatus(0, 'Scheduled');
+
+            // Verify draft post appears second with Draft label
+            expect(getTitleText(searchOptions[1])).to.equal('First post');
+            assertResultHasStatus(1, 'Draft');
+            expect(getTitleText(searchOptions[2])).to.equal('Draft post');
+            assertResultHasStatus(2, 'Draft');
+
+            // Verify published posts have no status label
+            expect(getTitleText(searchOptions[3])).to.equal('Second post');
+            assertResultHasStatus(3, null);
+
+            expect(getTitleText(searchOptions[4])).to.equal('Published post');
+            assertResultHasStatus(4, null);
+        });
+
+        it('shows status label for draft page', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('First page');
+
+            const searchOptions = getSearchOptions();
+
+            // First page should be a draft
+            const pageOption = searchOptions[0];
+            expect(getTitleText(pageOption)).to.equal('First page');
+            assertResultHasStatus(0, 'Draft');
         });
 
         // Staff settings are now part of AdminX
@@ -461,6 +523,48 @@ describe('Acceptance: Search', function () {
             await selectWithEnter();
 
             expect(currentURL()).to.equal(`/tags/${testData.firstTag.slug}`);
+        });
+
+        it('shows status labels for draft and scheduled posts', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('post');
+
+            const searchOptions = getSearchOptions();
+
+            // Posts are sorted by status priority: scheduled > draft > published > sent
+            // We created: 1 scheduled, 1 draft, 2 published posts
+            // So the order should be: Scheduled post, Draft post, First post, Published post
+
+            // Verify scheduled post appears first with Scheduled label
+            expect(getTitleText(searchOptions[0])).to.equal('Scheduled post');
+            assertResultHasStatus(0, 'Scheduled');
+
+            // Verify draft post appears second with Draft label
+            expect(getTitleText(searchOptions[1])).to.equal('First post');
+            assertResultHasStatus(1, 'Draft');
+            expect(getTitleText(searchOptions[2])).to.equal('Draft post');
+            assertResultHasStatus(2, 'Draft');
+
+            // Verify published posts have no status label
+            expect(getTitleText(searchOptions[3])).to.equal('Second post');
+            assertResultHasStatus(3, null);
+
+            expect(getTitleText(searchOptions[4])).to.equal('Published post');
+            assertResultHasStatus(4, null);
+        });
+
+        it('shows status label for draft page', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('First page');
+
+            const searchOptions = getSearchOptions();
+
+            // First page should be a draft
+            const pageOption = searchOptions[0];
+            expect(getTitleText(pageOption)).to.equal('First page');
+            assertResultHasStatus(0, 'Draft');
         });
 
         // Staff settings are now part of AdminX
