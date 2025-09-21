@@ -66,11 +66,23 @@ const selectWithClick = async () => {
 };
 
 const navigateDown = async () => {
-    await triggerKeyEvent(SEARCH_TRIGGER, 'keyup', 'ArrowDown');
+    // Power Select needs keydown events on the search input, not the trigger
+    const searchInput = find('.ember-power-select-search-input');
+    if (searchInput) {
+        await triggerKeyEvent(searchInput, 'keydown', 'ArrowDown');
+    } else {
+        await triggerKeyEvent(SEARCH_TRIGGER, 'keydown', 'ArrowDown');
+    }
 };
 
 const navigateUp = async () => {
-    await triggerKeyEvent(SEARCH_TRIGGER, 'keyup', 'ArrowUp');
+    // Power Select needs keydown events on the search input, not the trigger
+    const searchInput = find('.ember-power-select-search-input');
+    if (searchInput) {
+        await triggerKeyEvent(searchInput, 'keydown', 'ArrowUp');
+    } else {
+        await triggerKeyEvent(SEARCH_TRIGGER, 'keydown', 'ArrowUp');
+    }
 };
 
 const getSearchGroups = () => {
@@ -85,6 +97,43 @@ const getSearchOptions = () => {
 const getTitleText = (option) => {
     const titleDiv = option.querySelector(SEARCH_OPTION_TITLE);
     return titleDiv ? titleDiv.textContent.trim() : option.textContent.trim();
+};
+
+// Assertion helpers for search results
+const assertSearchGroups = (expectedGroups = ['Staff', 'Tags', 'Posts', 'Pages']) => {
+    const groupNames = getSearchGroups();
+    expect(groupNames).to.have.length(expectedGroups.length);
+    expectedGroups.forEach((groupName, index) => {
+        expect(groupNames[index].textContent.trim()).to.equal(groupName);
+    });
+};
+
+const assertSearchResults = (expectedTitles) => {
+    const searchOptions = getSearchOptions();
+    expect(searchOptions).to.have.length(expectedTitles.length);
+
+    expectedTitles.forEach((title, index) => {
+        expect(getTitleText(searchOptions[index])).to.equal(title);
+    });
+
+    return searchOptions; // Return for further assertions if needed
+};
+
+const assertResultSelected = (index = 0) => {
+    const searchOptions = getSearchOptions();
+    expect(searchOptions[index].getAttribute('aria-current')).to.equal('true');
+};
+
+const assertSelectedText = (expectedText) => {
+    const selectedOption = find(SELECTED_OPTION);
+    expect(selectedOption, 'selected option should exist').to.exist;
+    expect(getTitleText(selectedOption)).to.equal(expectedText);
+};
+
+const assertNoResults = () => {
+    const noResultsMessage = find(NO_RESULTS_MESSAGE);
+    expect(noResultsMessage).to.exist;
+    expect(noResultsMessage.textContent).to.contain('No results found');
 };
 
 const createTestData = function (server) {
@@ -157,22 +206,9 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('first');
 
-            const groupNames = getSearchGroups();
-            expect(groupNames).to.have.length(4);
-            expect(groupNames[0].textContent.trim()).to.equal('Staff');
-            expect(groupNames[1].textContent.trim()).to.equal('Tags');
-            expect(groupNames[2].textContent.trim()).to.equal('Posts');
-            expect(groupNames[3].textContent.trim()).to.equal('Pages');
-
-            const searchOptions = getSearchOptions();
-            expect(searchOptions).to.have.length(4);
-
-            expect(getTitleText(searchOptions[0])).to.equal('First user');
-            expect(getTitleText(searchOptions[1])).to.equal('First tag');
-            expect(getTitleText(searchOptions[2])).to.equal('First post');
-            expect(getTitleText(searchOptions[3])).to.equal('First page');
-
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSearchGroups();
+            assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
+            assertResultSelected(0);
         });
 
         it('shows "No results found" when search has no matches', async function () {
@@ -180,9 +216,7 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('xyz123nonexistent');
 
-            const noResultsMessage = find(NO_RESULTS_MESSAGE);
-            expect(noResultsMessage).to.exist;
-            expect(noResultsMessage.textContent).to.contain('No results found');
+            assertNoResults();
         });
 
         it('handles slow search requests gracefully', async function () {
@@ -192,29 +226,27 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('first');
 
-            const searchOptions = getSearchOptions();
-            expect(searchOptions).to.have.length(4);
-
-            expect(getTitleText(searchOptions[0])).to.equal('First user');
-            expect(getTitleText(searchOptions[1])).to.equal('First tag');
-            expect(getTitleText(searchOptions[2])).to.equal('First post');
-            expect(getTitleText(searchOptions[3])).to.equal('First page');
+            assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
         });
 
         it('navigates search results with arrow keys', async function () {
             await visit('/analytics');
             await openSearch();
-            await searchFor('first post');
+            await searchFor('first'); // Get multiple results
 
             const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
 
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            // First item should be selected by default
+            assertSelectedText('First user');
 
+            // Navigate down should move to second item
             await navigateDown();
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSelectedText('First tag');
 
+            // Navigate up should move back to first item
             await navigateUp();
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSelectedText('First user');
         });
 
         it('navigates to post editor when selecting a post with Enter', async function () {
@@ -223,7 +255,6 @@ describe('Acceptance: Search', function () {
             await searchFor('first post');
 
             await selectWithEnter();
-
             expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
         });
 
@@ -233,7 +264,6 @@ describe('Acceptance: Search', function () {
             await searchFor('first post');
 
             await selectWithClick();
-
             expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
         });
 
@@ -340,22 +370,9 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('first');
 
-            const groupNames = getSearchGroups();
-            expect(groupNames).to.have.length(4);
-            expect(groupNames[0].textContent.trim()).to.equal('Staff');
-            expect(groupNames[1].textContent.trim()).to.equal('Tags');
-            expect(groupNames[2].textContent.trim()).to.equal('Posts');
-            expect(groupNames[3].textContent.trim()).to.equal('Pages');
-
-            const searchOptions = getSearchOptions();
-            expect(searchOptions).to.have.length(4);
-
-            expect(getTitleText(searchOptions[0])).to.equal('First user');
-            expect(getTitleText(searchOptions[1])).to.equal('First tag');
-            expect(getTitleText(searchOptions[2])).to.equal('First post');
-            expect(getTitleText(searchOptions[3])).to.equal('First page');
-
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSearchGroups();
+            assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
+            assertResultSelected(0);
         });
 
         it('shows "No results found" when search has no matches', async function () {
@@ -363,9 +380,7 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('xyz123nonexistent');
 
-            const noResultsMessage = find(NO_RESULTS_MESSAGE);
-            expect(noResultsMessage).to.exist;
-            expect(noResultsMessage.textContent).to.contain('No results found');
+            assertNoResults();
         });
 
         it('handles slow search requests gracefully', async function () {
@@ -375,29 +390,27 @@ describe('Acceptance: Search', function () {
             await openSearch();
             await searchFor('first');
 
-            const searchOptions = getSearchOptions();
-            expect(searchOptions).to.have.length(4);
-
-            expect(getTitleText(searchOptions[0])).to.equal('First user');
-            expect(getTitleText(searchOptions[1])).to.equal('First tag');
-            expect(getTitleText(searchOptions[2])).to.equal('First post');
-            expect(getTitleText(searchOptions[3])).to.equal('First page');
+            assertSearchResults(['First user', 'First tag', 'First post', 'First page']);
         });
 
         it('navigates search results with arrow keys', async function () {
             await visit('/analytics');
             await openSearch();
-            await searchFor('first post');
+            await searchFor('first'); // Get multiple results
 
             const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
 
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            // First item should be selected by default
+            assertSelectedText('First user');
 
+            // Navigate down should move to second item
             await navigateDown();
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSelectedText('First tag');
 
+            // Navigate up should move back to first item
             await navigateUp();
-            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+            assertSelectedText('First user');
         });
 
         it('navigates to post editor when selecting a post with Enter', async function () {
@@ -406,7 +419,6 @@ describe('Acceptance: Search', function () {
             await searchFor('first post');
 
             await selectWithEnter();
-
             expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
         });
 
@@ -416,7 +428,6 @@ describe('Acceptance: Search', function () {
             await searchFor('first post');
 
             await selectWithClick();
-
             expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
         });
 
