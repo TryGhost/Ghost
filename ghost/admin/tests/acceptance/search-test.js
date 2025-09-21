@@ -9,220 +9,458 @@ import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {typeInSearch} from 'ember-power-select/test-support/helpers';
 
-// we have two search providers
-// - "flex" which uses the flexsearch engine but is limited to english only
-// - "basic" which uses exact string matches in a less performant way but is language agnostic
-const suites = [{
-    name: 'Acceptance: Search (flex)',
-    beforeEach() {
-        // noop - default locale is 'en'
-        mockAnalyticsApps();
-    },
-    confirmProvider() {
-        const searchService = this.owner.lookup('service:search');
-        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderFlexService');
-        cleanupMockAnalyticsApps();
-    }
-}, {
-    name: 'Acceptance: Search (basic)',
-    beforeEach() {
-        this.server.db.settings.update({key: 'locale'}, {value: 'de'});
-        mockAnalyticsApps();
-    },
-    confirmProvider() {
-        const settingsService = this.owner.lookup('service:settings');
-        expect(settingsService.locale, 'settings.locale').to.equal('de');
-        const searchService = this.owner.lookup('service:search');
-        expect(searchService.provider.constructor.name, 'provider name').to.equal('SearchProviderBasicService');
-        cleanupMockAnalyticsApps();
-    }
-}];
+const SEARCH_BUTTON = '[data-test-button="search"]';
+const SEARCH_MODAL = '[data-test-modal="search"]';
+const SEARCH_TRIGGER = '[data-test-modal="search"] .ember-power-select-trigger';
+const MODAL_BACKDROP = '.epm-backdrop';
+const GROUP_NAME = '.ember-power-select-group-name';
+const SEARCH_OPTION = '.ember-power-select-option';
+const SEARCH_OPTION_TITLE = '.gh-nav-search-option > div:first-child';
+const NO_RESULTS_MESSAGE = '.ember-power-select-option--no-matches-message';
+const SELECTED_OPTION = '.ember-power-select-option[aria-current="true"]';
+const HIGHLIGHTED_TEXT = '.ember-power-select-option[aria-current="true"] .highlight';
 
-suites.forEach((suite) => {
-    describe(suite.name, function () {
-        const trigger = '[data-test-modal="search"] .ember-power-select-trigger';
-        // eslint-disable-next-line no-unused-vars
-        let firstUser, firstPost, secondPost, firstPage, firstTag;
+// Assertion helpers
+const assertSearchModalOpen = () => {
+    expect(find(SEARCH_MODAL), 'search modal should be open').to.exist;
+};
 
+const assertSearchModalClosed = () => {
+    expect(find(SEARCH_MODAL), 'search modal should be closed').to.not.exist;
+};
+
+// Helper functions for common test operations
+const openSearch = async () => {
+    await click(SEARCH_BUTTON);
+    assertSearchModalOpen();
+};
+
+const openSearchWithKeyboard = async () => {
+    await triggerKeyEvent(document, 'keydown', 'K', {
+        metaKey: ctrlOrCmd === 'command',
+        ctrlKey: ctrlOrCmd === 'ctrl'
+    });
+    assertSearchModalOpen();
+};
+
+const closeSearchWithEscape = async () => {
+    await triggerKeyEvent(document, 'keydown', 'Escape');
+    assertSearchModalClosed();
+};
+
+const closeSearchWithBackdrop = async () => {
+    await click(MODAL_BACKDROP);
+    assertSearchModalClosed();
+};
+
+const searchFor = async (query) => {
+    await typeInSearch(query);
+};
+
+const selectWithEnter = async () => {
+    await triggerKeyEvent(SEARCH_TRIGGER, 'keydown', 'Enter');
+};
+
+const selectWithClick = async () => {
+    await click(SELECTED_OPTION);
+};
+
+const navigateDown = async () => {
+    await triggerKeyEvent(SEARCH_TRIGGER, 'keyup', 'ArrowDown');
+};
+
+const navigateUp = async () => {
+    await triggerKeyEvent(SEARCH_TRIGGER, 'keyup', 'ArrowUp');
+};
+
+const getSearchGroups = () => {
+    return findAll(GROUP_NAME);
+};
+
+const getSearchOptions = () => {
+    return findAll(SEARCH_OPTION);
+};
+
+// Helper to extract title text without status labels
+const getTitleText = (option) => {
+    const titleDiv = option.querySelector(SEARCH_OPTION_TITLE);
+    return titleDiv ? titleDiv.textContent.trim() : option.textContent.trim();
+};
+
+const createTestData = function (server) {
+    return {
+        user: server.create('user', {
+            roles: [server.create('role', {name: 'Owner'})],
+            slug: 'owner',
+            name: 'First user'
+        }),
+        firstPost: server.create('post', {title: 'First post', slug: 'first-post'}),
+        secondPost: server.create('post', {title: 'Second post', slug: 'second-post'}),
+        firstPage: server.create('page', {title: 'First page', slug: 'first-page'}),
+        firstTag: server.create('tag', {name: 'First tag', slug: 'first-tag'})
+    };
+};
+
+describe('Acceptance: Search', function () {
+    describe('FlexSearch Provider', function () {
         const hooks = setupApplicationTest();
         setupMirage(hooks);
 
-        this.beforeEach(async function () {
+        let testData;
+
+        beforeEach(async function () {
             this.server.loadFixtures();
+            testData = createTestData(this.server);
 
-            // create user to authenticate as
-            let role = this.server.create('role', {name: 'Owner'});
-            firstUser = this.server.create('user', {roles: [role], slug: 'owner', name: 'First user'});
-
-            // populate store with data we'll be searching
-            firstPost = this.server.create('post', {title: 'First post', slug: 'first-post'});
-            secondPost = this.server.create('post', {title: 'Second post', slug: 'second-post'});
-            firstPage = this.server.create('page', {title: 'First page', slug: 'first-page'});
-            firstTag = this.server.create('tag', {name: 'First tag', slug: 'first-tag'});
-
-            suite.beforeEach.bind(this)();
-
+            // Default locale is 'en' - uses flex search
+            mockAnalyticsApps();
             await authenticateSession();
         });
 
-        it('is using correct provider', async function () {
-            await visit('/analytics');
-            suite.confirmProvider.bind(this)();
+        afterEach(function () {
+            cleanupMockAnalyticsApps();
         });
 
-        it('opens search modal when clicking icon', async function () {
+        it('uses FlexSearch provider for English locale', async function () {
             await visit('/analytics');
-            expect(currentURL(), 'currentURL').to.equal('/analytics');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
-            await click('[data-test-button="search"]');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
+
+            const searchService = this.owner.lookup('service:search');
+            expect(searchService.provider.constructor.name).to.equal('SearchProviderFlexService');
         });
 
-        it('opens search icon when pressing Ctrl/Cmd+K', async function () {
+        it('opens search modal when clicking search icon', async function () {
             await visit('/analytics');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
-            await triggerKeyEvent(document, 'keydown', 'K', {
-                metaKey: ctrlOrCmd === 'command',
-                ctrlKey: ctrlOrCmd === 'ctrl'
-            });
-            expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
+            assertSearchModalClosed();
+            await openSearch();
         });
 
-        it('closes search modal on escape key', async function () {
+        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
-            await triggerKeyEvent(document, 'keydown', 'Escape');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
+            assertSearchModalClosed();
+            await openSearchWithKeyboard();
         });
 
-        it('closes search modal on click outside', async function () {
+        it('closes search modal with Escape key', async function () {
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.exist;
-            await click('.epm-backdrop');
-            expect(find('[data-test-modal="search"]'), 'search modal').to.not.exist;
+            await openSearch();
+            await closeSearchWithEscape();
         });
 
-        it('finds posts, pages, staff, and tags when typing', async function () {
+        it('closes search modal when clicking outside', async function () {
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first'); // search is not case sensitive
-
-            // all groups are present
-            const groupNames = findAll('.ember-power-select-group-name');
-            expect(groupNames, 'group names').to.have.length(4);
-            expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Staff', 'Tags', 'Posts', 'Pages']);
-
-            // correct results are found
-            const options = findAll('.ember-power-select-option');
-            expect(options, 'number of search results').to.have.length(4);
-            // Get the title text from the first div child within each option (ignoring status labels)
-            expect(options.map((el) => {
-                const titleDiv = el.querySelector('.gh-nav-search-option > div:first-child');
-                return titleDiv ? titleDiv.textContent.trim() : el.textContent.trim();
-            })).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
-
-            // first item is selected
-            expect(options[0]).to.have.attribute('aria-current', 'true');
+            await openSearch();
+            await closeSearchWithBackdrop();
         });
 
-        it('up/down arrows move selected item', async function () {
+        it('finds all content types when searching for "first"', async function () {
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first post');
-            expect(findAll('.ember-power-select-option')[0], 'first option (initial)').to.have.attribute('aria-current', 'true');
-            await triggerKeyEvent(trigger, 'keyup', 'ArrowDown');
-            expect(findAll('.ember-power-select-option')[0], 'second option (after down)').to.have.attribute('aria-current', 'true');
-            await triggerKeyEvent(trigger, 'keyup', 'ArrowUp');
-            expect(findAll('.ember-power-select-option')[0], 'first option (after up)').to.have.attribute('aria-current', 'true');
+            await openSearch();
+            await searchFor('first');
+
+            const groupNames = getSearchGroups();
+            expect(groupNames).to.have.length(4);
+            expect(groupNames[0].textContent.trim()).to.equal('Staff');
+            expect(groupNames[1].textContent.trim()).to.equal('Tags');
+            expect(groupNames[2].textContent.trim()).to.equal('Posts');
+            expect(groupNames[3].textContent.trim()).to.equal('Pages');
+
+            const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
+
+            expect(getTitleText(searchOptions[0])).to.equal('First user');
+            expect(getTitleText(searchOptions[1])).to.equal('First tag');
+            expect(getTitleText(searchOptions[2])).to.equal('First post');
+            expect(getTitleText(searchOptions[3])).to.equal('First page');
+
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
         });
 
-        it('navigates to editor when post selected (Enter)', async function () {
+        it('shows "No results found" when search has no matches', async function () {
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first post');
-            await triggerKeyEvent(trigger, 'keydown', 'Enter');
-            expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
+            await openSearch();
+            await searchFor('xyz123nonexistent');
+
+            const noResultsMessage = find(NO_RESULTS_MESSAGE);
+            expect(noResultsMessage).to.exist;
+            expect(noResultsMessage.textContent).to.contain('No results found');
         });
 
-        it('navigates to editor when post selected (Clicked)', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first post');
-            await click('.ember-power-select-option[aria-current="true"]');
-            expect(currentURL(), 'url after selecting post').to.equal(`/editor/post/${firstPost.id}`);
-        });
-
-        it('navigates to editor when highlighted text is clicked', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first post');
-            
-            // Find the highlighted text span and click on it specifically
-            const highlightedText = find('.ember-power-select-option[aria-current="true"] .highlight');
-            expect(highlightedText, 'highlighted text should exist').to.exist;
-            
-            await click(highlightedText);
-            expect(currentURL(), 'url after clicking highlighted text').to.equal(`/editor/post/${firstPost.id}`);
-        });
-
-        it('navigates to editor when page selected', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('page');
-            await triggerKeyEvent(trigger, 'keydown', 'Enter');
-            expect(currentURL(), 'url after selecting page').to.equal(`/editor/page/${firstPage.id}`);
-        });
-
-        it('navigates to tag edit screen when tag selected', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('tag');
-            await triggerKeyEvent(trigger, 'keydown', 'Enter');
-            expect(currentURL(), 'url after selecting tag').to.equal(`/tags/${firstTag.slug}`);
-        });
-
-        // TODO: Staff settings are now part of AdminX so this isn't working, can we test AdminX from Ember tests?
-        it.skip('navigates to user edit screen when user selected', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('user');
-            await triggerKeyEvent(trigger, 'keydown', 'Enter');
-            expect(currentURL(), 'url after selecting user').to.equal(`/settings/staff/${firstUser.slug}`);
-        });
-
-        it('shows no results message when no results', async function () {
-            await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('x');
-            expect(find('.ember-power-select-option--no-matches-message'), 'no results message').to.contain.text('No results found');
-        });
-
-        // https://linear.app/tryghost/issue/MOM-103/search-stalls-on-query-when-refresh-occurs
-        it('handles refresh on first search being slow', async function () {
+        it('handles slow search requests gracefully', async function () {
             this.server.get('/posts/', getPosts, {timing: 200});
 
             await visit('/analytics');
-            await click('[data-test-button="search"]');
-            await typeInSearch('first'); // search is not case sensitive
+            await openSearch();
+            await searchFor('first');
 
-            // all groups are present
-            const groupNames = findAll('.ember-power-select-group-name');
-            expect(groupNames, 'group names').to.have.length(4);
-            expect(groupNames.map(el => el.textContent.trim())).to.deep.equal(['Staff', 'Tags', 'Posts', 'Pages']);
+            const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
 
-            // correct results are found
-            const options = findAll('.ember-power-select-option');
-            expect(options, 'number of search results').to.have.length(4);
-            // Get the title text from the first div child within each option (ignoring status labels)
-            expect(options.map((el) => {
-                const titleDiv = el.querySelector('.gh-nav-search-option > div:first-child');
-                return titleDiv ? titleDiv.textContent.trim() : el.textContent.trim();
-            })).to.deep.equal(['First user', 'First tag', 'First post', 'First page']);
+            expect(getTitleText(searchOptions[0])).to.equal('First user');
+            expect(getTitleText(searchOptions[1])).to.equal('First tag');
+            expect(getTitleText(searchOptions[2])).to.equal('First post');
+            expect(getTitleText(searchOptions[3])).to.equal('First page');
+        });
 
-            // first item is selected
-            expect(options[0]).to.have.attribute('aria-current', 'true');
+        it('navigates search results with arrow keys', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            const searchOptions = getSearchOptions();
+
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+
+            await navigateDown();
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+
+            await navigateUp();
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+        });
+
+        it('navigates to post editor when selecting a post with Enter', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates to post editor when clicking a post', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            await selectWithClick();
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates when clicking highlighted text in search result', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            const highlightedText = find(HIGHLIGHTED_TEXT);
+            expect(highlightedText).to.exist;
+            await click(highlightedText);
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates to page editor when selecting a page', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('page');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/editor/page/${testData.firstPage.id}`);
+        });
+
+        it('navigates to tag settings when selecting a tag', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('tag');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/tags/${testData.firstTag.slug}`);
+        });
+
+        // Staff settings are now part of AdminX
+        it.skip('navigates to user settings when selecting a user', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('user');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
+        });
+    });
+
+    describe('BasicSearch Provider', function () {
+        const hooks = setupApplicationTest();
+        setupMirage(hooks);
+
+        let testData;
+
+        beforeEach(async function () {
+            this.server.loadFixtures();
+            testData = createTestData(this.server);
+
+            // German locale uses basic search
+            this.server.db.settings.update({key: 'locale'}, {value: 'de'});
+            mockAnalyticsApps();
+            await authenticateSession();
+        });
+
+        afterEach(function () {
+            cleanupMockAnalyticsApps();
+        });
+
+        it('uses BasicSearch provider for non-English locale', async function () {
+            await visit('/analytics');
+
+            const settingsService = this.owner.lookup('service:settings');
+            expect(settingsService.locale).to.equal('de');
+
+            const searchService = this.owner.lookup('service:search');
+            expect(searchService.provider.constructor.name).to.equal('SearchProviderBasicService');
+        });
+
+        it('opens search modal when clicking search icon', async function () {
+            await visit('/analytics');
+            assertSearchModalClosed();
+            await openSearch();
+        });
+
+        it('opens search modal with keyboard shortcut Ctrl/Cmd+K', async function () {
+            await visit('/analytics');
+            assertSearchModalClosed();
+            await openSearchWithKeyboard();
+        });
+
+        it('closes search modal with Escape key', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await closeSearchWithEscape();
+        });
+
+        it('closes search modal when clicking outside', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await closeSearchWithBackdrop();
+        });
+
+        it('finds all content types when searching for "first"', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first');
+
+            const groupNames = getSearchGroups();
+            expect(groupNames).to.have.length(4);
+            expect(groupNames[0].textContent.trim()).to.equal('Staff');
+            expect(groupNames[1].textContent.trim()).to.equal('Tags');
+            expect(groupNames[2].textContent.trim()).to.equal('Posts');
+            expect(groupNames[3].textContent.trim()).to.equal('Pages');
+
+            const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
+
+            expect(getTitleText(searchOptions[0])).to.equal('First user');
+            expect(getTitleText(searchOptions[1])).to.equal('First tag');
+            expect(getTitleText(searchOptions[2])).to.equal('First post');
+            expect(getTitleText(searchOptions[3])).to.equal('First page');
+
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+        });
+
+        it('shows "No results found" when search has no matches', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('xyz123nonexistent');
+
+            const noResultsMessage = find(NO_RESULTS_MESSAGE);
+            expect(noResultsMessage).to.exist;
+            expect(noResultsMessage.textContent).to.contain('No results found');
+        });
+
+        it('handles slow search requests gracefully', async function () {
+            this.server.get('/posts/', getPosts, {timing: 200});
+
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first');
+
+            const searchOptions = getSearchOptions();
+            expect(searchOptions).to.have.length(4);
+
+            expect(getTitleText(searchOptions[0])).to.equal('First user');
+            expect(getTitleText(searchOptions[1])).to.equal('First tag');
+            expect(getTitleText(searchOptions[2])).to.equal('First post');
+            expect(getTitleText(searchOptions[3])).to.equal('First page');
+        });
+
+        it('navigates search results with arrow keys', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            const searchOptions = getSearchOptions();
+
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+
+            await navigateDown();
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+
+            await navigateUp();
+            expect(searchOptions[0].getAttribute('aria-current')).to.equal('true');
+        });
+
+        it('navigates to post editor when selecting a post with Enter', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates to post editor when clicking a post', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            await selectWithClick();
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates when clicking highlighted text in search result', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('first post');
+
+            const highlightedText = find(HIGHLIGHTED_TEXT);
+            expect(highlightedText).to.exist;
+            await click(highlightedText);
+
+            expect(currentURL()).to.equal(`/editor/post/${testData.firstPost.id}`);
+        });
+
+        it('navigates to page editor when selecting a page', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('page');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/editor/page/${testData.firstPage.id}`);
+        });
+
+        it('navigates to tag settings when selecting a tag', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('tag');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/tags/${testData.firstTag.slug}`);
+        });
+
+        // Staff settings are now part of AdminX
+        it.skip('navigates to user settings when selecting a user', async function () {
+            await visit('/analytics');
+            await openSearch();
+            await searchFor('user');
+
+            await selectWithEnter();
+
+            expect(currentURL()).to.equal(`/settings/staff/${testData.user.slug}`);
         });
     });
 });
